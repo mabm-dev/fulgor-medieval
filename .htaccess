@@ -1,0 +1,6 @@
+# Bloquear el acceso web a archivos ocultos (.env, .git, .htaccess...)
+# En hosting compartido (InfinityFree) esto evita que nadie descargue
+# tus secretos visitando tudominio.com/.env
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

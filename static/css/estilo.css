@@ -1,0 +1,71 @@
+/* Fulgor Medieval - estilo base (nivel 1: CSS puro) */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1410;
+    color: #e8dcc4;
+    font-family: Georgia, 'Times New Roman', serif;
+}
+
+.panel {
+    text-align: center;
+    padding: 2rem 3rem;
+    background: #2a2118;
+    border: 2px solid #8a6d3b;
+    border-radius: 8px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+}
+
+h1 {
+    color: #d4af37;
+    letter-spacing: 0.1em;
+}
+
+.turno {
+    margin: 0.5rem 0 1.5rem;
+    color: #a89880;
+    font-style: italic;
+}
+
+.recursos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.recurso {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1rem;
+    background: #1a1410;
+    border: 1px solid #55452a;
+    border-radius: 6px;
+    min-width: 90px;
+}
+
+.icono {
+    font-size: 1.8rem;
+}
+
+.cantidad {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #d4af37;
+}
+
+.nombre {
+    font-size: 0.85rem;
+    color: #a89880;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
