@@ -1,0 +1,13 @@
+# Secretos — nunca se suben
+.env
+
+# Dependencias (si algun dia las hay)
+vendor/
+node_modules/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
