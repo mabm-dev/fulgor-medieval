@@ -7,31 +7,310 @@
 }
 
 body {
+    background: #1a1410;
+    color: #e8dcc4;
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+}
+
+a {
+    color: #d4af37;
+}
+
+.centrado {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #1a1410;
-    color: #e8dcc4;
-    font-family: Georgia, 'Times New Roman', serif;
+    padding: 2rem 1rem;
+    text-align: center;
 }
+
+/* ---------- Portada (titulo + intro) ---------- */
+
+.pagina-portada {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.enlace-portada {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    padding: 4rem;
+}
+
+.resplandor {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60vmin;
+    height: 60vmin;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.35), transparent 70%);
+    animation: pulso 4s ease-in-out infinite;
+}
+
+@keyframes pulso {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+    50%      { transform: translate(-50%, -50%) scale(1.25); opacity: 1; }
+}
+
+.titulo-juego {
+    position: relative;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    color: #d4af37;
+    letter-spacing: 0.15em;
+    text-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+}
+
+.subtitulo {
+    position: relative;
+    color: #a89880;
+    font-style: italic;
+    margin: 0.5rem 0 2rem;
+}
+
+.entrar {
+    position: relative;
+    color: #e8dcc4;
+    border: 1px solid #8a6d3b;
+    border-radius: 4px;
+    padding: 0.6rem 1.5rem;
+    animation: parpadeo 2s infinite;
+}
+
+@keyframes parpadeo {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+}
+
+/* ---------- Menu principal ---------- */
+
+.fondo-dinamico {
+    position: fixed;
+    inset: -10%;
+    z-index: -1;
+    background: linear-gradient(120deg, #1a1410, #3a2a12, #1a2a10, #301a10, #1a1410);
+    background-size: 300% 300%;
+    animation: mover-fondo 24s ease-in-out infinite;
+}
+
+@keyframes mover-fondo {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+}
+
+.botones {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.boton-grande {
+    display: block;
+    padding: 1rem 2rem;
+    border: 2px solid #8a6d3b;
+    border-radius: 6px;
+    background: #1a1410;
+    color: #d4af37;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.boton-grande:hover {
+    background: #8a6d3b;
+    color: #1a1410;
+}
+
+.boton-grande.bloqueado {
+    color: #6a6055;
+    border-color: #3a332b;
+    background: #14100c;
+    cursor: not-allowed;
+}
+
+.boton-grande.bloqueado:hover {
+    background: #14100c;
+    color: #6a6055;
+}
+
+/* ---------- Registro (elegir reino) ---------- */
+
+.registro {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.registro h1 {
+    color: #d4af37;
+    letter-spacing: 0.1em;
+}
+
+.registro h2 {
+    color: #d4af37;
+    margin-top: 2rem;
+}
+
+.formulario-jugador {
+    margin: 1.5rem 0;
+}
+
+.formulario-jugador label {
+    margin-right: 0.5rem;
+    color: #a89880;
+}
+
+input[type="text"] {
+    padding: 0.7rem 1rem;
+    font-size: 1rem;
+    font-family: inherit;
+    background: #1a1410;
+    border: 1px solid #8a6d3b;
+    border-radius: 4px;
+    color: #e8dcc4;
+    min-width: 260px;
+}
+
+.fichas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+    text-align: left;
+}
+
+.ficha-envoltura {
+    position: relative;
+}
+
+.ficha-envoltura input {
+    position: absolute;
+    opacity: 0;
+}
+
+.ficha {
+    display: block;
+    height: 100%;
+    padding: 1rem;
+    background: #2a2118;
+    border: 2px solid #55452a;
+    border-top: 4px solid var(--color-reino, #8a6d3b);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.ficha:hover {
+    transform: translateY(-3px);
+}
+
+.ficha h3 {
+    color: var(--color-reino, #d4af37);
+    letter-spacing: 0.05em;
+}
+
+.ficha .lema {
+    font-style: italic;
+    color: #a89880;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.ficha .lore {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0.5rem 0;
+}
+
+.ficha .bandera,
+.ficha .heroe,
+.ficha .tropa,
+.ficha .color-linea {
+    font-size: 0.8rem;
+    color: #c8b89a;
+    margin-top: 0.3rem;
+}
+
+input:checked + .ficha {
+    border-color: var(--color-reino, #d4af37);
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.25);
+    background: #33291c;
+}
+
+.acciones {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.boton {
+    padding: 0.8rem 2rem;
+    border-radius: 4px;
+    border: 2px solid #8a6d3b;
+    background: #d4af37;
+    color: #1a1410;
+    font-size: 1rem;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.boton.secundario {
+    background: transparent;
+    color: #d4af37;
+}
+
+.error {
+    color: #e06060;
+    margin: 1rem 0;
+}
+
+.aviso {
+    color: #d4af37;
+    margin: 2rem 0;
+}
+
+/* ---------- Panel del reino ---------- */
 
 .panel {
     text-align: center;
     padding: 2rem 3rem;
     background: #2a2118;
-    border: 2px solid #8a6d3b;
+    border: 2px solid var(--color-reino, #8a6d3b);
     border-radius: 8px;
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
 }
 
-h1 {
-    color: #d4af37;
+.nombre-reino {
+    color: var(--color-reino, #d4af37);
     letter-spacing: 0.1em;
 }
 
+.lema-grande {
+    font-style: italic;
+    color: #a89880;
+    margin-top: 0.3rem;
+}
+
+.detalle-reino {
+    font-size: 0.9rem;
+    color: #c8b89a;
+    margin-top: 0.5rem;
+}
+
 .turno {
-    margin: 0.5rem 0 1.5rem;
+    margin: 1rem 0 1.5rem;
     color: #a89880;
     font-style: italic;
 }
@@ -68,4 +347,13 @@ h1 {
     color: #a89880;
     text-transform: uppercase;
     letter-spacing: 0.08em;
+}
+
+.volver {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.volver a {
+    text-decoration: none;
 }

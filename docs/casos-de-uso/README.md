@@ -9,6 +9,8 @@ CU-01, CU-02, ... en el orden en que los construimos.
 | ID | Nombre | Hito | Estado |
 |---|---|---|---|
 | CU-01 | Pasar turno | 1 - Núcleo | Definido |
+| CU-02 | Explorar el mapa | 3 - Mapa | Reservado (pendiente de diseño) |
+| CU-03 | Empezar partida | 1 - Núcleo | Implementado |
 
 ## Plantilla
 

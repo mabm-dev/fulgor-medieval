@@ -11,3 +11,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Videos pesados: la intro vivira en el hosting, no en Git
+*.mp4
