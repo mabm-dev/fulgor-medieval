@@ -1,0 +1,172 @@
+{
+  "1": {
+    "inputs": {
+      "clip_name1": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "clip_name2": "byt5_small_glyphxl_fp16.safetensors",
+      "type": "hunyuan_video_15",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": { "title": "Encoders: Qwen2.5-VL + byT5" }
+  },
+  "2": {
+    "inputs": {
+      "text": "PROMPT_MOVIMIENTO_AQUI",
+      "clip": ["1", 0]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": { "title": "Prompt de movimiento" }
+  },
+  "3": {
+    "inputs": {
+      "text": "",
+      "clip": ["1", 0]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": { "title": "Negativo vacio (destilado, cfg 1)" }
+  },
+  "4": {
+    "inputs": {
+      "vae_name": "hunyuanvideo15_vae_fp16.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": { "title": "VAE HunyuanVideo 1.5" }
+  },
+  "5": {
+    "inputs": {
+      "unet_name": "hunyuanvideo1.5_480p_i2v_step_distilled_fp8_scaled.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": { "title": "Modelo i2v destilado fp8" }
+  },
+  "6": {
+    "inputs": {
+      "shift": 5.0,
+      "model": ["5", 0]
+    },
+    "class_type": "ModelSamplingSD3",
+    "_meta": { "title": "Shift de muestreo" }
+  },
+  "7": {
+    "inputs": {
+      "clip_name": "sigclip_vision_patch14_384.safetensors"
+    },
+    "class_type": "CLIPVisionLoader",
+    "_meta": { "title": "Vision encoder SigLIP" }
+  },
+  "8": {
+    "inputs": {
+      "image": "IMAGEN_AQUI"
+    },
+    "class_type": "LoadImage",
+    "_meta": { "title": "Keyframe de entrada" }
+  },
+  "9": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "width": 848,
+      "height": 480,
+      "crop": "center",
+      "image": ["8", 0]
+    },
+    "class_type": "ImageScale",
+    "_meta": { "title": "Escalar a 848x480" }
+  },
+  "10": {
+    "inputs": {
+      "crop": "center",
+      "clip_vision": ["7", 0],
+      "image": ["9", 0]
+    },
+    "class_type": "CLIPVisionEncode",
+    "_meta": { "title": "Codificar imagen (vision)" }
+  },
+  "11": {
+    "inputs": {
+      "width": 848,
+      "height": 480,
+      "length": 81,
+      "batch_size": 1,
+      "positive": ["2", 0],
+      "negative": ["3", 0],
+      "vae": ["4", 0],
+      "start_image": ["9", 0],
+      "clip_vision_output": ["10", 0]
+    },
+    "class_type": "HunyuanVideo15ImageToVideo",
+    "_meta": { "title": "Latente i2v 848x480, 81 frames" }
+  },
+  "12": {
+    "inputs": {
+      "noise_seed": 42
+    },
+    "class_type": "RandomNoise",
+    "_meta": { "title": "Ruido (semilla)" }
+  },
+  "13": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": { "title": "Sampler euler" }
+  },
+  "14": {
+    "inputs": {
+      "scheduler": "simple",
+      "steps": 8,
+      "denoise": 1.0,
+      "model": ["6", 0]
+    },
+    "class_type": "BasicScheduler",
+    "_meta": { "title": "8 pasos (destilado)" }
+  },
+  "15": {
+    "inputs": {
+      "cfg": 1.0,
+      "model": ["6", 0],
+      "positive": ["11", 0],
+      "negative": ["11", 1]
+    },
+    "class_type": "CFGGuider",
+    "_meta": { "title": "Guia cfg 1 (destilado)" }
+  },
+  "16": {
+    "inputs": {
+      "noise": ["12", 0],
+      "guider": ["15", 0],
+      "sampler": ["13", 0],
+      "sigmas": ["14", 0],
+      "latent_image": ["11", 2]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": { "title": "Muestrear video" }
+  },
+  "17": {
+    "inputs": {
+      "samples": ["16", 0],
+      "vae": ["4", 0]
+    },
+    "class_type": "VAEDecode",
+    "_meta": { "title": "Decodificar frames" }
+  },
+  "18": {
+    "inputs": {
+      "fps": 24.0,
+      "bit_depth": 8,
+      "images": ["17", 0]
+    },
+    "class_type": "CreateVideo",
+    "_meta": { "title": "Crear video 24 fps" }
+  },
+  "19": {
+    "inputs": {
+      "filename_prefix": "fulgormedieval/clips/clip",
+      "format": "auto",
+      "codec": "h264",
+      "video": ["18", 0]
+    },
+    "class_type": "SaveVideo",
+    "_meta": { "title": "Guardar clip" }
+  }
+}
