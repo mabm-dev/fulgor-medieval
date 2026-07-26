@@ -1,104 +1,91 @@
-# Fulgor Medieval — El Lore
+# Lore de Fulgor Medieval
 
-## El mundo: Hispania
+## Las Crónicas del Fulgor
 
-Corre el siglo XIII en **Hispania**, que así llamaban los cronistas medievales a la
-tierra que hoy conocemos como España. Es una península fragmentada en reinos que
-compiten, comercian y guerrean entre sí, cada uno heredero de una historia distinta
-y de un mismo recuerdo: el Fulgor.
+Fulgor Medieval no representa un único año. Es una antología de campañas
+ambientadas en diferentes etapas de la Edad Media ibérica. Cada crónica posee
+su mapa, sus fronteras y sus líderes históricos. El modo Leyendas reúne esas
+figuras en una cronología alternativa donde pueden enfrentarse sin afirmar
+que coexistieron realmente.
 
-## El Fulgor
+Esta decisión permite conservar héroes reconocibles y, al mismo tiempo,
+distinguir claramente historia, leyenda y diseño de videojuego.
 
-Cuentan las crónicas que hubo un tiempo en que Hispania entera resplandecía. No era
-un brillo del sol ni del oro: era el **Fulgor**, la luz que desprende un pueblo
-cuando la sabiduría, el arte y la prosperidad florecen a la vez. Se veía en las
-torres mudéjares que parecían encendidas al atardecer, en las bibliotecas donde se
-traducía el saber de tres culturas, en los mercados donde nada faltaba.
+## Qué es el Fulgor
 
-Pero el Fulgor se apagó. Las guerras sin fin, el hambre y el olvido trajeron la
-**Gran Penumbra**: los caminos se volvieron peligrosos, las bibliotecas ardieron y
-los campos quedaron baldíos. Solo quedaron **rescoldos** del Fulgor, dormidos en los
-monumentos antiguos y en la memoria de los pueblos.
+El Fulgor es la capacidad de un reino para dejar huella: legitimidad,
+conocimiento, prosperidad, memoria y voluntad colectiva. No es únicamente
+magia ni una puntuación decorativa.
 
-Los sabios coinciden en una profecía: el reino que logre reunir de nuevo las tres
-llamas — **prosperar** en sus campos, **construir** belleza y saber, y **proteger**
-a su gente — verá renacer el **Fulgor Dorado** y guiará a Hispania hacia una nueva
-edad de esplendor.
+En campaña se obtiene mediante:
 
-## Los reinos
+- ciudades prósperas;
+- instituciones estables;
+- victorias decisivas;
+- monumentos y obras culturales;
+- conocimiento;
+- pactos duraderos;
+- acontecimientos heroicos.
 
-Cada reino comienza humilde: una aldea, cuatro recursos y un héroe. Su destino es
-crecer hasta alcanzar el Fulgor Dorado.
+En combate puede manifestarse como valor, juramentos, presagios o autoridad
+del comandante. Sus efectos serán épicos, pero mantendrán el tono medieval del
+mundo en lugar de imitar hechizos ajenos.
 
-### Castilla — el reino del castillo
-- **Color:** carmesí. **Bandera:** castillo dorado de tres torres sobre campo rojo.
-- **Lore:** tierra de meseta, fronteras y fortalezas. Los castellanos levantaron
-  tantos castillos que dieron nombre al reino. Duros como su páramo, nadie iguala
-  su caballería pesada.
-- **Héroe: Rodrigo el Campeador** — el guerrero más fuerte de Hispania. Nunca
-  perdió una batalla, ni siquiera cuando lo desterraron. Destrezas: fuerza suprema
-  y carga de caballería.
-- **Tropa de élite:** Caballeros de la Orden, jinetes acorazados con lanza y estandarte.
+## El mundo
 
-### León — el reino antiguo
-- **Color:** púrpura. **Bandera:** león rampante coronado sobre campo plateado.
-- **Lore:** el más viejo de los reinos cristianos, heredero de reyes antiguos.
-  Sus murallas han resistido todos los asedios, y su corte guarda los archivos
-  más antiguos de Hispania.
-- **Héroe: Urraca la Leona** — reina guerrera que defendió su trono contra todos
-  los que la creyeron débil. Destrezas: defensa inquebrantable e inspiración (las
-  tropas cercanas luchan mejor).
-- **Tropa de élite:** Guardia del León, infantería pesada de escudo alto.
+La península es una red de reinos, califatos, taifas, condados, ciudades,
+órdenes, clanes y comunidades fronterizas. Las facciones mayores no ocupan
+todo el mapa. Entre ellas existen pasos de montaña, rutas comerciales,
+territorios disputados y pueblos independientes capaces de comerciar,
+combatir, migrar, exigir tributo o integrarse.
 
-### Aragón — el reino del mar
-- **Color:** oro. **Bandera:** cuatro barras rojas sobre campo dorado, la Senyera.
-- **Lore:** mirando al Mediterráneo, Aragón crece por el comercio y la conquista.
-  Sus barcos llegan donde otros ni sueñan, y sus tropas ligeras cruzan montañas
-  que los ejércitos pesados no se atreven a pisar.
-- **Héroe: Jaime el Conquistador** — coronado niño, estratega desde la cuna. Ganó
-  más tierras con el ingenio que con la espada. Destrezas: estrategia (ve más lejos
-  en el mapa) y asedio.
-- **Tropa de élite:** Almogávares, infantería ligera feroz que grita «¡Desperta ferro!»
-  al entrar en batalla.
+El término mecánico recomendado es **facciones independientes**. Algunas
+crónicas podrán usar la palabra histórica con la que una sociedad describía a
+otra, pero el juego evitará presentar a todas esas comunidades como enemigos
+anónimos que aparecen sin motivo.
 
-### Navarra — el reino de las montañas
-- **Color:** rojo intenso. **Bandera:** cadenas de oro entrelazadas sobre campo rojo.
-- **Lore:** pequeño entre gigantes, Navarra sobrevive por sus montañas y su astucia.
-  En sus pasos pirenaicos cayeron ejércitos enteros que se creían invencibles.
-- **Héroe: Aznar de Roncal** — cazador de los valles altos, capaz de acertar a un
-  halcón en vuelo con niebla cerrada. Destrezas: puntería letal y emboscada
-  (ataca primero en terreno de montaña).
-- **Tropa de élite:** Arqueros del Pirineo, tiradores de largo alcance.
+## Las doce facciones mayores
 
-### Al-Ándalus — el reino del saber
-- **Color:** verde esmeralda. **Bandera:** granada dorada sobre campo verde.
-- **Lore:** al sur florece el último gran reino andalusí. Sus palacios guardan
-  jardines, acequias y bibliotecas; sus sabios leen las estrellas y sus alquimistas
-  son los únicos que aún estudian la naturaleza del Fulgor.
-- **Héroe: Zahir de Granada** — su nombre significa «el resplandeciente». Mitad
-  sabio, mitad jinete, es el único héroe que comprende los rescoldos del Fulgor.
-  Destrezas: alquimia (genera Fulgor extra) y velocidad a caballo.
-- **Tropa de élite:** Jinetes de la Media Luna, caballería ligera veloz como el viento.
+El repertorio base de las Crónicas del Fulgor contiene:
 
-## Recursos y progresión
+1. Reino de Asturias — Alfonso III el Magno.
+2. Reino de León — Urraca I.
+3. Reino de Castilla — Alfonso VIII.
+4. Corona de Aragón — Jaime I el Conquistador.
+5. Reino de Navarra — Sancho VII el Fuerte.
+6. Reino de Portugal — Afonso I Henriques.
+7. Califato de Córdoba — Abd al-Rahman III.
+8. Taifa de Sevilla — Al-Mu‘tamid.
+9. Taifa de Zaragoza — Al-Muqtadir.
+10. Imperio almorávide — Yusuf ibn Tashfin.
+11. Califato almohade — Yaqub al-Mansur.
+12. Emirato de Granada — Muhammad I ibn al-Ahmar.
 
-Todo reino comienza con los **cuatro recursos humildes**: madera, piedra, comida y
-agua. Con ellos se levantan los primeros edificios — aserradero, cantera, granja,
-pozo — y cada edificio abre la puerta al siguiente: la cantera permite la herrería,
-la herrería desentierra el **hierro**, el hierro arma a los soldados y abre las
-**minas de oro**... Así, construir no es gastar: es desbloquear el futuro del reino.
+No todas aparecerán en la primera versión ni en la misma campaña.
 
-Los edificios de cultura — la torre mudéjar, la biblioteca, la catedral — no dan
-materia prima: dan **Fulgor**, el recurso más preciado, el que mide cuánto brilla
-tu reino y cuánto te acerca al Fulgor Dorado.
+## Héroes y gobernantes
 
-## El héroe y sus ejércitos
+Un gobernante representa la dirección política de una facción. Los héroes son
+comandantes, diplomáticos o administradores reclutables. Esta separación
+permite que Rodrigo Díaz sea un héroe excepcional sin convertirlo
+incorrectamente en rey de Castilla.
 
-Cada héroe puede reclutar tropas cuando el reino construye un cuartel: primero
-**soldados y arqueros** humildes, con armas de madera y cuero. Pero según el reino
-crece y levanta herrerías, armerías y academias de guerra, esas mismas tropas pueden
-ascender a **ejércitos de élite** con armas de acero — y cada reino tiene una élite
-única que ningún otro puede reclutar.
+Los personajes artísticos del prototipo que no correspondan a un gobernante
+histórico podrán conservarse como héroes originales del modo Leyendas.
 
-Porque en Hispania hay un dicho que todos los reyes conocen:
-*el Fulgor no se hereda — se construye.*
+## Tono
+
+- Épico, solemne y humano.
+- Inspirado en la historia, sin presentarse como reconstrucción académica.
+- Sin facciones moralmente uniformes.
+- Las decisiones tienen consecuencias sociales, económicas y militares.
+- La victoria no exige exterminar al resto del mapa.
+
+## Rutas de victoria
+
+- **Dominio:** capitales, territorio y autoridad militar.
+- **Prosperidad:** población, comercio y economía sostenible.
+- **Fulgor:** prestigio, conocimiento, cultura y legado.
+
+El vencedor no es necesariamente quien destruye más, sino quien logra que su
+reino perdure en la memoria de la península.

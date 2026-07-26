@@ -1,27 +1,34 @@
-# Changelog
+# Historial de cambios
 
-Todos los cambios notables del proyecto se anotan aquí.
-Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
+El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
+y el proyecto utiliza versionado semántico mientras sea aplicable.
 
 ## [Sin publicar]
 
 ### Añadido
-- README principal del proyecto.
-- Estructura base del repositorio: `docs/`, `static/`, `tests/`, `workflows/`.
-- Archivos de proyecto: `.env.example`, `.gitignore`, `ARCHITECTURE.md`.
-- Primer caso de uso: CU-01 Pasar turno (`docs/casos-de-uso/`).
-- Script SQL de creación de la base de datos y tabla `reinos` (`docs/sql/`).
-- Conexión PHP con PDO (`conexion.php`).
-- Secuencia de inicio completa: portada con intro animada, menú principal con
-  "Cargar partida" bloqueable, registro de jugador con elección de reino y
-  pantalla del reino (`index.php`, `menu.php`, `registro.php`, `reino.php`).
-- Datos de los cinco reinos centralizados (`datos_reinos.php`).
-- Migración 02: tabla `jugadores` y reinos ligados a su jugador
-  (`docs/sql/02-jugadores.sql`).
-- Caso de uso CU-03 Empezar partida (`docs/casos-de-uso/`).
-- `.htaccess` que bloquea el acceso web a los archivos de configuración.
 
-## [0.1.0] - 2026-07-06
+- Documentación de visión 4X, combate táctico, tutorial y facciones históricas.
+- Casos de uso redactados como interacciones de videojuego.
+- Política de seguridad, inventario de recursos y guía de contribución.
+- Integración continua para lint y compilación.
+
+### Cambiado
+
+- Migración del prototipo PHP/MySQL a la aplicación React y TypeScript.
+- Arquitectura orientada a un motor determinista separado de la interfaz.
+- Lore convertido en una antología medieval ibérica por campañas.
+- Dependencias reducidas a las que utiliza realmente el prototipo.
+
+### Eliminado
+
+- Formularios PHP, esquema SQL y documentación de hosting que ya no
+  representaban el producto.
+- Componentes de plantilla, páginas de demostración y archivos compilados.
+
+## [0.1.0] - 2026-07-27
 
 ### Añadido
-- Lore del juego: Hispania, los cinco reinos y el Fulgor (`LORE.md`).
+
+- Menú principal.
+- Selección visual de cinco reinos del prototipo.
+- Guardado local mínimo de la selección.

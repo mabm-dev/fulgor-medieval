@@ -1,16 +1,29 @@
-# Secretos — nunca se suben
-.env
-
-# Dependencias (si algun dia las hay)
-vendor/
+# Dependencias y compilación
 node_modules/
+dist/
+coverage/
+.vite/
+.pnpm-store/
+*.tsbuildinfo
 
-# Sistema operativo
+# Configuración local y secretos
+.env
+.env.*
+!.env.example
+
+# Registros y procesos locales
+*.log
+*.pid
+
+# Archivos del sistema y editores
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/
 
-# Logs
-*.log
-
-# Videos pesados: la intro vivira en el hosting, no en Git
+# Medios de producción: se conservan fuera del repositorio
 *.mp4
+*.mov
+*.wav
+*.psd
+*.aep
