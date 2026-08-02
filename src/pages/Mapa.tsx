@@ -4,6 +4,7 @@ import {
 } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 import HexMap from '../components/map/HexMap'
+import MapViewport from '../components/map/MapViewport'
 import { REINOS } from '../data/reinos'
 import {
   generarMapa,
@@ -123,19 +124,20 @@ export default function Mapa() {
         className="relative min-h-0 flex-1 p-4 md:p-6"
       >
         <div className="h-full w-full overflow-hidden rounded-lg border border-[#c8ad72]/25 bg-[#091018] shadow-[0_0_40px_rgba(0,0,0,0.7)]">
-          <HexMap
-            mapa={mapa}
-            radio={28}
-            casillaSeleccionada={
-              casillaSeleccionada?.coordenada ??
-              null
-            }
-            onSeleccionarCasilla={
-              setCasillaSeleccionada
-            }
-          />
+          <MapViewport>
+            <HexMap
+              mapa={mapa}
+              radio={28}
+              casillaSeleccionada={
+                casillaSeleccionada?.coordenada ??
+                null
+              }
+              onSeleccionarCasilla={
+                setCasillaSeleccionada
+              }
+            />
+          </MapViewport>
         </div>
-
         {casillaSeleccionada && (
           <aside className="absolute top-8 right-8 z-10 w-64 border border-[#c8ad72]/45 bg-[#070b10]/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
             <button
