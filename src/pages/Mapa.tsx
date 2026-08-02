@@ -1,16 +1,40 @@
-import { useMemo } from 'react'
+import {
+  useMemo,
+  useState,
+} from 'react'
 import { Navigate, useNavigate } from 'react-router'
 import HexMap from '../components/map/HexMap'
 import { REINOS } from '../data/reinos'
-import { generarMapa } from '../game/map/generateMap'
+import {
+  generarMapa,
+  type CasillaMapa,
+} from '../game/map/generateMap'
+import {
+  DEFINICIONES_TERRENO,
+  type TipoTerreno,
+} from '../game/map/terrain'
 import { obtenerPartida } from '../lib/partida'
 
 const ANCHO_MAPA = 24
 const ALTO_MAPA = 16
 const SEMILLA_COMPATIBILIDAD = 12345
 
+const NOMBRES_TERRENO: Record<
+  TipoTerreno,
+  string
+> = {
+  agua: 'Agua',
+  llanura: 'Llanura',
+  bosque: 'Bosque',
+  colina: 'Colina',
+  montana: 'Montaña',
+}
+
 export default function Mapa() {
   const navigate = useNavigate()
+
+  const [casillaSeleccionada, setCasillaSeleccionada] =
+    useState<CasillaMapa | null>(null)
 
   const partida = useMemo(
     () => obtenerPartida(),
@@ -41,6 +65,12 @@ export default function Mapa() {
   const reino = REINOS.find(
     (candidato) => candidato.id === partida.reino,
   )
+
+  const costeMovimiento = casillaSeleccionada
+    ? DEFINICIONES_TERRENO[
+        casillaSeleccionada.terreno
+      ].costeMovimiento
+    : null
 
   return (
     <main className="flex h-screen w-screen flex-col overflow-hidden bg-[#05080d] text-white">
@@ -90,14 +120,81 @@ export default function Mapa() {
 
       <section
         aria-label="Tablero de la partida"
-        className="min-h-0 flex-1 p-4 md:p-6"
+        className="relative min-h-0 flex-1 p-4 md:p-6"
       >
         <div className="h-full w-full overflow-hidden rounded-lg border border-[#c8ad72]/25 bg-[#091018] shadow-[0_0_40px_rgba(0,0,0,0.7)]">
           <HexMap
             mapa={mapa}
             radio={28}
+            casillaSeleccionada={
+              casillaSeleccionada?.coordenada ??
+              null
+            }
+            onSeleccionarCasilla={
+              setCasillaSeleccionada
+            }
           />
         </div>
+
+        {casillaSeleccionada && (
+          <aside className="absolute top-8 right-8 z-10 w-64 border border-[#c8ad72]/45 bg-[#070b10]/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
+            <button
+              type="button"
+              onClick={() =>
+                setCasillaSeleccionada(null)
+              }
+              aria-label="Cerrar información de la casilla"
+              className="absolute top-3 right-3 text-lg text-[#c8ad72]/70 transition-colors hover:text-[#ffe6a3]"
+            >
+              ×
+            </button>
+
+            <p className="font-cinzel text-[10px] tracking-[0.28em] text-[#c8ad72] uppercase">
+              Terreno seleccionado
+            </p>
+
+            <h2 className="font-cinzel mt-2 text-2xl text-[#f3e5c0]">
+              {
+                NOMBRES_TERRENO[
+                  casillaSeleccionada.terreno
+                ]
+              }
+            </h2>
+
+            <dl className="mt-5 space-y-4 text-sm">
+              <div className="border-t border-[#c8ad72]/20 pt-3">
+                <dt className="text-xs tracking-[0.15em] text-white/45 uppercase">
+                  Coordenadas axiales
+                </dt>
+                <dd className="mt-1 font-mono text-[#e8d9ae]">
+                  q: {
+                    casillaSeleccionada
+                      .coordenada.q
+                  }{' '}
+                  · r: {
+                    casillaSeleccionada
+                      .coordenada.r
+                  }
+                </dd>
+              </div>
+
+              <div className="border-t border-[#c8ad72]/20 pt-3">
+                <dt className="text-xs tracking-[0.15em] text-white/45 uppercase">
+                  Coste de movimiento
+                </dt>
+                <dd className="mt-1 text-[#e8d9ae]">
+                  {costeMovimiento === null
+                    ? 'No transitable'
+                    : `${costeMovimiento} ${
+                        costeMovimiento === 1
+                          ? 'punto'
+                          : 'puntos'
+                      }`}
+                </dd>
+              </div>
+            </dl>
+          </aside>
+        )}
       </section>
     </main>
   )
