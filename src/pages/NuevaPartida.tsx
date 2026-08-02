@@ -117,9 +117,10 @@ export default function NuevaPartida() {
       reino: reino.id,
       color: reino.color,
       colorNombre: reino.colorNombre,
+      semillaMapa: Date.now(),
       creada: new Date().toISOString(),
     })
-    navigate('/')
+    navigate('/mapa')
   }
 
   return (
