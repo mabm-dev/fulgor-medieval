@@ -6,6 +6,7 @@ import {
 import {
   crearEstadoPartida,
   FASES_TURNO,
+  restaurarEstadoPartida,
   VERSION_ESTADO_PARTIDA,
 } from './gameState'
 
@@ -89,5 +90,93 @@ describe('estado de partida', () => {
     expect(
       Object.isFrozen(estado.recursos),
     ).toBe(true)
+  })
+
+  it('restaura un estado guardado', () => {
+    const estado = restaurarEstadoPartida({
+      version: VERSION_ESTADO_PARTIDA,
+      turno: 7,
+      fase: 'resolucion',
+      reinoJugador: '  navarra  ',
+      recursos: {
+        alimentos: 30,
+        madera: 12,
+        piedra: 8,
+        hierro: 4,
+        oro: 6,
+      },
+    })
+
+    expect(estado).toEqual({
+      version: VERSION_ESTADO_PARTIDA,
+      turno: 7,
+      fase: 'resolucion',
+      reinoJugador: 'navarra',
+      recursos: {
+        alimentos: 30,
+        madera: 12,
+        piedra: 8,
+        hierro: 4,
+        oro: 6,
+      },
+    })
+    expect(Object.isFrozen(estado)).toBe(true)
+    expect(
+      Object.isFrozen(estado.recursos),
+    ).toBe(true)
+  })
+
+  it('rechaza una versión incompatible', () => {
+    expect(() =>
+      restaurarEstadoPartida({
+        version: 99,
+      }),
+    ).toThrow(
+      'Versión de partida no compatible',
+    )
+  })
+
+  it('rechaza un número de turno inválido', () => {
+    expect(() =>
+      restaurarEstadoPartida({
+        version: VERSION_ESTADO_PARTIDA,
+        turno: 0,
+        fase: 'gestion',
+        reinoJugador: 'castilla',
+        recursos: {},
+      }),
+    ).toThrow(
+      'Estado de partida no válido',
+    )
+  })
+
+  it('rechaza una fase desconocida', () => {
+    expect(() =>
+      restaurarEstadoPartida({
+        version: VERSION_ESTADO_PARTIDA,
+        turno: 3,
+        fase: 'combate',
+        reinoJugador: 'castilla',
+        recursos: {},
+      }),
+    ).toThrow(
+      'Estado de partida no válido',
+    )
+  })
+
+  it('rechaza recursos incompletos', () => {
+    expect(() =>
+      restaurarEstadoPartida({
+        version: VERSION_ESTADO_PARTIDA,
+        turno: 3,
+        fase: 'gestion',
+        reinoJugador: 'castilla',
+        recursos: {
+          alimentos: 10,
+        },
+      }),
+    ).toThrow(
+      'Estado de partida no válido',
+    )
   })
 })
