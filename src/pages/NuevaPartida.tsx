@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { REINOS } from '../data/reinos'
+import {
+  borrarEstadoPartida,
+} from '../game/persistence/saveGame'
 import { guardarPartida } from '../lib/partida'
 
 /* Cajas de las siluetas de los héroes sobre la imagen original */
@@ -112,6 +115,8 @@ export default function NuevaPartida() {
 
   const empezar = () => {
     if (!valido || !reino) return
+    borrarEstadoPartida(window.localStorage)
+
     guardarPartida({
       jugador: jugador.trim(),
       reino: reino.id,
