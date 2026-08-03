@@ -3,6 +3,7 @@ export interface Partida {
   reino: string
   color: string
   colorNombre: string
+  semillaMapa?: number
   creada: string
 }
 
