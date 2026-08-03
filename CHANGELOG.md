@@ -5,12 +5,20 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
 
 ## [Sin publicar]
 
+## [0.2.0] - 2026-08-03
+
 ### Añadido
 
 - Documentación de visión 4X, combate táctico, tutorial y facciones históricas.
 - Casos de uso redactados como interacciones de videojuego.
 - Política de seguridad, inventario de recursos y guía de contribución.
-- Integración continua para lint y compilación.
+- Integración continua para lint, pruebas y compilación.
+- Mapa hexagonal determinista de 24 × 16 casillas generado mediante semilla.
+- Terrenos con transitabilidad y costes de movimiento propios.
+- Representación SVG del tablero con selección accesible mediante ratón y teclado.
+- Panel informativo para consultar terreno, coordenadas y coste de movimiento.
+- Cámara interactiva con zoom, desplazamiento y restauración de posición.
+- Pruebas unitarias para coordenadas, geometría, generación, terreno y cámara.
 
 ### Cambiado
 
