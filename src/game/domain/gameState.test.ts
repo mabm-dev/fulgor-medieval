@@ -35,6 +35,7 @@ describe('estado de partida', () => {
         hierro: 0,
         oro: 0,
       },
+      asentamientos: [],
     })
   })
 
@@ -79,6 +80,11 @@ describe('estado de partida', () => {
     expect(primero.recursos).not.toBe(
       segundo.recursos,
     )
+    expect(
+      primero.asentamientos,
+    ).not.toBe(
+      segundo.asentamientos,
+    )
   })
 
   it('protege el estado y sus recursos', () => {
@@ -90,9 +96,14 @@ describe('estado de partida', () => {
     expect(
       Object.isFrozen(estado.recursos),
     ).toBe(true)
+    expect(
+      Object.isFrozen(
+        estado.asentamientos,
+      ),
+    ).toBe(true)
   })
 
-  it('restaura un estado guardado', () => {
+  it('restaura una partida anterior sin asentamientos', () => {
     const estado = restaurarEstadoPartida({
       version: VERSION_ESTADO_PARTIDA,
       turno: 7,
@@ -119,10 +130,16 @@ describe('estado de partida', () => {
         hierro: 4,
         oro: 6,
       },
+      asentamientos: [],
     })
     expect(Object.isFrozen(estado)).toBe(true)
     expect(
       Object.isFrozen(estado.recursos),
+    ).toBe(true)
+    expect(
+      Object.isFrozen(
+        estado.asentamientos,
+      ),
     ).toBe(true)
   })
 
@@ -178,5 +195,61 @@ describe('estado de partida', () => {
     ).toThrow(
       'Estado de partida no válido',
     )
+  })
+
+  it('crea y restaura asentamientos', () => {
+    const original = crearEstadoPartida({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        {
+          id: 'burgos',
+          nombre: 'Burgos',
+          reinoId: 'castilla',
+          tipo: 'villa',
+          posicion: {
+            q: 2,
+            r: -1,
+          },
+          poblacion: {
+            habitantes: 120,
+            capacidad: 200,
+          },
+        },
+      ],
+    })
+
+    const restaurado =
+      restaurarEstadoPartida(
+        JSON.parse(
+          JSON.stringify(original),
+        ) as unknown,
+      )
+
+    expect(restaurado.asentamientos).toEqual([
+      {
+        id: 'burgos',
+        nombre: 'Burgos',
+        reinoId: 'castilla',
+        tipo: 'villa',
+        posicion: {
+          q: 2,
+          r: -1,
+        },
+        poblacion: {
+          habitantes: 120,
+          capacidad: 200,
+        },
+      },
+    ])
+    expect(
+      Object.isFrozen(
+        restaurado.asentamientos,
+      ),
+    ).toBe(true)
+    expect(
+      Object.isFrozen(
+        restaurado.asentamientos[0],
+      ),
+    ).toBe(true)
   })
 })

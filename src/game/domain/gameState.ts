@@ -1,3 +1,11 @@
+import type {
+  OpcionesAsentamiento,
+  TipoAsentamiento,
+} from './settlement'
+import {
+  crearRegistroAsentamientos,
+  type RegistroAsentamientos,
+} from './settlementRegistry'
 import {
   crearReservaRecursos,
   type ReservaRecursos,
@@ -19,11 +27,15 @@ export interface EstadoPartida {
   readonly fase: FaseTurno
   readonly reinoJugador: string
   readonly recursos: ReservaRecursos
+  readonly asentamientos:
+    RegistroAsentamientos
 }
 
 export interface OpcionesEstadoInicial {
   readonly reinoJugador: string
   readonly recursos?: Partial<ReservaRecursos>
+  readonly asentamientos?:
+    readonly OpcionesAsentamiento[]
 }
 
 export function crearEstadoPartida(
@@ -41,6 +53,10 @@ export function crearEstadoPartida(
     recursos: crearReservaRecursos(
       opciones.recursos,
     ),
+    asentamientos:
+      crearRegistroAsentamientos(
+        opciones.asentamientos,
+      ),
   }
 
   return Object.freeze(estado)
@@ -103,6 +119,74 @@ function leerCantidad(
   return cantidad
 }
 
+function leerAsentamiento(
+  datos: unknown,
+): OpcionesAsentamiento {
+  if (
+    !esRegistro(datos) ||
+    !esRegistro(datos.posicion) ||
+    !esRegistro(datos.poblacion)
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  const id = datos.id
+  const nombre = datos.nombre
+  const reinoId = datos.reinoId
+  const tipo = datos.tipo
+  const q = datos.posicion.q
+  const r = datos.posicion.r
+  const habitantes = datos.poblacion.habitantes
+  const capacidad = datos.poblacion.capacidad
+
+  if (
+    typeof id !== 'string' ||
+    typeof nombre !== 'string' ||
+    typeof reinoId !== 'string' ||
+    typeof tipo !== 'string' ||
+    typeof q !== 'number' ||
+    typeof r !== 'number' ||
+    typeof habitantes !== 'number' ||
+    typeof capacidad !== 'number'
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return {
+    id,
+    nombre,
+    reinoId,
+    tipo: tipo as TipoAsentamiento,
+    posicion: {
+      q,
+      r,
+    },
+    poblacion: {
+      habitantes,
+      capacidad,
+    },
+  }
+}
+
+function leerRegistroAsentamientos(
+  datos: unknown,
+): RegistroAsentamientos {
+  if (datos === undefined) {
+    return crearRegistroAsentamientos()
+  }
+
+  if (!Array.isArray(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return crearRegistroAsentamientos(
+    datos.map(
+      (asentamiento) =>
+        leerAsentamiento(asentamiento),
+    ),
+  )
+}
+
 export function restaurarEstadoPartida(
   datos: unknown,
 ): EstadoPartida {
@@ -163,6 +247,10 @@ export function restaurarEstadoPartida(
         'oro',
       ),
     }),
+    asentamientos:
+      leerRegistroAsentamientos(
+        datos.asentamientos,
+      ),
   }
 
   return Object.freeze(estado)

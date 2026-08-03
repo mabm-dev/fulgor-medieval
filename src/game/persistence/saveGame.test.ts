@@ -44,6 +44,22 @@ describe('guardado versionado', () => {
         hierro: 2,
         oro: 6,
       },
+      asentamientos: [
+        {
+          id: 'zaragoza',
+          nombre: 'Zaragoza',
+          reinoId: 'aragon',
+          tipo: 'ciudad',
+          posicion: {
+            q: 4,
+            r: -2,
+          },
+          poblacion: {
+            habitantes: 280,
+            capacidad: 400,
+          },
+        },
+      ],
     })
 
     const restaurado =
@@ -55,6 +71,16 @@ describe('guardado versionado', () => {
     expect(restaurado).not.toBe(original)
     expect(restaurado.recursos).not.toBe(
       original.recursos,
+    )
+    expect(
+      restaurado.asentamientos,
+    ).not.toBe(
+      original.asentamientos,
+    )
+    expect(
+      restaurado.asentamientos[0],
+    ).not.toBe(
+      original.asentamientos[0],
     )
   })
 
