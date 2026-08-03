@@ -5,6 +5,27 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
 
 ## [Sin publicar]
 
+## [0.3.0] - 2026-08-03
+
+### Añadido
+
+- Estado de dominio versionado con turno, fase, reino jugador y cinco recursos.
+- Validación e inmutabilidad de alimentos, madera, piedra, hierro y oro.
+- Perfiles económicos diferenciados para los cinco reinos del prototipo.
+- Reglas deterministas de producción y consumo.
+- Resolución del turno económico con registro de eventos.
+- Restauración segura de estados guardados.
+- Guardado local versionado mediante un adaptador de almacenamiento.
+- Capa de sesión para iniciar, recuperar, guardar y finalizar turnos.
+- HUD económico con turno, fase, recursos y acción de finalizar turno.
+- Pruebas unitarias y de escenarios para dominio, economía, persistencia y sesión.
+
+### Cambiado
+
+- Una nueva partida elimina el estado anterior antes de crear la campaña.
+- El mapa recupera automáticamente la sesión guardada del reino.
+- El HUD reorganiza sus recursos y controles en pantallas estrechas.
+
 ## [0.2.0] - 2026-08-03
 
 ### Añadido

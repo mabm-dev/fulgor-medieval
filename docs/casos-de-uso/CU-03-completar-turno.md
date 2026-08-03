@@ -4,6 +4,15 @@
 
 Resolver todas las órdenes y avanzar el estado de forma determinista.
 
+## Alcance implementado en v0.3
+
+El primer corte jugable permite revisar los cinco recursos del reino y finalizar
+un turno económico. El motor aplica producción y consumo en un orden estable,
+genera eventos, incrementa el turno y guarda automáticamente el nuevo estado.
+
+Las órdenes de construcción y movimiento llegarán en v0.4, el combate en v0.5
+y las decisiones de otros reinos en v0.6.
+
 ## Flujo principal
 
 1. El jugador revisa recursos, alertas y órdenes pendientes.
