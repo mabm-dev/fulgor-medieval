@@ -3,9 +3,16 @@ import {
   useState,
 } from 'react'
 import { Navigate, useNavigate } from 'react-router'
+import TurnHud from '../components/game/TurnHud'
 import HexMap from '../components/map/HexMap'
 import MapViewport from '../components/map/MapViewport'
 import { REINOS } from '../data/reinos'
+import {
+  obtenerPerfilEconomico,
+} from '../game/content/kingdomEconomy'
+import type {
+  EstadoPartida,
+} from '../game/domain/gameState'
 import {
   generarMapa,
   type CasillaMapa,
@@ -14,6 +21,10 @@ import {
   DEFINICIONES_TERRENO,
   type TipoTerreno,
 } from '../game/map/terrain'
+import {
+  finalizarTurnoSesion,
+  iniciarSesionPartida,
+} from '../game/systems/session'
 import { obtenerPartida } from '../lib/partida'
 
 const ANCHO_MAPA = 24
@@ -42,6 +53,28 @@ export default function Mapa() {
     [],
   )
 
+  const [estadoJuego, setEstadoJuego] =
+    useState<EstadoPartida | null>(() => {
+      if (!partida) return null
+
+      const perfil =
+        obtenerPerfilEconomico(
+          partida.reino,
+        )
+
+      return iniciarSesionPartida(
+        window.localStorage,
+        {
+          reinoJugador: partida.reino,
+          recursos:
+            perfil.recursosIniciales,
+        },
+      )
+    })
+
+  const [mensajeTurno, setMensajeTurno] =
+    useState<string>()
+
   const mapa = useMemo(
     () =>
       generarMapa({
@@ -54,7 +87,7 @@ export default function Mapa() {
     [partida?.semillaMapa],
   )
 
-  if (!partida) {
+  if (!partida || !estadoJuego) {
     return (
       <Navigate
         to="/nueva-partida"
@@ -62,6 +95,9 @@ export default function Mapa() {
       />
     )
   }
+
+  const perfilEconomico =
+    obtenerPerfilEconomico(partida.reino)
 
   const reino = REINOS.find(
     (candidato) => candidato.id === partida.reino,
@@ -72,6 +108,19 @@ export default function Mapa() {
         casillaSeleccionada.terreno
       ].costeMovimiento
     : null
+
+  const resolverTurno = () => {
+    const resultado = finalizarTurnoSesion(
+      window.localStorage,
+      estadoJuego,
+      perfilEconomico.planTurno,
+    )
+
+    setEstadoJuego(resultado.estado)
+    setMensajeTurno(
+      `Turno ${estadoJuego.turno} resuelto`,
+    )
+  }
 
   return (
     <main className="flex h-screen w-screen flex-col overflow-hidden bg-[#05080d] text-white">
@@ -118,6 +167,15 @@ export default function Mapa() {
           </button>
         </div>
       </header>
+
+      <TurnHud
+        estado={estadoJuego}
+        onFinalizarTurno={resolverTurno}
+        mensaje={
+          mensajeTurno ??
+          perfilEconomico.especialidad
+        }
+      />
 
       <section
         aria-label="Tablero de la partida"
