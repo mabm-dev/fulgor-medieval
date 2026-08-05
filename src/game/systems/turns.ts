@@ -12,10 +12,16 @@ import {
   aplicarProduccion,
   type MovimientoRecursos,
 } from './economy'
+import {
+  aplicarOrdenesCrecimiento,
+  type OrdenCrecimientoAsentamiento,
+} from './settlementGrowth'
 
 export interface PlanEconomicoTurno {
   readonly produccion: MovimientoRecursos
   readonly consumo: MovimientoRecursos
+  readonly crecimientos?:
+    readonly OrdenCrecimientoAsentamiento[]
 }
 
 export interface ResultadoTurno {
@@ -48,7 +54,11 @@ export function finalizarTurno(
     reservaProducida,
     consumo,
   )
-
+  const crecimiento =
+    aplicarOrdenesCrecimiento(
+      estado.asentamientos,
+      plan.crecimientos,
+    )
   const siguienteTurno = estado.turno + 1
 
   const nuevoEstado: EstadoPartida =
@@ -57,6 +67,8 @@ export function finalizarTurno(
       turno: siguienteTurno,
       fase: 'gestion',
       recursos: reservaFinal,
+      asentamientos:
+        crecimiento.asentamientos,
     })
 
   const eventos: readonly EventoTurno[] =
@@ -71,6 +83,20 @@ export function finalizarTurno(
         turno: estado.turno,
         cantidades: consumo,
       }),
+      ...crecimiento.crecimientos.map(
+        (resultado) =>
+          Object.freeze({
+            tipo:
+              'crecimiento_asentamiento_aplicado',
+            turno: estado.turno,
+            asentamientoId:
+              resultado.asentamientoId,
+            crecimientoAplicado:
+              resultado.crecimientoAplicado,
+            capacidadAlcanzada:
+              resultado.capacidadAlcanzada,
+          }),
+      ),
       Object.freeze({
         tipo: 'turno_finalizado',
         turno: estado.turno,

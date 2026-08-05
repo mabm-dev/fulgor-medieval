@@ -18,6 +18,15 @@ export interface EventoConsumoAplicado
   readonly cantidades: ReservaRecursos
 }
 
+export interface EventoCrecimientoAsentamientoAplicado
+  extends EventoBaseTurno {
+  readonly tipo:
+    'crecimiento_asentamiento_aplicado'
+  readonly asentamientoId: string
+  readonly crecimientoAplicado: number
+  readonly capacidadAlcanzada: boolean
+}
+
 export interface EventoTurnoFinalizado
   extends EventoBaseTurno {
   readonly tipo: 'turno_finalizado'
@@ -27,4 +36,5 @@ export interface EventoTurnoFinalizado
 export type EventoTurno =
   | EventoProduccionAplicada
   | EventoConsumoAplicado
+  | EventoCrecimientoAsentamientoAplicado
   | EventoTurnoFinalizado

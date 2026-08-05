@@ -21,6 +21,29 @@ function crearEstadoPrueba(): EstadoPartida {
   })
 }
 
+function crearEstadoConAsentamiento():
+  EstadoPartida {
+  return crearEstadoPartida({
+    reinoJugador: 'castilla',
+    asentamientos: [
+      {
+        id: 'burgos',
+        nombre: 'Burgos',
+        reinoId: 'castilla',
+        tipo: 'villa',
+        posicion: {
+          q: 0,
+          r: 0,
+        },
+        poblacion: {
+          habitantes: 120,
+          capacidad: 200,
+        },
+      },
+    ],
+  })
+}
+
 describe('resolución del turno', () => {
   it('aplica la economía y avanza el turno', () => {
     const resultado = finalizarTurno(
@@ -178,5 +201,77 @@ describe('resolución del turno', () => {
         true,
       )
     }
+  })
+
+  it('aplica el crecimiento durante el turno', () => {
+    const estado =
+      crearEstadoConAsentamiento()
+
+    const resultado = finalizarTurno(
+      estado,
+      {
+        produccion: {},
+        consumo: {},
+        crecimientos: [
+          {
+            asentamientoId: 'burgos',
+            crecimientoPrevisto: 15,
+          },
+        ],
+      },
+    )
+
+    expect(
+      resultado.estado.asentamientos[0]
+        ?.poblacion.habitantes,
+    ).toBe(135)
+    expect(
+      estado.asentamientos[0]
+        ?.poblacion.habitantes,
+    ).toBe(120)
+    expect(
+      resultado.eventos.map(
+        (evento) => evento.tipo,
+      ),
+    ).toEqual([
+      'produccion_aplicada',
+      'consumo_aplicado',
+      'crecimiento_asentamiento_aplicado',
+      'turno_finalizado',
+    ])
+    expect(resultado.eventos[2]).toEqual({
+      tipo:
+        'crecimiento_asentamiento_aplicado',
+      turno: 1,
+      asentamientoId: 'burgos',
+      crecimientoAplicado: 15,
+      capacidadAlcanzada: false,
+    })
+  })
+
+  it('no avanza si una orden es inválida', () => {
+    const estado =
+      crearEstadoConAsentamiento()
+
+    expect(() =>
+      finalizarTurno(estado, {
+        produccion: {},
+        consumo: {},
+        crecimientos: [
+          {
+            asentamientoId: 'toledo',
+            crecimientoPrevisto: 10,
+          },
+        ],
+      }),
+    ).toThrow(
+      'Asentamiento no encontrado: toledo',
+    )
+
+    expect(estado.turno).toBe(1)
+    expect(
+      estado.asentamientos[0]
+        ?.poblacion.habitantes,
+    ).toBe(120)
   })
 })
