@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { obtenerPartida, borrarPartida, type Partida } from '../lib/partida'
 import { REINOS } from '../data/reinos'
+import { almacenamientoNavegador } from '../game/persistence/browserStorage'
+import {
+  borrarEstadoPartida,
+  cargarEstadoPartida,
+  type ResultadoCargaPartida,
+} from '../game/persistence/saveGame'
 
 const ITEMS = [
   { id: 'empezar', rotulo: 'EMPEZAR PARTIDA' },
@@ -22,9 +28,15 @@ export default function MenuInicio() {
   const [despedida, setDespedida] = useState(false)
   const [confirmarBorrado, setConfirmarBorrado] = useState(false)
 
+  const [cargaMotor, setCargaMotor] = useState<ResultadoCargaPartida>(() =>
+    cargarEstadoPartida(almacenamientoNavegador),
+  )
+
   const nombreReino = partida
     ? (REINOS.find((r) => r.id === partida.reino)?.nombre ?? partida.reino)
     : null
+
+  const errorGuardado = cargaMotor.tipo === 'error' ? cargaMotor.error : null
 
   const pulsar = (zona: ZonaId) => {
     setActivo(zona)
@@ -43,9 +55,16 @@ export default function MenuInicio() {
     setConfirmarBorrado(false)
   }
 
+  const descartarGuardadoIncompatible = () => {
+    borrarEstadoPartida(almacenamientoNavegador)
+    setCargaMotor({ tipo: 'vacio' })
+  }
+
   const eliminarPartida = () => {
     borrarPartida()
+    borrarEstadoPartida(almacenamientoNavegador)
     setPartida(null)
+    setCargaMotor({ tipo: 'vacio' })
     cerrar()
   }
 
@@ -87,7 +106,8 @@ export default function MenuInicio() {
 
         <nav className="menu-hotspots" aria-label="Opciones del juego">
           {ITEMS.map((item) => {
-            const deshabilitada = item.id === 'cargar' && !partida
+            const deshabilitada =
+            item.id === 'cargar' && !partida && !errorGuardado
             return (
               <button
                 key={item.id}
@@ -130,7 +150,8 @@ export default function MenuInicio() {
 
       <nav className="menu-mobile" aria-label="Opciones del juego">
         {ITEMS.map((item) => {
-          const deshabilitada = item.id === 'cargar' && !partida
+          const deshabilitada =
+            item.id === 'cargar' && !partida && !errorGuardado
           const mostrarMarco = activo === item.id || (hover === item.id && !deshabilitada)
           return (
             <button
@@ -178,6 +199,27 @@ export default function MenuInicio() {
             </button>
 
             <div className="flex h-full flex-col justify-center px-12 py-16">
+              {seccion === 'cargar' && errorGuardado && (
+                <div className="mb-8 border border-red-900/60 bg-red-950/25 p-5">
+                  <p className="font-cinzel text-xs tracking-[0.3em] text-red-300/90 uppercase">
+                    {errorGuardado.motivo === 'version_incompatible'
+                      ? 'Crónica de una versión anterior'
+                      : 'Crónica dañada'}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-white/60">
+                    {errorGuardado.motivo === 'version_incompatible'
+                      ? 'Esta partida se guardó con una versión anterior del juego y ya no puede continuarse.'
+                      : 'El archivo de esta partida no se ha podido leer.'}
+                  </p>
+                  <button
+                    onClick={descartarGuardadoIncompatible}
+                    className="font-cinzel mt-5 border border-red-700 bg-red-950/40 px-8 py-2.5 text-xs font-bold tracking-[0.25em] text-red-200 uppercase transition-all hover:bg-red-900/50"
+                  >
+                    Descartar y empezar de nuevo
+                  </button>
+                </div>
+              )}
+
               {seccion === 'cargar' && partida && (
                 <>
                   <p className="font-cinzel text-xs tracking-[0.35em] text-[#d8c68a]/70 uppercase">

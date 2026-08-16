@@ -22,6 +22,9 @@ import {
   type TipoTerreno,
 } from '../game/map/terrain'
 import {
+  almacenamientoNavegador,
+} from '../game/persistence/browserStorage'
+import {
   finalizarTurnoSesion,
   iniciarSesionPartida,
 } from '../game/systems/session'
@@ -63,7 +66,7 @@ export default function Mapa() {
         )
 
       return iniciarSesionPartida(
-        window.localStorage,
+        almacenamientoNavegador,
         {
           reinoJugador: partida.reino,
           recursos:
@@ -111,7 +114,7 @@ export default function Mapa() {
 
   const resolverTurno = () => {
     const resultado = finalizarTurnoSesion(
-      window.localStorage,
+      almacenamientoNavegador,
       estadoJuego,
       perfilEconomico.planTurno,
     )

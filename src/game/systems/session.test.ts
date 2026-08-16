@@ -52,7 +52,10 @@ describe('sesión de partida', () => {
     expect(estado.turno).toBe(1)
     expect(
       cargarEstadoPartida(almacenamiento),
-    ).toEqual(estado)
+    ).toEqual({
+      tipo: 'exito',
+      estado,
+    })
   })
 
   it('recupera una sesión existente', () => {
@@ -123,7 +126,10 @@ describe('sesión de partida', () => {
     expect(nuevoEstado.recursos.oro).toBe(8)
     expect(
       cargarEstadoPartida(almacenamiento),
-    ).toEqual(nuevoEstado)
+    ).toEqual({
+      tipo: 'exito',
+      estado: nuevoEstado,
+    })
   })
 
   it('finaliza y guarda el nuevo turno', () => {
@@ -160,7 +166,10 @@ describe('sesión de partida', () => {
     expect(resultado.eventos).toHaveLength(3)
     expect(
       cargarEstadoPartida(almacenamiento),
-    ).toEqual(resultado.estado)
+    ).toEqual({
+      tipo: 'exito',
+      estado: resultado.estado,
+    })
   })
 
   it('no sobrescribe al fallar el turno', () => {

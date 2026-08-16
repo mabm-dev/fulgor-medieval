@@ -62,8 +62,11 @@ export function crearEstadoPartida(
   return Object.freeze(estado)
 }
 
-const ERROR_ESTADO_INVALIDO =
+export const ERROR_ESTADO_INVALIDO =
   'Estado de partida no válido'
+
+export const ERROR_VERSION_INCOMPATIBLE =
+  'Versión de partida no compatible'
 
 function normalizarReino(
   valor: unknown,
@@ -198,7 +201,7 @@ export function restaurarEstadoPartida(
     datos.version !== VERSION_ESTADO_PARTIDA
   ) {
     throw new Error(
-      'Versión de partida no compatible',
+      ERROR_VERSION_INCOMPATIBLE,
     )
   }
 

@@ -3,6 +3,9 @@ import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent }
 import { useNavigate } from 'react-router'
 import { REINOS } from '../data/reinos'
 import {
+  almacenamientoNavegador,
+} from '../game/persistence/browserStorage'
+import {
   borrarEstadoPartida,
 } from '../game/persistence/saveGame'
 import { guardarPartida } from '../lib/partida'
@@ -115,7 +118,9 @@ export default function NuevaPartida() {
 
   const empezar = () => {
     if (!valido || !reino) return
-    borrarEstadoPartida(window.localStorage)
+    borrarEstadoPartida(
+      almacenamientoNavegador,
+    )
 
     guardarPartida({
       jugador: jugador.trim(),

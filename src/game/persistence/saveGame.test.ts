@@ -5,6 +5,7 @@ import {
 } from 'vitest'
 import {
   crearEstadoPartida,
+  ERROR_VERSION_INCOMPATIBLE,
   VERSION_ESTADO_PARTIDA,
 } from '../domain/gameState'
 import {
@@ -106,16 +107,81 @@ describe('guardado versionado', () => {
     ).not.toBeNull()
     expect(
       cargarEstadoPartida(almacenamiento),
-    ).toEqual(original)
+    ).toEqual({
+      tipo: 'exito',
+      estado: original,
+    })
   })
 
-  it('devuelve null si no existe guardado', () => {
+  it('informa de que no hay guardado', () => {
     const almacenamiento =
       crearAlmacenamientoMemoria()
 
     expect(
       cargarEstadoPartida(almacenamiento),
-    ).toBeNull()
+    ).toEqual({ tipo: 'vacio' })
+  })
+
+  it('distingue una versión incompatible', () => {
+    const almacenamiento =
+      crearAlmacenamientoMemoria()
+
+    almacenamiento.setItem(
+      CLAVE_ESTADO_PARTIDA,
+      JSON.stringify({
+        version:
+          VERSION_ESTADO_PARTIDA + 1,
+        turno: 1,
+        fase: 'gestion',
+        reinoJugador: 'castilla',
+        recursos: {
+          alimentos: 0,
+          madera: 0,
+          piedra: 0,
+          hierro: 0,
+          oro: 0,
+        },
+      }),
+    )
+
+    expect(
+      cargarEstadoPartida(almacenamiento),
+    ).toEqual({
+      tipo: 'error',
+      error: {
+        motivo: 'version_incompatible',
+        mensaje: ERROR_VERSION_INCOMPATIBLE,
+      },
+    })
+  })
+
+  it('distingue un guardado corrupto y no lo borra', () => {
+    const almacenamiento =
+      crearAlmacenamientoMemoria()
+    const contenido = '{"version": 1'
+
+    almacenamiento.setItem(
+      CLAVE_ESTADO_PARTIDA,
+      contenido,
+    )
+
+    const resultado = cargarEstadoPartida(
+      almacenamiento,
+    )
+
+    expect(resultado.tipo).toBe('error')
+
+    if (resultado.tipo === 'error') {
+      expect(resultado.error.motivo).toBe(
+        'corrupto',
+      )
+    }
+
+    expect(
+      almacenamiento.getItem(
+        CLAVE_ESTADO_PARTIDA,
+      ),
+    ).toBe(contenido)
   })
 
   it('rechaza un JSON corrupto', () => {
@@ -166,6 +232,6 @@ describe('guardado versionado', () => {
 
     expect(
       cargarEstadoPartida(almacenamiento),
-    ).toBeNull()
+    ).toEqual({ tipo: 'vacio' })
   })
 })

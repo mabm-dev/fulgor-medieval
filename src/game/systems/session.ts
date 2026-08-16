@@ -18,18 +18,18 @@ export function iniciarSesionPartida(
   almacenamiento: AlmacenamientoPartida,
   opciones: OpcionesEstadoInicial,
 ): EstadoPartida {
-  const estadoGuardado =
+  const guardado =
     cargarEstadoPartida(almacenamiento)
 
   const reinoSolicitado =
     opciones.reinoJugador.trim()
 
   if (
-    estadoGuardado !== null &&
-    estadoGuardado.reinoJugador ===
+    guardado.tipo === 'exito' &&
+    guardado.estado.reinoJugador ===
       reinoSolicitado
   ) {
-    return estadoGuardado
+    return guardado.estado
   }
 
   const estadoInicial =

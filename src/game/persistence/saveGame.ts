@@ -1,10 +1,14 @@
 import {
+  ERROR_VERSION_INCOMPATIBLE,
   restaurarEstadoPartida,
   type EstadoPartida,
 } from '../domain/gameState'
 
 export const CLAVE_ESTADO_PARTIDA =
   'fulgor_estado_partida'
+
+export const ERROR_PARTIDA_NO_VALIDA =
+  'Partida guardada no válida'
 
 export interface AlmacenamientoPartida {
   readonly getItem: (
@@ -18,6 +22,26 @@ export interface AlmacenamientoPartida {
     clave: string,
   ) => void
 }
+
+export type MotivoCargaFallida =
+  | 'version_incompatible'
+  | 'corrupto'
+
+export interface ErrorCargaPartida {
+  readonly motivo: MotivoCargaFallida
+  readonly mensaje: string
+}
+
+export type ResultadoCargaPartida =
+  | {
+      readonly tipo: 'exito'
+      readonly estado: EstadoPartida
+    }
+  | { readonly tipo: 'vacio' }
+  | {
+      readonly tipo: 'error'
+      readonly error: ErrorCargaPartida
+    }
 
 export function serializarEstadoPartida(
   estado: EstadoPartida,
@@ -36,9 +60,7 @@ export function deserializarEstadoPartida(
   try {
     datos = JSON.parse(contenido)
   } catch {
-    throw new Error(
-      'Partida guardada no válida',
-    )
+    throw new Error(ERROR_PARTIDA_NO_VALIDA)
   }
 
   return restaurarEstadoPartida(datos)
@@ -56,16 +78,47 @@ export function guardarEstadoPartida(
 
 export function cargarEstadoPartida(
   almacenamiento: AlmacenamientoPartida,
-): EstadoPartida | null {
+): ResultadoCargaPartida {
   const contenido = almacenamiento.getItem(
     CLAVE_ESTADO_PARTIDA,
   )
 
   if (contenido === null) {
-    return null
+    const vacio: ResultadoCargaPartida = {
+      tipo: 'vacio',
+    }
+
+    return Object.freeze(vacio)
   }
 
-  return deserializarEstadoPartida(contenido)
+  try {
+    const exito: ResultadoCargaPartida = {
+      tipo: 'exito',
+      estado:
+        deserializarEstadoPartida(contenido),
+    }
+
+    return Object.freeze(exito)
+  } catch (causa) {
+    const mensaje =
+      causa instanceof Error
+        ? causa.message
+        : ERROR_PARTIDA_NO_VALIDA
+
+    const fallo: ResultadoCargaPartida = {
+      tipo: 'error',
+      error: Object.freeze({
+        motivo:
+          mensaje ===
+          ERROR_VERSION_INCOMPATIBLE
+            ? 'version_incompatible'
+            : 'corrupto',
+        mensaje,
+      }),
+    }
+
+    return Object.freeze(fallo)
+  }
 }
 
 export function borrarEstadoPartida(
