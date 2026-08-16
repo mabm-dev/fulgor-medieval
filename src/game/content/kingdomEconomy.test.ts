@@ -7,13 +7,15 @@ import {
   crearEstadoPartida,
 } from '../domain/gameState'
 import {
+  IDENTIFICADORES_REINO,
+} from '../domain/kingdom'
+import {
   TIPOS_RECURSO,
 } from '../domain/resources'
 import {
   finalizarTurno,
 } from '../systems/turns'
 import {
-  IDENTIFICADORES_REINO,
   obtenerPerfilEconomico,
 } from './kingdomEconomy'
 

@@ -1,5 +1,7 @@
+import type { IdentificadorReino } from '../game/domain/kingdom'
+
 export interface Reino {
-  id: string
+  id: IdentificadorReino
   nombre: string
   heroe: string
   tituloHeroe: string

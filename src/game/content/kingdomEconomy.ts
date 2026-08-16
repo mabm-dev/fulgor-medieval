@@ -1,21 +1,14 @@
 import {
+  esIdentificadorReino,
+  type IdentificadorReino,
+} from '../domain/kingdom'
+import {
   crearReservaRecursos,
   type ReservaRecursos,
 } from '../domain/resources'
 import type {
   PlanEconomicoTurno,
 } from '../systems/turns'
-
-export const IDENTIFICADORES_REINO = [
-  'castilla',
-  'leon',
-  'aragon',
-  'navarra',
-  'granada',
-] as const
-
-export type IdentificadorReino =
-  (typeof IDENTIFICADORES_REINO)[number]
 
 export interface PerfilEconomicoReino {
   readonly especialidad: string
@@ -159,15 +152,6 @@ export const PERFILES_ECONOMICOS: Readonly<
     },
   ),
 })
-
-function esIdentificadorReino(
-  valor: string,
-): valor is IdentificadorReino {
-  return IDENTIFICADORES_REINO.some(
-    (identificador) =>
-      identificador === valor,
-  )
-}
 
 export function obtenerPerfilEconomico(
   reino: string,

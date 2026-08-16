@@ -5,7 +5,7 @@ import {
 } from 'vitest'
 import {
   IDENTIFICADORES_REINO,
-} from './kingdomEconomy'
+} from '../domain/kingdom'
 import {
   CAPITALES_REINO,
   crearCapitalInicial,

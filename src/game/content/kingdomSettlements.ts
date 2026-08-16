@@ -7,9 +7,9 @@ import type {
   CoordenadaHex,
 } from '../map/hex'
 import {
-  IDENTIFICADORES_REINO,
+  esIdentificadorReino,
   type IdentificadorReino,
-} from './kingdomEconomy'
+} from '../domain/kingdom'
 
 export interface PerfilCapitalReino {
   readonly id: string
@@ -77,15 +77,6 @@ export const CAPITALES_REINO: Readonly<
     32000,
   ),
 })
-
-function esIdentificadorReino(
-  valor: string,
-): valor is IdentificadorReino {
-  return IDENTIFICADORES_REINO.some(
-    (identificador) =>
-      identificador === valor,
-  )
-}
 
 export function obtenerPerfilCapital(
   reino: string,
