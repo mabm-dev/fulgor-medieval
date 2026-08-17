@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { obtenerPartida, borrarPartida, type Partida } from '../lib/partida'
 import { REINOS } from '../data/reinos'
 import { almacenamientoNavegador } from '../game/persistence/browserStorage'
 import {
@@ -21,7 +20,6 @@ type ZonaId = (typeof ITEMS)[number]['id']
 
 export default function MenuInicio() {
   const navigate = useNavigate()
-  const [partida, setPartida] = useState<Partida | null>(() => obtenerPartida())
   const [seccion, setSeccion] = useState<ZonaId | null>(null)
   const [activo, setActivo] = useState<ZonaId | null>(null)
   const [hover, setHover] = useState<ZonaId | null>(null)
@@ -32,8 +30,10 @@ export default function MenuInicio() {
     cargarEstadoPartida(almacenamientoNavegador),
   )
 
+  const partida = cargaMotor.tipo === 'exito' ? cargaMotor.estado : null
+
   const nombreReino = partida
-    ? (REINOS.find((r) => r.id === partida.reino)?.nombre ?? partida.reino)
+    ? (REINOS.find((r) => r.id === partida.reinoJugador)?.nombre ?? partida.reinoJugador)
     : null
 
   const errorGuardado = cargaMotor.tipo === 'error' ? cargaMotor.error : null
@@ -61,9 +61,7 @@ export default function MenuInicio() {
   }
 
   const eliminarPartida = () => {
-    borrarPartida()
     borrarEstadoPartida(almacenamientoNavegador)
-    setPartida(null)
     setCargaMotor({ tipo: 'vacio' })
     cerrar()
   }
@@ -121,7 +119,7 @@ export default function MenuInicio() {
                 title={
                   item.id === 'cargar'
                     ? partida
-                      ? `Continuar: ${partida.jugador} · ${nombreReino}`
+                      ? `Continuar: ${partida.meta.jugador} · ${nombreReino}`
                       : 'No hay ninguna partida guardada'
                     : item.rotulo
                 }
@@ -226,7 +224,7 @@ export default function MenuInicio() {
                     Partida guardada
                   </p>
                   <h2 className="font-cinzel texto-oro mt-3 text-4xl font-bold tracking-[0.12em]">
-                    {partida.jugador}
+                    {partida.meta.jugador}
                   </h2>
                   <p className="mt-2 font-cinzel text-base tracking-[0.2em] text-[#d8c68a]">
                     {nombreReino}
@@ -234,21 +232,23 @@ export default function MenuInicio() {
                   <div className="mt-5 flex items-center gap-3">
                     <span
                       className="h-5 w-5 rounded-full border border-white/40"
-                      style={{ backgroundColor: partida.color, boxShadow: `0 0 10px ${partida.color}` }}
+                      style={{ backgroundColor: partida.meta.colorEstandarte, boxShadow: `0 0 10px ${partida.meta.colorEstandarte}` }}
                     />
                     <span className="font-cinzel text-xs tracking-[0.2em] text-white/60">
-                      Estandarte {partida.colorNombre}
+                      Estandarte {partida.meta.nombreEstandarte}
                     </span>
                   </div>
-                  <p className="mt-6 text-xs text-white/40">
-                    Creada el {new Date(partida.creada).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  <p className=" mt-6 text-xs text-white/40">
+                    Creada el {new Date(partida.meta.fechaCreacion).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                   <p className="mt-8 text-sm leading-relaxed text-white/60">
-                    Tu héroe aguarda en las fronteras del reino. El mapa de
-                    Hispania se desplegará en la próxima versión.
+                    La crónica aguarda en el turno {partida.turno}.
                   </p>
-                  <button className="btn-oro font-cinzel mt-8 px-10 py-3 text-sm font-bold tracking-[0.25em] uppercase" disabled>
-                    Continuar · Próximamente
+                  <button
+                    onClick={() => navigate('/mapa')}
+                    className="btn-oro font-cinzel mt-8 px-10 py-3 text-sm font-bold tracking-[0.25em] uppercase"
+                  >
+                    Continuar crónica
                   </button>
 
                   <div className="mt-10 border-t border-[#d4af37]/15 pt-6">

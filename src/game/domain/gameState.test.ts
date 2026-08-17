@@ -8,7 +8,15 @@ import {
   FASES_TURNO,
   restaurarEstadoPartida,
   VERSION_ESTADO_PARTIDA,
+  type MetaPartida,
 } from './gameState'
+
+const META: MetaPartida = {
+  jugador: 'Rodrigo',
+  colorEstandarte: '#8C2B2B',
+  nombreEstandarte: 'Rojo castellano',
+  fechaCreacion: '2026-08-16T00:00:00.000Z',
+}
 
 describe('estado de partida', () => {
   it('define las fases del primer turno', () => {
@@ -22,9 +30,13 @@ describe('estado de partida', () => {
     expect(
       crearEstadoPartida({
         reinoJugador: 'castilla',
+      semillaMapa: 12345,
+      meta: META,
       }),
     ).toEqual({
       version: VERSION_ESTADO_PARTIDA,
+      semillaMapa: 12345,
+      meta: META,
       turno: 1,
       fase: 'gestion',
       reinoJugador: 'castilla',
@@ -39,9 +51,11 @@ describe('estado de partida', () => {
     })
   })
 
-  it('normaliza el reino y recibe recursos', () => {
+  it('recibe los recursos iniciales', () => {
     const estado = crearEstadoPartida({
-      reinoJugador: '  leon  ',
+      semillaMapa: 7,
+      meta: META,
+      reinoJugador: 'leon',
       recursos: {
         alimentos: 40,
         oro: 8,
@@ -58,21 +72,58 @@ describe('estado de partida', () => {
     })
   })
 
-  it('rechaza un reino vacío', () => {
+  it('rechaza una semilla que no es entera', () => {
     expect(() =>
       crearEstadoPartida({
-        reinoJugador: '   ',
+        semillaMapa: 1.5,
+        meta: META,
+        reinoJugador: 'castilla',
       }),
-    ).toThrow(
-      'El reino del jugador es obligatorio',
-    )
+    ).toThrow('Estado de partida no válido')
+  })
+
+  it('rechaza una meta sin jugador', () => {
+    expect(() =>
+      crearEstadoPartida({
+        semillaMapa: 12345,
+        meta: {
+          ...META,
+          jugador: '   ',
+        },
+        reinoJugador: 'castilla',
+      }),
+    ).toThrow('Estado de partida no válido')
+  })
+
+  it('rechaza un reino desconocido al restaurar', () => {
+    expect(() =>
+      restaurarEstadoPartida({
+        version: VERSION_ESTADO_PARTIDA,
+        semillaMapa: 1,
+        meta: META,
+        turno: 1,
+        fase: 'gestion',
+        reinoJugador: 'portugal',
+        recursos: {
+          alimentos: 0,
+          madera: 0,
+          piedra: 0,
+          hierro: 0,
+          oro: 0,
+        },
+      }),
+    ).toThrow('Estado de partida no válido')
   })
 
   it('crea estados independientes', () => {
     const primero = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,
       reinoJugador: 'castilla',
     })
     const segundo = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,
       reinoJugador: 'castilla',
     })
 
@@ -89,10 +140,13 @@ describe('estado de partida', () => {
 
   it('protege el estado y sus recursos', () => {
     const estado = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,
       reinoJugador: 'granada',
     })
 
     expect(Object.isFrozen(estado)).toBe(true)
+    expect(Object.isFrozen(estado.meta)).toBe(true)
     expect(
       Object.isFrozen(estado.recursos),
     ).toBe(true)
@@ -106,6 +160,8 @@ describe('estado de partida', () => {
   it('restaura una partida anterior sin asentamientos', () => {
     const estado = restaurarEstadoPartida({
       version: VERSION_ESTADO_PARTIDA,
+      semillaMapa: 99,
+      meta: META,
       turno: 7,
       fase: 'resolucion',
       reinoJugador: '  navarra  ',
@@ -120,6 +176,8 @@ describe('estado de partida', () => {
 
     expect(estado).toEqual({
       version: VERSION_ESTADO_PARTIDA,
+      semillaMapa: 99,
+      meta: META,
       turno: 7,
       fase: 'resolucion',
       reinoJugador: 'navarra',
@@ -157,6 +215,8 @@ describe('estado de partida', () => {
     expect(() =>
       restaurarEstadoPartida({
         version: VERSION_ESTADO_PARTIDA,
+        semillaMapa: 1,
+        meta: META,
         turno: 0,
         fase: 'gestion',
         reinoJugador: 'castilla',
@@ -171,6 +231,8 @@ describe('estado de partida', () => {
     expect(() =>
       restaurarEstadoPartida({
         version: VERSION_ESTADO_PARTIDA,
+        semillaMapa: 1,
+        meta: META,
         turno: 3,
         fase: 'combate',
         reinoJugador: 'castilla',
@@ -185,6 +247,8 @@ describe('estado de partida', () => {
     expect(() =>
       restaurarEstadoPartida({
         version: VERSION_ESTADO_PARTIDA,
+        semillaMapa: 1,
+        meta: META,
         turno: 3,
         fase: 'gestion',
         reinoJugador: 'castilla',
@@ -199,6 +263,8 @@ describe('estado de partida', () => {
 
   it('crea y restaura asentamientos', () => {
     const original = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,      
       reinoJugador: 'castilla',
       asentamientos: [
         {

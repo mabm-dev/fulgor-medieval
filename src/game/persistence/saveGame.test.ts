@@ -4,10 +4,10 @@ import {
   it,
 } from 'vitest'
 import {
-  crearEstadoPartida,
   ERROR_VERSION_INCOMPATIBLE,
   VERSION_ESTADO_PARTIDA,
 } from '../domain/gameState'
+import { crearEstadoDePrueba } from '../../test/crearEstadoDePrueba'
 import {
   borrarEstadoPartida,
   cargarEstadoPartida,
@@ -36,7 +36,7 @@ function crearAlmacenamientoMemoria():
 
 describe('guardado versionado', () => {
   it('serializa y restaura el estado', () => {
-    const original = crearEstadoPartida({
+    const original = crearEstadoDePrueba({
       reinoJugador: 'aragon',
       recursos: {
         alimentos: 20,
@@ -88,7 +88,7 @@ describe('guardado versionado', () => {
   it('guarda y carga mediante el adaptador', () => {
     const almacenamiento =
       crearAlmacenamientoMemoria()
-    const original = crearEstadoPartida({
+    const original = crearEstadoDePrueba({
       reinoJugador: 'granada',
       recursos: {
         oro: 12,
@@ -220,7 +220,7 @@ describe('guardado versionado', () => {
   it('elimina una partida guardada', () => {
     const almacenamiento =
       crearAlmacenamientoMemoria()
-    const estado = crearEstadoPartida({
+    const estado = crearEstadoDePrueba({
       reinoJugador: 'navarra',
     })
 

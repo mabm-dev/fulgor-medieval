@@ -14,6 +14,7 @@ import type {
   EstadoPartida,
 } from '../game/domain/gameState'
 import {
+  DIMENSIONES_MAPA_PREDETERMINADO,
   generarMapa,
   type CasillaMapa,
 } from '../game/map/generateMap'
@@ -26,13 +27,8 @@ import {
 } from '../game/persistence/browserStorage'
 import {
   finalizarTurnoSesion,
-  iniciarSesionPartida,
+  cargarSesionPartida,
 } from '../game/systems/session'
-import { obtenerPartida } from '../lib/partida'
-
-const ANCHO_MAPA = 24
-const ALTO_MAPA = 16
-const SEMILLA_COMPATIBILIDAD = 12345
 
 const NOMBRES_TERRENO: Record<
   TipoTerreno,
@@ -51,46 +47,34 @@ export default function Mapa() {
   const [casillaSeleccionada, setCasillaSeleccionada] =
     useState<CasillaMapa | null>(null)
 
-  const partida = useMemo(
-    () => obtenerPartida(),
-    [],
-  )
-
   const [estadoJuego, setEstadoJuego] =
     useState<EstadoPartida | null>(() => {
-      if (!partida) return null
-
-      const perfil =
-        obtenerPerfilEconomico(
-          partida.reino,
-        )
-
-      return iniciarSesionPartida(
+      const carga = cargarSesionPartida(
         almacenamientoNavegador,
-        {
-          reinoJugador: partida.reino,
-          recursos:
-            perfil.recursosIniciales,
-        },
       )
+
+      return carga.tipo === 'exito'
+        ? carga.estado
+        : null
     })
 
   const [mensajeTurno, setMensajeTurno] =
     useState<string>()
 
+  const semillaMapa = estadoJuego?.semillaMapa
+
   const mapa = useMemo(
     () =>
-      generarMapa({
-        ancho: ANCHO_MAPA,
-        alto: ALTO_MAPA,
-        semilla:
-          partida?.semillaMapa ??
-          SEMILLA_COMPATIBILIDAD,
-      }),
-    [partida?.semillaMapa],
+      semillaMapa === undefined
+        ? null
+        : generarMapa({
+            ...DIMENSIONES_MAPA_PREDETERMINADO,
+            semilla: semillaMapa,
+          }),
+    [semillaMapa],
   )
 
-  if (!partida || !estadoJuego) {
+  if (!estadoJuego || !mapa) {
     return (
       <Navigate
         to="/nueva-partida"
@@ -100,10 +84,13 @@ export default function Mapa() {
   }
 
   const perfilEconomico =
-    obtenerPerfilEconomico(partida.reino)
+    obtenerPerfilEconomico(
+      estadoJuego.reinoJugador,
+    )
 
   const reino = REINOS.find(
-    (candidato) => candidato.id === partida.reino,
+    (candidato) =>
+      candidato.id === estadoJuego.reinoJugador,
   )
 
   const costeMovimiento = casillaSeleccionada
@@ -134,11 +121,11 @@ export default function Mapa() {
           </p>
 
           <h1 className="font-cinzel mt-1 text-xl text-[#f3e5c0]">
-            Reino de {reino?.nombre ?? partida.reino}
+            Reino de {reino?.nombre ?? estadoJuego.reinoJugador}
           </h1>
 
           <p className="mt-1 text-xs text-white/55">
-            Gobernante: {partida.jugador}
+            Gobernante: {estadoJuego.meta.jugador}
           </p>
         </div>
 
@@ -155,10 +142,10 @@ export default function Mapa() {
           <span
             className="h-8 w-8 rounded-full border border-white/30"
             style={{
-              backgroundColor: partida.color,
-              boxShadow: `0 0 16px ${partida.color}`,
+              backgroundColor: estadoJuego.meta.colorEstandarte,
+              boxShadow: `0 0 16px ${estadoJuego.meta.colorEstandarte}`,
             }}
-            title={partida.colorNombre}
+            title={estadoJuego.meta.nombreEstandarte}
           />
 
           <button

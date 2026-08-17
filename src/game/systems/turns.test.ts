@@ -3,14 +3,14 @@ import {
   expect,
   it,
 } from 'vitest'
-import {
-  crearEstadoPartida,
-  type EstadoPartida,
+import type {
+  EstadoPartida,
 } from '../domain/gameState'
+import { crearEstadoDePrueba } from '../../test/crearEstadoDePrueba'
 import { finalizarTurno } from './turns'
 
 function crearEstadoPrueba(): EstadoPartida {
-  return crearEstadoPartida({
+  return crearEstadoDePrueba({
     reinoJugador: 'castilla',
     recursos: {
       alimentos: 10,
@@ -23,7 +23,7 @@ function crearEstadoPrueba(): EstadoPartida {
 
 function crearEstadoConAsentamiento():
   EstadoPartida {
-  return crearEstadoPartida({
+  return crearEstadoDePrueba({
     reinoJugador: 'castilla',
     asentamientos: [
       {
@@ -74,7 +74,7 @@ describe('resolución del turno', () => {
   })
 
   it('produce antes de aplicar el consumo', () => {
-    const estado = crearEstadoPartida({
+    const estado = crearEstadoDePrueba({
       reinoJugador: 'leon',
       recursos: {
         alimentos: 2,

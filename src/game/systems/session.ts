@@ -1,12 +1,29 @@
 import {
+  obtenerPerfilEconomico,
+} from '../content/kingdomEconomy'
+import {
+  crearCapitalInicial,
+} from '../content/kingdomSettlements'
+import {
   crearEstadoPartida,
   type EstadoPartida,
-  type OpcionesEstadoInicial,
+  type MetaPartida,
 } from '../domain/gameState'
+import type {
+  IdentificadorReino,
+} from '../domain/kingdom'
+import {
+  elegirEmplazamientoCapital,
+} from '../map/capitalPlacement'
+import {
+  DIMENSIONES_MAPA_PREDETERMINADO,
+  generarMapa,
+} from '../map/generateMap'
 import {
   cargarEstadoPartida,
   guardarEstadoPartida,
   type AlmacenamientoPartida,
+  type ResultadoCargaPartida,
 } from '../persistence/saveGame'
 import {
   finalizarTurno,
@@ -14,33 +31,68 @@ import {
   type ResultadoTurno,
 } from './turns'
 
-export function iniciarSesionPartida(
+export interface OpcionesNuevaSesion {
+  readonly reinoJugador: IdentificadorReino
+  readonly jugador: string
+  readonly colorEstandarte: string
+  readonly nombreEstandarte: string
+  readonly semillaMapa?: number
+  readonly fechaCreacion?: string
+}
+
+export function crearSesionPartida(
   almacenamiento: AlmacenamientoPartida,
-  opciones: OpcionesEstadoInicial,
+  opciones: OpcionesNuevaSesion,
 ): EstadoPartida {
-  const guardado =
-    cargarEstadoPartida(almacenamiento)
+  const semillaMapa =
+    opciones.semillaMapa ?? Date.now()
+  const fechaCreacion =
+    opciones.fechaCreacion ??
+    new Date().toISOString()
 
-  const reinoSolicitado =
-    opciones.reinoJugador.trim()
+  const mapa = generarMapa({
+    ...DIMENSIONES_MAPA_PREDETERMINADO,
+    semilla: semillaMapa,
+  })
 
-  if (
-    guardado.tipo === 'exito' &&
-    guardado.estado.reinoJugador ===
-      reinoSolicitado
-  ) {
-    return guardado.estado
+  const capital = crearCapitalInicial(
+    opciones.reinoJugador,
+    elegirEmplazamientoCapital(mapa),
+  )
+
+  const perfil = obtenerPerfilEconomico(
+    opciones.reinoJugador,
+  )
+
+  const meta: MetaPartida = {
+    jugador: opciones.jugador,
+    colorEstandarte:
+      opciones.colorEstandarte,
+    nombreEstandarte:
+      opciones.nombreEstandarte,
+    fechaCreacion,
   }
 
-  const estadoInicial =
-    crearEstadoPartida(opciones)
+  const estado = crearEstadoPartida({
+    semillaMapa,
+    meta,
+    reinoJugador: opciones.reinoJugador,
+    recursos: perfil.recursosIniciales,
+    asentamientos: [capital],
+  })
 
   guardarEstadoPartida(
     almacenamiento,
-    estadoInicial,
+    estado,
   )
 
-  return estadoInicial
+  return estado
+}
+
+export function cargarSesionPartida(
+  almacenamiento: AlmacenamientoPartida,
+): ResultadoCargaPartida {
+  return cargarEstadoPartida(almacenamiento)
 }
 
 export function finalizarTurnoSesion(

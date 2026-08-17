@@ -6,9 +6,8 @@ import {
   almacenamientoNavegador,
 } from '../game/persistence/browserStorage'
 import {
-  borrarEstadoPartida,
-} from '../game/persistence/saveGame'
-import { guardarPartida } from '../lib/partida'
+  crearSesionPartida,
+} from '../game/systems/session'
 
 /* Cajas de las siluetas de los héroes sobre la imagen original */
 const AURAS_HEROE: Record<string, { fx: number; fy: number; fw: number; fh: number }> = {
@@ -118,18 +117,14 @@ export default function NuevaPartida() {
 
   const empezar = () => {
     if (!valido || !reino) return
-    borrarEstadoPartida(
-      almacenamientoNavegador,
-    )
 
-    guardarPartida({
+    crearSesionPartida(almacenamientoNavegador, {
+      reinoJugador: reino.id,
       jugador: jugador.trim(),
-      reino: reino.id,
-      color: reino.color,
-      colorNombre: reino.colorNombre,
-      semillaMapa: Date.now(),
-      creada: new Date().toISOString(),
+      colorEstandarte: reino.color,
+      nombreEstandarte: reino.colorNombre,
     })
+
     navigate('/mapa')
   }
 

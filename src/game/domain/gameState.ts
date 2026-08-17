@@ -1,6 +1,10 @@
-import type {
-  OpcionesAsentamiento,
-  TipoAsentamiento,
+import {
+  esIdentificadorReino,
+  type IdentificadorReino,
+} from './kingdom'
+import {
+  esTipoAsentamiento,
+  type OpcionesAsentamiento,
 } from './settlement'
 import {
   crearRegistroAsentamientos,
@@ -11,7 +15,7 @@ import {
   type ReservaRecursos,
 } from './resources'
 
-export const VERSION_ESTADO_PARTIDA = 1
+export const VERSION_ESTADO_PARTIDA = 2
 
 export const FASES_TURNO = [
   'gestion',
@@ -21,71 +25,38 @@ export const FASES_TURNO = [
 export type FaseTurno =
   (typeof FASES_TURNO)[number]
 
-export interface EstadoPartida {
-  readonly version: typeof VERSION_ESTADO_PARTIDA
-  readonly turno: number
-  readonly fase: FaseTurno
-  readonly reinoJugador: string
-  readonly recursos: ReservaRecursos
-  readonly asentamientos:
-    RegistroAsentamientos
-}
-
-export interface OpcionesEstadoInicial {
-  readonly reinoJugador: string
-  readonly recursos?: Partial<ReservaRecursos>
-  readonly asentamientos?:
-    readonly OpcionesAsentamiento[]
-}
-
-export function crearEstadoPartida(
-  opciones: OpcionesEstadoInicial,
-): EstadoPartida {
-  const reinoJugador = normalizarReino(
-    opciones.reinoJugador,
-  )
-
-  const estado: EstadoPartida = {
-    version: VERSION_ESTADO_PARTIDA,
-    turno: 1,
-    fase: 'gestion',
-    reinoJugador,
-    recursos: crearReservaRecursos(
-      opciones.recursos,
-    ),
-    asentamientos:
-      crearRegistroAsentamientos(
-        opciones.asentamientos,
-      ),
-  }
-
-  return Object.freeze(estado)
-}
-
 export const ERROR_ESTADO_INVALIDO =
   'Estado de partida no válido'
 
 export const ERROR_VERSION_INCOMPATIBLE =
   'Versión de partida no compatible'
 
-function normalizarReino(
-  valor: unknown,
-): string {
-  if (typeof valor !== 'string') {
-    throw new Error(
-      'El reino del jugador es obligatorio',
-    )
-  }
+export interface MetaPartida {
+  readonly jugador: string
+  readonly colorEstandarte: string
+  readonly nombreEstandarte: string
+  readonly fechaCreacion: string
+}
 
-  const reino = valor.trim()
+export interface EstadoPartida {
+  readonly version: typeof VERSION_ESTADO_PARTIDA
+  readonly semillaMapa: number
+  readonly meta: MetaPartida
+  readonly turno: number
+  readonly fase: FaseTurno
+  readonly reinoJugador: IdentificadorReino
+  readonly recursos: ReservaRecursos
+  readonly asentamientos:
+    RegistroAsentamientos
+}
 
-  if (!reino) {
-    throw new Error(
-      'El reino del jugador es obligatorio',
-    )
-  }
-
-  return reino
+export interface OpcionesEstadoInicial {
+  readonly semillaMapa: number
+  readonly meta: MetaPartida
+  readonly reinoJugador: IdentificadorReino
+  readonly recursos?: Partial<ReservaRecursos>
+  readonly asentamientos?:
+    readonly OpcionesAsentamiento[]
 }
 
 function esRegistro(
@@ -107,6 +78,69 @@ function esFaseTurno(
       (fase) => fase === valor,
     )
   )
+}
+
+function leerSemilla(valor: unknown): number {
+  if (
+    typeof valor !== 'number' ||
+    !Number.isSafeInteger(valor) ||
+    valor < 0
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return valor
+}
+
+function leerReino(
+  valor: unknown,
+): IdentificadorReino {
+  if (typeof valor !== 'string') {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  const reino = valor.trim()
+
+  if (!esIdentificadorReino(reino)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return reino
+}
+
+function leerTexto(valor: unknown): string {
+  if (typeof valor !== 'string') {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  const texto = valor.trim()
+
+  if (!texto) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return texto
+}
+
+function leerMeta(
+  datos: unknown,
+): MetaPartida {
+  if (!esRegistro(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return Object.freeze({
+    jugador: leerTexto(datos.jugador),
+    colorEstandarte: leerTexto(
+      datos.colorEstandarte,
+    ),
+    nombreEstandarte: leerTexto(
+      datos.nombreEstandarte,
+    ),
+    fechaCreacion: leerTexto(
+      datos.fechaCreacion,
+    ),
+  })
 }
 
 function leerCantidad(
@@ -146,7 +180,7 @@ function leerAsentamiento(
     typeof id !== 'string' ||
     typeof nombre !== 'string' ||
     typeof reinoId !== 'string' ||
-    typeof tipo !== 'string' ||
+    !esTipoAsentamiento(tipo) ||
     typeof q !== 'number' ||
     typeof r !== 'number' ||
     typeof habitantes !== 'number' ||
@@ -159,7 +193,7 @@ function leerAsentamiento(
     id,
     nombre,
     reinoId,
-    tipo: tipo as TipoAsentamiento,
+    tipo,
     posicion: {
       q,
       r,
@@ -188,6 +222,32 @@ function leerRegistroAsentamientos(
         leerAsentamiento(asentamiento),
     ),
   )
+}
+
+export function crearEstadoPartida(
+  opciones: OpcionesEstadoInicial,
+): EstadoPartida {
+  const estado: EstadoPartida = {
+    version: VERSION_ESTADO_PARTIDA,
+    semillaMapa: leerSemilla(
+      opciones.semillaMapa,
+    ),
+    meta: leerMeta(opciones.meta),
+    turno: 1,
+    fase: 'gestion',
+    reinoJugador: leerReino(
+      opciones.reinoJugador,
+    ),
+    recursos: crearReservaRecursos(
+      opciones.recursos,
+    ),
+    asentamientos:
+      crearRegistroAsentamientos(
+        opciones.asentamientos,
+      ),
+  }
+
+  return Object.freeze(estado)
 }
 
 export function restaurarEstadoPartida(
@@ -223,9 +283,13 @@ export function restaurarEstadoPartida(
 
   const estado: EstadoPartida = {
     version: VERSION_ESTADO_PARTIDA,
+    semillaMapa: leerSemilla(
+      datos.semillaMapa,
+    ),
+    meta: leerMeta(datos.meta),
     turno: datos.turno,
     fase: datos.fase,
-    reinoJugador: normalizarReino(
+    reinoJugador: leerReino(
       datos.reinoJugador,
     ),
     recursos: crearReservaRecursos({

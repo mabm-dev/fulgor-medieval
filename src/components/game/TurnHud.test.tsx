@@ -6,9 +6,7 @@ import {
   expect,
   it,
 } from 'vitest'
-import {
-  crearEstadoPartida,
-} from '../../game/domain/gameState'
+import { crearEstadoDePrueba } from '../../test/crearEstadoDePrueba'
 import TurnHud from './TurnHud'
 
 interface OpcionesRenderizado {
@@ -19,7 +17,7 @@ interface OpcionesRenderizado {
 function renderizarHud(
   opciones: OpcionesRenderizado = {},
 ): string {
-  const estado = crearEstadoPartida({
+  const estado = crearEstadoDePrueba({
     reinoJugador: 'castilla',
     recursos: {
       alimentos: 18,

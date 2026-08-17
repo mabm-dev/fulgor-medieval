@@ -4,16 +4,17 @@ import {
   it,
 } from 'vitest'
 import {
-  restaurarEstadoPartida,
-} from '../domain/gameState'
-import {
-  cargarEstadoPartida,
-  guardarEstadoPartida,
-  type AlmacenamientoPartida,
+  DIMENSIONES_MAPA_PREDETERMINADO,
+  generarMapa,
+} from '../map/generateMap'
+import { claveHex } from '../map/hex'
+import type {
+  AlmacenamientoPartida,
 } from '../persistence/saveGame'
 import {
+  cargarSesionPartida,
+  crearSesionPartida,
   finalizarTurnoSesion,
-  iniciarSesionPartida,
 } from './session'
 
 function crearAlmacenamientoMemoria():
@@ -32,119 +33,103 @@ function crearAlmacenamientoMemoria():
   }
 }
 
-describe('sesión de partida', () => {
-  it('crea y guarda una sesión nueva', () => {
-    const almacenamiento =
-      crearAlmacenamientoMemoria()
+const OPCIONES = {
+  reinoJugador: 'castilla',
+  jugador: 'Rodrigo',
+  colorEstandarte: '#8C2B2B',
+  nombreEstandarte: 'Rojo castellano',
+  semillaMapa: 42,
+  fechaCreacion:
+    '2026-08-16T00:00:00.000Z',
+} as const
 
-    const estado = iniciarSesionPartida(
-      almacenamiento,
-      {
-        reinoJugador: 'castilla',
-        recursos: {
-          alimentos: 20,
-          madera: 10,
-          oro: 5,
-        },
-      },
+describe('sesión de partida', () => {
+  it('funda la capital al crear la campaña', () => {
+    const estado = crearSesionPartida(
+      crearAlmacenamientoMemoria(),
+      OPCIONES,
     )
 
     expect(estado.turno).toBe(1)
+    expect(estado.semillaMapa).toBe(42)
+    expect(estado.meta.jugador).toBe(
+      'Rodrigo',
+    )
     expect(
-      cargarEstadoPartida(almacenamiento),
+      estado.asentamientos,
+    ).toHaveLength(1)
+    expect(
+      estado.asentamientos[0].nombre,
+    ).toBe('Burgos')
+  })
+
+  it('planta la capital sobre una llanura del mapa', () => {
+    const estado = crearSesionPartida(
+      crearAlmacenamientoMemoria(),
+      OPCIONES,
+    )
+
+    const mapa = generarMapa({
+      ...DIMENSIONES_MAPA_PREDETERMINADO,
+      semilla: OPCIONES.semillaMapa,
+    })
+
+    const casilla = mapa.casillas.find(
+      (candidata) =>
+        claveHex(candidata.coordenada) ===
+        claveHex(
+          estado.asentamientos[0].posicion,
+        ),
+    )
+
+    expect(casilla).toBeDefined()
+    expect(casilla?.terreno).toBe('llanura')
+  })
+
+  it('repite la misma partida con la misma semilla y fecha', () => {
+    const primera = crearSesionPartida(
+      crearAlmacenamientoMemoria(),
+      OPCIONES,
+    )
+    const segunda = crearSesionPartida(
+      crearAlmacenamientoMemoria(),
+      OPCIONES,
+    )
+
+    expect(primera).toEqual(segunda)
+  })
+
+  it('guarda la partida recién creada', () => {
+    const almacenamiento =
+      crearAlmacenamientoMemoria()
+
+    const estado = crearSesionPartida(
+      almacenamiento,
+      OPCIONES,
+    )
+
+    expect(
+      cargarSesionPartida(almacenamiento),
     ).toEqual({
       tipo: 'exito',
       estado,
     })
   })
 
-  it('recupera una sesión existente', () => {
-    const almacenamiento =
-      crearAlmacenamientoMemoria()
-    const guardado = restaurarEstadoPartida({
-      version: 1,
-      turno: 4,
-      fase: 'gestion',
-      reinoJugador: 'leon',
-      recursos: {
-        alimentos: 18,
-        madera: 7,
-        piedra: 5,
-        hierro: 3,
-        oro: 9,
-      },
-    })
-
-    guardarEstadoPartida(
-      almacenamiento,
-      guardado,
-    )
-
-    const recuperado = iniciarSesionPartida(
-      almacenamiento,
-      {
-        reinoJugador: 'leon',
-        recursos: {
-          alimentos: 100,
-        },
-      },
-    )
-
-    expect(recuperado).toEqual(guardado)
-    expect(recuperado.turno).toBe(4)
-  })
-
-  it('inicia otra sesión al cambiar de reino', () => {
-    const almacenamiento =
-      crearAlmacenamientoMemoria()
-
-    iniciarSesionPartida(
-      almacenamiento,
-      {
-        reinoJugador: 'castilla',
-        recursos: {
-          oro: 20,
-        },
-      },
-    )
-
-    const nuevoEstado =
-      iniciarSesionPartida(
-        almacenamiento,
-        {
-          reinoJugador: 'granada',
-          recursos: {
-            oro: 8,
-          },
-        },
-      )
-
-    expect(nuevoEstado.reinoJugador).toBe(
-      'granada',
-    )
-    expect(nuevoEstado.turno).toBe(1)
-    expect(nuevoEstado.recursos.oro).toBe(8)
+  it('informa de que no hay partida guardada', () => {
     expect(
-      cargarEstadoPartida(almacenamiento),
-    ).toEqual({
-      tipo: 'exito',
-      estado: nuevoEstado,
-    })
+      cargarSesionPartida(
+        crearAlmacenamientoMemoria(),
+      ),
+    ).toEqual({ tipo: 'vacio' })
   })
 
   it('finaliza y guarda el nuevo turno', () => {
     const almacenamiento =
       crearAlmacenamientoMemoria()
-    const estado = iniciarSesionPartida(
+    const estado = crearSesionPartida(
       almacenamiento,
-      {
-        reinoJugador: 'navarra',
-        recursos: {
-          alimentos: 10,
-          madera: 4,
-          oro: 3,
-        },
-      },
+      OPCIONES,
     )
 
     const resultado = finalizarTurnoSesion(
@@ -165,7 +150,7 @@ describe('sesión de partida', () => {
     expect(resultado.estado.turno).toBe(2)
     expect(resultado.eventos).toHaveLength(3)
     expect(
-      cargarEstadoPartida(almacenamiento),
+      cargarSesionPartida(almacenamiento),
     ).toEqual({
       tipo: 'exito',
       estado: resultado.estado,
@@ -175,17 +160,15 @@ describe('sesión de partida', () => {
   it('no sobrescribe al fallar el turno', () => {
     const almacenamiento =
       crearAlmacenamientoMemoria()
-    const estado = iniciarSesionPartida(
+    const estado = crearSesionPartida(
       almacenamiento,
       {
+        ...OPCIONES,
         reinoJugador: 'aragon',
-        recursos: {
-          hierro: 1,
-        },
       },
     )
     const guardadoAnterior =
-      cargarEstadoPartida(almacenamiento)
+      cargarSesionPartida(almacenamiento)
 
     expect(() =>
       finalizarTurnoSesion(
@@ -194,7 +177,7 @@ describe('sesión de partida', () => {
         {
           produccion: {},
           consumo: {
-            hierro: 2,
+            hierro: 8,
           },
         },
       ),
@@ -203,7 +186,7 @@ describe('sesión de partida', () => {
     )
 
     expect(
-      cargarEstadoPartida(almacenamiento),
+      cargarSesionPartida(almacenamiento),
     ).toEqual(guardadoAnterior)
   })
 })

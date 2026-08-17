@@ -23,6 +23,12 @@ export interface OpcionesMapa {
   readonly semilla: number
 }
 
+export const DIMENSIONES_MAPA_PREDETERMINADO =
+  Object.freeze({
+    ancho: 24,
+    alto: 16,
+  })
+
 function validarDimension(nombre: string, valor: number): void {
   if (!Number.isSafeInteger(valor) || valor <= 0) {
     throw new RangeError(

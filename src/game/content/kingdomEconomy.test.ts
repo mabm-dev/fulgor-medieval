@@ -3,9 +3,7 @@ import {
   expect,
   it,
 } from 'vitest'
-import {
-  crearEstadoPartida,
-} from '../domain/gameState'
+import { crearEstadoDePrueba } from '../../test/crearEstadoDePrueba'
 import {
   IDENTIFICADORES_REINO,
 } from '../domain/kingdom'
@@ -79,7 +77,7 @@ describe('economía de los reinos', () => {
       const perfil =
         obtenerPerfilEconomico(reino)
 
-      let estado = crearEstadoPartida({
+      let estado = crearEstadoDePrueba({
         reinoJugador: reino,
         recursos:
           perfil.recursosIniciales,

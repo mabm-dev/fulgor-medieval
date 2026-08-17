@@ -64,10 +64,21 @@ function validarCoordenada(
   })
 }
 
+export function esTipoAsentamiento(
+  valor: unknown,
+): valor is TipoAsentamiento {
+  return (
+    typeof valor === 'string' &&
+    TIPOS_ASENTAMIENTO.some(
+      (tipo) => tipo === valor,
+    )
+  )
+}
+
 function validarTipo(
   tipo: TipoAsentamiento,
 ): TipoAsentamiento {
-  if (!TIPOS_ASENTAMIENTO.includes(tipo)) {
+  if (!esTipoAsentamiento(tipo)) {
     throw new Error(
       'El tipo de asentamiento no es válido',
     )
