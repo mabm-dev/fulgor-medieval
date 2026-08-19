@@ -42,6 +42,10 @@ export default function MenuInicio() {
     setActivo(zona)
     setConfirmarBorrado(false)
     if (zona === 'empezar') {
+      if (partida) {
+        setSeccion('empezar')
+        return
+      }
       window.setTimeout(() => navigate('/nueva-partida'), 280)
       return
     }
@@ -197,6 +201,37 @@ export default function MenuInicio() {
             </button>
 
             <div className="flex h-full flex-col justify-center px-12 py-16">
+              {seccion === 'empezar' && partida && (
+                <>
+                  <p className="font-cinzel text-xs tracking-[0.35em] text-[#d8c68a]/70 uppercase">
+                    Crónica en curso
+                  </p>
+                  <h2 className="font-cinzel texto-oro mt-3 text-4xl font-bold tracking-[0.12em]">
+                    {partida.meta.jugador}
+                  </h2>
+                  <p className="mt-2 font-cinzel text-base tracking-[0.2em] text-[#d8c68a]">
+                    {nombreReino} · Turno {partida.turno}
+                  </p>
+                  <p className="mt-8 text-sm leading-relaxed text-white/60">
+                    Solo se conserva una crónica. Empezar una nueva borrará esta
+                    para siempre.
+                  </p>
+                  <div className="mt-8 flex gap-4">
+                    <button
+                      onClick={() => navigate('/nueva-partida')}
+                      className="btn-oro font-cinzel px-8 py-3 text-sm font-bold tracking-[0.25em] uppercase"
+                    >
+                      Empezar de nuevo
+                    </button>
+                    <button
+                      onClick={cerrar}
+                      className="font-cinzel border border-white/25 px-8 py-3 text-sm font-bold tracking-[0.25em] text-white/70 uppercase transition-all hover:border-white/60 hover:text-white"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </>
+              )}              
               {seccion === 'cargar' && errorGuardado && (
                 <div className="mb-8 border border-red-900/60 bg-red-950/25 p-5">
                   <p className="font-cinzel text-xs tracking-[0.3em] text-red-300/90 uppercase">
