@@ -74,6 +74,22 @@ describe('generarMapa', () => {
     }
   })
 
+  it('el oro solo aparece en colina o montaña', () => {
+    const mapa = generarMapa({
+      ancho: 24,
+      alto: 16,
+      semilla: 12345,
+    })
+
+    for (const casilla of mapa.casillas) {
+      if (casilla.tieneOro) {
+        expect(['colina', 'montana']).toContain(
+          casilla.terreno,
+        )
+      }
+    }
+  })
+
   it('rechaza dimensiones incorrectas', () => {
     expect(() =>
       generarMapa({

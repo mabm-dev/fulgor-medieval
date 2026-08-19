@@ -8,6 +8,7 @@ import type { TipoTerreno } from './terrain'
 export interface CasillaMapa {
   readonly coordenada: CoordenadaHex
   readonly terreno: TipoTerreno
+  readonly tieneOro: boolean
 }
 
 export interface Mapa {
@@ -50,6 +51,17 @@ function seleccionarTerreno(
   return 'montana'
 }
 
+function seleccionarVetaOro(
+  terreno: TipoTerreno,
+  aleatorio: AleatorioDeterminista,
+): boolean {
+  if (terreno !== 'colina' && terreno !== 'montana') {
+    return false
+  }
+
+  return aleatorio.entero(0, 99) < 25
+}
+
 export function generarMapa(opciones: OpcionesMapa): Mapa {
   const { ancho, alto, semilla } = opciones
 
@@ -61,9 +73,12 @@ export function generarMapa(opciones: OpcionesMapa): Mapa {
 
   for (let r = 0; r < alto; r += 1) {
     for (let q = 0; q < ancho; q += 1) {
+      const terreno = seleccionarTerreno(aleatorio)
+
       casillas.push({
         coordenada: { q, r },
-        terreno: seleccionarTerreno(aleatorio),
+        terreno,
+        tieneOro: seleccionarVetaOro(terreno, aleatorio),
       })
     }
   }

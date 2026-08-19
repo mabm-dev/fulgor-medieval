@@ -70,14 +70,17 @@ describe('elegirEmplazamientoCapital', () => {
           {
             coordenada: { q: 0, r: 0 },
             terreno: 'llanura',
+            tieneOro: false,
           },
           {
             coordenada: { q: 1, r: 0 },
             terreno: 'llanura',
+            tieneOro: false,
           },
           {
             coordenada: { q: 2, r: 0 },
             terreno: 'llanura',
+            tieneOro: false,
           },
         ],
       }
@@ -101,14 +104,17 @@ describe('elegirEmplazamientoCapital', () => {
         {
           coordenada: { q: 0, r: 0 },
           terreno: 'colina',
+          tieneOro: false,
         },
         {
           coordenada: { q: 1, r: 0 },
           terreno: 'llanura',
+          tieneOro: false,
         },
         {
           coordenada: { q: 2, r: 0 },
           terreno: 'colina',
+          tieneOro: false,
         },
       ],
     }
@@ -127,10 +133,12 @@ describe('elegirEmplazamientoCapital', () => {
         {
           coordenada: { q: 0, r: 0 },
           terreno: 'montana',
+          tieneOro: false,
         },
         {
           coordenada: { q: 1, r: 0 },
           terreno: 'colina',
+          tieneOro: false,
         },
       ],
     }
@@ -149,10 +157,12 @@ describe('elegirEmplazamientoCapital', () => {
         {
           coordenada: { q: 0, r: 0 },
           terreno: 'agua',
+          tieneOro: false,
         },
         {
           coordenada: { q: 1, r: 0 },
           terreno: 'montana',
+          tieneOro: false,
         },
       ],
     }
