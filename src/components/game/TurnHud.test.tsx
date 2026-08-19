@@ -20,10 +20,10 @@ function renderizarHud(
   const estado = crearEstadoDePrueba({
     reinoJugador: 'castilla',
     recursos: {
-      alimentos: 18,
+      grano: 18,
       madera: 9,
       piedra: 7,
-      hierro: 4,
+      manoDeObra: 4,
       oro: 6,
     },
   })
@@ -53,7 +53,7 @@ describe('TurnHud', () => {
     const html = renderizarHud()
 
     expect(html).toContain(
-      'aria-label="Alimentos: 18"',
+      'aria-label="Grano: 18"',
     )
     expect(html).toContain(
       'aria-label="Madera: 9"',
@@ -62,7 +62,7 @@ describe('TurnHud', () => {
       'aria-label="Piedra: 7"',
     )
     expect(html).toContain(
-      'aria-label="Hierro: 4"',
+      'aria-label="Mano de obra: 4"',
     )
     expect(html).toContain(
       'aria-label="Oro: 6"',

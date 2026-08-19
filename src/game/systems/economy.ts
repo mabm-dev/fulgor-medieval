@@ -15,18 +15,18 @@ export function aplicarProduccion(
     crearReservaRecursos(produccion)
 
   return crearReservaRecursos({
-    alimentos:
-      reserva.alimentos +
-      cantidades.alimentos,
+    grano:
+      reserva.grano +
+      cantidades.grano,
     madera:
       reserva.madera +
       cantidades.madera,
     piedra:
       reserva.piedra +
       cantidades.piedra,
-    hierro:
-      reserva.hierro +
-      cantidades.hierro,
+    manoDeObra:
+      reserva.manoDeObra +
+      cantidades.manoDeObra,
     oro:
       reserva.oro +
       cantidades.oro,
@@ -65,18 +65,18 @@ export function aplicarConsumo(
   }
 
   return crearReservaRecursos({
-    alimentos:
-      reserva.alimentos -
-      cantidades.alimentos,
+    grano:
+      reserva.grano -
+      cantidades.grano,
     madera:
       reserva.madera -
       cantidades.madera,
     piedra:
       reserva.piedra -
       cantidades.piedra,
-    hierro:
-      reserva.hierro -
-      cantidades.hierro,
+    manoDeObra:
+      reserva.manoDeObra -
+      cantidades.manoDeObra,
     oro:
       reserva.oro -
       cantidades.oro,

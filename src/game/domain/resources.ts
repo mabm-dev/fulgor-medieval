@@ -1,8 +1,8 @@
 export const TIPOS_RECURSO = [
-  'alimentos',
+  'grano',
   'madera',
   'piedra',
-  'hierro',
+  'manoDeObra',
   'oro',
 ] as const
 
@@ -17,10 +17,10 @@ export function crearReservaRecursos(
   valores: Partial<ReservaRecursos> = {},
 ): ReservaRecursos {
   const reserva: ReservaRecursos = {
-    alimentos: valores.alimentos ?? 0,
+    grano: valores.grano ?? 0,
     madera: valores.madera ?? 0,
     piedra: valores.piedra ?? 0,
-    hierro: valores.hierro ?? 0,
+    manoDeObra: valores.manoDeObra ?? 0,
     oro: valores.oro ?? 0,
   }
 

@@ -13,9 +13,9 @@ function crearEstadoPrueba(): EstadoPartida {
   return crearEstadoDePrueba({
     reinoJugador: 'castilla',
     recursos: {
-      alimentos: 10,
+      grano: 10,
       madera: 3,
-      hierro: 1,
+      manoDeObra: 1,
       oro: 4,
     },
   })
@@ -50,11 +50,11 @@ describe('resolución del turno', () => {
       crearEstadoPrueba(),
       {
         produccion: {
-          alimentos: 5,
+          grano: 5,
           madera: 2,
         },
         consumo: {
-          alimentos: 3,
+          grano: 3,
           oro: 1,
         },
       },
@@ -65,10 +65,10 @@ describe('resolución del turno', () => {
       'gestion',
     )
     expect(resultado.estado.recursos).toEqual({
-      alimentos: 12,
+      grano: 12,
       madera: 5,
       piedra: 0,
-      hierro: 1,
+      manoDeObra: 1,
       oro: 3,
     })
   })
@@ -77,7 +77,7 @@ describe('resolución del turno', () => {
     const estado = crearEstadoDePrueba({
       reinoJugador: 'leon',
       recursos: {
-        alimentos: 2,
+        grano: 2,
       },
     })
 
@@ -85,16 +85,16 @@ describe('resolución del turno', () => {
       estado,
       {
         produccion: {
-          alimentos: 4,
+          grano: 4,
         },
         consumo: {
-          alimentos: 5,
+          grano: 5,
         },
       },
     )
 
     expect(
-      resultado.estado.recursos.alimentos,
+      resultado.estado.recursos.grano,
     ).toBe(1)
   })
 
@@ -103,7 +103,7 @@ describe('resolución del turno', () => {
       crearEstadoPrueba(),
       {
         produccion: {
-          alimentos: 2,
+          grano: 2,
         },
         consumo: {
           oro: 1,
@@ -116,10 +116,10 @@ describe('resolución del turno', () => {
         tipo: 'produccion_aplicada',
         turno: 1,
         cantidades: {
-          alimentos: 2,
+          grano: 2,
           madera: 0,
           piedra: 0,
-          hierro: 0,
+          manoDeObra: 0,
           oro: 0,
         },
       },
@@ -127,10 +127,10 @@ describe('resolución del turno', () => {
         tipo: 'consumo_aplicado',
         turno: 1,
         cantidades: {
-          alimentos: 0,
+          grano: 0,
           madera: 0,
           piedra: 0,
-          hierro: 0,
+          manoDeObra: 0,
           oro: 1,
         },
       },
@@ -166,15 +166,15 @@ describe('resolución del turno', () => {
       finalizarTurno(estado, {
         produccion: {},
         consumo: {
-          hierro: 2,
+          manoDeObra: 2,
         },
       }),
     ).toThrow(
-      'Recursos insuficientes: hierro',
+      'Recursos insuficientes: manoDeObra',
     )
 
     expect(estado.turno).toBe(1)
-    expect(estado.recursos.hierro).toBe(1)
+    expect(estado.recursos.manoDeObra).toBe(1)
   })
 
   it('devuelve un resultado inmutable', () => {

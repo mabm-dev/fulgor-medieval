@@ -11,20 +11,20 @@ import {
 describe('recursos del reino', () => {
   it('define los cinco recursos del juego', () => {
     expect(TIPOS_RECURSO).toEqual([
-      'alimentos',
+      'grano',
       'madera',
       'piedra',
-      'hierro',
+      'manoDeObra',
       'oro',
     ])
   })
 
   it('crea una reserva vacía por defecto', () => {
     expect(crearReservaRecursos()).toEqual({
-      alimentos: 0,
+      grano: 0,
       madera: 0,
       piedra: 0,
-      hierro: 0,
+      manoDeObra: 0,
       oro: 0,
     })
   })
@@ -32,15 +32,15 @@ describe('recursos del reino', () => {
   it('completa con cero los recursos omitidos', () => {
     expect(
       crearReservaRecursos({
-        alimentos: 30,
+        grano: 30,
         madera: 12,
         oro: 5,
       }),
     ).toEqual({
-      alimentos: 30,
+      grano: 30,
       madera: 12,
       piedra: 0,
-      hierro: 0,
+      manoDeObra: 0,
       oro: 5,
     })
   })
@@ -48,7 +48,7 @@ describe('recursos del reino', () => {
   it('rechaza cantidades negativas', () => {
     expect(() =>
       crearReservaRecursos({
-        hierro: -1,
+        manoDeObra: -1,
       }),
     ).toThrow(RangeError)
   })

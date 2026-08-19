@@ -41,10 +41,10 @@ describe('estado de partida', () => {
       fase: 'gestion',
       reinoJugador: 'castilla',
       recursos: {
-        alimentos: 0,
+        grano: 0,
         madera: 0,
         piedra: 0,
-        hierro: 0,
+        manoDeObra: 0,
         oro: 0,
       },
       asentamientos: [],
@@ -57,17 +57,17 @@ describe('estado de partida', () => {
       meta: META,
       reinoJugador: 'leon',
       recursos: {
-        alimentos: 40,
+        grano: 40,
         oro: 8,
       },
     })
 
     expect(estado.reinoJugador).toBe('leon')
     expect(estado.recursos).toEqual({
-      alimentos: 40,
+      grano: 40,
       madera: 0,
       piedra: 0,
-      hierro: 0,
+      manoDeObra: 0,
       oro: 8,
     })
   })
@@ -105,10 +105,10 @@ describe('estado de partida', () => {
         fase: 'gestion',
         reinoJugador: 'portugal',
         recursos: {
-          alimentos: 0,
+          grano: 0,
           madera: 0,
           piedra: 0,
-          hierro: 0,
+          manoDeObra: 0,
           oro: 0,
         },
       }),
@@ -166,10 +166,10 @@ describe('estado de partida', () => {
       fase: 'resolucion',
       reinoJugador: '  navarra  ',
       recursos: {
-        alimentos: 30,
+        grano: 30,
         madera: 12,
         piedra: 8,
-        hierro: 4,
+        manoDeObra: 4,
         oro: 6,
       },
     })
@@ -182,10 +182,10 @@ describe('estado de partida', () => {
       fase: 'resolucion',
       reinoJugador: 'navarra',
       recursos: {
-        alimentos: 30,
+        grano: 30,
         madera: 12,
         piedra: 8,
-        hierro: 4,
+        manoDeObra: 4,
         oro: 6,
       },
       asentamientos: [],
@@ -253,7 +253,7 @@ describe('estado de partida', () => {
         fase: 'gestion',
         reinoJugador: 'castilla',
         recursos: {
-          alimentos: 10,
+          grano: 10,
         },
       }),
     ).toThrow(

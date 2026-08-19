@@ -39,10 +39,10 @@ describe('guardado versionado', () => {
     const original = crearEstadoDePrueba({
       reinoJugador: 'aragon',
       recursos: {
-        alimentos: 20,
+        grano: 20,
         madera: 8,
         piedra: 4,
-        hierro: 2,
+        manoDeObra: 2,
         oro: 6,
       },
       asentamientos: [
@@ -135,10 +135,10 @@ describe('guardado versionado', () => {
         fase: 'gestion',
         reinoJugador: 'castilla',
         recursos: {
-          alimentos: 0,
+          grano: 0,
           madera: 0,
           piedra: 0,
-          hierro: 0,
+          manoDeObra: 0,
           oro: 0,
         },
       }),
@@ -204,10 +204,10 @@ describe('guardado versionado', () => {
           fase: 'gestion',
           reinoJugador: 'castilla',
           recursos: {
-            alimentos: 0,
+            grano: 0,
             madera: 0,
             piedra: 0,
-            hierro: 0,
+            manoDeObra: 0,
             oro: 0,
           },
         }),

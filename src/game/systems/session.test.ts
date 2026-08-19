@@ -137,11 +137,11 @@ describe('sesión de partida', () => {
       estado,
       {
         produccion: {
-          alimentos: 5,
+          grano: 5,
           madera: 2,
         },
         consumo: {
-          alimentos: 3,
+          grano: 3,
           oro: 1,
         },
       },
@@ -177,12 +177,12 @@ describe('sesión de partida', () => {
         {
           produccion: {},
           consumo: {
-            hierro: 8,
+            manoDeObra: 8,
           },
         },
       ),
     ).toThrow(
-      'Recursos insuficientes: hierro',
+      'Recursos insuficientes: manoDeObra',
     )
 
     expect(

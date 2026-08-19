@@ -293,9 +293,9 @@ export function restaurarEstadoPartida(
       datos.reinoJugador,
     ),
     recursos: crearReservaRecursos({
-      alimentos: leerCantidad(
+      grano: leerCantidad(
         datos.recursos,
-        'alimentos',
+        'grano',
       ),
       madera: leerCantidad(
         datos.recursos,
@@ -305,9 +305,9 @@ export function restaurarEstadoPartida(
         datos.recursos,
         'piedra',
       ),
-      hierro: leerCantidad(
+      manoDeObra: leerCantidad(
         datos.recursos,
-        'hierro',
+        'manoDeObra',
       ),
       oro: leerCantidad(
         datos.recursos,

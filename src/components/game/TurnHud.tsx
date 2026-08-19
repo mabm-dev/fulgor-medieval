@@ -11,10 +11,10 @@ const NOMBRES_RECURSO: Record<
   TipoRecurso,
   string
 > = {
-  alimentos: 'Alimentos',
+  grano: 'Grano',
   madera: 'Madera',
   piedra: 'Piedra',
-  hierro: 'Hierro',
+  manoDeObra: 'Mano de obra',
   oro: 'Oro',
 }
 

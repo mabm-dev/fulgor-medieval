@@ -46,7 +46,7 @@ describe('economía de los reinos', () => {
   it('diferencia las especialidades', () => {
     expect(
       obtenerPerfilEconomico('castilla')
-        .planTurno.produccion.alimentos,
+        .planTurno.produccion.grano,
     ).toBe(7)
 
     expect(
@@ -66,7 +66,7 @@ describe('economía de los reinos', () => {
 
     expect(
       obtenerPerfilEconomico('granada')
-        .planTurno.produccion.alimentos,
+        .planTurno.produccion.grano,
     ).toBe(6)
   })
 

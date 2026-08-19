@@ -15,22 +15,22 @@ import {
 describe('economía del reino', () => {
   it('añade la producción a la reserva', () => {
     const reserva = crearReservaRecursos({
-      alimentos: 20,
+      grano: 20,
       madera: 8,
       oro: 3,
     })
 
     expect(
       aplicarProduccion(reserva, {
-        alimentos: 5,
+        grano: 5,
         piedra: 2,
         oro: 1,
       }),
     ).toEqual({
-      alimentos: 25,
+      grano: 25,
       madera: 8,
       piedra: 2,
-      hierro: 0,
+      manoDeObra: 0,
       oro: 4,
     })
   })
@@ -64,13 +64,13 @@ describe('economía del reino', () => {
 
   it('confirma un consumo asumible', () => {
     const reserva = crearReservaRecursos({
-      alimentos: 10,
+      grano: 10,
       oro: 4,
     })
 
     expect(
       puedeCubrirConsumo(reserva, {
-        alimentos: 10,
+        grano: 10,
         oro: 3,
       }),
     ).toBe(true)
@@ -78,13 +78,13 @@ describe('economía del reino', () => {
 
   it('detecta un recurso insuficiente', () => {
     const reserva = crearReservaRecursos({
-      alimentos: 10,
+      grano: 10,
       madera: 2,
     })
 
     expect(
       puedeCubrirConsumo(reserva, {
-        alimentos: 5,
+        grano: 5,
         madera: 3,
       }),
     ).toBe(false)
@@ -92,45 +92,45 @@ describe('economía del reino', () => {
 
   it('descuenta un consumo asumible', () => {
     const reserva = crearReservaRecursos({
-      alimentos: 15,
+      grano: 15,
       madera: 6,
       oro: 4,
     })
 
     expect(
       aplicarConsumo(reserva, {
-        alimentos: 5,
+        grano: 5,
         madera: 2,
       }),
     ).toEqual({
-      alimentos: 10,
+      grano: 10,
       madera: 4,
       piedra: 0,
-      hierro: 0,
+      manoDeObra: 0,
       oro: 4,
     })
   })
 
   it('rechaza el consumo sin recursos', () => {
     const reserva = crearReservaRecursos({
-      alimentos: 3,
-      hierro: 1,
+      grano: 3,
+      manoDeObra: 1,
     })
 
     expect(() =>
       aplicarConsumo(reserva, {
-        alimentos: 2,
-        hierro: 2,
+        grano: 2,
+        manoDeObra: 2,
       }),
     ).toThrow(
-      'Recursos insuficientes: hierro',
+      'Recursos insuficientes: manoDeObra',
     )
 
     expect(reserva).toEqual({
-      alimentos: 3,
+      grano: 3,
       madera: 0,
       piedra: 0,
-      hierro: 1,
+      manoDeObra: 1,
       oro: 0,
     })
   })
