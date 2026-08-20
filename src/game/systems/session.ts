@@ -27,7 +27,7 @@ import {
 } from '../persistence/saveGame'
 import {
   finalizarTurno,
-  type PlanEconomicoTurno,
+  type OpcionesFinalizarTurno,
   type ResultadoTurno,
 } from './turns'
 
@@ -98,11 +98,11 @@ export function cargarSesionPartida(
 export function finalizarTurnoSesion(
   almacenamiento: AlmacenamientoPartida,
   estado: EstadoPartida,
-  plan: PlanEconomicoTurno,
+  opciones: OpcionesFinalizarTurno,
 ): ResultadoTurno {
   const resultado = finalizarTurno(
     estado,
-    plan,
+    opciones,
   )
 
   guardarEstadoPartida(

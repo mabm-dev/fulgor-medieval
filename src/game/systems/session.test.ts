@@ -6,6 +6,7 @@ import {
 import {
   DIMENSIONES_MAPA_PREDETERMINADO,
   generarMapa,
+  type CasillaMapa,
 } from '../map/generateMap'
 import { claveHex } from '../map/hex'
 import type {
@@ -31,6 +32,23 @@ function crearAlmacenamientoMemoria():
       datos.delete(clave)
     },
   }
+}
+
+function construirDiccionarioCasillas(
+  mapa: ReturnType<typeof generarMapa>,
+): Record<string, CasillaMapa> {
+  const diccionario: Record<
+    string,
+    CasillaMapa
+  > = {}
+
+  for (const casilla of mapa.casillas) {
+    diccionario[
+      claveHex(casilla.coordenada)
+    ] = casilla
+  }
+
+  return diccionario
 }
 
 const OPCIONES = {
@@ -132,18 +150,19 @@ describe('sesión de partida', () => {
       OPCIONES,
     )
 
+    const mapa = generarMapa({
+      ...DIMENSIONES_MAPA_PREDETERMINADO,
+      semilla: OPCIONES.semillaMapa,
+    })
+
     const resultado = finalizarTurnoSesion(
       almacenamiento,
       estado,
       {
-        produccion: {
-          grano: 5,
-          madera: 2,
-        },
-        consumo: {
-          grano: 3,
-          oro: 1,
-        },
+        casillas:
+          construirDiccionarioCasillas(
+            mapa,
+          ),
       },
     )
 
@@ -175,14 +194,11 @@ describe('sesión de partida', () => {
         almacenamiento,
         estado,
         {
-          produccion: {},
-          consumo: {
-            manoDeObra: 8,
-          },
+          casillas: {},
         },
       ),
     ).toThrow(
-      'Recursos insuficientes: manoDeObra',
+      'No hay terreno para el asentamiento',
     )
 
     expect(

@@ -7,7 +7,56 @@ import type {
   EstadoPartida,
 } from '../domain/gameState'
 import { crearEstadoDePrueba } from '../../test/crearEstadoDePrueba'
+import type { CasillaMapa } from '../map/generateMap'
+import {
+  claveHex,
+  vecinosHex,
+  type CoordenadaHex,
+} from '../map/hex'
+import type { TipoTerreno } from '../map/terrain'
 import { finalizarTurno } from './turns'
+
+function construirCasillasUniformes(
+  posicion: CoordenadaHex,
+  terreno: TipoTerreno,
+): Record<string, CasillaMapa> {
+  const coordenadas = [
+    posicion,
+    ...vecinosHex(posicion),
+  ]
+
+  const casillas: Record<
+    string,
+    CasillaMapa
+  > = {}
+
+  for (const coordenada of coordenadas) {
+    casillas[claveHex(coordenada)] = {
+      coordenada,
+      terreno,
+      tieneOro: false,
+    }
+  }
+
+  return casillas
+}
+
+function crearAsentamientoDePrueba(
+  habitantes: number,
+  posicion: CoordenadaHex = { q: 0, r: 0 },
+) {
+  return {
+    id: 'burgos',
+    nombre: 'Burgos',
+    reinoId: 'castilla',
+    tipo: 'villa' as const,
+    posicion,
+    poblacion: {
+      habitantes,
+      capacidad: habitantes + 1000,
+    },
+  }
+}
 
 function crearEstadoPrueba(): EstadoPartida {
   return crearEstadoDePrueba({
@@ -15,9 +64,11 @@ function crearEstadoPrueba(): EstadoPartida {
     recursos: {
       grano: 10,
       madera: 3,
-      manoDeObra: 1,
       oro: 4,
     },
+    asentamientos: [
+      crearAsentamientoDePrueba(100),
+    ],
   })
 }
 
@@ -26,37 +77,21 @@ function crearEstadoConAsentamiento():
   return crearEstadoDePrueba({
     reinoJugador: 'castilla',
     asentamientos: [
-      {
-        id: 'burgos',
-        nombre: 'Burgos',
-        reinoId: 'castilla',
-        tipo: 'villa',
-        posicion: {
-          q: 0,
-          r: 0,
-        },
-        poblacion: {
-          habitantes: 120,
-          capacidad: 200,
-        },
-      },
+      crearAsentamientoDePrueba(120),
     ],
   })
 }
 
 describe('resolución del turno', () => {
-  it('aplica la economía y avanza el turno', () => {
+  it('aplica la economía derivada de los asentamientos y avanza el turno', () => {
     const resultado = finalizarTurno(
       crearEstadoPrueba(),
       {
-        produccion: {
-          grano: 5,
-          madera: 2,
-        },
-        consumo: {
-          grano: 3,
-          oro: 1,
-        },
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
       },
     )
 
@@ -66,10 +101,10 @@ describe('resolución del turno', () => {
     )
     expect(resultado.estado.recursos).toEqual({
       grano: 12,
-      madera: 5,
+      madera: 3,
       piedra: 0,
       manoDeObra: 1,
-      oro: 3,
+      oro: 4,
     })
   })
 
@@ -77,37 +112,72 @@ describe('resolución del turno', () => {
     const estado = crearEstadoDePrueba({
       reinoJugador: 'leon',
       recursos: {
-        grano: 2,
+        grano: 0,
       },
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
     })
 
     const resultado = finalizarTurno(
       estado,
       {
-        produccion: {
-          grano: 4,
-        },
-        consumo: {
-          grano: 5,
-        },
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
       },
     )
 
     expect(
       resultado.estado.recursos.grano,
+    ).toBe(2)
+  })
+
+  it('topa la mano de obra según la población total del reino', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      recursos: {
+        manoDeObra: 5,
+      },
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+    })
+
+    const resultado = finalizarTurno(
+      estado,
+      {
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
+      },
+    )
+
+    expect(
+      resultado.estado.recursos.manoDeObra,
     ).toBe(1)
   })
 
-  it('emite eventos deterministas', () => {
+  it('emite eventos deterministas con las cantidades derivadas', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+    })
+
     const resultado = finalizarTurno(
-      crearEstadoPrueba(),
+      estado,
       {
-        produccion: {
-          grano: 2,
-        },
-        consumo: {
-          oro: 1,
-        },
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
       },
     )
 
@@ -116,10 +186,10 @@ describe('resolución del turno', () => {
         tipo: 'produccion_aplicada',
         turno: 1,
         cantidades: {
-          grano: 2,
+          grano: 3,
           madera: 0,
           piedra: 0,
-          manoDeObra: 0,
+          manoDeObra: 1,
           oro: 0,
         },
       },
@@ -127,11 +197,11 @@ describe('resolución del turno', () => {
         tipo: 'consumo_aplicado',
         turno: 1,
         cantidades: {
-          grano: 0,
+          grano: 1,
           madera: 0,
           piedra: 0,
           manoDeObra: 0,
-          oro: 1,
+          oro: 0,
         },
       },
       {
@@ -151,8 +221,7 @@ describe('resolución del turno', () => {
 
     expect(() =>
       finalizarTurno(estado, {
-        produccion: {},
-        consumo: {},
+        casillas: {},
       }),
     ).toThrow(
       'Solo se puede finalizar durante la gestión',
@@ -160,29 +229,40 @@ describe('resolución del turno', () => {
   })
 
   it('conserva el estado si faltan recursos', () => {
-    const estado = crearEstadoPrueba()
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+    })
+
+    const casillas =
+      construirCasillasUniformes(
+        { q: 0, r: 0 },
+        'montana',
+      )
 
     expect(() =>
       finalizarTurno(estado, {
-        produccion: {},
-        consumo: {
-          manoDeObra: 2,
-        },
+        casillas,
       }),
     ).toThrow(
-      'Recursos insuficientes: manoDeObra',
+      'Recursos insuficientes: grano',
     )
 
     expect(estado.turno).toBe(1)
-    expect(estado.recursos.manoDeObra).toBe(1)
+    expect(estado.recursos.grano).toBe(0)
   })
 
   it('devuelve un resultado inmutable', () => {
     const resultado = finalizarTurno(
       crearEstadoPrueba(),
       {
-        produccion: {},
-        consumo: {},
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
       },
     )
 
@@ -210,8 +290,11 @@ describe('resolución del turno', () => {
     const resultado = finalizarTurno(
       estado,
       {
-        produccion: {},
-        consumo: {},
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
         crecimientos: [
           {
             asentamientoId: 'burgos',
@@ -255,8 +338,11 @@ describe('resolución del turno', () => {
 
     expect(() =>
       finalizarTurno(estado, {
-        produccion: {},
-        consumo: {},
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
         crecimientos: [
           {
             asentamientoId: 'toledo',

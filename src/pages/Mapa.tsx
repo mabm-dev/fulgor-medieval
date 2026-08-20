@@ -18,6 +18,7 @@ import {
   generarMapa,
   type CasillaMapa,
 } from '../game/map/generateMap'
+import { claveHex } from '../game/map/hex'
 import {
   DEFINICIONES_TERRENO,
   type TipoTerreno,
@@ -74,6 +75,25 @@ export default function Mapa() {
     [semillaMapa],
   )
 
+  const casillas = useMemo(() => {
+    const diccionario: Record<
+      string,
+      CasillaMapa
+    > = {}
+
+    if (mapa === null) {
+      return diccionario
+    }
+
+    for (const casilla of mapa.casillas) {
+      diccionario[
+        claveHex(casilla.coordenada)
+      ] = casilla
+    }
+
+    return diccionario
+  }, [mapa])
+
   if (!estadoJuego || !mapa) {
     return (
       <Navigate
@@ -103,7 +123,7 @@ export default function Mapa() {
     const resultado = finalizarTurnoSesion(
       almacenamientoNavegador,
       estadoJuego,
-      perfilEconomico.planTurno,
+      { casillas },
     )
 
     setEstadoJuego(resultado.estado)

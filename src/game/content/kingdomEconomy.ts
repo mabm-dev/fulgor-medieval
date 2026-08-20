@@ -7,8 +7,19 @@ import {
   type ReservaRecursos,
 } from '../domain/resources'
 import type {
-  PlanEconomicoTurno,
-} from '../systems/turns'
+  MovimientoRecursos,
+} from '../systems/economy'
+
+/**
+ * Forma de la economía de arranque de un reino. Ya no alimenta
+ * `finalizarTurno` —desde que la producción se deriva de los asentamientos—,
+ * así que vive aquí como el punto de partida de la partida, no como la
+ * economía permanente.
+ */
+export interface PlanEconomicoTurno {
+  readonly produccion: MovimientoRecursos
+  readonly consumo: MovimientoRecursos
+}
 
 export interface PerfilEconomicoReino {
   readonly especialidad: string

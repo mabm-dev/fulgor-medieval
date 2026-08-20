@@ -3,16 +3,9 @@ import {
   expect,
   it,
 } from 'vitest'
-import { crearEstadoDePrueba } from '../../test/crearEstadoDePrueba'
 import {
   IDENTIFICADORES_REINO,
 } from '../domain/kingdom'
-import {
-  TIPOS_RECURSO,
-} from '../domain/resources'
-import {
-  finalizarTurno,
-} from '../systems/turns'
 import {
   obtenerPerfilEconomico,
 } from './kingdomEconomy'
@@ -68,36 +61,6 @@ describe('economía de los reinos', () => {
       obtenerPerfilEconomico('granada')
         .planTurno.produccion.grano,
     ).toBe(6)
-  })
-
-  it('permite resolver diez turnos', () => {
-    for (
-      const reino of IDENTIFICADORES_REINO
-    ) {
-      const perfil =
-        obtenerPerfilEconomico(reino)
-
-      let estado = crearEstadoDePrueba({
-        reinoJugador: reino,
-        recursos:
-          perfil.recursosIniciales,
-      })
-
-      for (let turno = 0; turno < 10; turno += 1) {
-        estado = finalizarTurno(
-          estado,
-          perfil.planTurno,
-        ).estado
-      }
-
-      expect(estado.turno).toBe(11)
-
-      for (const recurso of TIPOS_RECURSO) {
-        expect(
-          estado.recursos[recurso],
-        ).toBeGreaterThanOrEqual(0)
-      }
-    }
   })
 
   it('rechaza un reino desconocido', () => {
