@@ -105,4 +105,33 @@ describe('HexMap', () => {
 
     expect(html).not.toContain('<circle')
   })
+
+  it('marca las casillas trabajadas', () => {
+    const mapa = crearMapaPrueba()
+
+    const html = renderToStaticMarkup(
+      <HexMap
+        mapa={mapa}
+        radio={28}
+        casillasTrabajadas={[
+          mapa.casillas[0].coordenada,
+          mapa.casillas[1].coordenada,
+        ]}
+      />,
+    )
+
+    const marcadas =
+      html.match(/data-trabajada="true"/g) ??
+      []
+
+    expect(marcadas).toHaveLength(2)
+  })
+
+  it('no marca ninguna casilla sin casillasTrabajadas', () => {
+    const html = renderizarMapa()
+
+    expect(html).not.toContain(
+      'data-trabajada="true"',
+    )
+  })
 })

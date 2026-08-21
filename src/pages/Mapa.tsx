@@ -44,6 +44,9 @@ import {
 import {
   comprobarConstruccion,
 } from '../game/systems/settlementConstruction'
+import {
+  calcularEconomiaAsentamiento,
+} from '../game/systems/settlementEconomy'
 
 const NOMBRES_TERRENO: Record<
   TipoTerreno,
@@ -147,6 +150,20 @@ export default function Mapa() {
 
     return diccionario
   }, [mapa])
+
+  const casillasTrabajadas = useMemo(() => {
+    if (mapa === null || estadoJuego === null) {
+      return []
+    }
+
+    return estadoJuego.asentamientos.flatMap(
+      (asentamiento) =>
+        calcularEconomiaAsentamiento(
+          asentamiento,
+          casillas,
+        ).casillasTrabajadas,
+    )
+  }, [mapa, estadoJuego, casillas])
 
   if (!estadoJuego || !mapa) {
     return (
@@ -317,6 +334,9 @@ export default function Mapa() {
               }
               asentamientos={
                 estadoJuego.asentamientos
+              }
+              casillasTrabajadas={
+                casillasTrabajadas
               }
             />
           </MapViewport>

@@ -33,6 +33,7 @@ interface HexMapProps {
     casilla: CasillaMapa,
   ) => void
   readonly asentamientos?: RegistroAsentamientos
+  readonly casillasTrabajadas?: readonly CoordenadaHex[]
 }
 
 interface HexagonoVisual {
@@ -48,6 +49,17 @@ function serializarVertices(
   return vertices
     .map((vertice) => `${vertice.x},${vertice.y}`)
     .join(' ')
+}
+
+function encogerVertices(
+  vertices: readonly Punto[],
+  centro: Punto,
+  factor: number,
+): readonly Punto[] {
+  return vertices.map((vertice) => ({
+    x: centro.x + (vertice.x - centro.x) * factor,
+    y: centro.y + (vertice.y - centro.y) * factor,
+  }))
 }
 
 function calcularViewBox(
@@ -84,7 +96,18 @@ export default function HexMap({
   casillaSeleccionada = null,
   onSeleccionarCasilla,
   asentamientos = [],
+  casillasTrabajadas = [],
 }: HexMapProps) {
+  const clavesTrabajadas = useMemo(
+    () =>
+      new Set(
+        casillasTrabajadas.map((coordenada) =>
+          claveHex(coordenada),
+        ),
+      ),
+    [casillasTrabajadas],
+  )
+
   const hexagonos = useMemo<readonly HexagonoVisual[]>(
     () =>
       mapa.casillas.map((casilla) => ({
@@ -152,6 +175,11 @@ export default function HexMap({
               data-seleccionada={
                 seleccionada || undefined
               }
+              data-trabajada={
+                clavesTrabajadas.has(
+                  hexagono.clave,
+                ) || undefined
+              }
               role={
                 interactivo
                   ? 'button'
@@ -203,6 +231,42 @@ export default function HexMap({
           )
         })}
       </g>
+
+      {clavesTrabajadas.size > 0 && (
+        <g
+          aria-hidden="true"
+          pointerEvents="none"
+        >
+          {hexagonos
+            .filter((hexagono) =>
+              clavesTrabajadas.has(
+                hexagono.clave,
+              ),
+            )
+            .map((hexagono) => (
+              <polygon
+                key={`trabajada-${hexagono.clave}`}
+                points={serializarVertices(
+                  encogerVertices(
+                    hexagono.vertices,
+                    centroHex(
+                      hexagono.casilla
+                        .coordenada,
+                      radio,
+                    ),
+                    0.72,
+                  ),
+                )}
+                fill="none"
+                stroke="#c8ad72"
+                strokeWidth={1.5}
+                strokeDasharray="4 3"
+                strokeOpacity={0.75}
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+        </g>
+      )}
 
       {asentamientos.length > 0 && (
         <g
