@@ -1,5 +1,9 @@
 import { useMemo } from 'react'
+import type {
+  RegistroAsentamientos,
+} from '../../game/domain/settlementRegistry'
 import {
+  centroHex,
   verticesHex,
   type Punto,
 } from '../../game/map/geometry'
@@ -28,6 +32,7 @@ interface HexMapProps {
   readonly onSeleccionarCasilla?: (
     casilla: CasillaMapa,
   ) => void
+  readonly asentamientos?: RegistroAsentamientos
 }
 
 interface HexagonoVisual {
@@ -78,6 +83,7 @@ export default function HexMap({
   radio = 28,
   casillaSeleccionada = null,
   onSeleccionarCasilla,
+  asentamientos = [],
 }: HexMapProps) {
   const hexagonos = useMemo<readonly HexagonoVisual[]>(
     () =>
@@ -197,6 +203,45 @@ export default function HexMap({
           )
         })}
       </g>
+
+      {asentamientos.length > 0 && (
+        <g
+          aria-hidden="true"
+          pointerEvents="none"
+        >
+          {asentamientos.map((asentamiento) => {
+            const centro = centroHex(
+              asentamiento.posicion,
+              radio,
+            )
+
+            return (
+              <g key={asentamiento.id}>
+                <circle
+                  cx={centro.x}
+                  cy={centro.y}
+                  r={radio * 0.4}
+                  fill="#ffe6a3"
+                  stroke="#241907"
+                  strokeWidth={radio * 0.05}
+                />
+                <text
+                  x={centro.x}
+                  y={centro.y - radio * 0.7}
+                  textAnchor="middle"
+                  fontSize={radio * 0.4}
+                  fill="#f3e5c0"
+                  stroke="#05080d"
+                  strokeWidth={radio * 0.08}
+                  paintOrder="stroke"
+                >
+                  {asentamiento.nombre}
+                </text>
+              </g>
+            )
+          })}
+        </g>
+      )}
     </svg>
   )
 }

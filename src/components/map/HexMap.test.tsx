@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
+import { crearAsentamiento } from '../../game/domain/settlement'
 import { generarMapa } from '../../game/map/generateMap'
 import HexMap from './HexMap'
 
@@ -66,5 +67,42 @@ describe('HexMap', () => {
     expect(html).toContain(
       'aria-pressed="true"',
     )
+  })
+
+  it('marca la posición de los asentamientos', () => {
+    const mapa = crearMapaPrueba()
+    const asentamiento = crearAsentamiento({
+      id: 'burgos',
+      nombre: 'Burgos',
+      reinoId: 'castilla',
+      tipo: 'ciudad',
+      posicion:
+        mapa.casillas[0].coordenada,
+      poblacion: {
+        habitantes: 100,
+        capacidad: 200,
+      },
+    })
+
+    const html = renderToStaticMarkup(
+      <HexMap
+        mapa={mapa}
+        radio={28}
+        asentamientos={[asentamiento]}
+      />,
+    )
+
+    expect(html).toContain('Burgos')
+
+    const circulos =
+      html.match(/<circle/g) ?? []
+
+    expect(circulos).toHaveLength(1)
+  })
+
+  it('no dibuja marcadores sin asentamientos', () => {
+    const html = renderizarMapa()
+
+    expect(html).not.toContain('<circle')
   })
 })

@@ -203,6 +203,9 @@ export default function Mapa() {
               onSeleccionarCasilla={
                 setCasillaSeleccionada
               }
+              asentamientos={
+                estadoJuego.asentamientos
+              }
             />
           </MapViewport>
         </div>
