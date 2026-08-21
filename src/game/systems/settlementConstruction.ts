@@ -179,6 +179,105 @@ function anilloTieneTerreno(
   })
 }
 
+export type MotivoNoConstruible =
+  | 'obra_en_marcha'
+  | 'edificio_desconocido'
+  | 'tipo_insuficiente'
+  | 'terreno_ausente'
+  | 'recursos_insuficientes'
+
+export type ComprobacionConstruccion =
+  | { readonly puede: true }
+  | {
+      readonly puede: false
+      readonly motivo: MotivoNoConstruible
+      readonly mensaje: string
+    }
+
+/**
+ * Comprobación pura, sin efectos: la misma regla que decide si una orden de
+ * construcción es válida, pero devuelve un resultado en vez de lanzar. Vive
+ * separada de `iniciarProyectosConstruccion` para que la interfaz pueda
+ * preguntar "¿se puede?" en cada tecleo sin necesidad de intentar construir
+ * de verdad — un único sitio decide la regla, el motor y la pantalla la
+ * comparten.
+ */
+export function comprobarConstruccion(
+  asentamiento: Asentamiento,
+  edificioId: string,
+  recursos: ReservaRecursos,
+  casillas: Readonly<
+    Record<string, CasillaMapa>
+  >,
+): ComprobacionConstruccion {
+  if (
+    asentamiento.proyectoConstruccion !==
+    undefined
+  ) {
+    return {
+      puede: false,
+      motivo: 'obra_en_marcha',
+      mensaje:
+        'El asentamiento ya tiene una obra en marcha: ' +
+        asentamiento.id,
+    }
+  }
+
+  if (!esIdEdificio(edificioId)) {
+    return {
+      puede: false,
+      motivo: 'edificio_desconocido',
+      mensaje: `Edificio desconocido: ${edificioId}`,
+    }
+  }
+
+  const definicion = EDIFICIOS[edificioId]
+
+  if (
+    !cumpleAsentamientoMinimo(
+      asentamiento.tipo,
+      definicion.asentamientoMinimo,
+    )
+  ) {
+    return {
+      puede: false,
+      motivo: 'tipo_insuficiente',
+      mensaje: `${definicion.nombre} exige al menos un asentamiento de tipo ${definicion.asentamientoMinimo}`,
+    }
+  }
+
+  if (
+    definicion.terrenoRequerido !==
+      undefined &&
+    !anilloTieneTerreno(
+      asentamiento.posicion,
+      casillas,
+      definicion.terrenoRequerido,
+    )
+  ) {
+    return {
+      puede: false,
+      motivo: 'terreno_ausente',
+      mensaje: `${definicion.nombre} exige ${definicion.terrenoRequerido} en el anillo del asentamiento`,
+    }
+  }
+
+  if (
+    !puedeCubrirConsumo(
+      recursos,
+      definicion.coste,
+    )
+  ) {
+    return {
+      puede: false,
+      motivo: 'recursos_insuficientes',
+      mensaje: `Recursos insuficientes para construir ${definicion.nombre}`,
+    }
+  }
+
+  return { puede: true }
+}
+
 /**
  * Valida y arranca las obras nuevas del turno, una a una y en orden: cada
  * orden se comprueba y se descuenta contra la reserva ya rebajada por las
@@ -220,55 +319,21 @@ export function iniciarProyectosConstruccion(
       )
     }
 
-    if (
-      asentamiento.proyectoConstruccion !==
-      undefined
-    ) {
-      throw new Error(
-        'El asentamiento ya tiene una obra en marcha: ' +
-          orden.asentamientoId,
+    const comprobacion =
+      comprobarConstruccion(
+        asentamiento,
+        orden.edificioId,
+        reservaActual,
+        casillas,
       )
+
+    if (!comprobacion.puede) {
+      throw new Error(comprobacion.mensaje)
     }
 
     const definicion = obtenerDefinicion(
       orden.edificioId,
     )
-
-    if (
-      !cumpleAsentamientoMinimo(
-        asentamiento.tipo,
-        definicion.asentamientoMinimo,
-      )
-    ) {
-      throw new Error(
-        `${definicion.nombre} exige al menos un asentamiento de tipo ${definicion.asentamientoMinimo}`,
-      )
-    }
-
-    if (
-      definicion.terrenoRequerido !==
-        undefined &&
-      !anilloTieneTerreno(
-        asentamiento.posicion,
-        casillas,
-        definicion.terrenoRequerido,
-      )
-    ) {
-      throw new Error(
-        `${definicion.nombre} exige ${definicion.terrenoRequerido} en el anillo del asentamiento`,
-      )
-    }
-
-    if (
-      !puedeCubrirConsumo(
-        reservaActual,
-        definicion.coste,
-      )
-    ) {
-      throw new Error(
-        `Recursos insuficientes para construir ${definicion.nombre}`,
-      )
-    }
 
     reservaActual = aplicarConsumo(
       reservaActual,

@@ -18,6 +18,7 @@ import type { CasillaMapa } from '../map/generateMap'
 import type { TipoTerreno } from '../map/terrain'
 import {
   avanzarProyectosConstruccion,
+  comprobarConstruccion,
   iniciarProyectosConstruccion,
 } from './settlementConstruction'
 
@@ -421,5 +422,162 @@ describe('iniciarProyectosConstruccion', () => {
     ).toThrow(
       'Recursos insuficientes para construir Granero',
     )
+  })
+})
+
+describe('comprobarConstruccion', () => {
+  it('permite construir cuando se cumplen todos los requisitos', () => {
+    const asentamiento =
+      crearAsentamientoDePrueba()
+
+    expect(
+      comprobarConstruccion(
+        asentamiento,
+        'granero',
+        crearReservaRecursos({
+          madera: 10,
+          piedra: 10,
+        }),
+        construirCasillasUniformes(
+          asentamiento.posicion,
+          'llanura',
+        ),
+      ),
+    ).toEqual({ puede: true })
+  })
+
+  it('rechaza con motivo "obra_en_marcha"', () => {
+    const asentamiento =
+      crearAsentamientoDePrueba({
+        proyectoConstruccion: {
+          edificioId: 'granero',
+          turnosRestantes: 2,
+        },
+      })
+
+    const comprobacion =
+      comprobarConstruccion(
+        asentamiento,
+        'aserradero',
+        crearReservaRecursos({
+          piedra: 10,
+          manoDeObra: 10,
+        }),
+        construirCasillasUniformes(
+          asentamiento.posicion,
+          'bosque',
+        ),
+      )
+
+    expect(comprobacion.puede).toBe(false)
+    expect(
+      comprobacion.puede
+        ? undefined
+        : comprobacion.motivo,
+    ).toBe('obra_en_marcha')
+  })
+
+  it('rechaza con motivo "tipo_insuficiente"', () => {
+    const asentamiento =
+      crearAsentamientoDePrueba({
+        tipo: 'aldea',
+      })
+
+    const comprobacion =
+      comprobarConstruccion(
+        asentamiento,
+        'mercado',
+        crearReservaRecursos({
+          oro: 10,
+          madera: 10,
+        }),
+        construirCasillasUniformes(
+          asentamiento.posicion,
+          'llanura',
+        ),
+      )
+
+    expect(comprobacion.puede).toBe(false)
+    expect(
+      comprobacion.puede
+        ? undefined
+        : comprobacion.motivo,
+    ).toBe('tipo_insuficiente')
+  })
+
+  it('rechaza con motivo "terreno_ausente"', () => {
+    const asentamiento =
+      crearAsentamientoDePrueba()
+
+    const comprobacion =
+      comprobarConstruccion(
+        asentamiento,
+        'cantera',
+        crearReservaRecursos({
+          madera: 10,
+          manoDeObra: 10,
+        }),
+        construirCasillasUniformes(
+          asentamiento.posicion,
+          'llanura',
+        ),
+      )
+
+    expect(comprobacion.puede).toBe(false)
+    expect(
+      comprobacion.puede
+        ? undefined
+        : comprobacion.motivo,
+    ).toBe('terreno_ausente')
+  })
+
+  it('rechaza con motivo "recursos_insuficientes"', () => {
+    const asentamiento =
+      crearAsentamientoDePrueba()
+
+    const comprobacion =
+      comprobarConstruccion(
+        asentamiento,
+        'granero',
+        crearReservaRecursos({
+          madera: 1,
+        }),
+        construirCasillasUniformes(
+          asentamiento.posicion,
+          'llanura',
+        ),
+      )
+
+    expect(comprobacion.puede).toBe(false)
+    expect(
+      comprobacion.puede
+        ? undefined
+        : comprobacion.motivo,
+    ).toBe('recursos_insuficientes')
+  })
+
+  it('rechaza con motivo "edificio_desconocido"', () => {
+    const asentamiento =
+      crearAsentamientoDePrueba()
+
+    const comprobacion =
+      comprobarConstruccion(
+        asentamiento,
+        'castillo',
+        crearReservaRecursos({
+          oro: 100,
+        }),
+        construirCasillasUniformes(
+          asentamiento.posicion,
+          'llanura',
+        ),
+      )
+
+    expect(comprobacion.puede).toBe(false)
+    expect(
+      comprobacion.puede
+        ? undefined
+        : comprobacion.motivo,
+    ).toBe('edificio_desconocido')
   })
 })
