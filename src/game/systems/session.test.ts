@@ -215,16 +215,31 @@ describe('sesión de partida', () => {
     const guardadoAnterior =
       cargarSesionPartida(almacenamiento)
 
+    const mapa = generarMapa({
+      ...DIMENSIONES_MAPA_PREDETERMINADO,
+      semilla: OPCIONES.semillaMapa,
+    })
+
     expect(() =>
       finalizarTurnoSesion(
         almacenamiento,
         estado,
         {
-          casillas: {},
+          casillas:
+            construirDiccionarioCasillas(
+              mapa,
+            ),
+          ordenes: [
+            {
+              tipo: 'Construccion',
+              asentamientoId: 'no-existe',
+              edificioId: 'granero',
+            },
+          ],
         },
       ),
     ).toThrow(
-      'No hay terreno para el asentamiento',
+      'Asentamiento no encontrado: no-existe',
     )
 
     expect(

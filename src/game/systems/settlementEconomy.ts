@@ -1,6 +1,7 @@
 import {
+  casillasEnRadio,
   claveHex,
-  vecinosHex,
+  distanciaHex,
   type CoordenadaHex,
 } from '../map/hex'
 import type { CasillaMapa } from '../map/generateMap'
@@ -8,6 +9,9 @@ import type {
   Asentamiento,
   TipoFuero,
 } from '../domain/settlement'
+import type {
+  RegistroAsentamientos,
+} from '../domain/settlementRegistry'
 import {
   crearReservaRecursos,
   sumarReservas,
@@ -25,6 +29,97 @@ import {
 } from '../content/buildings'
 
 export const MARGEN_SUELO_GRANO = 1
+
+/**
+ * Frontera interior: el territorio crece por hitos de población, no de golpe.
+ * Números de primer borrador, coherentes con `trabajadores` (1 +
+ * hab/4000) — el radio 2 llega justo antes de que una capital sin oro ni
+ * edificios agote las ~6 casillas trabajables del radio 1 (trabajadores = 6
+ * a partir de 20 000 habitantes); el radio 3 queda muy por delante, casi
+ * fuera de alcance de una vertical slice de 20-30 turnos. Se recalibran si
+ * al jugarlo no cuadran, como el resto de esta tabla.
+ */
+export interface HitoRadioTerritorio {
+  readonly habitantes: number
+  readonly radio: number
+}
+
+export const HITOS_RADIO_TERRITORIO: readonly HitoRadioTerritorio[] =
+  [
+    { habitantes: 0, radio: 1 },
+    { habitantes: 20000, radio: 2 },
+    { habitantes: 60000, radio: 3 },
+  ]
+
+function radioTerritorio(
+  habitantes: number,
+): number {
+  let radio = HITOS_RADIO_TERRITORIO[0].radio
+
+  for (const hito of HITOS_RADIO_TERRITORIO) {
+    if (habitantes >= hito.habitantes) {
+      radio = hito.radio
+    }
+  }
+
+  return radio
+}
+
+/**
+ * Solapamiento entre asentamientos (paso 6): la casilla es del más cercano
+ * por `distanciaHex` y, en empate, del fundado antes en el registro —el
+ * orden del array es el de fundación, no hay otro campo que lo capture
+ * todavía—. Sin prorrateos: cada casilla tiene un único dueño o ninguno.
+ */
+function filtrarCasillasPropias(
+  coordenadas: readonly CoordenadaHex[],
+  asentamiento: Asentamiento,
+  todosLosAsentamientos: RegistroAsentamientos,
+): CoordenadaHex[] {
+  const indicePropio =
+    todosLosAsentamientos.findIndex(
+      (candidato) =>
+        candidato.id === asentamiento.id,
+    )
+
+  return coordenadas.filter(
+    (coordenada) => {
+      const distanciaPropia = distanciaHex(
+        coordenada,
+        asentamiento.posicion,
+      )
+
+      return todosLosAsentamientos.every(
+        (otro, indiceOtro) => {
+          if (otro.id === asentamiento.id) {
+            return true
+          }
+
+          const distanciaOtro = distanciaHex(
+            coordenada,
+            otro.posicion,
+          )
+
+          if (
+            distanciaOtro < distanciaPropia
+          ) {
+            return false
+          }
+
+          if (
+            distanciaOtro ===
+              distanciaPropia &&
+            indiceOtro < indicePropio
+          ) {
+            return false
+          }
+
+          return true
+        },
+      )
+    },
+  )
+}
 
 export interface BalanceEconomicoAsentamiento {
   readonly produccion: ReservaRecursos
@@ -55,24 +150,33 @@ function calcularValorPonderado(
 function obtenerCandidatas(
   asentamiento: Asentamiento,
   casillas: Readonly<Record<string, CasillaMapa>>,
+  todosLosAsentamientos: RegistroAsentamientos,
 ): CandidataTrabajo[] {
-  const coordenadas: CoordenadaHex[] = [
-    asentamiento.posicion,
-    ...vecinosHex(asentamiento.posicion),
-  ]
+  const radio = radioTerritorio(
+    asentamiento.poblacion.habitantes,
+  )
+
+  const coordenadas = filtrarCasillasPropias(
+    casillasEnRadio(
+      asentamiento.posicion,
+      radio,
+    ),
+    asentamiento,
+    todosLosAsentamientos,
+  )
 
   const candidatas: CandidataTrabajo[] = []
 
   for (const coordenada of coordenadas) {
     const casilla = casillas[claveHex(coordenada)]
 
-    if (casilla === undefined) {
-      throw new Error(
-        `No hay terreno para el asentamiento ${asentamiento.id} en ${claveHex(coordenada)}`,
-      )
-    }
-
-    if (casilla.terreno === 'agua') {
+    // Fuera del mapa se trata igual que el agua: no es trabajable. Con
+    // radio > 1 (frontera interior) es habitual que el anillo se salga del
+    // tablero para cualquier asentamiento que no esté en el centro exacto.
+    if (
+      casilla === undefined ||
+      casilla.terreno === 'agua'
+    ) {
       continue
     }
 
@@ -259,6 +363,7 @@ function aplicarModificadorFuero(
 export function calcularEconomiaAsentamiento(
   asentamiento: Asentamiento,
   casillas: Readonly<Record<string, CasillaMapa>>,
+  todosLosAsentamientos: RegistroAsentamientos,
 ): BalanceEconomicoAsentamiento {
   const trabajadores =
     1 +
@@ -275,6 +380,7 @@ export function calcularEconomiaAsentamiento(
   const candidatas = obtenerCandidatas(
     asentamiento,
     casillas,
+    todosLosAsentamientos,
   )
   const seleccionadas =
     seleccionarCasillasTrabajadas(

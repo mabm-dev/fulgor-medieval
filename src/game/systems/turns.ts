@@ -128,6 +128,7 @@ function calcularEconomiaReino(
       calcularEconomiaAsentamiento(
         asentamiento,
         casillas,
+        asentamientos,
       )
 
     produccion = sumarReservas(

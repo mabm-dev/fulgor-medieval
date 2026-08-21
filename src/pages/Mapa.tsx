@@ -161,6 +161,7 @@ export default function Mapa() {
         calcularEconomiaAsentamiento(
           asentamiento,
           casillas,
+          estadoJuego.asentamientos,
         ).casillasTrabajadas,
     )
   }, [mapa, estadoJuego, casillas])
