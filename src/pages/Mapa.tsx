@@ -191,10 +191,15 @@ export default function Mapa() {
       ].costeMovimiento
     : null
 
+  // Segunda facción (paso 6), presencia inerte: la capital rival se ve en
+  // el mapa, pero no se gestiona. Si la casilla seleccionada es la suya,
+  // cae al panel genérico de terreno en vez de abrir el de construcción.
   const asentamientoSeleccionado =
     casillaSeleccionada
       ? (estadoJuego.asentamientos.find(
           (asentamiento) =>
+            asentamiento.reinoId ===
+              estadoJuego.reinoJugador &&
             claveHex(
               asentamiento.posicion,
             ) ===

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  elegirReinoRival,
   esIdentificadorReino,
   IDENTIFICADORES_REINO,
 } from './kingdom'
@@ -52,5 +53,36 @@ describe('identificadores de reino', () => {
     expect(
       esIdentificadorReino(['castilla']),
     ).toBe(false)
+  })
+})
+
+describe('elegirReinoRival', () => {
+  it('elige el siguiente reino de la lista', () => {
+    expect(
+      elegirReinoRival('castilla'),
+    ).toBe('leon')
+    expect(elegirReinoRival('leon')).toBe(
+      'aragon',
+    )
+    expect(elegirReinoRival('aragon')).toBe(
+      'navarra',
+    )
+    expect(
+      elegirReinoRival('navarra'),
+    ).toBe('granada')
+  })
+
+  it('da la vuelta al principio de la lista', () => {
+    expect(
+      elegirReinoRival('granada'),
+    ).toBe('castilla')
+  })
+
+  it('nunca elige el mismo reino que el jugador', () => {
+    for (const reino of IDENTIFICADORES_REINO) {
+      expect(
+        elegirReinoRival(reino),
+      ).not.toBe(reino)
+    }
   })
 })

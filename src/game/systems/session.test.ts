@@ -99,12 +99,19 @@ describe('sesión de partida', () => {
     expect(estado.meta.jugador).toBe(
       'Rodrigo',
     )
+    // La propia y la de la segunda facción inerte (paso 6).
     expect(
       estado.asentamientos,
-    ).toHaveLength(1)
+    ).toHaveLength(2)
     expect(
       estado.asentamientos[0].nombre,
     ).toBe('Burgos')
+    expect(
+      estado.asentamientos[0].reinoId,
+    ).toBe('castilla')
+    expect(
+      estado.asentamientos[1].reinoId,
+    ).not.toBe('castilla')
   })
 
   it('planta la capital sobre una llanura del mapa', () => {

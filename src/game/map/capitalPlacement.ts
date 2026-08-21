@@ -55,17 +55,36 @@ function filtrarPorVecindad(
     : candidatas
 }
 
+/**
+ * `exclusiones` sirve para colocar más de una capital en el mismo mapa
+ * —la segunda facción (paso 6)— sin repetir la primera: se descartan antes
+ * de sortear, así que la semilla sigue determinando el resto del reparto.
+ */
 export function elegirEmplazamientoCapital(
   mapa: Mapa,
+  exclusiones: readonly CoordenadaHex[] = [],
 ): CoordenadaHex {
-  const llanuras = mapa.casillas.filter(
+  const clavesExcluidas = new Set(
+    exclusiones.map((coordenada) =>
+      claveHex(coordenada),
+    ),
+  )
+
+  const sinExcluidas = mapa.casillas.filter(
+    (casilla) =>
+      !clavesExcluidas.has(
+        claveHex(casilla.coordenada),
+      ),
+  )
+
+  const llanuras = sinExcluidas.filter(
     (casilla) => casilla.terreno === 'llanura',
   )
 
   const porTerreno =
     llanuras.length > 0
       ? llanuras
-      : mapa.casillas.filter(
+      : sinExcluidas.filter(
           (casilla) =>
             casilla.terreno === 'colina',
         )

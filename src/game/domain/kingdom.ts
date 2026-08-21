@@ -19,3 +19,22 @@ export function esIdentificadorReino(
     )
   )
 }
+
+/**
+ * Segunda facción (paso 6, presencia inerte): el reino siguiente en la
+ * lista, con vuelta al principio. Determinista a partir del reino del
+ * jugador —sin tirada aparte—, para que la misma semilla siga dando la
+ * misma partida.
+ */
+export function elegirReinoRival(
+  reinoJugador: IdentificadorReino,
+): IdentificadorReino {
+  const indice = IDENTIFICADORES_REINO.indexOf(
+    reinoJugador,
+  )
+  const siguiente =
+    (indice + 1) %
+    IDENTIFICADORES_REINO.length
+
+  return IDENTIFICADORES_REINO[siguiente]
+}

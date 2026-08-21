@@ -48,6 +48,8 @@ function crearAsentamientoDePrueba(
   habitantes: number,
   posicion: CoordenadaHex = { q: 0, r: 0 },
   cambios: {
+    id?: string
+    reinoId?: string
     edificios?: readonly string[]
     proyectoConstruccion?: {
       edificioId: string
@@ -121,7 +123,7 @@ describe('resolución del turno', () => {
 
   it('produce antes de aplicar el consumo', () => {
     const estado = crearEstadoDePrueba({
-      reinoJugador: 'leon',
+      reinoJugador: 'castilla',
       recursos: {
         grano: 0,
       },
@@ -171,6 +173,69 @@ describe('resolución del turno', () => {
     expect(
       resultado.estado.recursos.manoDeObra,
     ).toBe(1)
+  })
+
+  it('no cuenta la economía de un asentamiento de otro reino (segunda facción inerte)', () => {
+    const construirEstado = (
+      conRival: boolean,
+    ): EstadoPartida =>
+      crearEstadoDePrueba({
+        reinoJugador: 'castilla',
+        recursos: {
+          grano: 0,
+          manoDeObra: 0,
+        },
+        asentamientos: conRival
+          ? [
+              crearAsentamientoDePrueba(100, {
+                q: 0,
+                r: 0,
+              }),
+              crearAsentamientoDePrueba(
+                5000,
+                { q: 40, r: 40 },
+                {
+                  id: 'capital-rival',
+                  reinoId: 'leon',
+                },
+              ),
+            ]
+          : [
+              crearAsentamientoDePrueba(100, {
+                q: 0,
+                r: 0,
+              }),
+            ],
+      })
+
+    const casillas =
+      construirCasillasUniformes(
+        { q: 0, r: 0 },
+        'llanura',
+      )
+
+    const sinRival = finalizarTurno(
+      construirEstado(false),
+      { casillas },
+    )
+    const conRival = finalizarTurno(
+      construirEstado(true),
+      { casillas },
+    )
+
+    expect(
+      conRival.estado.recursos,
+    ).toEqual(sinRival.estado.recursos)
+
+    // El rival sigue en el registro, intacto: presencia inerte en el
+    // mapa, no ausencia.
+    expect(
+      conRival.estado.asentamientos,
+    ).toHaveLength(2)
+    expect(
+      conRival.estado.asentamientos[1]
+        .poblacion.habitantes,
+    ).toBe(5000)
   })
 
   it('emite eventos deterministas con las cantidades derivadas', () => {

@@ -111,11 +111,19 @@ function repartirOrdenes(
   return { crecimientos, construcciones }
 }
 
+/**
+ * `asentamientosPropios` es a quien se le suma producción y consumo —la
+ * segunda facción (paso 6) no tiene economía simulada todavía, solo
+ * presencia en el mapa—. `todosLosAsentamientos` sigue siendo el registro
+ * completo: el solapamiento de casillas trabajadas tiene que contar también
+ * con el territorio rival, aunque su economía no se calcule.
+ */
 function calcularEconomiaReino(
-  asentamientos: RegistroAsentamientos,
+  asentamientosPropios: RegistroAsentamientos,
   casillas: Readonly<
     Record<string, CasillaMapa>
   >,
+  todosLosAsentamientos: RegistroAsentamientos,
 ): {
   produccion: ReservaRecursos
   consumo: ReservaRecursos
@@ -123,12 +131,12 @@ function calcularEconomiaReino(
   let produccion = crearReservaRecursos({})
   let consumo = crearReservaRecursos({})
 
-  for (const asentamiento of asentamientos) {
+  for (const asentamiento of asentamientosPropios) {
     const balance =
       calcularEconomiaAsentamiento(
         asentamiento,
         casillas,
-        asentamientos,
+        todosLosAsentamientos,
       )
 
     produccion = sumarReservas(
@@ -198,10 +206,22 @@ export function finalizarTurno(
       estado.asentamientos,
     )
 
+  // Segunda facción (paso 6): el registro puede traer asentamientos de
+  // otro reino, presentes en el mapa pero sin economía simulada todavía.
+  // Solo los propios entran en la producción, el consumo y el techo de
+  // mano de obra.
+  const asentamientosPropios =
+    avanceConstruccion.asentamientos.filter(
+      (asentamiento) =>
+        asentamiento.reinoId ===
+        estado.reinoJugador,
+    )
+
   const { produccion, consumo } =
     calcularEconomiaReino(
-      avanceConstruccion.asentamientos,
+      asentamientosPropios,
       opciones.casillas,
+      avanceConstruccion.asentamientos,
     )
 
   const reservaProducida = aplicarProduccion(
@@ -210,7 +230,7 @@ export function finalizarTurno(
   )
   const techoManoDeObra =
     calcularTechoManoDeObra(
-      avanceConstruccion.asentamientos,
+      asentamientosPropios,
     )
   const reservaConTecho =
     aplicarTechoManoDeObra(

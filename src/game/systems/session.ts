@@ -9,8 +9,9 @@ import {
   type EstadoPartida,
   type MetaPartida,
 } from '../domain/gameState'
-import type {
-  IdentificadorReino,
+import {
+  elegirReinoRival,
+  type IdentificadorReino,
 } from '../domain/kingdom'
 import {
   elegirEmplazamientoCapital,
@@ -60,6 +61,17 @@ export function crearSesionPartida(
     elegirEmplazamientoCapital(mapa),
   )
 
+  // Segunda facción (paso 6), presencia inerte: capital rival en el mapa,
+  // sin economía simulada —eso es v0.6—. Reino determinista (el siguiente
+  // de la lista) y posición excluyendo la de la capital del jugador, para
+  // no chocar con ella.
+  const capitalRival = crearCapitalInicial(
+    elegirReinoRival(opciones.reinoJugador),
+    elegirEmplazamientoCapital(mapa, [
+      capital.posicion,
+    ]),
+  )
+
   const perfil = obtenerPerfilEconomico(
     opciones.reinoJugador,
   )
@@ -78,7 +90,7 @@ export function crearSesionPartida(
     meta,
     reinoJugador: opciones.reinoJugador,
     recursos: perfil.recursosIniciales,
-    asentamientos: [capital],
+    asentamientos: [capital, capitalRival],
   })
 
   // No hay canal de eventos en la fundación —a diferencia del turno, esto

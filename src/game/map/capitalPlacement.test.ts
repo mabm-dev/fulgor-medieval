@@ -255,4 +255,45 @@ describe('elegirEmplazamientoCapital', () => {
       elegirEmplazamientoCapital(mapa),
     ).not.toThrow()
   })
+
+  it('no repite una coordenada excluida', () => {
+    const mapa = generarMapa({
+      ...DIMENSIONES,
+      semilla: 777,
+    })
+
+    const primera =
+      elegirEmplazamientoCapital(mapa)
+    const segunda = elegirEmplazamientoCapital(
+      mapa,
+      [primera],
+    )
+
+    expect(
+      claveHex(segunda),
+    ).not.toBe(claveHex(primera))
+  })
+
+  it('rechaza si excluye todos los candidatos', () => {
+    const mapa: Mapa = {
+      ancho: 3,
+      alto: 1,
+      semilla: 42,
+      casillas: [
+        {
+          coordenada: { q: 0, r: 0 },
+          terreno: 'llanura',
+          tieneOro: false,
+        },
+      ],
+    }
+
+    expect(() =>
+      elegirEmplazamientoCapital(mapa, [
+        { q: 0, r: 0 },
+      ]),
+    ).toThrow(
+      'No se encontró ninguna casilla viable para emplazar la capital',
+    )
+  })
 })
