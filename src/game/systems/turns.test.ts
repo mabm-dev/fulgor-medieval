@@ -14,7 +14,10 @@ import {
   type CoordenadaHex,
 } from '../map/hex'
 import type { TipoTerreno } from '../map/terrain'
-import { finalizarTurno } from './turns'
+import {
+  finalizarTurno,
+  type OrdenTurno,
+} from './turns'
 
 function construirCasillasUniformes(
   posicion: CoordenadaHex,
@@ -295,8 +298,9 @@ describe('resolución del turno', () => {
             { q: 0, r: 0 },
             'llanura',
           ),
-        crecimientos: [
+        ordenes: [
           {
+            tipo: 'Crecimiento',
             asentamientoId: 'burgos',
             crecimientoPrevisto: 15,
           },
@@ -332,6 +336,29 @@ describe('resolución del turno', () => {
     })
   })
 
+  it('lanza ante una orden de turno no reconocida', () => {
+    const estado =
+      crearEstadoConAsentamiento()
+
+    const ordenDesconocida = {
+      tipo: 'Diplomacia',
+      asentamientoId: 'burgos',
+    } as unknown as OrdenTurno
+
+    expect(() =>
+      finalizarTurno(estado, {
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
+        ordenes: [ordenDesconocida],
+      }),
+    ).toThrow(
+      'Orden de turno no reconocida',
+    )
+  })
+
   it('no avanza si una orden es inválida', () => {
     const estado =
       crearEstadoConAsentamiento()
@@ -343,8 +370,9 @@ describe('resolución del turno', () => {
             { q: 0, r: 0 },
             'llanura',
           ),
-        crecimientos: [
+        ordenes: [
           {
+            tipo: 'Crecimiento',
             asentamientoId: 'toledo',
             crecimientoPrevisto: 10,
           },

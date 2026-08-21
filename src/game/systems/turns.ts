@@ -27,12 +27,56 @@ import {
 
 export const DIVISOR_TECHO_MANO_DE_OBRA = 2000
 
+/**
+ * Unión discriminada de las órdenes que un jugador puede dar en un turno.
+ * Hoy solo existe el crecimiento, así que todavía no es una unión de verdad
+ * a ojos de TypeScript —un tipo con un solo miembro no da pie a comprobar
+ * exhaustividad, `switch`+`assertNever` no compilaría sobre un solo caso—.
+ * `repartirOrdenes` valida el `tipo` a mano por ahora; cuando la construcción
+ * (paso 4, commit 12) se sume como segundo miembro, esto se convierte en un
+ * `switch` real con `assertNever` en el `default`, que sí exhaustará los dos
+ * casos y dejará de compilar si se añade un tercero sin manejarlo.
+ */
+export interface OrdenCrecimiento {
+  readonly tipo: 'Crecimiento'
+  readonly asentamientoId: string
+  readonly crecimientoPrevisto: number
+}
+
+export type OrdenTurno = OrdenCrecimiento
+
 export interface OpcionesFinalizarTurno {
   readonly casillas: Readonly<
     Record<string, CasillaMapa>
   >
-  readonly crecimientos?:
-    readonly OrdenCrecimientoAsentamiento[]
+  readonly ordenes?: readonly OrdenTurno[]
+}
+
+function repartirOrdenes(
+  ordenes: readonly OrdenTurno[],
+): {
+  crecimientos: OrdenCrecimientoAsentamiento[]
+} {
+  const crecimientos: OrdenCrecimientoAsentamiento[] =
+    []
+
+  for (const orden of ordenes) {
+    if (orden.tipo !== 'Crecimiento') {
+      throw new Error(
+        'Orden de turno no reconocida: ' +
+          JSON.stringify(orden),
+      )
+    }
+
+    crecimientos.push({
+      asentamientoId:
+        orden.asentamientoId,
+      crecimientoPrevisto:
+        orden.crecimientoPrevisto,
+    })
+  }
+
+  return { crecimientos }
 }
 
 export interface ResultadoTurno {
@@ -155,10 +199,13 @@ export function finalizarTurno(
     reservaConTecho,
     consumo,
   )
+  const { crecimientos } = repartirOrdenes(
+    opciones.ordenes ?? [],
+  )
   const crecimiento =
     aplicarOrdenesCrecimiento(
       estado.asentamientos,
-      opciones.crecimientos,
+      crecimientos,
     )
   const siguienteTurno = estado.turno + 1
 
