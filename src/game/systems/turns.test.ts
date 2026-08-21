@@ -47,6 +47,13 @@ function construirCasillasUniformes(
 function crearAsentamientoDePrueba(
   habitantes: number,
   posicion: CoordenadaHex = { q: 0, r: 0 },
+  cambios: {
+    edificios?: readonly string[]
+    proyectoConstruccion?: {
+      edificioId: string
+      turnosRestantes: number
+    }
+  } = {},
 ) {
   return {
     id: 'burgos',
@@ -58,6 +65,7 @@ function crearAsentamientoDePrueba(
       habitantes,
       capacidad: habitantes + 1000,
     },
+    ...cambios,
   }
 }
 
@@ -387,5 +395,125 @@ describe('resolución del turno', () => {
       estado.asentamientos[0]
         ?.poblacion.habitantes,
     ).toBe(120)
+  })
+
+  it('inicia una obra con una orden de construcción', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      recursos: {
+        madera: 10,
+        piedra: 10,
+      },
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+    })
+
+    const resultado = finalizarTurno(
+      estado,
+      {
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
+        ordenes: [
+          {
+            tipo: 'Construccion',
+            asentamientoId: 'burgos',
+            edificioId: 'granero',
+          },
+        ],
+      },
+    )
+
+    expect(
+      resultado.estado.asentamientos[0]
+        ?.proyectoConstruccion,
+    ).toEqual({
+      edificioId: 'granero',
+      turnosRestantes: 3,
+    })
+  })
+
+  it('completa una obra tras sus turnos y emite el evento', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(
+          100,
+          { q: 0, r: 0 },
+          {
+            proyectoConstruccion: {
+              edificioId: 'granero',
+              turnosRestantes: 1,
+            },
+          },
+        ),
+      ],
+    })
+
+    const resultado = finalizarTurno(
+      estado,
+      {
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
+      },
+    )
+
+    expect(
+      resultado.estado.asentamientos[0]
+        ?.edificios,
+    ).toEqual(['granero'])
+    expect(
+      resultado.eventos.map(
+        (evento) => evento.tipo,
+      ),
+    ).toContain('edificio_completado')
+    expect(
+      resultado.eventos.find(
+        (evento) =>
+          evento.tipo ===
+          'edificio_completado',
+      ),
+    ).toEqual({
+      tipo: 'edificio_completado',
+      turno: 1,
+      asentamientoId: 'burgos',
+      edificioId: 'granero',
+    })
+  })
+
+  it('rechaza una construcción si faltan recursos', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+    })
+
+    expect(() =>
+      finalizarTurno(estado, {
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
+        ordenes: [
+          {
+            tipo: 'Construccion',
+            asentamientoId: 'burgos',
+            edificioId: 'granero',
+          },
+        ],
+      }),
+    ).toThrow(
+      'Recursos insuficientes para construir Granero',
+    )
+
+    expect(estado.turno).toBe(1)
   })
 })

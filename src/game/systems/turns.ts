@@ -9,10 +9,12 @@ import type {
 } from '../map/generateMap'
 import {
   crearReservaRecursos,
-  TIPOS_RECURSO,
+  sumarReservas,
   type ReservaRecursos,
-  type TipoRecurso,
 } from '../domain/resources'
+import type {
+  RegistroAsentamientos,
+} from '../domain/settlementRegistry'
 import {
   aplicarConsumo,
   aplicarProduccion,
@@ -22,6 +24,11 @@ import {
   type OrdenCrecimientoAsentamiento,
 } from './settlementGrowth'
 import {
+  avanzarProyectosConstruccion,
+  iniciarProyectosConstruccion,
+  type OrdenConstruccionAsentamiento,
+} from './settlementConstruction'
+import {
   calcularEconomiaAsentamiento,
 } from './settlementEconomy'
 
@@ -29,13 +36,9 @@ export const DIVISOR_TECHO_MANO_DE_OBRA = 2000
 
 /**
  * Unión discriminada de las órdenes que un jugador puede dar en un turno.
- * Hoy solo existe el crecimiento, así que todavía no es una unión de verdad
- * a ojos de TypeScript —un tipo con un solo miembro no da pie a comprobar
- * exhaustividad, `switch`+`assertNever` no compilaría sobre un solo caso—.
- * `repartirOrdenes` valida el `tipo` a mano por ahora; cuando la construcción
- * (paso 4, commit 12) se sume como segundo miembro, esto se convierte en un
- * `switch` real con `assertNever` en el `default`, que sí exhaustará los dos
- * casos y dejará de compilar si se añade un tercero sin manejarlo.
+ * Con dos miembros, `repartirOrdenes` puede exhaustar de verdad: si se añade
+ * una tercera orden sin su `case`, el `default` deja de recibir `never` y el
+ * proyecto no compila.
  */
 export interface OrdenCrecimiento {
   readonly tipo: 'Crecimiento'
@@ -43,7 +46,15 @@ export interface OrdenCrecimiento {
   readonly crecimientoPrevisto: number
 }
 
-export type OrdenTurno = OrdenCrecimiento
+export interface OrdenConstruccion {
+  readonly tipo: 'Construccion'
+  readonly asentamientoId: string
+  readonly edificioId: string
+}
+
+export type OrdenTurno =
+  | OrdenCrecimiento
+  | OrdenConstruccion
 
 export interface OpcionesFinalizarTurno {
   readonly casillas: Readonly<
@@ -52,56 +63,56 @@ export interface OpcionesFinalizarTurno {
   readonly ordenes?: readonly OrdenTurno[]
 }
 
-function repartirOrdenes(
-  ordenes: readonly OrdenTurno[],
-): {
-  crecimientos: OrdenCrecimientoAsentamiento[]
-} {
-  const crecimientos: OrdenCrecimientoAsentamiento[] =
-    []
-
-  for (const orden of ordenes) {
-    if (orden.tipo !== 'Crecimiento') {
-      throw new Error(
-        'Orden de turno no reconocida: ' +
-          JSON.stringify(orden),
-      )
-    }
-
-    crecimientos.push({
-      asentamientoId:
-        orden.asentamientoId,
-      crecimientoPrevisto:
-        orden.crecimientoPrevisto,
-    })
-  }
-
-  return { crecimientos }
-}
-
 export interface ResultadoTurno {
   readonly estado: EstadoPartida
   readonly eventos: readonly EventoTurno[]
 }
 
-function sumarReservas(
-  a: ReservaRecursos,
-  b: ReservaRecursos,
-): ReservaRecursos {
-  const combinado: Partial<
-    Record<TipoRecurso, number>
-  > = {}
+function assertNever(valor: never): never {
+  throw new Error(
+    'Orden de turno no reconocida: ' +
+      JSON.stringify(valor),
+  )
+}
 
-  for (const recurso of TIPOS_RECURSO) {
-    combinado[recurso] =
-      a[recurso] + b[recurso]
+function repartirOrdenes(
+  ordenes: readonly OrdenTurno[],
+): {
+  crecimientos: OrdenCrecimientoAsentamiento[]
+  construcciones: OrdenConstruccionAsentamiento[]
+} {
+  const crecimientos: OrdenCrecimientoAsentamiento[] =
+    []
+  const construcciones: OrdenConstruccionAsentamiento[] =
+    []
+
+  for (const orden of ordenes) {
+    switch (orden.tipo) {
+      case 'Crecimiento':
+        crecimientos.push({
+          asentamientoId:
+            orden.asentamientoId,
+          crecimientoPrevisto:
+            orden.crecimientoPrevisto,
+        })
+        break
+      case 'Construccion':
+        construcciones.push({
+          asentamientoId:
+            orden.asentamientoId,
+          edificioId: orden.edificioId,
+        })
+        break
+      default:
+        assertNever(orden)
+    }
   }
 
-  return crearReservaRecursos(combinado)
+  return { crecimientos, construcciones }
 }
 
 function calcularEconomiaReino(
-  estado: EstadoPartida,
+  asentamientos: RegistroAsentamientos,
   casillas: Readonly<
     Record<string, CasillaMapa>
   >,
@@ -112,7 +123,7 @@ function calcularEconomiaReino(
   let produccion = crearReservaRecursos({})
   let consumo = crearReservaRecursos({})
 
-  for (const asentamiento of estado.asentamientos) {
+  for (const asentamiento of asentamientos) {
     const balance =
       calcularEconomiaAsentamiento(
         asentamiento,
@@ -133,10 +144,10 @@ function calcularEconomiaReino(
 }
 
 function calcularTechoManoDeObra(
-  estado: EstadoPartida,
+  asentamientos: RegistroAsentamientos,
 ): number {
   const poblacionTotal =
-    estado.asentamientos.reduce(
+    asentamientos.reduce(
       (total, asentamiento) =>
         total +
         asentamiento.poblacion.habitantes,
@@ -178,9 +189,17 @@ export function finalizarTurno(
     )
   }
 
+  // 1. Las obras que ya estaban en marcha avanzan un turno. Un edificio que
+  // se complete aquí ya cuenta en el cálculo de economía del punto 2 —"al
+  // completarse, el edificio comienza a aplicar su efecto" (CU-05).
+  const avanceConstruccion =
+    avanzarProyectosConstruccion(
+      estado.asentamientos,
+    )
+
   const { produccion, consumo } =
     calcularEconomiaReino(
-      estado,
+      avanceConstruccion.asentamientos,
       opciones.casillas,
     )
 
@@ -189,24 +208,39 @@ export function finalizarTurno(
     produccion,
   )
   const techoManoDeObra =
-    calcularTechoManoDeObra(estado)
+    calcularTechoManoDeObra(
+      avanceConstruccion.asentamientos,
+    )
   const reservaConTecho =
     aplicarTechoManoDeObra(
       reservaProducida,
       techoManoDeObra,
     )
-  const reservaFinal = aplicarConsumo(
+  const reservaTrasConsumo = aplicarConsumo(
     reservaConTecho,
     consumo,
   )
-  const { crecimientos } = repartirOrdenes(
-    opciones.ordenes ?? [],
-  )
+
+  const { crecimientos, construcciones } =
+    repartirOrdenes(opciones.ordenes ?? [])
+
   const crecimiento =
     aplicarOrdenesCrecimiento(
-      estado.asentamientos,
+      avanceConstruccion.asentamientos,
       crecimientos,
     )
+
+  // 2. Las obras nuevas del turno se validan y descuentan al final, sobre
+  // lo que quede tras producir y consumir — construir es la última decisión
+  // de gasto del turno, igual que el consumo va después de la producción.
+  const inicioConstruccion =
+    iniciarProyectosConstruccion(
+      crecimiento.asentamientos,
+      reservaTrasConsumo,
+      opciones.casillas,
+      construcciones,
+    )
+
   const siguienteTurno = estado.turno + 1
 
   const nuevoEstado: EstadoPartida =
@@ -214,9 +248,9 @@ export function finalizarTurno(
       ...estado,
       turno: siguienteTurno,
       fase: 'gestion',
-      recursos: reservaFinal,
+      recursos: inicioConstruccion.recursos,
       asentamientos:
-        crecimiento.asentamientos,
+        inicioConstruccion.asentamientos,
     })
 
   const eventos: readonly EventoTurno[] =
@@ -243,6 +277,17 @@ export function finalizarTurno(
               resultado.crecimientoAplicado,
             capacidadAlcanzada:
               resultado.capacidadAlcanzada,
+          }),
+      ),
+      ...avanceConstruccion.completados.map(
+        (completado) =>
+          Object.freeze({
+            tipo: 'edificio_completado',
+            turno: estado.turno,
+            asentamientoId:
+              completado.asentamientoId,
+            edificioId:
+              completado.edificioId,
           }),
       ),
       Object.freeze({

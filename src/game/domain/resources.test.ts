@@ -5,6 +5,7 @@ import {
 } from 'vitest'
 import {
   crearReservaRecursos,
+  sumarReservas,
   TIPOS_RECURSO,
 } from './resources'
 
@@ -70,5 +71,26 @@ describe('recursos del reino', () => {
 
     expect(primera).not.toBe(segunda)
     expect(Object.isFrozen(primera)).toBe(true)
+  })
+
+  it('suma dos reservas recurso a recurso', () => {
+    const suma = sumarReservas(
+      crearReservaRecursos({
+        grano: 5,
+        oro: 2,
+      }),
+      crearReservaRecursos({
+        grano: 3,
+        piedra: 4,
+      }),
+    )
+
+    expect(suma).toEqual({
+      grano: 8,
+      madera: 0,
+      piedra: 4,
+      manoDeObra: 0,
+      oro: 2,
+    })
   })
 })

@@ -7,6 +7,7 @@ import type { CasillaMapa } from '../map/generateMap'
 import type { Asentamiento } from '../domain/settlement'
 import {
   crearReservaRecursos,
+  sumarReservas,
   TIPOS_RECURSO,
   type ReservaRecursos,
   type TipoRecurso,
@@ -15,6 +16,10 @@ import {
   PESOS_VALORACION_TERRENO,
   rendimientoDeCasilla,
 } from '../content/terrainYields'
+import {
+  EDIFICIOS,
+  esIdEdificio,
+} from '../content/buildings'
 
 export const MARGEN_SUELO_GRANO = 1
 
@@ -172,6 +177,38 @@ function sumarRendimientos(
   return crearReservaRecursos(total)
 }
 
+/**
+ * Suma lo que producen los edificios ya terminados del asentamiento. Solo
+ * cuenta el efecto de tipo `produccion` —el de `capacidad` se aplica una
+ * sola vez, al completarse la obra, no cada turno—.
+ */
+function calcularProduccionEdificios(
+  edificios: readonly string[],
+): ReservaRecursos {
+  let total = crearReservaRecursos({})
+
+  for (const edificioId of edificios) {
+    if (!esIdEdificio(edificioId)) {
+      throw new Error(
+        `Edificio desconocido: ${edificioId}`,
+      )
+    }
+
+    const { efecto } = EDIFICIOS[edificioId]
+
+    if (efecto.tipo === 'produccion') {
+      total = sumarReservas(
+        total,
+        crearReservaRecursos(
+          efecto.recursos,
+        ),
+      )
+    }
+  }
+
+  return total
+}
+
 export function calcularEconomiaAsentamiento(
   asentamiento: Asentamiento,
   casillas: Readonly<Record<string, CasillaMapa>>,
@@ -203,13 +240,20 @@ export function calcularEconomiaAsentamiento(
   const manoDeObraProducida =
     1 + Math.floor((trabajadores - 1) / 2)
 
-  const produccion = crearReservaRecursos({
+  const produccionBase = crearReservaRecursos({
     grano: produccionTerreno.grano,
     madera: produccionTerreno.madera,
     piedra: produccionTerreno.piedra,
     oro: produccionTerreno.oro,
     manoDeObra: manoDeObraProducida,
   })
+
+  const produccion = sumarReservas(
+    produccionBase,
+    calcularProduccionEdificios(
+      asentamiento.edificios,
+    ),
+  )
 
   const consumo = crearReservaRecursos({
     grano: trabajadores,

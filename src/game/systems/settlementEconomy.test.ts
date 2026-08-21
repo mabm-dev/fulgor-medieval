@@ -17,6 +17,7 @@ import {
 
 function crearAsentamientoDePrueba(
   habitantes: number,
+  edificios: readonly string[] = [],
 ) {
   return crearAsentamiento({
     id: 'prueba',
@@ -28,6 +29,7 @@ function crearAsentamientoDePrueba(
       habitantes,
       capacidad: habitantes + 1000,
     },
+    edificios,
   })
 }
 
@@ -232,5 +234,46 @@ describe('calcularEconomiaAsentamiento', () => {
     expect(
       Object.isFrozen(balance.consumo),
     ).toBe(true)
+  })
+
+  it('suma la producción de los edificios ya construidos', () => {
+    const asentamiento =
+      crearAsentamientoDePrueba(100, [
+        'granero',
+      ])
+    const casillas = construirCasillas(
+      asentamiento.posicion,
+      Array(7).fill({ terreno: 'llanura' }),
+    )
+
+    const balance = calcularEconomiaAsentamiento(
+      asentamiento,
+      casillas,
+    )
+
+    // 3 de la llanura trabajada + 2 del granero
+    expect(balance.produccion.grano).toBe(
+      5,
+    )
+  })
+
+  it('lanza si un edificio construido no existe en el catálogo', () => {
+    const asentamiento =
+      crearAsentamientoDePrueba(100, [
+        'castillo',
+      ])
+    const casillas = construirCasillas(
+      asentamiento.posicion,
+      Array(7).fill({ terreno: 'llanura' }),
+    )
+
+    expect(() =>
+      calcularEconomiaAsentamiento(
+        asentamiento,
+        casillas,
+      ),
+    ).toThrow(
+      'Edificio desconocido: castillo',
+    )
   })
 })

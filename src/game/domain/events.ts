@@ -27,6 +27,13 @@ export interface EventoCrecimientoAsentamientoAplicado
   readonly capacidadAlcanzada: boolean
 }
 
+export interface EventoEdificioCompletado
+  extends EventoBaseTurno {
+  readonly tipo: 'edificio_completado'
+  readonly asentamientoId: string
+  readonly edificioId: string
+}
+
 export interface EventoTurnoFinalizado
   extends EventoBaseTurno {
   readonly tipo: 'turno_finalizado'
@@ -37,4 +44,5 @@ export type EventoTurno =
   | EventoProduccionAplicada
   | EventoConsumoAplicado
   | EventoCrecimientoAsentamientoAplicado
+  | EventoEdificioCompletado
   | EventoTurnoFinalizado
