@@ -81,6 +81,7 @@ describe('capitales iniciales de los reinos', () => {
         capacidad: 18000,
       },
       edificios: [],
+      fuero: 'fuero_frontera',
     })
     expect(Object.isFrozen(capital)).toBe(
       true,

@@ -7,6 +7,7 @@ import {
   crearAsentamiento,
   type OpcionesAsentamiento,
   type TipoAsentamiento,
+  type TipoFuero,
 } from './settlement'
 
 function crearOpciones(
@@ -49,6 +50,7 @@ describe('asentamiento', () => {
         capacidad: 200,
       },
       edificios: [],
+      fuero: 'fuero_frontera',
     })
     expect(
       Object.isFrozen(asentamiento),
@@ -231,5 +233,37 @@ describe('asentamiento', () => {
     ).toThrow(
       'El identificador de un edificio construido no puede estar vacío',
     )
+  })
+
+  it('asigna fuero de frontera por defecto', () => {
+    const asentamiento = crearAsentamiento(
+      crearOpciones(),
+    )
+
+    expect(asentamiento.fuero).toBe(
+      'fuero_frontera',
+    )
+  })
+
+  it('acepta un fuero explícito', () => {
+    const asentamiento = crearAsentamiento(
+      crearOpciones({
+        fuero: 'senorio_feudal',
+      }),
+    )
+
+    expect(asentamiento.fuero).toBe(
+      'senorio_feudal',
+    )
+  })
+
+  it('rechaza un fuero desconocido', () => {
+    expect(() =>
+      crearAsentamiento(
+        crearOpciones({
+          fuero: 'republica' as TipoFuero,
+        }),
+      ),
+    ).toThrow('El fuero no es válido')
   })
 })

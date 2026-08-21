@@ -200,7 +200,7 @@ describe('resolución del turno', () => {
           grano: 3,
           madera: 0,
           piedra: 0,
-          manoDeObra: 1,
+          manoDeObra: 2,
           oro: 0,
         },
       },

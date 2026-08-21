@@ -9,7 +9,10 @@ import {
   type CoordenadaHex,
 } from '../map/hex'
 import type { CasillaMapa } from '../map/generateMap'
-import { crearAsentamiento } from '../domain/settlement'
+import {
+  crearAsentamiento,
+  type TipoFuero,
+} from '../domain/settlement'
 import type { TipoTerreno } from '../map/terrain'
 import {
   calcularEconomiaAsentamiento,
@@ -18,6 +21,7 @@ import {
 function crearAsentamientoDePrueba(
   habitantes: number,
   edificios: readonly string[] = [],
+  fuero?: TipoFuero,
 ) {
   return crearAsentamiento({
     id: 'prueba',
@@ -30,6 +34,7 @@ function crearAsentamientoDePrueba(
       capacidad: habitantes + 1000,
     },
     edificios,
+    fuero,
   })
 }
 
@@ -63,12 +68,12 @@ function construirCasillas(
 
 describe('calcularEconomiaAsentamiento', () => {
   it.each([
-    [0, 1, 1],
-    [4000, 2, 1],
-    [12000, 4, 2],
-    [26000, 7, 4],
+    [0, 1, 2],
+    [4000, 2, 2],
+    [12000, 4, 3],
+    [26000, 7, 5],
   ])(
-    'con %i habitantes hay %i trabajadores y %i de mano de obra',
+    'con %i habitantes hay %i trabajadores y %i de mano de obra (con el fuero de frontera por defecto)',
     (habitantes, trabajadoresEsperados, manoDeObraEsperada) => {
       const asentamiento =
         crearAsentamientoDePrueba(habitantes)
@@ -275,5 +280,69 @@ describe('calcularEconomiaAsentamiento', () => {
     ).toThrow(
       'Edificio desconocido: castillo',
     )
+  })
+
+  it('el fuero de frontera sube la mano de obra y baja el oro', () => {
+    const asentamiento =
+      crearAsentamientoDePrueba(0)
+    const casillas = construirCasillas(
+      asentamiento.posicion,
+      [
+        { terreno: 'colina', tieneOro: true },
+        { terreno: 'agua' },
+        { terreno: 'agua' },
+        { terreno: 'agua' },
+        { terreno: 'agua' },
+        { terreno: 'agua' },
+        { terreno: 'agua' },
+      ],
+    )
+
+    const balance = calcularEconomiaAsentamiento(
+      asentamiento,
+      casillas,
+    )
+
+    // Colina (2 piedra) + veta de oro (2 oro), sin modificar.
+    expect(balance.produccion.piedra).toBe(2)
+    // 1 de base (1 trabajador) + 1 del fuero.
+    expect(
+      balance.produccion.manoDeObra,
+    ).toBe(2)
+    // 2 de la veta, −1 del fuero.
+    expect(balance.produccion.oro).toBe(1)
+  })
+
+  it('el señorío feudal sube oro y piedra, y recorta la madera sin bajar de cero', () => {
+    const asentamiento =
+      crearAsentamientoDePrueba(
+        0,
+        [],
+        'senorio_feudal',
+      )
+    const casillas = construirCasillas(
+      asentamiento.posicion,
+      [
+        { terreno: 'colina', tieneOro: true },
+        { terreno: 'agua' },
+        { terreno: 'agua' },
+        { terreno: 'agua' },
+        { terreno: 'agua' },
+        { terreno: 'agua' },
+        { terreno: 'agua' },
+      ],
+    )
+
+    const balance = calcularEconomiaAsentamiento(
+      asentamiento,
+      casillas,
+    )
+
+    // 2 de la veta + 1 del fuero.
+    expect(balance.produccion.oro).toBe(3)
+    // 2 de la colina + 1 del fuero.
+    expect(balance.produccion.piedra).toBe(3)
+    // Sin madera de origen: el recorte no la deja en negativo.
+    expect(balance.produccion.madera).toBe(0)
   })
 })

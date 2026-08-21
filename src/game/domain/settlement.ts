@@ -14,6 +14,22 @@ export type TipoAsentamiento =
   (typeof TIPOS_ASENTAMIENTO)[number]
 
 /**
+ * Carta puebla frente a señorío: modificadores económicos puros, sin
+ * descontento ni revuelta —eso exigiría variables de orden público que el
+ * motor no tiene todavía—. Se asigna en la fundación y es inmutable por
+ * ahora: no hay orden para cambiarlo.
+ */
+export const TIPOS_FUERO = [
+  'fuero_frontera',
+  'senorio_feudal',
+] as const
+
+export type TipoFuero = (typeof TIPOS_FUERO)[number]
+
+export const FUERO_POR_DEFECTO: TipoFuero =
+  'fuero_frontera'
+
+/**
  * Una obra en marcha. `edificioId` no se tipa contra `IdEdificio` de
  * `content/buildings.ts` a propósito —igual que `reinoId` no se tipa contra
  * `IdentificadorReino`—: el dominio no depende del contenido, así que valida
@@ -33,6 +49,7 @@ export interface Asentamiento {
   readonly posicion: CoordenadaHex
   readonly poblacion: PoblacionAsentamiento
   readonly edificios: readonly string[]
+  readonly fuero: TipoFuero
   readonly proyectoConstruccion?: ProyectoConstruccion
 }
 
@@ -44,6 +61,7 @@ export interface OpcionesAsentamiento {
   readonly posicion: CoordenadaHex
   readonly poblacion: PoblacionAsentamiento
   readonly edificios?: readonly string[]
+  readonly fuero?: TipoFuero
   readonly proyectoConstruccion?: ProyectoConstruccion
 }
 
@@ -101,6 +119,29 @@ function validarTipo(
   }
 
   return tipo
+}
+
+export function esTipoFuero(
+  valor: unknown,
+): valor is TipoFuero {
+  return (
+    typeof valor === 'string' &&
+    TIPOS_FUERO.some(
+      (fuero) => fuero === valor,
+    )
+  )
+}
+
+function validarFuero(
+  fuero: TipoFuero,
+): TipoFuero {
+  if (!esTipoFuero(fuero)) {
+    throw new Error(
+      'El fuero no es válido',
+    )
+  }
+
+  return fuero
 }
 
 function validarEdificios(
@@ -184,6 +225,9 @@ export function crearAsentamiento(
     ),
     edificios: validarEdificios(
       opciones.edificios ?? [],
+    ),
+    fuero: validarFuero(
+      opciones.fuero ?? FUERO_POR_DEFECTO,
     ),
   }
 

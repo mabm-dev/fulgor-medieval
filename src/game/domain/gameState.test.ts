@@ -306,6 +306,7 @@ describe('estado de partida', () => {
           capacidad: 200,
         },
         edificios: [],
+        fuero: 'fuero_frontera',
       },
     ])
     expect(
@@ -318,6 +319,44 @@ describe('estado de partida', () => {
         restaurado.asentamientos[0],
       ),
     ).toBe(true)
+  })
+
+  it('asigna fuero de frontera a un asentamiento guardado antes de esta mejora', () => {
+    const estado = restaurarEstadoPartida({
+      version: VERSION_ESTADO_PARTIDA,
+      semillaMapa: 12345,
+      meta: META,
+      turno: 1,
+      fase: 'gestion',
+      reinoJugador: 'castilla',
+      recursos: {
+        grano: 0,
+        madera: 0,
+        piedra: 0,
+        manoDeObra: 0,
+        oro: 0,
+      },
+      asentamientos: [
+        {
+          id: 'burgos',
+          nombre: 'Burgos',
+          reinoId: 'castilla',
+          tipo: 'villa',
+          posicion: {
+            q: 2,
+            r: -1,
+          },
+          poblacion: {
+            habitantes: 120,
+            capacidad: 200,
+          },
+        },
+      ],
+    })
+
+    expect(
+      estado.asentamientos[0].fuero,
+    ).toBe('fuero_frontera')
   })
 
   it('conserva los edificios y la obra en marcha al guardar y cargar', () => {

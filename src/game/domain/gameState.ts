@@ -4,7 +4,10 @@ import {
 } from './kingdom'
 import {
   esTipoAsentamiento,
+  esTipoFuero,
+  FUERO_POR_DEFECTO,
   type OpcionesAsentamiento,
+  type TipoFuero,
 } from './settlement'
 import {
   crearRegistroAsentamientos,
@@ -178,6 +181,20 @@ function leerEdificios(
   })
 }
 
+function leerFuero(
+  datos: unknown,
+): TipoFuero {
+  if (datos === undefined) {
+    return FUERO_POR_DEFECTO
+  }
+
+  if (!esTipoFuero(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return datos
+}
+
 function leerProyectoConstruccion(
   datos: unknown,
 ):
@@ -257,6 +274,7 @@ function leerAsentamiento(
     edificios: leerEdificios(
       datos.edificios,
     ),
+    fuero: leerFuero(datos.fuero),
     proyectoConstruccion:
       leerProyectoConstruccion(
         datos.proyectoConstruccion,

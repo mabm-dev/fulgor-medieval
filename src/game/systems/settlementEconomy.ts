@@ -4,7 +4,10 @@ import {
   type CoordenadaHex,
 } from '../map/hex'
 import type { CasillaMapa } from '../map/generateMap'
-import type { Asentamiento } from '../domain/settlement'
+import type {
+  Asentamiento,
+  TipoFuero,
+} from '../domain/settlement'
 import {
   crearReservaRecursos,
   sumarReservas,
@@ -209,6 +212,50 @@ function calcularProduccionEdificios(
   return total
 }
 
+function assertNever(valor: never): never {
+  throw new Error(
+    `Fuero no contemplado: ${String(valor)}`,
+  )
+}
+
+/**
+ * Modificadores planos, no porcentuales: con rendimientos de 1 a 3 por
+ * casilla, un ±10-20 % se anula con `Math.floor` (o no penaliza nada con
+ * `Math.round`). Un entero fijo se nota desde el turno 1 sin depender de la
+ * escala del asentamiento. El señorío feudal penaliza madera y no grano
+ * a propósito: `aplicarConsumo` en `economy.ts` lanza si el reino no puede
+ * cubrir el consumo, y el único consumo de un asentamiento es grano.
+ */
+function aplicarModificadorFuero(
+  produccion: ReservaRecursos,
+  fuero: TipoFuero,
+): ReservaRecursos {
+  switch (fuero) {
+    case 'fuero_frontera':
+      return crearReservaRecursos({
+        ...produccion,
+        manoDeObra:
+          produccion.manoDeObra + 1,
+        oro: Math.max(
+          0,
+          produccion.oro - 1,
+        ),
+      })
+    case 'senorio_feudal':
+      return crearReservaRecursos({
+        ...produccion,
+        oro: produccion.oro + 1,
+        piedra: produccion.piedra + 1,
+        madera: Math.max(
+          0,
+          produccion.madera - 1,
+        ),
+      })
+    default:
+      return assertNever(fuero)
+  }
+}
+
 export function calcularEconomiaAsentamiento(
   asentamiento: Asentamiento,
   casillas: Readonly<Record<string, CasillaMapa>>,
@@ -248,11 +295,16 @@ export function calcularEconomiaAsentamiento(
     manoDeObra: manoDeObraProducida,
   })
 
-  const produccion = sumarReservas(
+  const produccionConEdificios = sumarReservas(
     produccionBase,
     calcularProduccionEdificios(
       asentamiento.edificios,
     ),
+  )
+
+  const produccion = aplicarModificadorFuero(
+    produccionConEdificios,
+    asentamiento.fuero,
   )
 
   const consumo = crearReservaRecursos({
