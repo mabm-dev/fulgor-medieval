@@ -8,11 +8,19 @@ import HexMap from '../components/map/HexMap'
 import MapViewport from '../components/map/MapViewport'
 import { REINOS } from '../data/reinos'
 import {
+  EDIFICIOS,
+  esIdEdificio,
+  type IdEdificio,
+} from '../game/content/buildings'
+import {
   obtenerPerfilEconomico,
 } from '../game/content/kingdomEconomy'
 import type {
   EstadoPartida,
 } from '../game/domain/gameState'
+import type {
+  TipoAsentamiento,
+} from '../game/domain/settlement'
 import {
   DIMENSIONES_MAPA_PREDETERMINADO,
   generarMapa,
@@ -30,6 +38,9 @@ import {
   finalizarTurnoSesion,
   cargarSesionPartida,
 } from '../game/systems/session'
+import {
+  comprobarConstruccion,
+} from '../game/systems/settlementConstruction'
 
 const NOMBRES_TERRENO: Record<
   TipoTerreno,
@@ -40,6 +51,34 @@ const NOMBRES_TERRENO: Record<
   bosque: 'Bosque',
   colina: 'Colina',
   montana: 'Montaña',
+}
+
+const NOMBRES_TIPO_ASENTAMIENTO: Record<
+  TipoAsentamiento,
+  string
+> = {
+  aldea: 'Aldea',
+  villa: 'Villa',
+  ciudad: 'Ciudad',
+}
+
+const NOMBRES_RECURSO_CORTO: Record<
+  string,
+  string
+> = {
+  grano: 'grano',
+  madera: 'madera',
+  piedra: 'piedra',
+  manoDeObra: 'brazos',
+  oro: 'oro',
+}
+
+function nombreEdificio(
+  edificioId: string,
+): string {
+  return esIdEdificio(edificioId)
+    ? EDIFICIOS[edificioId].nombre
+    : edificioId
 }
 
 export default function Mapa() {
@@ -61,6 +100,13 @@ export default function Mapa() {
 
   const [mensajeTurno, setMensajeTurno] =
     useState<string>()
+
+  const [
+    ordenesConstruccion,
+    setOrdenesConstruccion,
+  ] = useState<Record<string, string>>(
+    {},
+  )
 
   const semillaMapa = estadoJuego?.semillaMapa
 
@@ -119,14 +165,70 @@ export default function Mapa() {
       ].costeMovimiento
     : null
 
+  const asentamientoSeleccionado =
+    casillaSeleccionada
+      ? (estadoJuego.asentamientos.find(
+          (asentamiento) =>
+            claveHex(
+              asentamiento.posicion,
+            ) ===
+            claveHex(
+              casillaSeleccionada.coordenada,
+            ),
+        ) ?? null)
+      : null
+
+  const encolarConstruccion = (
+    asentamientoId: string,
+    edificioId: string,
+  ) => {
+    setOrdenesConstruccion((actual) => ({
+      ...actual,
+      [asentamientoId]: edificioId,
+    }))
+  }
+
+  const cancelarConstruccion = (
+    asentamientoId: string,
+  ) => {
+    setOrdenesConstruccion((actual) => {
+      const resto: Record<
+        string,
+        string
+      > = {}
+
+      for (const [
+        id,
+        edificioId,
+      ] of Object.entries(actual)) {
+        if (id !== asentamientoId) {
+          resto[id] = edificioId
+        }
+      }
+
+      return resto
+    })
+  }
+
   const resolverTurno = () => {
+    const ordenes = Object.entries(
+      ordenesConstruccion,
+    ).map(
+      ([asentamientoId, edificioId]) => ({
+        tipo: 'Construccion' as const,
+        asentamientoId,
+        edificioId,
+      }),
+    )
+
     const resultado = finalizarTurnoSesion(
       almacenamientoNavegador,
       estadoJuego,
-      { casillas },
+      { casillas, ordenes },
     )
 
     setEstadoJuego(resultado.estado)
+    setOrdenesConstruccion({})
     setMensajeTurno(
       `Turno ${estadoJuego.turno} resuelto`,
     )
@@ -209,64 +311,225 @@ export default function Mapa() {
             />
           </MapViewport>
         </div>
-        {casillaSeleccionada && (
-          <aside className="absolute top-8 right-8 z-10 w-64 border border-[#c8ad72]/45 bg-[#070b10]/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
+        {asentamientoSeleccionado ? (
+          <aside className="absolute top-8 right-8 z-10 w-72 border border-[#c8ad72]/45 bg-[#070b10]/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
             <button
               type="button"
               onClick={() =>
                 setCasillaSeleccionada(null)
               }
-              aria-label="Cerrar información de la casilla"
+              aria-label="Cerrar información del asentamiento"
               className="absolute top-3 right-3 text-lg text-[#c8ad72]/70 transition-colors hover:text-[#ffe6a3]"
             >
               ×
             </button>
 
             <p className="font-cinzel text-[10px] tracking-[0.28em] text-[#c8ad72] uppercase">
-              Terreno seleccionado
+              {
+                NOMBRES_TIPO_ASENTAMIENTO[
+                  asentamientoSeleccionado.tipo
+                ]
+              }
             </p>
 
             <h2 className="font-cinzel mt-2 text-2xl text-[#f3e5c0]">
-              {
-                NOMBRES_TERRENO[
-                  casillaSeleccionada.terreno
-                ]
-              }
+              {asentamientoSeleccionado.nombre}
             </h2>
 
-            <dl className="mt-5 space-y-4 text-sm">
-              <div className="border-t border-[#c8ad72]/20 pt-3">
-                <dt className="text-xs tracking-[0.15em] text-white/45 uppercase">
-                  Coordenadas axiales
-                </dt>
-                <dd className="mt-1 font-mono text-[#e8d9ae]">
-                  q: {
-                    casillaSeleccionada
-                      .coordenada.q
-                  }{' '}
-                  · r: {
-                    casillaSeleccionada
-                      .coordenada.r
-                  }
-                </dd>
-              </div>
+            <p className="mt-1 text-xs text-white/55">
+              {asentamientoSeleccionado.poblacion.habitantes.toLocaleString(
+                'es-ES',
+              )}{' '}
+              habitantes
+            </p>
 
-              <div className="border-t border-[#c8ad72]/20 pt-3">
-                <dt className="text-xs tracking-[0.15em] text-white/45 uppercase">
-                  Coste de movimiento
-                </dt>
-                <dd className="mt-1 text-[#e8d9ae]">
-                  {costeMovimiento === null
-                    ? 'No transitable'
-                    : `${costeMovimiento} ${
-                        costeMovimiento === 1
-                          ? 'punto'
-                          : 'puntos'
-                      }`}
-                </dd>
+            {asentamientoSeleccionado.proyectoConstruccion ? (
+              <div className="mt-5 border-t border-[#c8ad72]/20 pt-4">
+                <p className="text-xs tracking-[0.15em] text-white/45 uppercase">
+                  Obra en marcha
+                </p>
+                <p className="mt-1 text-[#e8d9ae]">
+                  {nombreEdificio(
+                    asentamientoSeleccionado
+                      .proyectoConstruccion
+                      .edificioId,
+                  )}
+                </p>
+                <p className="mt-1 text-xs text-white/50">
+                  {
+                    asentamientoSeleccionado
+                      .proyectoConstruccion
+                      .turnosRestantes
+                  }{' '}
+                  {asentamientoSeleccionado
+                    .proyectoConstruccion
+                    .turnosRestantes === 1
+                    ? 'turno restante'
+                    : 'turnos restantes'}
+                </p>
               </div>
-            </dl>
+            ) : ordenesConstruccion[
+                asentamientoSeleccionado.id
+              ] ? (
+              <div className="mt-5 border-t border-[#c8ad72]/20 pt-4">
+                <p className="text-xs tracking-[0.15em] text-white/45 uppercase">
+                  En cola para este turno
+                </p>
+                <p className="mt-1 text-[#e8d9ae]">
+                  {nombreEdificio(
+                    ordenesConstruccion[
+                      asentamientoSeleccionado
+                        .id
+                    ] ?? '',
+                  )}
+                </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    cancelarConstruccion(
+                      asentamientoSeleccionado.id,
+                    )
+                  }
+                  className="mt-2 text-xs text-[#c8ad72]/70 underline decoration-dotted transition-colors hover:text-[#ffe6a3]"
+                >
+                  Cancelar
+                </button>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-2 border-t border-[#c8ad72]/20 pt-4">
+                <p className="text-xs tracking-[0.15em] text-white/45 uppercase">
+                  Construir
+                </p>
+
+                {(
+                  Object.keys(
+                    EDIFICIOS,
+                  ) as IdEdificio[]
+                ).map((edificioId) => {
+                  const definicion =
+                    EDIFICIOS[edificioId]
+                  const comprobacion =
+                    comprobarConstruccion(
+                      asentamientoSeleccionado,
+                      edificioId,
+                      estadoJuego.recursos,
+                      casillas,
+                    )
+                  const coste =
+                    Object.entries(
+                      definicion.coste,
+                    )
+                      .map(
+                        ([
+                          recurso,
+                          cantidad,
+                        ]) =>
+                          `${cantidad} ${
+                            NOMBRES_RECURSO_CORTO[
+                              recurso
+                            ] ?? recurso
+                          }`,
+                      )
+                      .join(', ')
+
+                  return (
+                    <button
+                      key={edificioId}
+                      type="button"
+                      disabled={
+                        !comprobacion.puede
+                      }
+                      title={
+                        comprobacion.puede
+                          ? undefined
+                          : comprobacion.mensaje
+                      }
+                      onClick={() =>
+                        encolarConstruccion(
+                          asentamientoSeleccionado.id,
+                          edificioId,
+                        )
+                      }
+                      className="flex w-full flex-col border border-white/10 bg-white/[0.03] px-3 py-2 text-left transition-colors hover:border-[#c8ad72]/60 disabled:cursor-not-allowed disabled:opacity-35"
+                    >
+                      <span className="flex w-full items-center justify-between text-sm text-[#e8d9ae]">
+                        {definicion.nombre}
+                        <span className="font-mono text-xs text-white/45">
+                          {definicion.turnos}
+                          t
+                        </span>
+                      </span>
+                      <span className="mt-0.5 text-xs text-white/45">
+                        {coste}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </aside>
+        ) : (
+          casillaSeleccionada && (
+            <aside className="absolute top-8 right-8 z-10 w-64 border border-[#c8ad72]/45 bg-[#070b10]/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
+              <button
+                type="button"
+                onClick={() =>
+                  setCasillaSeleccionada(
+                    null,
+                  )
+                }
+                aria-label="Cerrar información de la casilla"
+                className="absolute top-3 right-3 text-lg text-[#c8ad72]/70 transition-colors hover:text-[#ffe6a3]"
+              >
+                ×
+              </button>
+
+              <p className="font-cinzel text-[10px] tracking-[0.28em] text-[#c8ad72] uppercase">
+                Terreno seleccionado
+              </p>
+
+              <h2 className="font-cinzel mt-2 text-2xl text-[#f3e5c0]">
+                {
+                  NOMBRES_TERRENO[
+                    casillaSeleccionada.terreno
+                  ]
+                }
+              </h2>
+
+              <dl className="mt-5 space-y-4 text-sm">
+                <div className="border-t border-[#c8ad72]/20 pt-3">
+                  <dt className="text-xs tracking-[0.15em] text-white/45 uppercase">
+                    Coordenadas axiales
+                  </dt>
+                  <dd className="mt-1 font-mono text-[#e8d9ae]">
+                    q: {
+                      casillaSeleccionada
+                        .coordenada.q
+                    }{' '}
+                    · r: {
+                      casillaSeleccionada
+                        .coordenada.r
+                    }
+                  </dd>
+                </div>
+
+                <div className="border-t border-[#c8ad72]/20 pt-3">
+                  <dt className="text-xs tracking-[0.15em] text-white/45 uppercase">
+                    Coste de movimiento
+                  </dt>
+                  <dd className="mt-1 text-[#e8d9ae]">
+                    {costeMovimiento === null
+                      ? 'No transitable'
+                      : `${costeMovimiento} ${
+                          costeMovimiento === 1
+                            ? 'punto'
+                            : 'puntos'
+                        }`}
+                  </dd>
+                </div>
+              </dl>
+            </aside>
+          )
         )}
       </section>
     </main>
