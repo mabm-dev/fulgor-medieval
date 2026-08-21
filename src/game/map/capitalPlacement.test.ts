@@ -1,7 +1,29 @@
 import { describe, expect, it } from 'vitest'
 import { elegirEmplazamientoCapital } from './capitalPlacement'
-import { generarMapa, type Mapa } from './generateMap'
+import {
+  generarMapa,
+  type CasillaMapa,
+  type Mapa,
+} from './generateMap'
 import { claveHex } from './hex'
+
+function crearCuadriculaLlana(
+  lado: number,
+): readonly CasillaMapa[] {
+  const casillas: CasillaMapa[] = []
+
+  for (let r = 0; r < lado; r += 1) {
+    for (let q = 0; q < lado; q += 1) {
+      casillas.push({
+        coordenada: { q, r },
+        terreno: 'llanura',
+        tieneOro: false,
+      })
+    }
+  }
+
+  return casillas
+}
 
 const DIMENSIONES = {
   ancho: 12,
@@ -172,5 +194,65 @@ describe('elegirEmplazamientoCapital', () => {
     ).toThrow(
       'No se encontró ninguna casilla viable para emplazar la capital',
     )
+  })
+
+  it('descarta las esquinas del mapa, que tienen menos de 4 vecinas', () => {
+    const casillas = crearCuadriculaLlana(3)
+
+    const esquinas = new Set([
+      claveHex({ q: 0, r: 0 }),
+      claveHex({ q: 2, r: 0 }),
+      claveHex({ q: 0, r: 2 }),
+      claveHex({ q: 2, r: 2 }),
+    ])
+
+    for (
+      let semilla = 1;
+      semilla <= 20;
+      semilla += 1
+    ) {
+      const mapa: Mapa = {
+        ancho: 3,
+        alto: 3,
+        semilla,
+        casillas,
+      }
+
+      const coordenada =
+        elegirEmplazamientoCapital(mapa)
+
+      expect(
+        esquinas.has(claveHex(coordenada)),
+      ).toBe(false)
+    }
+  })
+
+  it('no descarta ninguna casilla cuando ninguna alcanza 4 vecinas en el mapa', () => {
+    const mapa: Mapa = {
+      ancho: 3,
+      alto: 1,
+      semilla: 1,
+      casillas: [
+        {
+          coordenada: { q: 0, r: 0 },
+          terreno: 'llanura',
+          tieneOro: false,
+        },
+        {
+          coordenada: { q: 1, r: 0 },
+          terreno: 'llanura',
+          tieneOro: false,
+        },
+        {
+          coordenada: { q: 2, r: 0 },
+          terreno: 'llanura',
+          tieneOro: false,
+        },
+      ],
+    }
+
+    expect(() =>
+      elegirEmplazamientoCapital(mapa),
+    ).not.toThrow()
   })
 })
