@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { crearAsentamiento } from '../../game/domain/settlement'
 import { generarMapa } from '../../game/map/generateMap'
+import { claveHex } from '../../game/map/hex'
 import HexMap from './HexMap'
 
 function crearMapaPrueba() {
@@ -132,6 +133,79 @@ describe('HexMap', () => {
 
     expect(html).not.toContain(
       'data-trabajada="true"',
+    )
+  })
+
+  it('sin datos de niebla, todo se ve', () => {
+    const html = renderizarMapa()
+
+    expect(html).not.toContain(
+      'data-niebla=',
+    )
+  })
+
+  it('distingue visible, explorada y oculta', () => {
+    const mapa = crearMapaPrueba()
+    const visible = claveHex(
+      mapa.casillas[0].coordenada,
+    )
+    const explorada = claveHex(
+      mapa.casillas[1].coordenada,
+    )
+
+    const html = renderToStaticMarkup(
+      <HexMap
+        mapa={mapa}
+        radio={28}
+        casillasVisibles={[visible]}
+        casillasExploradas={[
+          visible,
+          explorada,
+        ]}
+      />,
+    )
+
+    const visibles =
+      html.match(
+        /data-niebla="visible"/g,
+      ) ?? []
+    const exploradas =
+      html.match(
+        /data-niebla="explorada"/g,
+      ) ?? []
+    const ocultas =
+      html.match(
+        /data-niebla="oculta"/g,
+      ) ?? []
+
+    expect(visibles).toHaveLength(1)
+    expect(exploradas).toHaveLength(1)
+    expect(ocultas).toHaveLength(382)
+  })
+
+  it('no revela el terreno de una casilla oculta', () => {
+    const mapa = crearMapaPrueba()
+    const visible = claveHex(
+      mapa.casillas[0].coordenada,
+    )
+
+    const html = renderToStaticMarkup(
+      <HexMap
+        mapa={mapa}
+        radio={28}
+        casillasVisibles={[visible]}
+        casillasExploradas={[visible]}
+        onSeleccionarCasilla={() => undefined}
+      />,
+    )
+
+    const terrenos =
+      html.match(/data-terreno=/g) ?? []
+
+    // Solo la única casilla visible conserva el atributo.
+    expect(terrenos).toHaveLength(1)
+    expect(html).toContain(
+      'sin explorar',
     )
   })
 })

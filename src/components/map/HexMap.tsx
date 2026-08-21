@@ -16,6 +16,9 @@ import {
   type CoordenadaHex,
 } from '../../game/map/hex'
 import type { TipoTerreno } from '../../game/map/terrain'
+import {
+  estadoNiebla,
+} from '../../game/systems/vision'
 
 const COLORES_TERRENO: Record<TipoTerreno, string> = {
   agua: '#24485f',
@@ -24,6 +27,9 @@ const COLORES_TERRENO: Record<TipoTerreno, string> = {
   colina: '#8a724a',
   montana: '#6f7072',
 }
+
+const COLOR_NIEBLA_OCULTA = '#05080d'
+const OPACIDAD_EXPLORADA = 0.4
 
 interface HexMapProps {
   readonly mapa: Mapa
@@ -34,6 +40,10 @@ interface HexMapProps {
   ) => void
   readonly asentamientos?: RegistroAsentamientos
   readonly casillasTrabajadas?: readonly CoordenadaHex[]
+  /** Niebla de guerra: claves `claveHex`, no coordenadas — mismo formato
+   * que `EstadoPartida.casillasExploradas`. */
+  readonly casillasVisibles?: readonly string[]
+  readonly casillasExploradas?: readonly string[]
 }
 
 interface HexagonoVisual {
@@ -97,6 +107,8 @@ export default function HexMap({
   onSeleccionarCasilla,
   asentamientos = [],
   casillasTrabajadas = [],
+  casillasVisibles = [],
+  casillasExploradas = [],
 }: HexMapProps) {
   const clavesTrabajadas = useMemo(
     () =>
@@ -107,6 +119,20 @@ export default function HexMap({
       ),
     [casillasTrabajadas],
   )
+
+  const clavesVisibles = useMemo(
+    () => new Set(casillasVisibles),
+    [casillasVisibles],
+  )
+
+  const clavesExploradas = useMemo(
+    () => new Set(casillasExploradas),
+    [casillasExploradas],
+  )
+
+  const hayNiebla =
+    clavesVisibles.size > 0 ||
+    clavesExploradas.size > 0
 
   const hexagonos = useMemo<readonly HexagonoVisual[]>(
     () =>
@@ -153,6 +179,18 @@ export default function HexMap({
           const seleccionada =
             hexagono.clave === claveSeleccionada
 
+          // Sin datos de niebla —nadie los pasó—, todo se ve: es el
+          // estado por defecto para quien use HexMap sin conectar la
+          // partida (pruebas, futuras vistas de solo lectura).
+          const niebla = hayNiebla
+            ? estadoNiebla(
+                hexagono.clave,
+                clavesVisibles,
+                clavesExploradas,
+              )
+            : 'visible'
+          const oculta = niebla === 'oculta'
+
           return (
             <polygon
               key={hexagono.clave}
@@ -160,9 +198,16 @@ export default function HexMap({
                 hexagono.vertices,
               )}
               fill={
-                COLORES_TERRENO[
-                  hexagono.terreno
-                ]
+                oculta
+                  ? COLOR_NIEBLA_OCULTA
+                  : COLORES_TERRENO[
+                      hexagono.terreno
+                    ]
+              }
+              fillOpacity={
+                niebla === 'explorada'
+                  ? OPACIDAD_EXPLORADA
+                  : 1
               }
               stroke={
                 seleccionada
@@ -171,7 +216,14 @@ export default function HexMap({
               }
               strokeWidth={seleccionada ? 3 : 1}
               vectorEffect="non-scaling-stroke"
-              data-terreno={hexagono.terreno}
+              data-terreno={
+                oculta
+                  ? undefined
+                  : hexagono.terreno
+              }
+              data-niebla={
+                hayNiebla ? niebla : undefined
+              }
               data-seleccionada={
                 seleccionada || undefined
               }
@@ -188,7 +240,9 @@ export default function HexMap({
               tabIndex={interactivo ? 0 : undefined}
               aria-label={
                 interactivo
-                  ? `Casilla ${hexagono.clave}: ${hexagono.terreno}`
+                  ? oculta
+                    ? `Casilla ${hexagono.clave}: sin explorar`
+                    : `Casilla ${hexagono.clave}: ${hexagono.terreno}`
                   : undefined
               }
               aria-pressed={

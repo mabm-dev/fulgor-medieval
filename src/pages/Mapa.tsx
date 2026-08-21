@@ -47,6 +47,10 @@ import {
 import {
   calcularEconomiaAsentamiento,
 } from '../game/systems/settlementEconomy'
+import {
+  calcularVisibilidad,
+  estadoNiebla,
+} from '../game/systems/vision'
 
 const NOMBRES_TERRENO: Record<
   TipoTerreno,
@@ -151,20 +155,74 @@ export default function Mapa() {
     return diccionario
   }, [mapa])
 
+  // Solo los propios: la facción rival (paso 6) no tiene economía
+  // simulada, y mostrar sus casillas trabajadas se colaría por debajo de
+  // la niebla de guerra.
   const casillasTrabajadas = useMemo(() => {
     if (mapa === null || estadoJuego === null) {
       return []
     }
 
-    return estadoJuego.asentamientos.flatMap(
-      (asentamiento) =>
+    return estadoJuego.asentamientos
+      .filter(
+        (asentamiento) =>
+          asentamiento.reinoId ===
+          estadoJuego.reinoJugador,
+      )
+      .flatMap((asentamiento) =>
         calcularEconomiaAsentamiento(
           asentamiento,
           casillas,
           estadoJuego.asentamientos,
         ).casillasTrabajadas,
-    )
+      )
   }, [mapa, estadoJuego, casillas])
+
+  const casillasVisibles = useMemo(() => {
+    if (estadoJuego === null) {
+      return new Set<string>()
+    }
+
+    const propios =
+      estadoJuego.asentamientos.filter(
+        (asentamiento) =>
+          asentamiento.reinoId ===
+          estadoJuego.reinoJugador,
+      )
+
+    return calcularVisibilidad(propios)
+  }, [estadoJuego])
+
+  const casillasExploradasSet = useMemo(
+    () =>
+      new Set(
+        estadoJuego?.casillasExploradas ??
+          [],
+      ),
+    [estadoJuego],
+  )
+
+  // La capital rival no se dibuja mientras su casilla siga oculta del
+  // todo: la niebla también aplica a los asentamientos, no solo al
+  // terreno.
+  const asentamientosVisibles = useMemo(
+    () =>
+      (estadoJuego?.asentamientos ?? []).filter(
+        (asentamiento) =>
+          estadoNiebla(
+            claveHex(
+              asentamiento.posicion,
+            ),
+            casillasVisibles,
+            casillasExploradasSet,
+          ) !== 'oculta',
+      ),
+    [
+      estadoJuego,
+      casillasVisibles,
+      casillasExploradasSet,
+    ],
+  )
 
   if (!estadoJuego || !mapa) {
     return (
@@ -339,10 +397,16 @@ export default function Mapa() {
                 setCasillaSeleccionada
               }
               asentamientos={
-                estadoJuego.asentamientos
+                asentamientosVisibles
               }
               casillasTrabajadas={
                 casillasTrabajadas
+              }
+              casillasVisibles={[
+                ...casillasVisibles,
+              ]}
+              casillasExploradas={
+                estadoJuego.casillasExploradas
               }
             />
           </MapViewport>
