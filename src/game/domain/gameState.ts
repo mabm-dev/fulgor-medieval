@@ -18,7 +18,7 @@ import {
   type ReservaRecursos,
 } from './resources'
 
-export const VERSION_ESTADO_PARTIDA = 2
+export const VERSION_ESTADO_PARTIDA = 3
 
 export const FASES_TURNO = [
   'gestion',
@@ -51,6 +51,14 @@ export interface EstadoPartida {
   readonly recursos: ReservaRecursos
   readonly asentamientos:
     RegistroAsentamientos
+  /**
+   * Niebla de guerra: acumula para siempre, nunca se recorta. "Visible"
+   * —lo que se ve ahora mismo— no se guarda, se deriva cada turno con
+   * `systems/vision.ts`. Claves `claveHex`, mismo formato que en todo el
+   * mapa.
+   */
+  readonly casillasExploradas:
+    readonly string[]
 }
 
 export interface OpcionesEstadoInicial {
@@ -60,6 +68,8 @@ export interface OpcionesEstadoInicial {
   readonly recursos?: Partial<ReservaRecursos>
   readonly asentamientos?:
     readonly OpcionesAsentamiento[]
+  readonly casillasExploradas?:
+    readonly string[]
 }
 
 function esRegistro(
@@ -179,6 +189,40 @@ function leerEdificios(
 
     return edificioId
   })
+}
+
+function leerCasillasExploradas(
+  datos: unknown,
+): readonly string[] {
+  if (datos === undefined) {
+    return []
+  }
+
+  if (!Array.isArray(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return datos.map((clave) => {
+    if (typeof clave !== 'string') {
+      throw new Error(
+        ERROR_ESTADO_INVALIDO,
+      )
+    }
+
+    return clave
+  })
+}
+
+/**
+ * Sin duplicados y en un orden estable, para que dos partidas con la misma
+ * semilla y el mismo recorrido serialicen exactamente igual.
+ */
+function normalizarCasillasExploradas(
+  valores: readonly string[],
+): readonly string[] {
+  return Object.freeze(
+    [...new Set(valores)].sort(),
+  )
 }
 
 function leerFuero(
@@ -322,6 +366,10 @@ export function crearEstadoPartida(
       crearRegistroAsentamientos(
         opciones.asentamientos,
       ),
+    casillasExploradas:
+      normalizarCasillasExploradas(
+        opciones.casillasExploradas ?? [],
+      ),
   }
 
   return Object.freeze(estado)
@@ -394,6 +442,12 @@ export function restaurarEstadoPartida(
     asentamientos:
       leerRegistroAsentamientos(
         datos.asentamientos,
+      ),
+    casillasExploradas:
+      normalizarCasillasExploradas(
+        leerCasillasExploradas(
+          datos.casillasExploradas,
+        ),
       ),
   }
 

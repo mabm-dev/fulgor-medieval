@@ -31,6 +31,9 @@ import {
   type OpcionesFinalizarTurno,
   type ResultadoTurno,
 } from './turns'
+import {
+  calcularVisibilidad,
+} from './vision'
 
 export interface OpcionesNuevaSesion {
   readonly reinoJugador: IdentificadorReino
@@ -85,12 +88,21 @@ export function crearSesionPartida(
     fechaCreacion,
   }
 
+  // Niebla de guerra: se empieza viendo alrededor de la propia capital, no
+  // ciego hasta terminar el primer turno. Solo la propia —la del jugador
+  // no ve por la rival—.
+  const visibilidadInicial =
+    calcularVisibilidad([capital])
+
   const estado = crearEstadoPartida({
     semillaMapa,
     meta,
     reinoJugador: opciones.reinoJugador,
     recursos: perfil.recursosIniciales,
     asentamientos: [capital, capitalRival],
+    casillasExploradas: [
+      ...visibilidadInicial,
+    ],
   })
 
   // No hay canal de eventos en la fundación —a diferencia del turno, esto

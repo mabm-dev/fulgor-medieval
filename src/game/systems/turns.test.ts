@@ -581,4 +581,79 @@ describe('resolución del turno', () => {
 
     expect(estado.turno).toBe(1)
   })
+
+  it('acumula la niebla de guerra sin olvidar lo ya explorado', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100, {
+          q: 0,
+          r: 0,
+        }),
+      ],
+      // Muy lejos de la capital: no puede formar parte de la visión
+      // actual, solo puede seguir ahí si "explorado" de verdad no
+      // olvida nada.
+      casillasExploradas: ['99,99'],
+    })
+
+    const resultado = finalizarTurno(
+      estado,
+      {
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
+      },
+    )
+
+    expect(
+      resultado.estado.casillasExploradas,
+    ).toContain('99,99')
+    expect(
+      resultado.estado.casillasExploradas,
+    ).toContain('0,0')
+    expect(
+      resultado.estado.casillasExploradas
+        .length,
+    ).toBeGreaterThan(
+      estado.casillasExploradas.length,
+    )
+  })
+
+  it('no cuenta la visión de un asentamiento de otro reino', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100, {
+          q: 0,
+          r: 0,
+        }),
+        crearAsentamientoDePrueba(
+          100,
+          { q: 50, r: 50 },
+          {
+            id: 'capital-rival',
+            reinoId: 'leon',
+          },
+        ),
+      ],
+    })
+
+    const resultado = finalizarTurno(
+      estado,
+      {
+        casillas:
+          construirCasillasUniformes(
+            { q: 0, r: 0 },
+            'llanura',
+          ),
+      },
+    )
+
+    expect(
+      resultado.estado.casillasExploradas,
+    ).not.toContain('50,50')
+  })
 })

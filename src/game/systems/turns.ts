@@ -31,6 +31,10 @@ import {
 import {
   calcularEconomiaAsentamiento,
 } from './settlementEconomy'
+import {
+  actualizarCasillasExploradas,
+  calcularVisibilidad,
+} from './vision'
 
 export const DIVISOR_TECHO_MANO_DE_OBRA = 2000
 
@@ -264,6 +268,20 @@ export function finalizarTurno(
 
   const siguienteTurno = estado.turno + 1
 
+  // Niebla de guerra: "visible" se deriva aquí, no se guarda; "explorado"
+  // sí, y solo crece. Con los asentamientos propios de antes de resolver
+  // el turno —lo mismo que ya usa `calcularEconomiaReino`—, no con los ya
+  // actualizados: ver lo que se tenía al empezar el turno, no lo que
+  // queda después de construir.
+  const visibilidad = calcularVisibilidad(
+    asentamientosPropios,
+  )
+  const casillasExploradas =
+    actualizarCasillasExploradas(
+      estado.casillasExploradas,
+      visibilidad,
+    )
+
   const nuevoEstado: EstadoPartida =
     Object.freeze({
       ...estado,
@@ -272,6 +290,7 @@ export function finalizarTurno(
       recursos: inicioConstruccion.recursos,
       asentamientos:
         inicioConstruccion.asentamientos,
+      casillasExploradas,
     })
 
   const eventos: readonly EventoTurno[] =

@@ -114,6 +114,24 @@ describe('sesión de partida', () => {
     ).not.toBe('castilla')
   })
 
+  it('empieza viendo alrededor de la propia capital, no ciega', () => {
+    const estado = crearSesionPartida(
+      crearAlmacenamientoMemoria(),
+      OPCIONES,
+    )
+
+    expect(
+      estado.casillasExploradas.length,
+    ).toBeGreaterThan(0)
+    expect(
+      estado.casillasExploradas,
+    ).toContain(
+      claveHex(
+        estado.asentamientos[0].posicion,
+      ),
+    )
+  })
+
   it('planta la capital sobre una llanura del mapa', () => {
     const estado = crearSesionPartida(
       crearAlmacenamientoMemoria(),

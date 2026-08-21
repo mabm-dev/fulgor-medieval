@@ -37,6 +37,8 @@ export function crearEstadoDePrueba(
       opciones.reinoJugador ?? 'castilla',
     recursos: opciones.recursos,
     asentamientos: opciones.asentamientos,
+    casillasExploradas:
+      opciones.casillasExploradas,
   })
 
   if (

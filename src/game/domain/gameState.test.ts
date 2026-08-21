@@ -48,6 +48,7 @@ describe('estado de partida', () => {
         oro: 0,
       },
       asentamientos: [],
+      casillasExploradas: [],
     })
   })
 
@@ -189,6 +190,7 @@ describe('estado de partida', () => {
         oro: 6,
       },
       asentamientos: [],
+      casillasExploradas: [],
     })
     expect(Object.isFrozen(estado)).toBe(true)
     expect(
@@ -405,5 +407,83 @@ describe('estado de partida', () => {
       edificioId: 'cantera',
       turnosRestantes: 2,
     })
+  })
+
+  it('empieza sin nada explorado por defecto', () => {
+    const estado = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,
+      reinoJugador: 'castilla',
+    })
+
+    expect(
+      estado.casillasExploradas,
+    ).toEqual([])
+    expect(
+      Object.isFrozen(
+        estado.casillasExploradas,
+      ),
+    ).toBe(true)
+  })
+
+  it('normaliza las casillas exploradas sin duplicados y ordenadas', () => {
+    const estado = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,
+      reinoJugador: 'castilla',
+      casillasExploradas: [
+        '2,0',
+        '0,0',
+        '1,0',
+        '0,0',
+      ],
+    })
+
+    expect(
+      estado.casillasExploradas,
+    ).toEqual(['0,0', '1,0', '2,0'])
+  })
+
+  it('conserva las casillas exploradas al guardar y cargar', () => {
+    const original = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,
+      reinoJugador: 'castilla',
+      casillasExploradas: ['0,0', '1,0'],
+    })
+
+    const restaurado =
+      restaurarEstadoPartida(
+        JSON.parse(
+          JSON.stringify(original),
+        ) as unknown,
+      )
+
+    expect(
+      restaurado.casillasExploradas,
+    ).toEqual(['0,0', '1,0'])
+  })
+
+  it('rechaza casillas exploradas que no son texto', () => {
+    expect(() =>
+      restaurarEstadoPartida({
+        version: VERSION_ESTADO_PARTIDA,
+        semillaMapa: 12345,
+        meta: META,
+        turno: 1,
+        fase: 'gestion',
+        reinoJugador: 'castilla',
+        recursos: {
+          grano: 0,
+          madera: 0,
+          piedra: 0,
+          manoDeObra: 0,
+          oro: 0,
+        },
+        casillasExploradas: [0],
+      }),
+    ).toThrow(
+      'Estado de partida no válido',
+    )
   })
 })
