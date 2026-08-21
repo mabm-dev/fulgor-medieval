@@ -16,6 +16,9 @@ import {
   obtenerPerfilEconomico,
 } from '../game/content/kingdomEconomy'
 import type {
+  EventoTurno,
+} from '../game/domain/events'
+import type {
   EstadoPartida,
 } from '../game/domain/gameState'
 import type {
@@ -100,6 +103,11 @@ export default function Mapa() {
 
   const [mensajeTurno, setMensajeTurno] =
     useState<string>()
+
+  const [eventosTurno, setEventosTurno] =
+    useState<readonly EventoTurno[]>(
+      [],
+    )
 
   const [
     ordenesConstruccion,
@@ -229,6 +237,7 @@ export default function Mapa() {
 
     setEstadoJuego(resultado.estado)
     setOrdenesConstruccion({})
+    setEventosTurno(resultado.eventos)
     setMensajeTurno(
       `Turno ${estadoJuego.turno} resuelto`,
     )
@@ -287,6 +296,7 @@ export default function Mapa() {
           mensajeTurno ??
           perfilEconomico.especialidad
         }
+        eventos={eventosTurno}
       />
 
       <section

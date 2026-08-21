@@ -1,3 +1,8 @@
+import { useState } from 'react'
+import { formatearEvento } from './eventLog'
+import type {
+  EventoTurno,
+} from '../../game/domain/events'
 import type {
   EstadoPartida,
   FaseTurno,
@@ -31,6 +36,7 @@ export interface TurnHudProps {
   readonly onFinalizarTurno: () => void
   readonly deshabilitado?: boolean
   readonly mensaje?: string
+  readonly eventos?: readonly EventoTurno[]
 }
 
 export default function TurnHud({
@@ -38,7 +44,13 @@ export default function TurnHud({
   onFinalizarTurno,
   deshabilitado = false,
   mensaje,
+  eventos = [],
 }: TurnHudProps) {
+  const [
+    registroAbierto,
+    setRegistroAbierto,
+  ] = useState(false)
+
   const finalizarDeshabilitado =
     deshabilitado ||
     estado.fase !== 'gestion'
@@ -87,14 +99,53 @@ export default function TurnHud({
         })}
       </dl>
 
-      <div className="flex w-full min-w-0 items-center justify-between gap-3 lg:justify-end">
-        {mensaje && (
-          <p
-            role="status"
-            className="max-w-[55%] text-left text-xs text-[#c8ad72]/75 lg:w-52 lg:max-w-52 lg:flex-none lg:text-right"
-          >
-            {mensaje}
-          </p>
+      <div className="relative flex w-full min-w-0 items-center justify-between gap-3 lg:justify-end">
+        {eventos.length > 0 ? (
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() =>
+                setRegistroAbierto(
+                  (actual) => !actual,
+                )
+              }
+              aria-expanded={registroAbierto}
+              className="font-cinzel border border-[#c8ad72]/30 bg-black/30 px-3 py-2 text-[10px] tracking-[0.15em] text-[#c8ad72]/80 uppercase transition-colors hover:border-[#c8ad72]/60 hover:text-[#ffe6a3]"
+            >
+              Registro del turno (
+              {eventos.length})
+            </button>
+
+            {registroAbierto && (
+              <ul
+                role="log"
+                aria-label="Registro del turno anterior"
+                className="absolute top-full right-0 z-30 mt-2 w-72 space-y-1.5 border border-[#c8ad72]/40 bg-[#070b10] p-3 text-left shadow-[0_12px_30px_rgba(0,0,0,0.7)]"
+              >
+                {eventos.map(
+                  (evento, indice) => (
+                    <li
+                      key={`${evento.tipo}-${indice}`}
+                      className="border-b border-white/5 pb-1.5 text-xs text-white/70 last:border-b-0 last:pb-0"
+                    >
+                      {formatearEvento(
+                        evento,
+                      )}
+                    </li>
+                  ),
+                )}
+              </ul>
+            )}
+          </div>
+        ) : (
+          mensaje && (
+            <p
+              role="status"
+              className="max-w-[55%] text-left text-xs text-[#c8ad72]/75 lg:w-52 lg:max-w-52 lg:flex-none lg:text-right"
+            >
+              {mensaje}
+            </p>
+          )
         )}
 
         <button

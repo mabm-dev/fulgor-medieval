@@ -7,11 +7,13 @@ import {
   it,
 } from 'vitest'
 import { crearEstadoDePrueba } from '../../test/crearEstadoDePrueba'
+import type { EventoTurno } from '../../game/domain/events'
 import TurnHud from './TurnHud'
 
 interface OpcionesRenderizado {
   readonly deshabilitado?: boolean
   readonly mensaje?: string
+  readonly eventos?: readonly EventoTurno[]
 }
 
 function renderizarHud(
@@ -36,6 +38,7 @@ function renderizarHud(
         opciones.deshabilitado
       }
       mensaje={opciones.mensaje}
+      eventos={opciones.eventos}
     />,
   )
 }
@@ -92,6 +95,41 @@ describe('TurnHud', () => {
     )
     expect(html).toContain(
       'Turno 1 resuelto',
+    )
+  })
+
+  it('muestra el botón de registro cuando hay eventos', () => {
+    const html = renderizarHud({
+      mensaje: 'Turno 1 resuelto',
+      eventos: [
+        {
+          tipo: 'turno_finalizado',
+          turno: 1,
+          siguienteTurno: 2,
+        },
+      ],
+    })
+
+    expect(html).toContain(
+      'Registro del turno (1)',
+    )
+    // El mensaje suelto cede el sitio al registro cuando hay eventos.
+    expect(html).not.toContain(
+      'role="status"',
+    )
+  })
+
+  it('sin eventos, vuelve a mostrar el mensaje suelto', () => {
+    const html = renderizarHud({
+      mensaje: 'Fortalezas, cantería y minería',
+      eventos: [],
+    })
+
+    expect(html).toContain(
+      'role="status"',
+    )
+    expect(html).not.toContain(
+      'Registro del turno',
     )
   })
 })
