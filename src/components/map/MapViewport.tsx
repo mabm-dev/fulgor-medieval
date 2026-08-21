@@ -15,7 +15,11 @@ import {
   ZOOM_MINIMO,
 } from './camera'
 
-const UMBRAL_ARRASTRE = 4
+// Por debajo de este umbral, el gesto se trata como clic aunque el puntero
+// se haya movido un poco entre pulsar y soltar. 4px era demasiado estricto:
+// cualquier clic real de ratón o trackpad tiembla más que eso, así que en
+// cuanto había zoom (con el arrastre activo) el clic se descartaba siempre.
+const UMBRAL_ARRASTRE = 8
 
 interface MapViewportProps {
   readonly children: ReactNode
