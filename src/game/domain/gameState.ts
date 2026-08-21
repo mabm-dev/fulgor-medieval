@@ -156,6 +156,58 @@ function leerCantidad(
   return cantidad
 }
 
+function leerEdificios(
+  datos: unknown,
+): string[] {
+  if (datos === undefined) {
+    return []
+  }
+
+  if (!Array.isArray(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return datos.map((edificioId) => {
+    if (typeof edificioId !== 'string') {
+      throw new Error(
+        ERROR_ESTADO_INVALIDO,
+      )
+    }
+
+    return edificioId
+  })
+}
+
+function leerProyectoConstruccion(
+  datos: unknown,
+):
+  | OpcionesAsentamiento['proyectoConstruccion']
+  | undefined {
+  if (datos === undefined) {
+    return undefined
+  }
+
+  if (!esRegistro(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  const edificioId = datos.edificioId
+  const turnosRestantes =
+    datos.turnosRestantes
+
+  if (
+    typeof edificioId !== 'string' ||
+    typeof turnosRestantes !== 'number'
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return {
+    edificioId,
+    turnosRestantes,
+  }
+}
+
 function leerAsentamiento(
   datos: unknown,
 ): OpcionesAsentamiento {
@@ -202,6 +254,13 @@ function leerAsentamiento(
       habitantes,
       capacidad,
     },
+    edificios: leerEdificios(
+      datos.edificios,
+    ),
+    proyectoConstruccion:
+      leerProyectoConstruccion(
+        datos.proyectoConstruccion,
+      ),
   }
 }
 

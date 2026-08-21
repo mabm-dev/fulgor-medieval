@@ -305,6 +305,7 @@ describe('estado de partida', () => {
           habitantes: 120,
           capacidad: 200,
         },
+        edificios: [],
       },
     ])
     expect(
@@ -317,5 +318,53 @@ describe('estado de partida', () => {
         restaurado.asentamientos[0],
       ),
     ).toBe(true)
+  })
+
+  it('conserva los edificios y la obra en marcha al guardar y cargar', () => {
+    const original = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,
+      reinoJugador: 'castilla',
+      asentamientos: [
+        {
+          id: 'burgos',
+          nombre: 'Burgos',
+          reinoId: 'castilla',
+          tipo: 'villa',
+          posicion: {
+            q: 2,
+            r: -1,
+          },
+          poblacion: {
+            habitantes: 120,
+            capacidad: 200,
+          },
+          edificios: ['granero'],
+          proyectoConstruccion: {
+            edificioId: 'cantera',
+            turnosRestantes: 2,
+          },
+        },
+      ],
+    })
+
+    const restaurado =
+      restaurarEstadoPartida(
+        JSON.parse(
+          JSON.stringify(original),
+        ) as unknown,
+      )
+
+    expect(
+      restaurado.asentamientos[0]
+        ?.edificios,
+    ).toEqual(['granero'])
+    expect(
+      restaurado.asentamientos[0]
+        ?.proyectoConstruccion,
+    ).toEqual({
+      edificioId: 'cantera',
+      turnosRestantes: 2,
+    })
   })
 })

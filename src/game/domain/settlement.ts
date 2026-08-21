@@ -13,6 +13,18 @@ export const TIPOS_ASENTAMIENTO = [
 export type TipoAsentamiento =
   (typeof TIPOS_ASENTAMIENTO)[number]
 
+/**
+ * Una obra en marcha. `edificioId` no se tipa contra `IdEdificio` de
+ * `content/buildings.ts` a propósito —igual que `reinoId` no se tipa contra
+ * `IdentificadorReino`—: el dominio no depende del contenido, así que valida
+ * lo que puede validar (un texto no vacío, un entero positivo) y deja que
+ * quien conozca el catálogo compruebe que el identificador es real.
+ */
+export interface ProyectoConstruccion {
+  readonly edificioId: string
+  readonly turnosRestantes: number
+}
+
 export interface Asentamiento {
   readonly id: string
   readonly nombre: string
@@ -20,6 +32,8 @@ export interface Asentamiento {
   readonly tipo: TipoAsentamiento
   readonly posicion: CoordenadaHex
   readonly poblacion: PoblacionAsentamiento
+  readonly edificios: readonly string[]
+  readonly proyectoConstruccion?: ProyectoConstruccion
 }
 
 export interface OpcionesAsentamiento {
@@ -29,6 +43,8 @@ export interface OpcionesAsentamiento {
   readonly tipo: TipoAsentamiento
   readonly posicion: CoordenadaHex
   readonly poblacion: PoblacionAsentamiento
+  readonly edificios?: readonly string[]
+  readonly proyectoConstruccion?: ProyectoConstruccion
 }
 
 function normalizarTexto(
@@ -87,10 +103,66 @@ function validarTipo(
   return tipo
 }
 
+function validarEdificios(
+  valores: readonly string[],
+): readonly string[] {
+  const edificios = valores.map(
+    (edificioId) => {
+      const texto = edificioId.trim()
+
+      if (!texto) {
+        throw new Error(
+          'El identificador de un edificio construido no puede estar vacío',
+        )
+      }
+
+      return texto
+    },
+  )
+
+  return Object.freeze(edificios)
+}
+
+function validarProyectoConstruccion(
+  proyecto:
+    | ProyectoConstruccion
+    | undefined,
+): ProyectoConstruccion | undefined {
+  if (proyecto === undefined) {
+    return undefined
+  }
+
+  const edificioId =
+    proyecto.edificioId.trim()
+
+  if (!edificioId) {
+    throw new Error(
+      'El identificador del edificio en obra no puede estar vacío',
+    )
+  }
+
+  if (
+    !Number.isSafeInteger(
+      proyecto.turnosRestantes,
+    ) ||
+    proyecto.turnosRestantes < 1
+  ) {
+    throw new RangeError(
+      'Los turnos restantes de una obra deben ser un entero positivo',
+    )
+  }
+
+  return Object.freeze({
+    edificioId,
+    turnosRestantes:
+      proyecto.turnosRestantes,
+  })
+}
+
 export function crearAsentamiento(
   opciones: OpcionesAsentamiento,
 ): Asentamiento {
-  const asentamiento: Asentamiento = {
+  const base = {
     id: normalizarTexto(
       'El identificador',
       opciones.id,
@@ -110,7 +182,20 @@ export function crearAsentamiento(
     poblacion: crearPoblacion(
       opciones.poblacion,
     ),
+    edificios: validarEdificios(
+      opciones.edificios ?? [],
+    ),
   }
+
+  const proyectoConstruccion =
+    validarProyectoConstruccion(
+      opciones.proyectoConstruccion,
+    )
+
+  const asentamiento: Asentamiento =
+    proyectoConstruccion === undefined
+      ? base
+      : { ...base, proyectoConstruccion }
 
   return Object.freeze(asentamiento)
 }

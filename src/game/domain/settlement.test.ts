@@ -48,6 +48,7 @@ describe('asentamiento', () => {
         habitantes: 120,
         capacidad: 200,
       },
+      edificios: [],
     })
     expect(
       Object.isFrozen(asentamiento),
@@ -150,6 +151,85 @@ describe('asentamiento', () => {
       ),
     ).toThrow(
       'La población no puede superar la capacidad',
+    )
+  })
+
+  it('sin obra en marcha, no guarda el campo', () => {
+    const asentamiento = crearAsentamiento(
+      crearOpciones(),
+    )
+
+    expect(
+      'proyectoConstruccion' in
+        asentamiento,
+    ).toBe(false)
+  })
+
+  it('normaliza y valida el proyecto de construcción', () => {
+    const asentamiento = crearAsentamiento(
+      crearOpciones({
+        proyectoConstruccion: {
+          edificioId: '  granero  ',
+          turnosRestantes: 3,
+        },
+      }),
+    )
+
+    expect(
+      asentamiento.proyectoConstruccion,
+    ).toEqual({
+      edificioId: 'granero',
+      turnosRestantes: 3,
+    })
+    expect(
+      Object.isFrozen(
+        asentamiento.proyectoConstruccion,
+      ),
+    ).toBe(true)
+  })
+
+  it('rechaza turnos restantes no positivos', () => {
+    expect(() =>
+      crearAsentamiento(
+        crearOpciones({
+          proyectoConstruccion: {
+            edificioId: 'granero',
+            turnosRestantes: 0,
+          },
+        }),
+      ),
+    ).toThrow(
+      'Los turnos restantes de una obra deben ser un entero positivo',
+    )
+  })
+
+  it('normaliza los edificios construidos', () => {
+    const asentamiento = crearAsentamiento(
+      crearOpciones({
+        edificios: ['  granero  ', 'cantera'],
+      }),
+    )
+
+    expect(asentamiento.edificios).toEqual([
+      'granero',
+      'cantera',
+    ])
+    expect(
+      Object.isFrozen(
+        asentamiento.edificios,
+      ),
+    ).toBe(true)
+  })
+
+  it('rechaza un identificador de edificio vacío', () => {
+    expect(() =>
+      crearAsentamiento(
+        crearOpciones({
+          edificios: ['   '],
+        }),
+      ),
+    ).toThrow(
+      'El identificador de un edificio construido no puede estar vacío',
     )
   })
 })
