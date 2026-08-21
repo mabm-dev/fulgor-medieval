@@ -101,4 +101,16 @@ describe('formatearEvento', () => {
       }),
     ).toBe('Turno 3 resuelto')
   })
+
+  it('avisa cuando falla el guardado', () => {
+    expect(
+      formatearEvento({
+        tipo: 'guardado_fallido',
+        turno: 3,
+        mensaje: 'cuota agotada',
+      }),
+    ).toBe(
+      'No se pudo guardar la partida: cuota agotada',
+    )
+  })
 })

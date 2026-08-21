@@ -40,9 +40,22 @@ export interface EventoTurnoFinalizado
   readonly siguienteTurno: number
 }
 
+/**
+ * No la emite el motor de turnos —`turns.ts` no conoce la persistencia—,
+ * sino `finalizarTurnoSesion` en `systems/session.ts`, cuando
+ * `guardarEstadoPartida` no puede escribir. Vive en el mismo canal de
+ * eventos para que el HUD la comunique sin ninguna pieza nueva de interfaz.
+ */
+export interface EventoGuardadoFallido
+  extends EventoBaseTurno {
+  readonly tipo: 'guardado_fallido'
+  readonly mensaje: string
+}
+
 export type EventoTurno =
   | EventoProduccionAplicada
   | EventoConsumoAplicado
   | EventoCrecimientoAsentamientoAplicado
   | EventoEdificioCompletado
   | EventoTurnoFinalizado
+  | EventoGuardadoFallido

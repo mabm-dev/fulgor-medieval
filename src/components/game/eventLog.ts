@@ -83,5 +83,7 @@ export function formatearEvento(
       )} completado en ${evento.asentamientoId}`
     case 'turno_finalizado':
       return `Turno ${evento.turno} resuelto`
+    case 'guardado_fallido':
+      return `No se pudo guardar la partida: ${evento.mensaje}`
   }
 }

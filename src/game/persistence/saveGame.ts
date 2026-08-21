@@ -43,6 +43,23 @@ export type ResultadoCargaPartida =
       readonly error: ErrorCargaPartida
     }
 
+export type MotivoGuardadoFallido =
+  | 'cuota_excedida'
+  | 'almacenamiento_no_disponible'
+  | 'desconocido'
+
+export interface ErrorGuardadoPartida {
+  readonly motivo: MotivoGuardadoFallido
+  readonly mensaje: string
+}
+
+export type ResultadoGuardadoPartida =
+  | { readonly tipo: 'exito' }
+  | {
+      readonly tipo: 'error'
+      readonly error: ErrorGuardadoPartida
+    }
+
 export function serializarEstadoPartida(
   estado: EstadoPartida,
 ): string {
@@ -66,14 +83,65 @@ export function deserializarEstadoPartida(
   return restaurarEstadoPartida(datos)
 }
 
+function clasificarErrorGuardado(
+  causa: unknown,
+): MotivoGuardadoFallido {
+  if (
+    causa instanceof DOMException &&
+    causa.name === 'QuotaExceededError'
+  ) {
+    return 'cuota_excedida'
+  }
+
+  if (
+    causa instanceof DOMException &&
+    causa.name === 'SecurityError'
+  ) {
+    return 'almacenamiento_no_disponible'
+  }
+
+  return 'desconocido'
+}
+
+/**
+ * Nunca lanza: en navegación privada o con la cuota agotada, `setItem`
+ * puede lanzar, y eso no puede tumbar la resolución del turno completa
+ * (mejoras 4 y 9). El `AlmacenamientoPartida` que se le pasa se queda fino
+ * a propósito, sin `try/catch` propio —esa decisión ya se tomó al mover la
+ * semilla del mapa al estado—: la protección vive aquí.
+ */
 export function guardarEstadoPartida(
   almacenamiento: AlmacenamientoPartida,
   estado: EstadoPartida,
-): void {
-  almacenamiento.setItem(
-    CLAVE_ESTADO_PARTIDA,
-    serializarEstadoPartida(estado),
-  )
+): ResultadoGuardadoPartida {
+  try {
+    almacenamiento.setItem(
+      CLAVE_ESTADO_PARTIDA,
+      serializarEstadoPartida(estado),
+    )
+
+    const exito: ResultadoGuardadoPartida = {
+      tipo: 'exito',
+    }
+
+    return Object.freeze(exito)
+  } catch (causa) {
+    const mensaje =
+      causa instanceof Error
+        ? causa.message
+        : 'No se pudo guardar la partida'
+
+    const fallo: ResultadoGuardadoPartida = {
+      tipo: 'error',
+      error: Object.freeze({
+        motivo:
+          clasificarErrorGuardado(causa),
+        mensaje,
+      }),
+    }
+
+    return Object.freeze(fallo)
+  }
 }
 
 export function cargarEstadoPartida(

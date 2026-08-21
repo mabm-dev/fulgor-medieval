@@ -81,6 +81,10 @@ export function crearSesionPartida(
     asentamientos: [capital],
   })
 
+  // No hay canal de eventos en la fundación —a diferencia del turno, esto
+  // no vuelve a ocurrir— así que un fallo de escritura aquí no se comunica
+  // todavía. Lo que sí se garantiza es que `guardarEstadoPartida` no lanza:
+  // la partida recién fundada sigue devolviéndose aunque no se guarde.
   guardarEstadoPartida(
     almacenamiento,
     estado,
@@ -105,10 +109,24 @@ export function finalizarTurnoSesion(
     opciones,
   )
 
-  guardarEstadoPartida(
+  const guardado = guardarEstadoPartida(
     almacenamiento,
     resultado.estado,
   )
 
-  return resultado
+  if (guardado.tipo === 'exito') {
+    return resultado
+  }
+
+  return {
+    estado: resultado.estado,
+    eventos: [
+      ...resultado.eventos,
+      {
+        tipo: 'guardado_fallido',
+        turno: estado.turno,
+        mensaje: guardado.error.mensaje,
+      },
+    ],
+  }
 }

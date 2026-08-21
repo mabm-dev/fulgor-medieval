@@ -34,6 +34,18 @@ function crearAlmacenamientoMemoria():
   }
 }
 
+function crearAlmacenamientoQueFalla(
+  error: unknown,
+): AlmacenamientoPartida {
+  return {
+    getItem: () => null,
+    setItem: () => {
+      throw error
+    },
+    removeItem: () => {},
+  }
+}
+
 describe('guardado versionado', () => {
   it('serializa y restaura el estado', () => {
     const original = crearEstadoDePrueba({
@@ -95,10 +107,12 @@ describe('guardado versionado', () => {
       },
     })
 
-    guardarEstadoPartida(
-      almacenamiento,
-      original,
-    )
+    expect(
+      guardarEstadoPartida(
+        almacenamiento,
+        original,
+      ),
+    ).toEqual({ tipo: 'exito' })
 
     expect(
       almacenamiento.getItem(
@@ -233,5 +247,85 @@ describe('guardado versionado', () => {
     expect(
       cargarEstadoPartida(almacenamiento),
     ).toEqual({ tipo: 'vacio' })
+  })
+
+  it('no lanza si la cuota de almacenamiento está agotada', () => {
+    const error = new DOMException(
+      'cuota agotada',
+      'QuotaExceededError',
+    )
+    const almacenamiento =
+      crearAlmacenamientoQueFalla(error)
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+    })
+
+    expect(() =>
+      guardarEstadoPartida(
+        almacenamiento,
+        estado,
+      ),
+    ).not.toThrow()
+
+    expect(
+      guardarEstadoPartida(
+        almacenamiento,
+        estado,
+      ),
+    ).toEqual({
+      tipo: 'error',
+      error: {
+        motivo: 'cuota_excedida',
+        mensaje: 'cuota agotada',
+      },
+    })
+  })
+
+  it('no lanza si el almacenamiento no está disponible', () => {
+    const error = new DOMException(
+      'bloqueado',
+      'SecurityError',
+    )
+    const almacenamiento =
+      crearAlmacenamientoQueFalla(error)
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+    })
+
+    expect(
+      guardarEstadoPartida(
+        almacenamiento,
+        estado,
+      ),
+    ).toEqual({
+      tipo: 'error',
+      error: {
+        motivo: 'almacenamiento_no_disponible',
+        mensaje: 'bloqueado',
+      },
+    })
+  })
+
+  it('clasifica como desconocido cualquier otro fallo de escritura', () => {
+    const almacenamiento =
+      crearAlmacenamientoQueFalla(
+        new Error('disco lleno'),
+      )
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+    })
+
+    expect(
+      guardarEstadoPartida(
+        almacenamiento,
+        estado,
+      ),
+    ).toEqual({
+      tipo: 'error',
+      error: {
+        motivo: 'desconocido',
+        mensaje: 'disco lleno',
+      },
+    })
   })
 })

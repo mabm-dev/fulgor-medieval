@@ -34,6 +34,32 @@ function crearAlmacenamientoMemoria():
   }
 }
 
+function crearAlmacenamientoQueFallaTrasLaPrimeraEscritura():
+  AlmacenamientoPartida {
+  const datos = new Map<string, string>()
+  let escrituras = 0
+
+  return {
+    getItem: (clave) =>
+      datos.get(clave) ?? null,
+    setItem: (clave, valor) => {
+      escrituras += 1
+
+      if (escrituras > 1) {
+        throw new DOMException(
+          'cuota agotada',
+          'QuotaExceededError',
+        )
+      }
+
+      datos.set(clave, valor)
+    },
+    removeItem: (clave) => {
+      datos.delete(clave)
+    },
+  }
+}
+
 function construirDiccionarioCasillas(
   mapa: ReturnType<typeof generarMapa>,
 ): Record<string, CasillaMapa> {
@@ -204,5 +230,46 @@ describe('sesión de partida', () => {
     expect(
       cargarSesionPartida(almacenamiento),
     ).toEqual(guardadoAnterior)
+  })
+
+  it('avisa por el canal de eventos si no puede guardar el turno, sin perder el progreso en memoria', () => {
+    const almacenamiento =
+      crearAlmacenamientoQueFallaTrasLaPrimeraEscritura()
+    const estado = crearSesionPartida(
+      almacenamiento,
+      OPCIONES,
+    )
+
+    const mapa = generarMapa({
+      ...DIMENSIONES_MAPA_PREDETERMINADO,
+      semilla: OPCIONES.semillaMapa,
+    })
+
+    const resultado = finalizarTurnoSesion(
+      almacenamiento,
+      estado,
+      {
+        casillas:
+          construirDiccionarioCasillas(
+            mapa,
+          ),
+      },
+    )
+
+    expect(resultado.estado.turno).toBe(2)
+    expect(resultado.eventos.at(-1)).toEqual(
+      {
+        tipo: 'guardado_fallido',
+        turno: 1,
+        mensaje: 'cuota agotada',
+      },
+    )
+    // CU-07: una escritura fallida no destruye la copia anterior.
+    expect(
+      cargarSesionPartida(almacenamiento),
+    ).toEqual({
+      tipo: 'exito',
+      estado,
+    })
   })
 })
