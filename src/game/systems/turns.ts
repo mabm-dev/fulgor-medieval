@@ -5,8 +5,12 @@ import type {
   EventoTurno,
 } from '../domain/events'
 import type {
+  IdentificadorReino,
+} from '../domain/kingdom'
+import type {
   CasillaMapa,
 } from '../map/generateMap'
+import type { CoordenadaHex } from '../map/hex'
 import {
   crearReservaRecursos,
   sumarReservas,
@@ -15,6 +19,10 @@ import {
 import type {
   RegistroAsentamientos,
 } from '../domain/settlementRegistry'
+import {
+  crearRegistroHuestes,
+  type RegistroHuestes,
+} from '../domain/huesteRegistry'
 import {
   aplicarConsumo,
   aplicarProduccion,
@@ -31,6 +39,9 @@ import {
 import {
   calcularEconomiaAsentamiento,
 } from './settlementEconomy'
+import {
+  resolverMovimiento,
+} from './movement'
 import {
   actualizarCasillasExploradas,
   calcularVisibilidad,
@@ -56,9 +67,16 @@ export interface OrdenConstruccion {
   readonly edificioId: string
 }
 
+export interface OrdenMovimiento {
+  readonly tipo: 'Movimiento'
+  readonly huesteId: string
+  readonly destino: CoordenadaHex
+}
+
 export type OrdenTurno =
   | OrdenCrecimiento
   | OrdenConstruccion
+  | OrdenMovimiento
 
 export interface OpcionesFinalizarTurno {
   readonly casillas: Readonly<
@@ -84,11 +102,13 @@ function repartirOrdenes(
 ): {
   crecimientos: OrdenCrecimientoAsentamiento[]
   construcciones: OrdenConstruccionAsentamiento[]
+  movimientos: OrdenMovimiento[]
 } {
   const crecimientos: OrdenCrecimientoAsentamiento[] =
     []
   const construcciones: OrdenConstruccionAsentamiento[] =
     []
+  const movimientos: OrdenMovimiento[] = []
 
   for (const orden of ordenes) {
     switch (orden.tipo) {
@@ -107,12 +127,86 @@ function repartirOrdenes(
           edificioId: orden.edificioId,
         })
         break
+      case 'Movimiento':
+        movimientos.push(orden)
+        break
       default:
         assertNever(orden)
     }
   }
 
-  return { crecimientos, construcciones }
+  return {
+    crecimientos,
+    construcciones,
+    movimientos,
+  }
+}
+
+/**
+ * Solo mueve huestes propias: una orden hacia una hueste inexistente o de
+ * otro reino lanza —igual que `iniciarProyectosConstruccion` con un
+ * asentamiento que no existe, no hay nada que mover en silencio—. Usa la
+ * exploración de **antes** de resolver el turno (`CU-04`): la ruta se
+ * calcula con lo que ya se sabía al empezar, no con lo que este mismo
+ * turno pueda revelar.
+ */
+function resolverOrdenesMovimiento(
+  huestes: RegistroHuestes,
+  reinoJugador: IdentificadorReino,
+  ordenes: readonly OrdenMovimiento[],
+  casillas: Readonly<
+    Record<string, CasillaMapa>
+  >,
+  exploradas: ReadonlySet<string>,
+): RegistroHuestes {
+  const huestesPorId = new Map(
+    huestes.map((hueste) => [
+      hueste.id,
+      hueste,
+    ]),
+  )
+  const posicionesActualizadas = new Map<
+    string,
+    CoordenadaHex
+  >()
+
+  for (const orden of ordenes) {
+    const hueste = huestesPorId.get(
+      orden.huesteId,
+    )
+
+    if (
+      hueste === undefined ||
+      hueste.reinoId !== reinoJugador
+    ) {
+      throw new Error(
+        'Hueste no encontrada: ' +
+          orden.huesteId,
+      )
+    }
+
+    const resultado = resolverMovimiento(
+      hueste.posicion,
+      orden.destino,
+      casillas,
+      exploradas,
+    )
+
+    posicionesActualizadas.set(
+      hueste.id,
+      resultado.posicion,
+    )
+  }
+
+  return crearRegistroHuestes(
+    huestes.map((hueste) => ({
+      ...hueste,
+      posicion:
+        posicionesActualizadas.get(
+          hueste.id,
+        ) ?? hueste.posicion,
+    })),
+  )
 }
 
 /**
@@ -246,13 +340,31 @@ export function finalizarTurno(
     consumo,
   )
 
-  const { crecimientos, construcciones } =
-    repartirOrdenes(opciones.ordenes ?? [])
+  const {
+    crecimientos,
+    construcciones,
+    movimientos,
+  } = repartirOrdenes(
+    opciones.ordenes ?? [],
+  )
 
   const crecimiento =
     aplicarOrdenesCrecimiento(
       avanceConstruccion.asentamientos,
       crecimientos,
+    )
+
+  // 3. Movimiento: no depende de la economía ni la construcción, así que
+  // se resuelve en paralelo a esos dos pasos, no después.
+  const huestesActualizadas =
+    resolverOrdenesMovimiento(
+      estado.huestes,
+      estado.reinoJugador,
+      movimientos,
+      opciones.casillas,
+      new Set(
+        estado.casillasExploradas,
+      ),
     )
 
   // 2. Las obras nuevas del turno se validan y descuentan al final, sobre
@@ -269,13 +381,19 @@ export function finalizarTurno(
   const siguienteTurno = estado.turno + 1
 
   // Niebla de guerra: "visible" se deriva aquí, no se guarda; "explorado"
-  // sí, y solo crece. Con los asentamientos propios de antes de resolver
-  // el turno —lo mismo que ya usa `calcularEconomiaReino`—, no con los ya
-  // actualizados: ver lo que se tenía al empezar el turno, no lo que
-  // queda después de construir.
-  const visibilidad = calcularVisibilidad(
-    asentamientosPropios,
-  )
+  // sí, y solo crece. Los asentamientos son los propios de antes de
+  // resolver el turno —no se mueven, da igual—; las huestes sí son las ya
+  // movidas: se ve desde donde termina la marcha, no desde donde empezó.
+  const huestesPropias =
+    huestesActualizadas.filter(
+      (hueste) =>
+        hueste.reinoId ===
+        estado.reinoJugador,
+    )
+  const visibilidad = calcularVisibilidad([
+    ...asentamientosPropios,
+    ...huestesPropias,
+  ])
   const casillasExploradas =
     actualizarCasillasExploradas(
       estado.casillasExploradas,
@@ -290,6 +408,7 @@ export function finalizarTurno(
       recursos: inicioConstruccion.recursos,
       asentamientos:
         inicioConstruccion.asentamientos,
+      huestes: huestesActualizadas,
       casillasExploradas,
     })
 

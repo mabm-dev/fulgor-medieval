@@ -132,6 +132,25 @@ describe('sesión de partida', () => {
     )
   })
 
+  it('funda una hueste en la capital propia', () => {
+    const estado = crearSesionPartida(
+      crearAlmacenamientoMemoria(),
+      OPCIONES,
+    )
+
+    expect(estado.huestes).toHaveLength(
+      1,
+    )
+    expect(
+      estado.huestes[0].reinoId,
+    ).toBe('castilla')
+    expect(
+      estado.huestes[0].posicion,
+    ).toEqual(
+      estado.asentamientos[0].posicion,
+    )
+  })
+
   it('planta la capital sobre una llanura del mapa', () => {
     const estado = crearSesionPartida(
       crearAlmacenamientoMemoria(),

@@ -4,6 +4,7 @@ import {
 import {
   crearCapitalInicial,
 } from '../content/kingdomSettlements'
+import { crearHueste } from '../domain/hueste'
 import {
   crearEstadoPartida,
   type EstadoPartida,
@@ -75,6 +76,17 @@ export function crearSesionPartida(
     ]),
   )
 
+  // Pieza 4 del paso 6: una hueste inicial, para probar movimiento y
+  // exploración sin necesitar todavía una cadena de reclutamiento
+  // completa. Solo del jugador —la rival sigue siendo presencia inerte
+  // (pieza 2), sin nada que mover—.
+  const hueste = crearHueste({
+    id: 'hueste-1',
+    nombre: 'Hueste exploradora',
+    reinoId: opciones.reinoJugador,
+    posicion: capital.posicion,
+  })
+
   const perfil = obtenerPerfilEconomico(
     opciones.reinoJugador,
   )
@@ -92,7 +104,7 @@ export function crearSesionPartida(
   // ciego hasta terminar el primer turno. Solo la propia —la del jugador
   // no ve por la rival—.
   const visibilidadInicial =
-    calcularVisibilidad([capital])
+    calcularVisibilidad([capital, hueste])
 
   const estado = crearEstadoPartida({
     semillaMapa,
@@ -100,6 +112,7 @@ export function crearSesionPartida(
     reinoJugador: opciones.reinoJugador,
     recursos: perfil.recursosIniciales,
     asentamientos: [capital, capitalRival],
+    huestes: [hueste],
     casillasExploradas: [
       ...visibilidadInicial,
     ],

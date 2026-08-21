@@ -9,6 +9,7 @@ import type {
 import { crearEstadoDePrueba } from '../../test/crearEstadoDePrueba'
 import type { CasillaMapa } from '../map/generateMap'
 import {
+  casillasEnRadio,
   claveHex,
   vecinosHex,
   type CoordenadaHex,
@@ -69,6 +70,46 @@ function crearAsentamientoDePrueba(
     },
     ...cambios,
   }
+}
+
+function crearHuesteDePrueba(
+  posicion: CoordenadaHex = { q: 0, r: 0 },
+  cambios: {
+    id?: string
+    reinoId?: string
+  } = {},
+) {
+  return {
+    id: 'hueste-1',
+    nombre: 'Hueste exploradora',
+    reinoId: 'castilla',
+    posicion,
+    ...cambios,
+  }
+}
+
+function construirCasillasEnRadio(
+  posicion: CoordenadaHex,
+  radio: number,
+  terreno: TipoTerreno = 'llanura',
+): Record<string, CasillaMapa> {
+  const casillas: Record<
+    string,
+    CasillaMapa
+  > = {}
+
+  for (const coordenada of casillasEnRadio(
+    posicion,
+    radio,
+  )) {
+    casillas[claveHex(coordenada)] = {
+      coordenada,
+      terreno,
+      tieneOro: false,
+    }
+  }
+
+  return casillas
 }
 
 function crearEstadoPrueba(): EstadoPartida {
@@ -655,5 +696,179 @@ describe('resolución del turno', () => {
     expect(
       resultado.estado.casillasExploradas,
     ).not.toContain('50,50')
+  })
+
+  it('mueve una hueste con una orden de movimiento', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+      huestes: [
+        crearHuesteDePrueba({
+          q: 0,
+          r: 0,
+        }),
+      ],
+    })
+
+    const resultado = finalizarTurno(
+      estado,
+      {
+        casillas:
+          construirCasillasEnRadio(
+            { q: 0, r: 0 },
+            4,
+          ),
+        ordenes: [
+          {
+            tipo: 'Movimiento',
+            huesteId: 'hueste-1',
+            destino: { q: 2, r: 0 },
+          },
+        ],
+      },
+    )
+
+    expect(
+      resultado.estado.huestes[0]
+        .posicion,
+    ).toEqual({ q: 2, r: 0 })
+  })
+
+  it('una hueste sin orden se queda donde estaba', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+      huestes: [
+        crearHuesteDePrueba({
+          q: 3,
+          r: -1,
+        }),
+      ],
+    })
+
+    const resultado = finalizarTurno(
+      estado,
+      {
+        casillas:
+          construirCasillasEnRadio(
+            { q: 0, r: 0 },
+            4,
+          ),
+      },
+    )
+
+    expect(
+      resultado.estado.huestes[0]
+        .posicion,
+    ).toEqual({ q: 3, r: -1 })
+  })
+
+  it('la niebla se expande hasta la nueva posición de la hueste', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100, {
+          q: 0,
+          r: 0,
+        }),
+      ],
+      huestes: [
+        crearHuesteDePrueba({
+          q: 0,
+          r: 0,
+        }),
+      ],
+    })
+
+    const resultado = finalizarTurno(
+      estado,
+      {
+        casillas:
+          construirCasillasEnRadio(
+            { q: 0, r: 0 },
+            6,
+          ),
+        ordenes: [
+          {
+            tipo: 'Movimiento',
+            huesteId: 'hueste-1',
+            destino: { q: 4, r: 0 },
+          },
+        ],
+      },
+    )
+
+    // A 4 pasos del origen: fuera del radio de visión (2) del
+    // asentamiento, dentro del de la hueste ya movida.
+    expect(
+      resultado.estado.casillasExploradas,
+    ).toContain('4,0')
+  })
+
+  it('lanza si la orden de movimiento apunta a una hueste que no existe', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+      huestes: [crearHuesteDePrueba()],
+    })
+
+    expect(() =>
+      finalizarTurno(estado, {
+        casillas:
+          construirCasillasEnRadio(
+            { q: 0, r: 0 },
+            4,
+          ),
+        ordenes: [
+          {
+            tipo: 'Movimiento',
+            huesteId: 'no-existe',
+            destino: { q: 1, r: 0 },
+          },
+        ],
+      }),
+    ).toThrow(
+      'Hueste no encontrada: no-existe',
+    )
+  })
+
+  it('lanza si la orden de movimiento apunta a una hueste de otro reino', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+      huestes: [
+        crearHuesteDePrueba(
+          { q: 0, r: 0 },
+          { reinoId: 'leon' },
+        ),
+      ],
+    })
+
+    expect(() =>
+      finalizarTurno(estado, {
+        casillas:
+          construirCasillasEnRadio(
+            { q: 0, r: 0 },
+            4,
+          ),
+        ordenes: [
+          {
+            tipo: 'Movimiento',
+            huesteId: 'hueste-1',
+            destino: { q: 1, r: 0 },
+          },
+        ],
+      }),
+    ).toThrow(
+      'Hueste no encontrada: hueste-1',
+    )
   })
 })

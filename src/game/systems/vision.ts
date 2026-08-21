@@ -1,10 +1,8 @@
 import {
   casillasEnRadio,
   claveHex,
+  type CoordenadaHex,
 } from '../map/hex'
-import type {
-  RegistroAsentamientos,
-} from '../domain/settlementRegistry'
 
 /**
  * Radio de visión fijo por asentamiento, primer borrador: más generoso que
@@ -21,26 +19,35 @@ export type EstadoNiebla =
   | 'oculta'
 
 /**
+ * Cualquier cosa con posición propia otorga visión: asentamientos y
+ * huestes por igual —`Asentamiento` y `Hueste` ya cumplen esta forma sin
+ * cambios—. No importa de qué dominio venga, así que esta función no
+ * depende de ninguno de los dos.
+ */
+export interface FuenteDeVision {
+  readonly posicion: CoordenadaHex
+}
+
+/**
  * Campo de visión del reino del jugador: unión de los anillos de radio
- * fijo alrededor de cada uno de sus asentamientos. Sin huestes todavía
- * (paso 6, pieza 4), es la única fuente de visión. `asentamientosPropios`
- * ya viene filtrado por reino desde `turns.ts` —esta función ni sabe que
- * existe una facción rival—.
+ * fijo alrededor de cada fuente propia (asentamientos y huestes juntos,
+ * ya filtrados por reino por quien llama —esta función ni sabe que existe
+ * una facción rival—).
  *
  * Puramente geométrica, sin mirar el mapa: puede devolver claves fuera del
- * tablero para un asentamiento cerca del borde, igual que
- * `casillasEnRadio`. Inofensivo, porque solo se usa para comprobar
- * pertenencia contra casillas reales, nunca se recorre por sí sola.
+ * tablero para una fuente cerca del borde, igual que `casillasEnRadio`.
+ * Inofensivo, porque solo se usa para comprobar pertenencia contra
+ * casillas reales, nunca se recorre por sí sola.
  */
 export function calcularVisibilidad(
-  asentamientosPropios: RegistroAsentamientos,
+  fuentesPropias: readonly FuenteDeVision[],
   radio: number = RADIO_VISION,
 ): ReadonlySet<string> {
   const visibles = new Set<string>()
 
-  for (const asentamiento of asentamientosPropios) {
+  for (const fuente of fuentesPropias) {
     for (const coordenada of casillasEnRadio(
-      asentamiento.posicion,
+      fuente.posicion,
       radio,
     )) {
       visibles.add(claveHex(coordenada))

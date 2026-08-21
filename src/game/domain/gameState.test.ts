@@ -48,6 +48,7 @@ describe('estado de partida', () => {
         oro: 0,
       },
       asentamientos: [],
+      huestes: [],
       casillasExploradas: [],
     })
   })
@@ -190,6 +191,7 @@ describe('estado de partida', () => {
         oro: 6,
       },
       asentamientos: [],
+      huestes: [],
       casillasExploradas: [],
     })
     expect(Object.isFrozen(estado)).toBe(true)

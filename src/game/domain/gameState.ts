@@ -13,12 +13,17 @@ import {
   crearRegistroAsentamientos,
   type RegistroAsentamientos,
 } from './settlementRegistry'
+import type { OpcionesHueste } from './hueste'
+import {
+  crearRegistroHuestes,
+  type RegistroHuestes,
+} from './huesteRegistry'
 import {
   crearReservaRecursos,
   type ReservaRecursos,
 } from './resources'
 
-export const VERSION_ESTADO_PARTIDA = 3
+export const VERSION_ESTADO_PARTIDA = 4
 
 export const FASES_TURNO = [
   'gestion',
@@ -51,6 +56,7 @@ export interface EstadoPartida {
   readonly recursos: ReservaRecursos
   readonly asentamientos:
     RegistroAsentamientos
+  readonly huestes: RegistroHuestes
   /**
    * Niebla de guerra: acumula para siempre, nunca se recorta. "Visible"
    * —lo que se ve ahora mismo— no se guarda, se deriva cada turno con
@@ -68,6 +74,8 @@ export interface OpcionesEstadoInicial {
   readonly recursos?: Partial<ReservaRecursos>
   readonly asentamientos?:
     readonly OpcionesAsentamiento[]
+  readonly huestes?:
+    readonly OpcionesHueste[]
   readonly casillasExploradas?:
     readonly string[]
 }
@@ -345,6 +353,61 @@ function leerRegistroAsentamientos(
   )
 }
 
+function leerHueste(
+  datos: unknown,
+): OpcionesHueste {
+  if (
+    !esRegistro(datos) ||
+    !esRegistro(datos.posicion)
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  const id = datos.id
+  const nombre = datos.nombre
+  const reinoId = datos.reinoId
+  const q = datos.posicion.q
+  const r = datos.posicion.r
+
+  if (
+    typeof id !== 'string' ||
+    typeof nombre !== 'string' ||
+    typeof reinoId !== 'string' ||
+    typeof q !== 'number' ||
+    typeof r !== 'number'
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return {
+    id,
+    nombre,
+    reinoId,
+    posicion: {
+      q,
+      r,
+    },
+  }
+}
+
+function leerRegistroHuestes(
+  datos: unknown,
+): RegistroHuestes {
+  if (datos === undefined) {
+    return crearRegistroHuestes()
+  }
+
+  if (!Array.isArray(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return crearRegistroHuestes(
+    datos.map((hueste) =>
+      leerHueste(hueste),
+    ),
+  )
+}
+
 export function crearEstadoPartida(
   opciones: OpcionesEstadoInicial,
 ): EstadoPartida {
@@ -366,6 +429,9 @@ export function crearEstadoPartida(
       crearRegistroAsentamientos(
         opciones.asentamientos,
       ),
+    huestes: crearRegistroHuestes(
+      opciones.huestes,
+    ),
     casillasExploradas:
       normalizarCasillasExploradas(
         opciones.casillasExploradas ?? [],
@@ -443,6 +509,9 @@ export function restaurarEstadoPartida(
       leerRegistroAsentamientos(
         datos.asentamientos,
       ),
+    huestes: leerRegistroHuestes(
+      datos.huestes,
+    ),
     casillasExploradas:
       normalizarCasillasExploradas(
         leerCasillasExploradas(
