@@ -264,6 +264,58 @@ describe('HexMap', () => {
     )
   })
 
+  it('marca la hueste fuera de suministro con un trazo de aviso', () => {
+    const mapa = crearMapaPrueba()
+    const hueste = crearHueste({
+      id: 'hueste-1',
+      nombre: 'Hueste exploradora',
+      reinoId: 'castilla',
+      posicion:
+        mapa.casillas[0].coordenada,
+    })
+
+    const html = renderToStaticMarkup(
+      <HexMap
+        mapa={mapa}
+        radio={28}
+        huestes={[hueste]}
+        huestesFueraDeSuministro={[
+          'hueste-1',
+        ]}
+      />,
+    )
+
+    expect(html).toContain(
+      'stroke="#e0a458"',
+    )
+    expect(html).toContain(
+      'fuera de suministro',
+    )
+  })
+
+  it('no marca aviso de suministro sin huestesFueraDeSuministro', () => {
+    const mapa = crearMapaPrueba()
+    const hueste = crearHueste({
+      id: 'hueste-1',
+      nombre: 'Hueste exploradora',
+      reinoId: 'castilla',
+      posicion:
+        mapa.casillas[0].coordenada,
+    })
+
+    const html = renderToStaticMarkup(
+      <HexMap
+        mapa={mapa}
+        radio={28}
+        huestes={[hueste]}
+      />,
+    )
+
+    expect(html).not.toContain(
+      'stroke="#e0a458"',
+    )
+  })
+
   it('no dibuja marcadores de hueste sin huestes', () => {
     const html = renderizarMapa()
 

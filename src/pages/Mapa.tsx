@@ -57,6 +57,9 @@ import {
   calcularAlcanceMovimiento,
 } from '../game/systems/movement'
 import {
+  estaEnSuministro,
+} from '../game/systems/supply'
+import {
   calcularVisibilidad,
   estadoNiebla,
 } from '../game/systems/vision'
@@ -108,6 +111,7 @@ function nombreEdificio(
 function SeccionHuestesEnCasilla({
   huestes,
   ordenesMovimiento,
+  huestesFueraDeSuministro,
   onMover,
   onCancelar,
 }: {
@@ -116,6 +120,7 @@ function SeccionHuestesEnCasilla({
     string,
     CoordenadaHex
   >
+  readonly huestesFueraDeSuministro: ReadonlySet<string>
   readonly onMover: (
     huesteId: string,
   ) => void
@@ -138,8 +143,17 @@ function SeccionHuestesEnCasilla({
             key={hueste.id}
             className="flex items-center justify-between gap-2"
           >
-            <span className="text-sm text-[#e8d9ae]">
-              {hueste.nombre}
+            <span className="flex flex-col">
+              <span className="text-sm text-[#e8d9ae]">
+                {hueste.nombre}
+              </span>
+              {huestesFueraDeSuministro.has(
+                hueste.id,
+              ) && (
+                <span className="text-[10px] tracking-[0.1em] text-[#e0a458] uppercase">
+                  Fuera de suministro
+                </span>
+              )}
             </span>
             {ordenesMovimiento[
               hueste.id
@@ -343,6 +357,41 @@ export default function Mapa() {
       casillasVisibles,
       casillasExploradasSet,
     ],
+  )
+
+  // Fase 2 de suministro: solo el indicador, el efecto en los puntos de
+  // movimiento ya lo aplica `turns.ts` desde la fase 1.
+  const huestesFueraDeSuministro = useMemo(
+    () => {
+      if (estadoJuego === null) {
+        return new Set<string>()
+      }
+
+      const asentamientosPropios =
+        estadoJuego.asentamientos.filter(
+          (asentamiento) =>
+            asentamiento.reinoId ===
+            estadoJuego.reinoJugador,
+        )
+
+      const fuera = new Set<string>()
+
+      for (const hueste of estadoJuego.huestes) {
+        if (
+          hueste.reinoId ===
+            estadoJuego.reinoJugador &&
+          !estaEnSuministro(
+            hueste.posicion,
+            asentamientosPropios,
+          )
+        ) {
+          fuera.add(hueste.id)
+        }
+      }
+
+      return fuera
+    },
+    [estadoJuego],
   )
 
   // Solo se calcula mientras hay una hueste elegida para mover — el resto
@@ -653,6 +702,9 @@ export default function Mapa() {
               casillasAlcanceMovimiento={
                 alcanceMovimiento
               }
+              huestesFueraDeSuministro={[
+                ...huestesFueraDeSuministro,
+              ]}
             />
           </MapViewport>
         </div>
@@ -678,6 +730,15 @@ export default function Mapa() {
             <h2 className="font-cinzel mt-2 text-2xl text-[#f3e5c0]">
               {huesteSeleccionada.nombre}
             </h2>
+
+            {huestesFueraDeSuministro.has(
+              huesteSeleccionada.id,
+            ) && (
+              <p className="mt-1 text-[10px] tracking-[0.15em] text-[#e0a458] uppercase">
+                Fuera de suministro — solo la mitad de sus puntos de
+                movimiento
+              </p>
+            )}
 
             <p className="mt-4 text-sm leading-relaxed text-white/60">
               Elige una casilla resaltada en el mapa para marcar el
@@ -860,6 +921,9 @@ export default function Mapa() {
               ordenesMovimiento={
                 ordenesMovimiento
               }
+              huestesFueraDeSuministro={
+                huestesFueraDeSuministro
+              }
               onMover={
                 setHuesteSeleccionadaId
               }
@@ -935,6 +999,9 @@ export default function Mapa() {
                 }
                 ordenesMovimiento={
                   ordenesMovimiento
+                }
+                huestesFueraDeSuministro={
+                  huestesFueraDeSuministro
                 }
                 onMover={
                   setHuesteSeleccionadaId

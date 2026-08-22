@@ -36,6 +36,7 @@ const OPACIDAD_EXPLORADA = 0.4
 const COLOR_ALCANCE_MOVIMIENTO = '#5fb3d9'
 const COLOR_HUESTE = '#5fb3d9'
 const COLOR_HUESTE_SELECCIONADA = '#8fd4f0'
+const COLOR_FUERA_DE_SUMINISTRO = '#e0a458'
 
 interface HexMapProps {
   readonly mapa: Mapa
@@ -54,6 +55,8 @@ interface HexMapProps {
   readonly huesteSeleccionadaId?: string | null
   /** Resultado de `calcularAlcanceMovimiento`, claves `claveHex`. */
   readonly casillasAlcanceMovimiento?: readonly string[]
+  /** IDs de hueste fuera de la red de suministro (`systems/supply.ts`). */
+  readonly huestesFueraDeSuministro?: readonly string[]
 }
 
 interface HexagonoVisual {
@@ -122,6 +125,7 @@ export default function HexMap({
   huestes = [],
   huesteSeleccionadaId = null,
   casillasAlcanceMovimiento = [],
+  huestesFueraDeSuministro = [],
 }: HexMapProps) {
   const clavesTrabajadas = useMemo(
     () =>
@@ -136,6 +140,11 @@ export default function HexMap({
   const clavesAlcanceMovimiento = useMemo(
     () => new Set(casillasAlcanceMovimiento),
     [casillasAlcanceMovimiento],
+  )
+
+  const idsFueraDeSuministro = useMemo(
+    () => new Set(huestesFueraDeSuministro),
+    [huestesFueraDeSuministro],
   )
 
   const clavesVisibles = useMemo(
@@ -421,6 +430,10 @@ export default function HexMap({
             const seleccionada =
               hueste.id ===
               huesteSeleccionadaId
+            const fueraDeSuministro =
+              idsFueraDeSuministro.has(
+                hueste.id,
+              )
             const mitad = radio * 0.28
 
             return (
@@ -437,8 +450,17 @@ export default function HexMap({
                     ? COLOR_HUESTE_SELECCIONADA
                     : COLOR_HUESTE
                 }
-                stroke="#05080d"
-                strokeWidth={radio * 0.05}
+                stroke={
+                  fueraDeSuministro
+                    ? COLOR_FUERA_DE_SUMINISTRO
+                    : '#05080d'
+                }
+                strokeWidth={
+                  radio *
+                  (fueraDeSuministro
+                    ? 0.09
+                    : 0.05)
+                }
                 pointerEvents="none"
                 style={{
                   filter: seleccionada
@@ -447,7 +469,9 @@ export default function HexMap({
                 }}
               >
                 <title>
-                  {hueste.nombre}
+                  {fueraDeSuministro
+                    ? `${hueste.nombre} (fuera de suministro)`
+                    : hueste.nombre}
                 </title>
               </polygon>
             )
