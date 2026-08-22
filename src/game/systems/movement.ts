@@ -335,6 +335,7 @@ export function resolverMovimiento(
   destino: CoordenadaHex,
   casillas: Readonly<Record<string, CasillaMapa>>,
   exploradas: ReadonlySet<string>,
+  puntosDisponibles: number = PUNTOS_MOVIMIENTO_MAXIMOS,
 ): ResultadoMovimiento {
   const ruta = calcularRuta(
     origen,
@@ -354,5 +355,6 @@ export function resolverMovimiento(
     ruta,
     casillas,
     exploradas,
+    puntosDisponibles,
   )
 }

@@ -871,4 +871,88 @@ describe('resolución del turno', () => {
       'Hueste no encontrada: hueste-1',
     )
   })
+
+  it('una hueste fuera de suministro marcha menos que una junto a la capital', () => {
+    const casillas = construirCasillasEnRadio(
+      { q: 0, r: 0 },
+      20,
+    )
+
+    const estadoJuntoALaCapital =
+      crearEstadoDePrueba({
+        reinoJugador: 'castilla',
+        asentamientos: [
+          crearAsentamientoDePrueba(
+            100,
+            { q: 0, r: 0 },
+          ),
+        ],
+        huestes: [
+          crearHuesteDePrueba({
+            q: 0,
+            r: 0,
+          }),
+        ],
+      })
+
+    const estadoAislado = crearEstadoDePrueba(
+      {
+        reinoJugador: 'castilla',
+        asentamientos: [
+          crearAsentamientoDePrueba(
+            100,
+            { q: 0, r: 0 },
+          ),
+        ],
+        huestes: [
+          crearHuesteDePrueba({
+            q: 10,
+            r: 0,
+          }),
+        ],
+      },
+    )
+
+    const resultadoJuntoALaCapital =
+      finalizarTurno(
+        estadoJuntoALaCapital,
+        {
+          casillas,
+          ordenes: [
+            {
+              tipo: 'Movimiento',
+              huesteId: 'hueste-1',
+              destino: { q: 4, r: 0 },
+            },
+          ],
+        },
+      )
+
+    const resultadoAislado = finalizarTurno(
+      estadoAislado,
+      {
+        casillas,
+        ordenes: [
+          {
+            tipo: 'Movimiento',
+            huesteId: 'hueste-1',
+            destino: { q: 14, r: 0 },
+          },
+        ],
+      },
+    )
+
+    // En suministro: llega a los 4 puntos completos.
+    expect(
+      resultadoJuntoALaCapital.estado
+        .huestes[0].posicion,
+    ).toEqual({ q: 4, r: 0 })
+
+    // Aislada a 10 de la capital (fuera del radio 2): solo la mitad,
+    // 2 puntos, así que se queda en 12, no llega a 14.
+    expect(
+      resultadoAislado.estado.huestes[0]
+        .posicion,
+    ).toEqual({ q: 12, r: 0 })
+  })
 })

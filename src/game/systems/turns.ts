@@ -43,6 +43,10 @@ import {
   resolverMovimiento,
 } from './movement'
 import {
+  calcularPuntosMovimientoTurno,
+  estaEnSuministro,
+} from './supply'
+import {
   actualizarCasillasExploradas,
   calcularVisibilidad,
 } from './vision'
@@ -150,8 +154,15 @@ function repartirOrdenes(
  * calcula con lo que ya se sabía al empezar, no con lo que este mismo
  * turno pueda revelar.
  */
+/**
+ * `asentamientosPropios` decide el suministro (radio fijo alrededor de
+ * cada uno, `systems/supply.ts`), no `todosLosAsentamientos`: la red de
+ * suministro es del reino del jugador, la rival no abastece a nadie del
+ * jugador aunque esté cerca.
+ */
 function resolverOrdenesMovimiento(
   huestes: RegistroHuestes,
+  asentamientosPropios: RegistroAsentamientos,
   reinoJugador: IdentificadorReino,
   ordenes: readonly OrdenMovimiento[],
   casillas: Readonly<
@@ -185,11 +196,20 @@ function resolverOrdenesMovimiento(
       )
     }
 
+    const puntos =
+      calcularPuntosMovimientoTurno(
+        estaEnSuministro(
+          hueste.posicion,
+          asentamientosPropios,
+        ),
+      )
+
     const resultado = resolverMovimiento(
       hueste.posicion,
       orden.destino,
       casillas,
       exploradas,
+      puntos,
     )
 
     posicionesActualizadas.set(
@@ -359,6 +379,7 @@ export function finalizarTurno(
   const huestesActualizadas =
     resolverOrdenesMovimiento(
       estado.huestes,
+      asentamientosPropios,
       estado.reinoJugador,
       movimientos,
       opciones.casillas,
