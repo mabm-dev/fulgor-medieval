@@ -76,8 +76,13 @@ jobs:
       - name: Build
         run: pnpm build
 
+      # enablement crea el sitio de Pages por API si todavia no existe, con los
+      # permisos que el job ya tiene. Sin esto, el primer despliegue de un
+      # repositorio recien configurado falla con "Get Pages site failed".
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
