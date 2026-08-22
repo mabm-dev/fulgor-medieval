@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
+import { crearHueste } from '../../game/domain/hueste'
 import { crearAsentamiento } from '../../game/domain/settlement'
 import { generarMapa } from '../../game/map/generateMap'
 import { claveHex } from '../../game/map/hex'
@@ -206,6 +207,102 @@ describe('HexMap', () => {
     expect(terrenos).toHaveLength(1)
     expect(html).toContain(
       'sin explorar',
+    )
+  })
+
+  it('marca la posición de las huestes', () => {
+    const mapa = crearMapaPrueba()
+    const hueste = crearHueste({
+      id: 'hueste-1',
+      nombre: 'Hueste exploradora',
+      reinoId: 'castilla',
+      posicion:
+        mapa.casillas[0].coordenada,
+    })
+
+    const html = renderToStaticMarkup(
+      <HexMap
+        mapa={mapa}
+        radio={28}
+        huestes={[hueste]}
+      />,
+    )
+
+    expect(html).toContain(
+      'Hueste exploradora',
+    )
+
+    const marcadores =
+      html.match(
+        /fill="#5fb3d9"/g,
+      ) ?? []
+
+    expect(marcadores).toHaveLength(1)
+  })
+
+  it('resalta la hueste seleccionada con otro color', () => {
+    const mapa = crearMapaPrueba()
+    const hueste = crearHueste({
+      id: 'hueste-1',
+      nombre: 'Hueste exploradora',
+      reinoId: 'castilla',
+      posicion:
+        mapa.casillas[0].coordenada,
+    })
+
+    const html = renderToStaticMarkup(
+      <HexMap
+        mapa={mapa}
+        radio={28}
+        huestes={[hueste]}
+        huesteSeleccionadaId="hueste-1"
+      />,
+    )
+
+    expect(html).toContain(
+      'fill="#8fd4f0"',
+    )
+  })
+
+  it('no dibuja marcadores de hueste sin huestes', () => {
+    const html = renderizarMapa()
+
+    expect(html).not.toContain(
+      'Hueste',
+    )
+  })
+
+  it('resalta el alcance de movimiento', () => {
+    const mapa = crearMapaPrueba()
+
+    const html = renderToStaticMarkup(
+      <HexMap
+        mapa={mapa}
+        radio={28}
+        casillasAlcanceMovimiento={[
+          claveHex(
+            mapa.casillas[0].coordenada,
+          ),
+          claveHex(
+            mapa.casillas[1].coordenada,
+          ),
+        ]}
+      />,
+    )
+
+    const resaltadas =
+      html.match(
+        /fill="#5fb3d9" fill-opacity="0.18"/g,
+      ) ?? []
+
+    expect(resaltadas).toHaveLength(2)
+  })
+
+  it('no resalta nada sin alcance de movimiento', () => {
+    const html = renderizarMapa()
+
+    expect(html).not.toContain(
+      'fill-opacity="0.18"',
     )
   })
 })

@@ -2,6 +2,9 @@ import { useMemo } from 'react'
 import type {
   RegistroAsentamientos,
 } from '../../game/domain/settlementRegistry'
+import type {
+  RegistroHuestes,
+} from '../../game/domain/huesteRegistry'
 import {
   centroHex,
   verticesHex,
@@ -30,6 +33,9 @@ const COLORES_TERRENO: Record<TipoTerreno, string> = {
 
 const COLOR_NIEBLA_OCULTA = '#05080d'
 const OPACIDAD_EXPLORADA = 0.4
+const COLOR_ALCANCE_MOVIMIENTO = '#5fb3d9'
+const COLOR_HUESTE = '#5fb3d9'
+const COLOR_HUESTE_SELECCIONADA = '#8fd4f0'
 
 interface HexMapProps {
   readonly mapa: Mapa
@@ -44,6 +50,10 @@ interface HexMapProps {
    * que `EstadoPartida.casillasExploradas`. */
   readonly casillasVisibles?: readonly string[]
   readonly casillasExploradas?: readonly string[]
+  readonly huestes?: RegistroHuestes
+  readonly huesteSeleccionadaId?: string | null
+  /** Resultado de `calcularAlcanceMovimiento`, claves `claveHex`. */
+  readonly casillasAlcanceMovimiento?: readonly string[]
 }
 
 interface HexagonoVisual {
@@ -109,6 +119,9 @@ export default function HexMap({
   casillasTrabajadas = [],
   casillasVisibles = [],
   casillasExploradas = [],
+  huestes = [],
+  huesteSeleccionadaId = null,
+  casillasAlcanceMovimiento = [],
 }: HexMapProps) {
   const clavesTrabajadas = useMemo(
     () =>
@@ -118,6 +131,11 @@ export default function HexMap({
         ),
       ),
     [casillasTrabajadas],
+  )
+
+  const clavesAlcanceMovimiento = useMemo(
+    () => new Set(casillasAlcanceMovimiento),
+    [casillasAlcanceMovimiento],
   )
 
   const clavesVisibles = useMemo(
@@ -286,6 +304,38 @@ export default function HexMap({
         })}
       </g>
 
+      {clavesAlcanceMovimiento.size > 0 && (
+        <g
+          aria-hidden="true"
+          pointerEvents="none"
+        >
+          {hexagonos
+            .filter((hexagono) =>
+              clavesAlcanceMovimiento.has(
+                hexagono.clave,
+              ),
+            )
+            .map((hexagono) => (
+              <polygon
+                key={`alcance-${hexagono.clave}`}
+                points={serializarVertices(
+                  hexagono.vertices,
+                )}
+                fill={
+                  COLOR_ALCANCE_MOVIMIENTO
+                }
+                fillOpacity={0.18}
+                stroke={
+                  COLOR_ALCANCE_MOVIMIENTO
+                }
+                strokeOpacity={0.5}
+                strokeWidth={1}
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+        </g>
+      )}
+
       {clavesTrabajadas.size > 0 && (
         <g
           aria-hidden="true"
@@ -356,6 +406,50 @@ export default function HexMap({
                   {asentamiento.nombre}
                 </text>
               </g>
+            )
+          })}
+        </g>
+      )}
+
+      {huestes.length > 0 && (
+        <g aria-hidden="true">
+          {huestes.map((hueste) => {
+            const centro = centroHex(
+              hueste.posicion,
+              radio,
+            )
+            const seleccionada =
+              hueste.id ===
+              huesteSeleccionadaId
+            const mitad = radio * 0.28
+
+            return (
+              <polygon
+                key={hueste.id}
+                points={[
+                  `${centro.x},${centro.y - mitad}`,
+                  `${centro.x + mitad},${centro.y}`,
+                  `${centro.x},${centro.y + mitad}`,
+                  `${centro.x - mitad},${centro.y}`,
+                ].join(' ')}
+                fill={
+                  seleccionada
+                    ? COLOR_HUESTE_SELECCIONADA
+                    : COLOR_HUESTE
+                }
+                stroke="#05080d"
+                strokeWidth={radio * 0.05}
+                pointerEvents="none"
+                style={{
+                  filter: seleccionada
+                    ? 'drop-shadow(0 0 6px #8fd4f0)'
+                    : undefined,
+                }}
+              >
+                <title>
+                  {hueste.nombre}
+                </title>
+              </polygon>
             )
           })}
         </g>

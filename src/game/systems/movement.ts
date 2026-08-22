@@ -50,28 +50,36 @@ function costeCasilla(
   ].costeMovimiento
 }
 
+interface ResultadoDijkstra {
+  readonly distancias: ReadonlyMap<
+    string,
+    number
+  >
+  readonly previos: ReadonlyMap<
+    string,
+    CoordenadaHex
+  >
+  readonly coordenadasPorClave: ReadonlyMap<
+    string,
+    CoordenadaHex
+  >
+}
+
 /**
  * Dijkstra sobre la cuadrícula hexagonal, ponderado por coste de terreno.
  * Sin heurística (A*): el mapa es pequeño —hasta 384 casillas— y una
  * búsqueda por distancia mínima sin ordenar es trabajo trivial a esta
  * escala, como ya se decidió para la selección de casillas trabajadas.
- *
- * Devuelve la ruta completa, origen y destino incluidos, o `null` si no
- * hay camino transitable —agua de por medio sin rodeo posible, o destino
- * fuera del mapa—.
+ * Explora todo lo alcanzable desde `origen`, sin límite de distancia:
+ * tanto `calcularRuta` como `calcularAlcanceMovimiento` recortan el
+ * resultado después, cada una a su manera.
  */
-export function calcularRuta(
+function ejecutarDijkstra(
   origen: CoordenadaHex,
-  destino: CoordenadaHex,
   casillas: Readonly<Record<string, CasillaMapa>>,
   exploradas: ReadonlySet<string>,
-): readonly CoordenadaHex[] | null {
+): ResultadoDijkstra {
   const claveOrigen = claveHex(origen)
-  const claveDestino = claveHex(destino)
-
-  if (claveOrigen === claveDestino) {
-    return [origen]
-  }
 
   const distancias = new Map<string, number>(
     [[claveOrigen, 0]],
@@ -104,10 +112,6 @@ export function calcularRuta(
     }
 
     if (claveActual === null) {
-      return null
-    }
-
-    if (claveActual === claveDestino) {
       break
     }
 
@@ -117,7 +121,7 @@ export function calcularRuta(
       coordenadasPorClave.get(claveActual)
 
     if (coordenadaActual === undefined) {
-      return null
+      break
     }
 
     for (const vecino of vecinosHex(
@@ -163,6 +167,37 @@ export function calcularRuta(
     }
   }
 
+  return {
+    distancias,
+    previos,
+    coordenadasPorClave,
+  }
+}
+
+/**
+ * Devuelve la ruta completa, origen y destino incluidos, o `null` si no
+ * hay camino transitable —agua de por medio sin rodeo posible, o destino
+ * fuera del mapa—.
+ */
+export function calcularRuta(
+  origen: CoordenadaHex,
+  destino: CoordenadaHex,
+  casillas: Readonly<Record<string, CasillaMapa>>,
+  exploradas: ReadonlySet<string>,
+): readonly CoordenadaHex[] | null {
+  const claveOrigen = claveHex(origen)
+  const claveDestino = claveHex(destino)
+
+  if (claveOrigen === claveDestino) {
+    return [origen]
+  }
+
+  const { previos } = ejecutarDijkstra(
+    origen,
+    casillas,
+    exploradas,
+  )
+
   const ruta: CoordenadaHex[] = [destino]
   let claveActual = claveDestino
 
@@ -179,6 +214,68 @@ export function calcularRuta(
   }
 
   return ruta
+}
+
+/**
+ * Todas las casillas que una hueste podría alcanzar este turno con su
+ * presupuesto de puntos, para resaltarlas en el mapa antes de que el
+ * jugador elija destino. Incluye, además de las que caben dentro del
+ * presupuesto sin más, la última casilla "cara" a la que igual se podría
+ * entrar con el último punto —la misma regla de frontera que
+ * `avanzarPorRuta` aplica al mover de verdad—, para que el resaltado no
+ * prometa menos de lo que la resolución del turno permitiría.
+ */
+export function calcularAlcanceMovimiento(
+  origen: CoordenadaHex,
+  casillas: Readonly<Record<string, CasillaMapa>>,
+  exploradas: ReadonlySet<string>,
+  puntosDisponibles: number = PUNTOS_MOVIMIENTO_MAXIMOS,
+): ReadonlySet<string> {
+  const {
+    distancias,
+    coordenadasPorClave,
+  } = ejecutarDijkstra(
+    origen,
+    casillas,
+    exploradas,
+  )
+
+  const alcanzables = new Set<string>()
+
+  for (const [
+    clave,
+    distancia,
+  ] of distancias) {
+    if (distancia <= puntosDisponibles) {
+      alcanzables.add(clave)
+      continue
+    }
+
+    const coordenada =
+      coordenadasPorClave.get(clave)
+
+    if (coordenada === undefined) {
+      continue
+    }
+
+    const coste =
+      costeCasilla(
+        coordenada,
+        casillas,
+        exploradas,
+      ) ?? 0
+    const distanciaAntesDeEntrar =
+      distancia - coste
+
+    if (
+      distanciaAntesDeEntrar <
+      puntosDisponibles
+    ) {
+      alcanzables.add(clave)
+    }
+  }
+
+  return alcanzables
 }
 
 export interface ResultadoMovimiento {

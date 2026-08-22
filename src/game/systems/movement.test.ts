@@ -4,10 +4,15 @@ import {
   it,
 } from 'vitest'
 import type { CasillaMapa } from '../map/generateMap'
-import { claveHex, type CoordenadaHex } from '../map/hex'
+import {
+  casillasEnRadio,
+  claveHex,
+  type CoordenadaHex,
+} from '../map/hex'
 import type { TipoTerreno } from '../map/terrain'
 import {
   avanzarPorRuta,
+  calcularAlcanceMovimiento,
   calcularRuta,
   COSTE_TERRENO_DESCONOCIDO,
   PUNTOS_MOVIMIENTO_MAXIMOS,
@@ -46,6 +51,30 @@ function todoExplorado(
   >,
 ): ReadonlySet<string> {
   return new Set(Object.keys(casillas))
+}
+
+function construirCasillasEnRadio(
+  centro: CoordenadaHex,
+  radio: number,
+  terreno: TipoTerreno = 'llanura',
+): Record<string, CasillaMapa> {
+  const casillas: Record<
+    string,
+    CasillaMapa
+  > = {}
+
+  for (const coordenada of casillasEnRadio(
+    centro,
+    radio,
+  )) {
+    casillas[claveHex(coordenada)] = {
+      coordenada,
+      terreno,
+      tieneOro: false,
+    }
+  }
+
+  return casillas
 }
 
 describe('calcularRuta', () => {
@@ -310,5 +339,113 @@ describe('resolverMovimiento', () => {
       posicion: { q: 0, r: 0 },
       destinoAlcanzado: false,
     })
+  })
+})
+
+describe('calcularAlcanceMovimiento', () => {
+  it('siempre incluye el origen', () => {
+    const casillas = construirCasillas([
+      ['llanura'],
+    ])
+
+    const alcance =
+      calcularAlcanceMovimiento(
+        { q: 0, r: 0 },
+        casillas,
+        todoExplorado(casillas),
+        4,
+      )
+
+    expect(alcance.has('0,0')).toBe(
+      true,
+    )
+  })
+
+  it('alcanza exactamente las casillas dentro del presupuesto en llanura uniforme', () => {
+    const casillas =
+      construirCasillasEnRadio(
+        { q: 0, r: 0 },
+        5,
+      )
+
+    const alcance =
+      calcularAlcanceMovimiento(
+        { q: 0, r: 0 },
+        casillas,
+        todoExplorado(casillas),
+        4,
+      )
+
+    // 1 + 3·4·5 = 61 casillas en radio 4, llanura cuesta 1 cada una.
+    expect(alcance.size).toBe(61)
+  })
+
+  it('incluye una casilla cara con la regla del último punto', () => {
+    const casillas = construirCasillas([
+      ['llanura', 'montana'],
+    ])
+
+    const alcance =
+      calcularAlcanceMovimiento(
+        { q: 0, r: 0 },
+        casillas,
+        todoExplorado(casillas),
+        1,
+      )
+
+    expect(alcance.has('0,0')).toBe(
+      true,
+    )
+    expect(alcance.has('1,0')).toBe(
+      true,
+    )
+  })
+
+  it('no incluye una casilla cara si hace falta agotar el presupuesto antes de llegar a ella', () => {
+    // Cinco llanuras (origen incluido) agotan los 4 puntos exactos antes
+    // de plantearse la montaña de después: sin nada de sobra para entrar.
+    const casillas = construirCasillas([
+      [
+        'llanura',
+        'llanura',
+        'llanura',
+        'llanura',
+        'llanura',
+        'montana',
+      ],
+    ])
+
+    const alcance =
+      calcularAlcanceMovimiento(
+        { q: 0, r: 0 },
+        casillas,
+        todoExplorado(casillas),
+        4,
+      )
+
+    expect(alcance.has('4,0')).toBe(
+      true,
+    )
+    expect(alcance.has('5,0')).toBe(
+      false,
+    )
+  })
+
+  it('no cruza agua', () => {
+    const casillas = construirCasillas([
+      ['llanura', 'agua', 'llanura'],
+    ])
+
+    const alcance =
+      calcularAlcanceMovimiento(
+        { q: 0, r: 0 },
+        casillas,
+        todoExplorado(casillas),
+        4,
+      )
+
+    expect(alcance.has('2,0')).toBe(
+      false,
+    )
   })
 })

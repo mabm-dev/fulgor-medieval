@@ -22,6 +22,9 @@ import type {
   EstadoPartida,
 } from '../game/domain/gameState'
 import type {
+  RegistroHuestes,
+} from '../game/domain/huesteRegistry'
+import type {
   TipoAsentamiento,
 } from '../game/domain/settlement'
 import {
@@ -29,7 +32,10 @@ import {
   generarMapa,
   type CasillaMapa,
 } from '../game/map/generateMap'
-import { claveHex } from '../game/map/hex'
+import {
+  claveHex,
+  type CoordenadaHex,
+} from '../game/map/hex'
 import {
   DEFINICIONES_TERRENO,
   type TipoTerreno,
@@ -47,6 +53,9 @@ import {
 import {
   calcularEconomiaAsentamiento,
 } from '../game/systems/settlementEconomy'
+import {
+  calcularAlcanceMovimiento,
+} from '../game/systems/movement'
 import {
   calcularVisibilidad,
   estadoNiebla,
@@ -91,6 +100,80 @@ function nombreEdificio(
     : edificioId
 }
 
+/**
+ * Se repite en el panel de asentamiento y en el de terreno genérico —una
+ * hueste puede estar sobre cualquiera de los dos—, así que vive aparte en
+ * vez de duplicar el marcado dos veces.
+ */
+function SeccionHuestesEnCasilla({
+  huestes,
+  ordenesMovimiento,
+  onMover,
+  onCancelar,
+}: {
+  readonly huestes: RegistroHuestes
+  readonly ordenesMovimiento: Record<
+    string,
+    CoordenadaHex
+  >
+  readonly onMover: (
+    huesteId: string,
+  ) => void
+  readonly onCancelar: (
+    huesteId: string,
+  ) => void
+}) {
+  if (huestes.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="mt-5 border-t border-[#c8ad72]/20 pt-4">
+      <p className="text-xs tracking-[0.15em] text-white/45 uppercase">
+        Huestes aquí
+      </p>
+      <ul className="mt-2 space-y-2">
+        {huestes.map((hueste) => (
+          <li
+            key={hueste.id}
+            className="flex items-center justify-between gap-2"
+          >
+            <span className="text-sm text-[#e8d9ae]">
+              {hueste.nombre}
+            </span>
+            {ordenesMovimiento[
+              hueste.id
+            ] ? (
+              <span className="flex items-center gap-2 text-xs text-white/50">
+                En marcha
+                <button
+                  type="button"
+                  onClick={() =>
+                    onCancelar(hueste.id)
+                  }
+                  className="text-[#c8ad72]/70 underline decoration-dotted transition-colors hover:text-[#ffe6a3]"
+                >
+                  Cancelar
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() =>
+                  onMover(hueste.id)
+                }
+                className="font-cinzel border border-[#5fb3d9]/40 px-3 py-1 text-[10px] tracking-[0.15em] text-[#8fd4f0] uppercase transition-colors hover:border-[#5fb3d9] hover:text-white"
+              >
+                Mover
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 export default function Mapa() {
   const navigate = useNavigate()
 
@@ -122,6 +205,18 @@ export default function Mapa() {
   ] = useState<Record<string, string>>(
     {},
   )
+
+  const [
+    huesteSeleccionadaId,
+    setHuesteSeleccionadaId,
+  ] = useState<string | null>(null)
+
+  const [
+    ordenesMovimiento,
+    setOrdenesMovimiento,
+  ] = useState<
+    Record<string, CoordenadaHex>
+  >({})
 
   const semillaMapa = estadoJuego?.semillaMapa
 
@@ -183,14 +278,23 @@ export default function Mapa() {
       return new Set<string>()
     }
 
-    const propios =
+    const asentamientosPropios =
       estadoJuego.asentamientos.filter(
         (asentamiento) =>
           asentamiento.reinoId ===
           estadoJuego.reinoJugador,
       )
+    const huestesPropias =
+      estadoJuego.huestes.filter(
+        (hueste) =>
+          hueste.reinoId ===
+          estadoJuego.reinoJugador,
+      )
 
-    return calcularVisibilidad(propios)
+    return calcularVisibilidad([
+      ...asentamientosPropios,
+      ...huestesPropias,
+    ])
   }, [estadoJuego])
 
   const casillasExploradasSet = useMemo(
@@ -223,6 +327,57 @@ export default function Mapa() {
       casillasExploradasSet,
     ],
   )
+
+  const huestesVisibles = useMemo(
+    () =>
+      (estadoJuego?.huestes ?? []).filter(
+        (hueste) =>
+          estadoNiebla(
+            claveHex(hueste.posicion),
+            casillasVisibles,
+            casillasExploradasSet,
+          ) !== 'oculta',
+      ),
+    [
+      estadoJuego,
+      casillasVisibles,
+      casillasExploradasSet,
+    ],
+  )
+
+  // Solo se calcula mientras hay una hueste elegida para mover — el resto
+  // del tiempo no hace falta correr el Dijkstra de alcance.
+  const alcanceMovimiento = useMemo(() => {
+    if (
+      huesteSeleccionadaId === null ||
+      estadoJuego === null
+    ) {
+      return []
+    }
+
+    const hueste = estadoJuego.huestes.find(
+      (candidata) =>
+        candidata.id ===
+        huesteSeleccionadaId,
+    )
+
+    if (hueste === undefined) {
+      return []
+    }
+
+    return [
+      ...calcularAlcanceMovimiento(
+        hueste.posicion,
+        casillas,
+        casillasExploradasSet,
+      ),
+    ]
+  }, [
+    huesteSeleccionadaId,
+    estadoJuego,
+    casillas,
+    casillasExploradasSet,
+  ])
 
   if (!estadoJuego || !mapa) {
     return (
@@ -267,6 +422,69 @@ export default function Mapa() {
         ) ?? null)
       : null
 
+  const huesteSeleccionada =
+    huesteSeleccionadaId
+      ? (estadoJuego.huestes.find(
+          (hueste) =>
+            hueste.id ===
+            huesteSeleccionadaId,
+        ) ?? null)
+      : null
+
+  const huestesPropiasEnCasillaSeleccionada =
+    casillaSeleccionada
+      ? estadoJuego.huestes.filter(
+          (hueste) =>
+            hueste.reinoId ===
+              estadoJuego.reinoJugador &&
+            claveHex(hueste.posicion) ===
+              claveHex(
+                casillaSeleccionada.coordenada,
+              ),
+        )
+      : []
+
+  // Un clic mientras hay una hueste elegida marca destino y encola la
+  // orden; en cualquier otro momento, un clic solo selecciona la casilla
+  // —elegir una hueste para mover es una acción explícita desde su panel,
+  // no un efecto secundario de hacer clic en su casilla—.
+  const manejarClicCasilla = (
+    casilla: CasillaMapa,
+  ) => {
+    if (huesteSeleccionadaId !== null) {
+      setOrdenesMovimiento((actual) => ({
+        ...actual,
+        [huesteSeleccionadaId]:
+          casilla.coordenada,
+      }))
+      setHuesteSeleccionadaId(null)
+    }
+
+    setCasillaSeleccionada(casilla)
+  }
+
+  const cancelarMovimiento = (
+    huesteId: string,
+  ) => {
+    setOrdenesMovimiento((actual) => {
+      const resto: Record<
+        string,
+        CoordenadaHex
+      > = {}
+
+      for (const [
+        id,
+        destino,
+      ] of Object.entries(actual)) {
+        if (id !== huesteId) {
+          resto[id] = destino
+        }
+      }
+
+      return resto
+    })
+  }
+
   const encolarConstruccion = (
     asentamientoId: string,
     edificioId: string,
@@ -300,24 +518,44 @@ export default function Mapa() {
   }
 
   const resolverTurno = () => {
-    const ordenes = Object.entries(
-      ordenesConstruccion,
-    ).map(
-      ([asentamientoId, edificioId]) => ({
-        tipo: 'Construccion' as const,
-        asentamientoId,
-        edificioId,
-      }),
-    )
+    const ordenesConstruccionArray =
+      Object.entries(
+        ordenesConstruccion,
+      ).map(
+        ([
+          asentamientoId,
+          edificioId,
+        ]) => ({
+          tipo: 'Construccion' as const,
+          asentamientoId,
+          edificioId,
+        }),
+      )
+
+    const ordenesMovimientoArray =
+      Object.entries(
+        ordenesMovimiento,
+      ).map(([huesteId, destino]) => ({
+        tipo: 'Movimiento' as const,
+        huesteId,
+        destino,
+      }))
 
     const resultado = finalizarTurnoSesion(
       almacenamientoNavegador,
       estadoJuego,
-      { casillas, ordenes },
+      {
+        casillas,
+        ordenes: [
+          ...ordenesConstruccionArray,
+          ...ordenesMovimientoArray,
+        ],
+      },
     )
 
     setEstadoJuego(resultado.estado)
     setOrdenesConstruccion({})
+    setOrdenesMovimiento({})
     setEventosTurno(resultado.eventos)
     setMensajeTurno(
       `Turno ${estadoJuego.turno} resuelto`,
@@ -394,7 +632,7 @@ export default function Mapa() {
                 null
               }
               onSeleccionarCasilla={
-                setCasillaSeleccionada
+                manejarClicCasilla
               }
               asentamientos={
                 asentamientosVisibles
@@ -408,10 +646,57 @@ export default function Mapa() {
               casillasExploradas={
                 estadoJuego.casillasExploradas
               }
+              huestes={huestesVisibles}
+              huesteSeleccionadaId={
+                huesteSeleccionadaId
+              }
+              casillasAlcanceMovimiento={
+                alcanceMovimiento
+              }
             />
           </MapViewport>
         </div>
-        {asentamientoSeleccionado ? (
+        {huesteSeleccionada ? (
+          <aside className="absolute top-8 right-8 z-10 w-64 border border-[#5fb3d9]/45 bg-[#070b10]/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
+            <button
+              type="button"
+              onClick={() =>
+                setHuesteSeleccionadaId(
+                  null,
+                )
+              }
+              aria-label="Cancelar selección de hueste"
+              className="absolute top-3 right-3 text-lg text-[#5fb3d9]/70 transition-colors hover:text-[#8fd4f0]"
+            >
+              ×
+            </button>
+
+            <p className="font-cinzel text-[10px] tracking-[0.28em] text-[#5fb3d9] uppercase">
+              Moviendo
+            </p>
+
+            <h2 className="font-cinzel mt-2 text-2xl text-[#f3e5c0]">
+              {huesteSeleccionada.nombre}
+            </h2>
+
+            <p className="mt-4 text-sm leading-relaxed text-white/60">
+              Elige una casilla resaltada en el mapa para marcar el
+              destino de este turno.
+            </p>
+
+            <button
+              type="button"
+              onClick={() =>
+                setHuesteSeleccionadaId(
+                  null,
+                )
+              }
+              className="font-cinzel mt-6 border border-white/25 px-6 py-2 text-xs font-bold tracking-[0.2em] text-white/70 uppercase transition-all hover:border-white/60 hover:text-white"
+            >
+              Cancelar
+            </button>
+          </aside>
+        ) : asentamientoSeleccionado ? (
           <aside className="absolute top-8 right-8 z-10 w-72 border border-[#c8ad72]/45 bg-[#070b10]/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
             <button
               type="button"
@@ -567,6 +852,21 @@ export default function Mapa() {
                 })}
               </div>
             )}
+
+            <SeccionHuestesEnCasilla
+              huestes={
+                huestesPropiasEnCasillaSeleccionada
+              }
+              ordenesMovimiento={
+                ordenesMovimiento
+              }
+              onMover={
+                setHuesteSeleccionadaId
+              }
+              onCancelar={
+                cancelarMovimiento
+              }
+            />
           </aside>
         ) : (
           casillaSeleccionada && (
@@ -628,6 +928,21 @@ export default function Mapa() {
                   </dd>
                 </div>
               </dl>
+
+              <SeccionHuestesEnCasilla
+                huestes={
+                  huestesPropiasEnCasillaSeleccionada
+                }
+                ordenesMovimiento={
+                  ordenesMovimiento
+                }
+                onMover={
+                  setHuesteSeleccionadaId
+                }
+                onCancelar={
+                  cancelarMovimiento
+                }
+              />
             </aside>
           )
         )}
