@@ -133,7 +133,7 @@ function SeccionHuestesEnCasilla({
   }
 
   return (
-    <div className="mt-5 border-t border-[#c8ad72]/20 pt-4">
+    <div className="mt-5 border-t border-oro/20 pt-4">
       <p className="text-xs tracking-[0.15em] text-white/45 uppercase">
         Huestes aquí
       </p>
@@ -144,13 +144,13 @@ function SeccionHuestesEnCasilla({
             className="flex items-center justify-between gap-2"
           >
             <span className="flex flex-col">
-              <span className="text-sm text-[#e8d9ae]">
+              <span className="text-sm text-pergamino">
                 {hueste.nombre}
               </span>
               {huestesFueraDeSuministro.has(
                 hueste.id,
               ) && (
-                <span className="text-[10px] tracking-[0.1em] text-[#e0a458] uppercase">
+                <span className="text-[10px] tracking-[0.1em] text-aviso uppercase">
                   Fuera de suministro
                 </span>
               )}
@@ -165,7 +165,7 @@ function SeccionHuestesEnCasilla({
                   onClick={() =>
                     onCancelar(hueste.id)
                   }
-                  className="text-[#c8ad72]/70 underline decoration-dotted transition-colors hover:text-[#ffe6a3]"
+                  className="text-oro/70 underline decoration-dotted transition-colors hover:text-oro-brillante"
                 >
                   Cancelar
                 </button>
@@ -176,7 +176,7 @@ function SeccionHuestesEnCasilla({
                 onClick={() =>
                   onMover(hueste.id)
                 }
-                className="font-cinzel border border-[#5fb3d9]/40 px-3 py-1 text-[10px] tracking-[0.15em] text-[#8fd4f0] uppercase transition-colors hover:border-[#5fb3d9] hover:text-white"
+                className="font-cinzel border border-acero/40 px-3 py-1 text-[10px] tracking-[0.15em] text-acero-claro uppercase transition-colors hover:border-acero hover:text-white"
               >
                 Mover
               </button>
@@ -612,14 +612,14 @@ export default function Mapa() {
   }
 
   return (
-    <main className="flex h-screen w-screen flex-col overflow-hidden bg-[#05080d] text-white">
-      <header className="flex shrink-0 items-center justify-between border-b border-[#c8ad72]/30 bg-black/70 px-5 py-3 backdrop-blur-md">
+    <main className="flex h-screen w-screen flex-col overflow-hidden bg-noche-mapa text-white">
+      <header className="flex shrink-0 items-center justify-between border-b border-oro/30 bg-black/70 px-5 py-3 backdrop-blur-md">
         <div>
-          <p className="font-cinzel text-xs tracking-[0.25em] text-[#c8ad72] uppercase">
+          <p className="font-cinzel text-xs tracking-[0.25em] text-oro uppercase">
             Fulgor Medieval
           </p>
 
-          <h1 className="font-cinzel mt-1 text-xl text-[#f3e5c0]">
+          <h1 className="font-cinzel mt-1 text-xl text-pergamino-palido">
             Reino de {reino?.nombre ?? estadoJuego.reinoJugador}
           </h1>
 
@@ -650,7 +650,7 @@ export default function Mapa() {
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="font-cinzel border border-[#c8ad72]/35 bg-black/50 px-5 py-2 text-xs tracking-[0.18em] text-[#e8d9ae] uppercase transition-colors hover:border-[#c8ad72] hover:text-white"
+            className="font-cinzel border border-oro/35 bg-black/50 px-5 py-2 text-xs tracking-[0.18em] text-pergamino uppercase transition-colors hover:border-oro hover:text-white"
           >
             Volver al menú
           </button>
@@ -671,7 +671,7 @@ export default function Mapa() {
         aria-label="Tablero de la partida"
         className="relative min-h-0 flex-1 p-4 md:p-6"
       >
-        <div className="h-full w-full overflow-hidden rounded-lg border border-[#c8ad72]/25 bg-[#091018] shadow-[0_0_40px_rgba(0,0,0,0.7)]">
+        <div className="h-full w-full overflow-hidden rounded-lg border border-oro/25 bg-noche-tablero shadow-[0_0_40px_rgba(0,0,0,0.7)]">
           <MapViewport>
             <HexMap
               mapa={mapa}
@@ -709,7 +709,7 @@ export default function Mapa() {
           </MapViewport>
         </div>
         {huesteSeleccionada ? (
-          <aside className="absolute top-8 right-8 z-10 w-64 border border-[#5fb3d9]/45 bg-[#070b10]/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
+          <aside className="absolute top-8 right-8 z-10 w-64 border border-acero/45 bg-noche/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
             <button
               type="button"
               onClick={() =>
@@ -718,23 +718,23 @@ export default function Mapa() {
                 )
               }
               aria-label="Cancelar selección de hueste"
-              className="absolute top-3 right-3 text-lg text-[#5fb3d9]/70 transition-colors hover:text-[#8fd4f0]"
+              className="absolute top-3 right-3 text-lg text-acero/70 transition-colors hover:text-acero-claro"
             >
               ×
             </button>
 
-            <p className="font-cinzel text-[10px] tracking-[0.28em] text-[#5fb3d9] uppercase">
+            <p className="font-cinzel text-[10px] tracking-[0.28em] text-acero uppercase">
               Moviendo
             </p>
 
-            <h2 className="font-cinzel mt-2 text-2xl text-[#f3e5c0]">
+            <h2 className="font-cinzel mt-2 text-2xl text-pergamino-palido">
               {huesteSeleccionada.nombre}
             </h2>
 
             {huestesFueraDeSuministro.has(
               huesteSeleccionada.id,
             ) && (
-              <p className="mt-1 text-[10px] tracking-[0.15em] text-[#e0a458] uppercase">
+              <p className="mt-1 text-[10px] tracking-[0.15em] text-aviso uppercase">
                 Fuera de suministro — solo la mitad de sus puntos de
                 movimiento
               </p>
@@ -758,19 +758,19 @@ export default function Mapa() {
             </button>
           </aside>
         ) : asentamientoSeleccionado ? (
-          <aside className="absolute top-8 right-8 z-10 w-72 border border-[#c8ad72]/45 bg-[#070b10]/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
+          <aside className="absolute top-8 right-8 z-10 w-72 border border-oro/45 bg-noche/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
             <button
               type="button"
               onClick={() =>
                 setCasillaSeleccionada(null)
               }
               aria-label="Cerrar información del asentamiento"
-              className="absolute top-3 right-3 text-lg text-[#c8ad72]/70 transition-colors hover:text-[#ffe6a3]"
+              className="absolute top-3 right-3 text-lg text-oro/70 transition-colors hover:text-oro-brillante"
             >
               ×
             </button>
 
-            <p className="font-cinzel text-[10px] tracking-[0.28em] text-[#c8ad72] uppercase">
+            <p className="font-cinzel text-[10px] tracking-[0.28em] text-oro uppercase">
               {
                 NOMBRES_TIPO_ASENTAMIENTO[
                   asentamientoSeleccionado.tipo
@@ -778,7 +778,7 @@ export default function Mapa() {
               }
             </p>
 
-            <h2 className="font-cinzel mt-2 text-2xl text-[#f3e5c0]">
+            <h2 className="font-cinzel mt-2 text-2xl text-pergamino-palido">
               {asentamientoSeleccionado.nombre}
             </h2>
 
@@ -790,11 +790,11 @@ export default function Mapa() {
             </p>
 
             {asentamientoSeleccionado.proyectoConstruccion ? (
-              <div className="mt-5 border-t border-[#c8ad72]/20 pt-4">
+              <div className="mt-5 border-t border-oro/20 pt-4">
                 <p className="text-xs tracking-[0.15em] text-white/45 uppercase">
                   Obra en marcha
                 </p>
-                <p className="mt-1 text-[#e8d9ae]">
+                <p className="mt-1 text-pergamino">
                   {nombreEdificio(
                     asentamientoSeleccionado
                       .proyectoConstruccion
@@ -817,11 +817,11 @@ export default function Mapa() {
             ) : ordenesConstruccion[
                 asentamientoSeleccionado.id
               ] ? (
-              <div className="mt-5 border-t border-[#c8ad72]/20 pt-4">
+              <div className="mt-5 border-t border-oro/20 pt-4">
                 <p className="text-xs tracking-[0.15em] text-white/45 uppercase">
                   En cola para este turno
                 </p>
-                <p className="mt-1 text-[#e8d9ae]">
+                <p className="mt-1 text-pergamino">
                   {nombreEdificio(
                     ordenesConstruccion[
                       asentamientoSeleccionado
@@ -836,13 +836,13 @@ export default function Mapa() {
                       asentamientoSeleccionado.id,
                     )
                   }
-                  className="mt-2 text-xs text-[#c8ad72]/70 underline decoration-dotted transition-colors hover:text-[#ffe6a3]"
+                  className="mt-2 text-xs text-oro/70 underline decoration-dotted transition-colors hover:text-oro-brillante"
                 >
                   Cancelar
                 </button>
               </div>
             ) : (
-              <div className="mt-5 space-y-2 border-t border-[#c8ad72]/20 pt-4">
+              <div className="mt-5 space-y-2 border-t border-oro/20 pt-4">
                 <p className="text-xs tracking-[0.15em] text-white/45 uppercase">
                   Construir
                 </p>
@@ -896,9 +896,9 @@ export default function Mapa() {
                           edificioId,
                         )
                       }
-                      className="flex w-full flex-col border border-white/10 bg-white/[0.03] px-3 py-2 text-left transition-colors hover:border-[#c8ad72]/60 disabled:cursor-not-allowed disabled:opacity-35"
+                      className="flex w-full flex-col border border-white/10 bg-white/[0.03] px-3 py-2 text-left transition-colors hover:border-oro/60 disabled:cursor-not-allowed disabled:opacity-35"
                     >
-                      <span className="flex w-full items-center justify-between text-sm text-[#e8d9ae]">
+                      <span className="flex w-full items-center justify-between text-sm text-pergamino">
                         {definicion.nombre}
                         <span className="font-mono text-xs text-white/45">
                           {definicion.turnos}
@@ -934,7 +934,7 @@ export default function Mapa() {
           </aside>
         ) : (
           casillaSeleccionada && (
-            <aside className="absolute top-8 right-8 z-10 w-64 border border-[#c8ad72]/45 bg-[#070b10]/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
+            <aside className="absolute top-8 right-8 z-10 w-64 border border-oro/45 bg-noche/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
               <button
                 type="button"
                 onClick={() =>
@@ -943,16 +943,16 @@ export default function Mapa() {
                   )
                 }
                 aria-label="Cerrar información de la casilla"
-                className="absolute top-3 right-3 text-lg text-[#c8ad72]/70 transition-colors hover:text-[#ffe6a3]"
+                className="absolute top-3 right-3 text-lg text-oro/70 transition-colors hover:text-oro-brillante"
               >
                 ×
               </button>
 
-              <p className="font-cinzel text-[10px] tracking-[0.28em] text-[#c8ad72] uppercase">
+              <p className="font-cinzel text-[10px] tracking-[0.28em] text-oro uppercase">
                 Terreno seleccionado
               </p>
 
-              <h2 className="font-cinzel mt-2 text-2xl text-[#f3e5c0]">
+              <h2 className="font-cinzel mt-2 text-2xl text-pergamino-palido">
                 {
                   NOMBRES_TERRENO[
                     casillaSeleccionada.terreno
@@ -961,11 +961,11 @@ export default function Mapa() {
               </h2>
 
               <dl className="mt-5 space-y-4 text-sm">
-                <div className="border-t border-[#c8ad72]/20 pt-3">
+                <div className="border-t border-oro/20 pt-3">
                   <dt className="text-xs tracking-[0.15em] text-white/45 uppercase">
                     Coordenadas axiales
                   </dt>
-                  <dd className="mt-1 font-mono text-[#e8d9ae]">
+                  <dd className="mt-1 font-mono text-pergamino">
                     q: {
                       casillaSeleccionada
                         .coordenada.q
@@ -977,11 +977,11 @@ export default function Mapa() {
                   </dd>
                 </div>
 
-                <div className="border-t border-[#c8ad72]/20 pt-3">
+                <div className="border-t border-oro/20 pt-3">
                   <dt className="text-xs tracking-[0.15em] text-white/45 uppercase">
                     Coste de movimiento
                   </dt>
-                  <dd className="mt-1 text-[#e8d9ae]">
+                  <dd className="mt-1 text-pergamino">
                     {costeMovimiento === null
                       ? 'No transitable'
                       : `${costeMovimiento} ${

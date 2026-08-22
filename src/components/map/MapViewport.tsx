@@ -254,7 +254,7 @@ export default function MapViewport({
           bloquearSiguienteClickRef.current = false
           evento.stopPropagation()
         }}
-        className="absolute bottom-4 left-4 z-20 flex items-center gap-1 border border-[#c8ad72]/35 bg-[#070b10]/90 p-1 shadow-lg backdrop-blur-md"
+        className="absolute bottom-4 left-4 z-20 flex items-center gap-1 border border-oro/35 bg-noche/90 p-1 shadow-lg backdrop-blur-md"
       >
         <button
           type="button"
@@ -263,7 +263,7 @@ export default function MapViewport({
           onClick={() =>
             cambiarZoom(-PASO_ZOOM)
           }
-          className="h-9 w-9 text-xl text-[#e8d9ae] transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30"
+          className="h-9 w-9 text-xl text-pergamino transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30"
         >
           −
         </button>
@@ -282,7 +282,7 @@ export default function MapViewport({
           onClick={() =>
             cambiarZoom(PASO_ZOOM)
           }
-          className="h-9 w-9 text-xl text-[#e8d9ae] transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30"
+          className="h-9 w-9 text-xl text-pergamino transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30"
         >
           +
         </button>
@@ -293,7 +293,7 @@ export default function MapViewport({
           onClick={() =>
             setCamara(reiniciarCamara())
           }
-          className="h-9 border-l border-[#c8ad72]/25 px-3 text-sm text-[#c8ad72] transition-colors hover:bg-white/10 hover:text-[#ffe6a3]"
+          className="h-9 border-l border-oro/25 px-3 text-sm text-oro transition-colors hover:bg-white/10 hover:text-oro-brillante"
         >
           ⟳
         </button>

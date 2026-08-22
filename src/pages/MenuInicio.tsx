@@ -84,7 +84,7 @@ export default function MenuInicio() {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center gap-8 bg-black">
         <p className="font-cinzel texto-oro text-3xl font-bold tracking-[0.3em]">HASTA PRONTO</p>
-        <p className="font-cinzel text-sm tracking-[0.25em] text-[#d8c68a]/70">
+        <p className="font-cinzel text-sm tracking-[0.25em] text-oro-claro/70">
           El Fulgor aguarda tu regreso
         </p>
         <button
@@ -98,7 +98,7 @@ export default function MenuInicio() {
   }
 
   return (
-    <main className="menu-portada relative h-[100dvh] w-screen overflow-hidden bg-[#02070b]">
+    <main className="menu-portada relative h-[100dvh] w-screen overflow-hidden bg-noche-fondo">
       <section className="menu-stage" aria-label="Menú principal de Fulgor Medieval">
         <img
           src={rutaPublica('imagenes/menu-inicio-limpio.webp')}
@@ -195,7 +195,7 @@ export default function MenuInicio() {
           <aside className="panel-lateral absolute top-0 left-0 z-50 h-full w-[min(560px,92vw)] overflow-y-auto">
             <button
               onClick={cerrar}
-              className="absolute top-5 right-5 font-cinzel text-xl text-[#d8c68a]/70 transition-colors hover:text-[#e8c96a]"
+              className="absolute top-5 right-5 font-cinzel text-xl text-oro-claro/70 transition-colors hover:text-ambar"
               aria-label="Cerrar"
             >
               ✕
@@ -204,13 +204,13 @@ export default function MenuInicio() {
             <div className="flex h-full flex-col justify-center px-12 py-16">
               {seccion === 'empezar' && partida && (
                 <>
-                  <p className="font-cinzel text-xs tracking-[0.35em] text-[#d8c68a]/70 uppercase">
+                  <p className="font-cinzel text-xs tracking-[0.35em] text-oro-claro/70 uppercase">
                     Crónica en curso
                   </p>
                   <h2 className="font-cinzel texto-oro mt-3 text-4xl font-bold tracking-[0.12em]">
                     {partida.meta.jugador}
                   </h2>
-                  <p className="mt-2 font-cinzel text-base tracking-[0.2em] text-[#d8c68a]">
+                  <p className="mt-2 font-cinzel text-base tracking-[0.2em] text-oro-claro">
                     {nombreReino} · Turno {partida.turno}
                   </p>
                   <p className="mt-8 text-sm leading-relaxed text-white/60">
@@ -256,13 +256,13 @@ export default function MenuInicio() {
 
               {seccion === 'cargar' && partida && (
                 <>
-                  <p className="font-cinzel text-xs tracking-[0.35em] text-[#d8c68a]/70 uppercase">
+                  <p className="font-cinzel text-xs tracking-[0.35em] text-oro-claro/70 uppercase">
                     Partida guardada
                   </p>
                   <h2 className="font-cinzel texto-oro mt-3 text-4xl font-bold tracking-[0.12em]">
                     {partida.meta.jugador}
                   </h2>
-                  <p className="mt-2 font-cinzel text-base tracking-[0.2em] text-[#d8c68a]">
+                  <p className="mt-2 font-cinzel text-base tracking-[0.2em] text-oro-claro">
                     {nombreReino}
                   </p>
                   <div className="mt-5 flex items-center gap-3">
@@ -287,7 +287,7 @@ export default function MenuInicio() {
                     Continuar crónica
                   </button>
 
-                  <div className="mt-10 border-t border-[#d4af37]/15 pt-6">
+                  <div className="mt-10 border-t border-dorado/15 pt-6">
                     {!confirmarBorrado ? (
                       <button
                         onClick={() => setConfirmarBorrado(true)}
@@ -322,7 +322,7 @@ export default function MenuInicio() {
 
               {seccion === 'config' && (
                 <>
-                  <p className="font-cinzel text-xs tracking-[0.35em] text-[#d8c68a]/70 uppercase">
+                  <p className="font-cinzel text-xs tracking-[0.35em] text-oro-claro/70 uppercase">
                     Configuración
                   </p>
                   <h2 className="font-cinzel texto-oro mt-3 text-4xl font-bold tracking-[0.12em]">
@@ -332,10 +332,10 @@ export default function MenuInicio() {
                     {['Sonido y música', 'Vídeo y resolución', 'Controles', 'Idioma'].map((op) => (
                       <li
                         key={op}
-                        className="flex items-center justify-between border-b border-[#d4af37]/15 pb-3 font-cinzel text-sm tracking-[0.15em] text-white/55"
+                        className="flex items-center justify-between border-b border-dorado/15 pb-3 font-cinzel text-sm tracking-[0.15em] text-white/55"
                       >
                         {op}
-                        <span className="text-[10px] tracking-[0.2em] text-[#d8c68a]/50 uppercase">
+                        <span className="text-[10px] tracking-[0.2em] text-oro-claro/50 uppercase">
                           Próximamente
                         </span>
                       </li>
@@ -346,17 +346,17 @@ export default function MenuInicio() {
 
               {seccion === 'creditos' && (
                 <>
-                  <p className="font-cinzel text-xs tracking-[0.35em] text-[#d8c68a]/70 uppercase">
+                  <p className="font-cinzel text-xs tracking-[0.35em] text-oro-claro/70 uppercase">
                     Créditos
                   </p>
                   <h2 className="font-cinzel texto-oro mt-3 text-4xl font-bold tracking-[0.12em]">
                     FULGOR MEDIEVAL
                   </h2>
-                  <p className="mt-4 font-cinzel text-sm tracking-[0.25em] text-[#d8c68a]">
+                  <p className="mt-4 font-cinzel text-sm tracking-[0.25em] text-oro-claro">
                     Cinco reinos · Una penumbra · Un Fulgor
                   </p>
                   <div className="mt-8 space-y-3 text-sm text-white/60">
-                    <p>Diseño, lore y desarrollo — <span className="text-[#e8c96a]">MABM-DEV</span></p>
+                    <p>Diseño, lore y desarrollo — <span className="text-ambar">MABM-DEV</span></p>
                     <p>Reinos de Hispania: Castilla, León, Aragón, Navarra y Granada</p>
                     <p className="pt-4 text-xs text-white/35">v0.1 — En construcción</p>
                   </div>
@@ -365,7 +365,7 @@ export default function MenuInicio() {
 
               {seccion === 'salir' && (
                 <>
-                  <p className="font-cinzel text-xs tracking-[0.35em] text-[#d8c68a]/70 uppercase">
+                  <p className="font-cinzel text-xs tracking-[0.35em] text-oro-claro/70 uppercase">
                     Salir
                   </p>
                   <h2 className="font-cinzel texto-oro mt-3 text-4xl font-bold tracking-[0.12em]">
