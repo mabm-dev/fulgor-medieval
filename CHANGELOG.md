@@ -5,6 +5,42 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
 
 ## [Sin publicar]
 
+## [0.4.0] - 2026-08-22
+
+### Añadido
+
+- Emplazamiento determinista de la capital, con vecindario mínimo para no
+  fundarla pegada al borde del mapa.
+- Semilla del mapa y metadatos de la campaña dentro del estado guardado.
+- Mano de obra como quinto recurso, con techo derivado de la población.
+- Economía derivada de cada asentamiento sobre su anillo de casillas.
+- Yacimientos de oro como recurso posicional de colinas y montañas.
+- Población con crecimiento alimentado por el excedente de grano.
+- Catálogo de seis edificios con cola de construcción y panel propio.
+- Fueros del asentamiento con modificadores económicos.
+- Frontera interior que se ensancha por hitos de población, con reparto de
+  las casillas disputadas entre asentamientos vecinos.
+- Segunda facción con capital propia sobre el mapa.
+- Niebla de guerra con casillas visibles, exploradas y ocultas.
+- Huestes, rutas de marcha y coste de movimiento por terreno.
+- Suministro, con penalización de marcha fuera de la red.
+- Registro de eventos del turno desplegable en el HUD.
+- Despliegue automático en GitHub Pages.
+
+### Cambiado
+
+- La producción del reino deja de venir de un perfil fijo y se calcula a
+  partir de los asentamientos.
+- El generador produce masas de agua conexas en lugar de charcos aislados.
+- El guardado informa de sus fallos en vez de interrumpir el turno.
+- Las imágenes se sirven en WebP y las tipografías en WOFF2.
+- La aplicación puede servirse desde un subdirectorio.
+
+### Eliminado
+
+- Recurso de hierro, sustituido por la mano de obra.
+- Imágenes del prototipo visual que ya no utilizaba ninguna pantalla.
+
 ## [0.3.0] - 2026-08-03
 
 ### Añadido
