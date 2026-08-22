@@ -15,7 +15,10 @@ import {
   ZOOM_MINIMO,
 } from './camera'
 
-const UMBRAL_ARRASTRE = 4
+// Por debajo de este umbral, el gesto se trata como clic aunque el puntero
+// se haya movido un poco entre pulsar y soltar. 4px era demasiado estricto:
+// cualquier clic real de ratón o trackpad tiembla más que eso.
+const UMBRAL_ARRASTRE = 8
 
 interface MapViewportProps {
   readonly children: ReactNode
@@ -27,7 +30,6 @@ interface EstadoArrastre {
   ultimoY: number
   recorridoX: number
   recorridoY: number
-  movido: boolean
 }
 
 export default function MapViewport({
@@ -37,8 +39,7 @@ export default function MapViewport({
     () => reiniciarCamara(),
   )
 
-  const arrastreRef =
-    useRef<EstadoArrastre | null>(null)
+  const arrastreActivoRef = useRef(false)
   const bloquearSiguienteClickRef =
     useRef(false)
 
@@ -55,115 +56,140 @@ export default function MapViewport({
     })
   }
 
+  /**
+   * El arrastre se sigue con listeners en `window`, no con
+   * `setPointerCapture`. Chrome no solo redirige al contenedor los eventos
+   * de puntero cuando hay captura: también redirige el `click` sintetizado
+   * que dispara el navegador al soltar. Con captura, un clic sobre un
+   * hexágono nunca llegaba al hexágono — llegaba al contenedor, y la
+   * casilla nunca cambiaba de selección en cuanto había zoom. Sin captura,
+   * el `click` sigue el hit-test normal y aterriza donde debe.
+   */
   const iniciarArrastre = (
     evento: ReactPointerEvent<HTMLDivElement>,
   ) => {
     if (
       evento.button !== 0 ||
-      camara.zoom <= ZOOM_MINIMO
+      camara.zoom <= ZOOM_MINIMO ||
+      arrastreActivoRef.current
     ) {
       return
     }
 
-    evento.currentTarget.setPointerCapture(
-      evento.pointerId,
-    )
+    arrastreActivoRef.current = true
 
-    arrastreRef.current = {
+    const arrastre: EstadoArrastre = {
       pointerId: evento.pointerId,
       ultimoX: evento.clientX,
       ultimoY: evento.clientY,
       recorridoX: 0,
       recorridoY: 0,
-      movido: false,
-    }
-  }
-
-  const moverArrastre = (
-    evento: ReactPointerEvent<HTMLDivElement>,
-  ) => {
-    const arrastre = arrastreRef.current
-
-    if (
-      !arrastre ||
-      arrastre.pointerId !== evento.pointerId
-    ) {
-      return
     }
 
-    const deltaX =
-      evento.clientX - arrastre.ultimoX
-    const deltaY =
-      evento.clientY - arrastre.ultimoY
+    let panoramicaIniciada = false
 
-    arrastre.ultimoX = evento.clientX
-    arrastre.ultimoY = evento.clientY
-    arrastre.recorridoX += deltaX
-    arrastre.recorridoY += deltaY
-
-    if (!arrastre.movido) {
-      const distancia = Math.hypot(
-        arrastre.recorridoX,
-        arrastre.recorridoY,
-      )
-
-      if (distancia < UMBRAL_ARRASTRE) {
+    const moverArrastreGlobal = (
+      eventoGlobal: PointerEvent,
+    ) => {
+      if (
+        eventoGlobal.pointerId !==
+        arrastre.pointerId
+      ) {
         return
       }
 
-      arrastre.movido = true
+      const deltaX =
+        eventoGlobal.clientX -
+        arrastre.ultimoX
+      const deltaY =
+        eventoGlobal.clientY -
+        arrastre.ultimoY
+
+      arrastre.ultimoX = eventoGlobal.clientX
+      arrastre.ultimoY = eventoGlobal.clientY
+      arrastre.recorridoX += deltaX
+      arrastre.recorridoY += deltaY
+
+      if (!panoramicaIniciada) {
+        const distancia = Math.hypot(
+          arrastre.recorridoX,
+          arrastre.recorridoY,
+        )
+
+        if (distancia < UMBRAL_ARRASTRE) {
+          return
+        }
+
+        panoramicaIniciada = true
+
+        setCamara((actual) =>
+          desplazarCamara(
+            actual,
+            arrastre.recorridoX,
+            arrastre.recorridoY,
+          ),
+        )
+
+        return
+      }
 
       setCamara((actual) =>
         desplazarCamara(
           actual,
-          arrastre.recorridoX,
-          arrastre.recorridoY,
+          deltaX,
+          deltaY,
         ),
       )
-
-      return
     }
 
-    setCamara((actual) =>
-      desplazarCamara(
-        actual,
-        deltaX,
-        deltaY,
-      ),
+    const finalizarArrastreGlobal = (
+      eventoGlobal: PointerEvent,
+    ) => {
+      if (
+        eventoGlobal.pointerId !==
+        arrastre.pointerId
+      ) {
+        return
+      }
+
+      window.removeEventListener(
+        'pointermove',
+        moverArrastreGlobal,
+      )
+      window.removeEventListener(
+        'pointerup',
+        finalizarArrastreGlobal,
+      )
+      window.removeEventListener(
+        'pointercancel',
+        finalizarArrastreGlobal,
+      )
+
+      // Lo que distingue un arrastre de un clic tembloroso es dónde se
+      // soltó respecto a dónde se pulsó — no si en algún instante
+      // intermedio se cruzó el umbral y luego se volvió cerca del origen.
+      const distanciaFinal = Math.hypot(
+        arrastre.recorridoX,
+        arrastre.recorridoY,
+      )
+
+      bloquearSiguienteClickRef.current =
+        distanciaFinal >= UMBRAL_ARRASTRE
+      arrastreActivoRef.current = false
+    }
+
+    window.addEventListener(
+      'pointermove',
+      moverArrastreGlobal,
     )
-  }
-
-  const finalizarArrastre = (
-    evento: ReactPointerEvent<HTMLDivElement>,
-  ) => {
-    const arrastre = arrastreRef.current
-
-    if (
-      !arrastre ||
-      arrastre.pointerId !== evento.pointerId
-    ) {
-      return
-    }
-
-    bloquearSiguienteClickRef.current =
-      arrastre.movido
-
-    if (
-      evento.currentTarget.hasPointerCapture(
-        evento.pointerId,
-      )
-    ) {
-      evento.currentTarget.releasePointerCapture(
-        evento.pointerId,
-      )
-    }
-
-    arrastreRef.current = null
-  }
-
-  const cancelarArrastre = () => {
-    arrastreRef.current = null
-    bloquearSiguienteClickRef.current = false
+    window.addEventListener(
+      'pointerup',
+      finalizarArrastreGlobal,
+    )
+    window.addEventListener(
+      'pointercancel',
+      finalizarArrastreGlobal,
+    )
   }
 
   const bloquearClickTrasArrastre = (
@@ -199,9 +225,6 @@ export default function MapViewport({
       role="region"
       aria-label="Cámara interactiva del mapa"
       onPointerDown={iniciarArrastre}
-      onPointerMove={moverArrastre}
-      onPointerUp={finalizarArrastre}
-      onPointerCancel={cancelarArrastre}
       onClickCapture={bloquearClickTrasArrastre}
       onWheel={controlarRueda}
       className={`relative h-full w-full touch-none overflow-hidden select-none ${

@@ -32,6 +32,30 @@ export function vecinosHex(coordenada: CoordenadaHex): CoordenadaHex[] {
   )
 }
 
+/**
+ * Todas las casillas a `radio` pasos o menos de `centro`, centro incluido.
+ * Cuenta `1 + 3·radio·(radio+1)`: 1, 7, 19, 37 para radio 0, 1, 2, 3 — las
+ * mismas cifras de "el radio 2 son 19 casillas y el radio 3, 37" del plan de
+ * frontera interior.
+ */
+export function casillasEnRadio(
+  centro: CoordenadaHex,
+  radio: number,
+): CoordenadaHex[] {
+  const resultado: CoordenadaHex[] = []
+
+  for (let dq = -radio; dq <= radio; dq += 1) {
+    const drMinimo = Math.max(-radio, -dq - radio)
+    const drMaximo = Math.min(radio, -dq + radio)
+
+    for (let dr = drMinimo; dr <= drMaximo; dr += 1) {
+      resultado.push(sumarHex(centro, { q: dq, r: dr }))
+    }
+  }
+
+  return resultado
+}
+
 export function distanciaHex(
   origen: CoordenadaHex,
   destino: CoordenadaHex,

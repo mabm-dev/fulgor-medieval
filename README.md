@@ -12,18 +12,34 @@ El proyecto se plantea como una antología de la Edad Media ibérica: las
 campañas históricas respetan su periodo, mientras que el modo Leyendas permite
 enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 
-> Estado: **pre-alpha**. La identidad visual, el menú principal, la selección
-> de reino y el guardado mínimo están implementados. El siguiente hito es una
-> partida vertical completa sobre un mapa pequeño.
+**[▶ Jugar en el navegador](https://mabm-dev.github.io/fulgor-medieval/)**
+
+> Estado: **pre-alpha v0.4**. Ya se puede fundar un reino, hacerlo crecer,
+> construir, mover huestes por un mapa cubierto de niebla y compartir frontera
+> con una facción rival. El siguiente hito es **v0.5 — Combate táctico**.
 
 ## Lo que ya funciona
 
-- Menú principal adaptable con navegación por teclado.
-- Selección visual entre cinco reinos del prototipo.
-- Presentación individual de héroes y estandartes.
-- Creación y eliminación de una partida local mínima.
-- Diseño adaptable a escritorio y móvil.
-- Compilación TypeScript, lint y CI.
+- Menú principal adaptable con navegación mediante ratón y teclado.
+- Selección visual entre cinco reinos con héroes y estandartes propios.
+- Creación de partidas con reino, gobernante, color y semilla de mapa.
+- Mapa hexagonal determinista de 24 × 16 casillas, con masas de agua conexas.
+- Terrenos con transitabilidad y costes de movimiento diferenciados.
+- Selección accesible de casillas y panel de información.
+- Cámara con desplazamiento, zoom y restauración de posición.
+- Estado de dominio versionado con turno, fase y cinco recursos.
+- Capital fundada sobre un emplazamiento elegido de forma determinista.
+- Economía calculada a partir de las casillas que trabaja cada asentamiento.
+- Población que crece con el excedente de grano, hasta su capacidad.
+- Seis edificios con cola de construcción, y fueros que alteran la economía.
+- Frontera interior que se ensancha con la población, repartida entre
+  asentamientos vecinos.
+- Niebla de guerra con casillas visibles, exploradas y ocultas.
+- Huestes con rutas de marcha, coste por terreno y estado de suministro.
+- Una segunda facción con capital propia sobre el mismo mapa.
+- Guardado automático y recuperación validada de la sesión.
+- HUD económico adaptable con registro de eventos del turno.
+- Suite automatizada de 333 pruebas, lint, TypeScript, build y CI.
 
 ## Visión jugable
 
@@ -52,10 +68,10 @@ Consulta [facciones y líderes](docs/diseno/facciones-y-lideres.md) y
 
 ## Arquitectura
 
-La interfaz actual utiliza React, TypeScript, Vite y Tailwind CSS. El núcleo
-futuro se construirá como un dominio puro y determinista, independiente de
-React. Las decisiones, el guardado y la generación aleatoria podrán probarse
-sin renderizar la interfaz.
+La interfaz utiliza React, TypeScript, Vite y Tailwind CSS. El núcleo jugable
+se construye como un dominio puro y determinista, independiente de React.
+Las reglas de recursos, economía, turnos, generación aleatoria y guardado
+se prueban sin necesidad de renderizar la interfaz.
 
 ```text
 Interfaz React

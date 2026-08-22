@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { obtenerPartida, borrarPartida, type Partida } from '../lib/partida'
 import { REINOS } from '../data/reinos'
+import { almacenamientoNavegador } from '../game/persistence/browserStorage'
+import {
+  borrarEstadoPartida,
+  cargarEstadoPartida,
+  type ResultadoCargaPartida,
+} from '../game/persistence/saveGame'
+import { rutaPublica } from '../rutaPublica'
 
 const ITEMS = [
   { id: 'empezar', rotulo: 'EMPEZAR PARTIDA' },
@@ -15,21 +21,32 @@ type ZonaId = (typeof ITEMS)[number]['id']
 
 export default function MenuInicio() {
   const navigate = useNavigate()
-  const [partida, setPartida] = useState<Partida | null>(() => obtenerPartida())
   const [seccion, setSeccion] = useState<ZonaId | null>(null)
   const [activo, setActivo] = useState<ZonaId | null>(null)
   const [hover, setHover] = useState<ZonaId | null>(null)
   const [despedida, setDespedida] = useState(false)
   const [confirmarBorrado, setConfirmarBorrado] = useState(false)
 
+  const [cargaMotor, setCargaMotor] = useState<ResultadoCargaPartida>(() =>
+    cargarEstadoPartida(almacenamientoNavegador),
+  )
+
+  const partida = cargaMotor.tipo === 'exito' ? cargaMotor.estado : null
+
   const nombreReino = partida
-    ? (REINOS.find((r) => r.id === partida.reino)?.nombre ?? partida.reino)
+    ? (REINOS.find((r) => r.id === partida.reinoJugador)?.nombre ?? partida.reinoJugador)
     : null
+
+  const errorGuardado = cargaMotor.tipo === 'error' ? cargaMotor.error : null
 
   const pulsar = (zona: ZonaId) => {
     setActivo(zona)
     setConfirmarBorrado(false)
     if (zona === 'empezar') {
+      if (partida) {
+        setSeccion('empezar')
+        return
+      }
       window.setTimeout(() => navigate('/nueva-partida'), 280)
       return
     }
@@ -43,9 +60,14 @@ export default function MenuInicio() {
     setConfirmarBorrado(false)
   }
 
+  const descartarGuardadoIncompatible = () => {
+    borrarEstadoPartida(almacenamientoNavegador)
+    setCargaMotor({ tipo: 'vacio' })
+  }
+
   const eliminarPartida = () => {
-    borrarPartida()
-    setPartida(null)
+    borrarEstadoPartida(almacenamientoNavegador)
+    setCargaMotor({ tipo: 'vacio' })
     cerrar()
   }
 
@@ -79,7 +101,7 @@ export default function MenuInicio() {
     <main className="menu-portada relative h-[100dvh] w-screen overflow-hidden bg-[#02070b]">
       <section className="menu-stage" aria-label="Menú principal de Fulgor Medieval">
         <img
-          src="/imagenes/menu-inicio-limpio.png"
+          src={rutaPublica('imagenes/menu-inicio-limpio.webp')}
           alt=""
           draggable={false}
           className="menu-reference"
@@ -87,7 +109,8 @@ export default function MenuInicio() {
 
         <nav className="menu-hotspots" aria-label="Opciones del juego">
           {ITEMS.map((item) => {
-            const deshabilitada = item.id === 'cargar' && !partida
+            const deshabilitada =
+            item.id === 'cargar' && !partida && !errorGuardado
             return (
               <button
                 key={item.id}
@@ -101,14 +124,14 @@ export default function MenuInicio() {
                 title={
                   item.id === 'cargar'
                     ? partida
-                      ? `Continuar: ${partida.jugador} · ${nombreReino}`
+                      ? `Continuar: ${partida.meta.jugador} · ${nombreReino}`
                       : 'No hay ninguna partida guardada'
                     : item.rotulo
                 }
                 className="menu-hotspot"
               >
                 <img
-                  src="/imagenes/marco-hover.png"
+                  src={rutaPublica('imagenes/marco-hover.webp')}
                   alt=""
                   draggable={false}
                   className="menu-option-frame"
@@ -116,7 +139,7 @@ export default function MenuInicio() {
                 <span className="menu-option-label">{item.rotulo}</span>
                 {(['cargar', 'config', 'creditos'] as ZonaId[]).includes(item.id) && (
                   <img
-                    src="/imagenes/separador-menu.png"
+                    src={rutaPublica('imagenes/separador-menu.webp')}
                     alt=""
                     draggable={false}
                     className="menu-option-divider"
@@ -130,7 +153,8 @@ export default function MenuInicio() {
 
       <nav className="menu-mobile" aria-label="Opciones del juego">
         {ITEMS.map((item) => {
-          const deshabilitada = item.id === 'cargar' && !partida
+          const deshabilitada =
+            item.id === 'cargar' && !partida && !errorGuardado
           const mostrarMarco = activo === item.id || (hover === item.id && !deshabilitada)
           return (
             <button
@@ -142,7 +166,7 @@ export default function MenuInicio() {
               className={mostrarMarco ? 'is-active' : undefined}
             >
               <img
-                src="/imagenes/marco-hover.png"
+                src={rutaPublica('imagenes/marco-hover.webp')}
                 alt=""
                 draggable={false}
                 className="menu-option-frame"
@@ -150,7 +174,7 @@ export default function MenuInicio() {
               <span>{item.rotulo}</span>
               {(['cargar', 'config', 'creditos'] as ZonaId[]).includes(item.id) && (
                 <img
-                  src="/imagenes/separador-menu.png"
+                  src={rutaPublica('imagenes/separador-menu.webp')}
                   alt=""
                   draggable={false}
                   className="menu-option-divider"
@@ -178,13 +202,65 @@ export default function MenuInicio() {
             </button>
 
             <div className="flex h-full flex-col justify-center px-12 py-16">
+              {seccion === 'empezar' && partida && (
+                <>
+                  <p className="font-cinzel text-xs tracking-[0.35em] text-[#d8c68a]/70 uppercase">
+                    Crónica en curso
+                  </p>
+                  <h2 className="font-cinzel texto-oro mt-3 text-4xl font-bold tracking-[0.12em]">
+                    {partida.meta.jugador}
+                  </h2>
+                  <p className="mt-2 font-cinzel text-base tracking-[0.2em] text-[#d8c68a]">
+                    {nombreReino} · Turno {partida.turno}
+                  </p>
+                  <p className="mt-8 text-sm leading-relaxed text-white/60">
+                    Solo se conserva una crónica. Empezar una nueva borrará esta
+                    para siempre.
+                  </p>
+                  <div className="mt-8 flex gap-4">
+                    <button
+                      onClick={() => navigate('/nueva-partida')}
+                      className="btn-oro font-cinzel px-8 py-3 text-sm font-bold tracking-[0.25em] uppercase"
+                    >
+                      Empezar de nuevo
+                    </button>
+                    <button
+                      onClick={cerrar}
+                      className="font-cinzel border border-white/25 px-8 py-3 text-sm font-bold tracking-[0.25em] text-white/70 uppercase transition-all hover:border-white/60 hover:text-white"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </>
+              )}              
+              {seccion === 'cargar' && errorGuardado && (
+                <div className="mb-8 border border-red-900/60 bg-red-950/25 p-5">
+                  <p className="font-cinzel text-xs tracking-[0.3em] text-red-300/90 uppercase">
+                    {errorGuardado.motivo === 'version_incompatible'
+                      ? 'Crónica de una versión anterior'
+                      : 'Crónica dañada'}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-white/60">
+                    {errorGuardado.motivo === 'version_incompatible'
+                      ? 'Esta partida se guardó con una versión anterior del juego y ya no puede continuarse.'
+                      : 'El archivo de esta partida no se ha podido leer.'}
+                  </p>
+                  <button
+                    onClick={descartarGuardadoIncompatible}
+                    className="font-cinzel mt-5 border border-red-700 bg-red-950/40 px-8 py-2.5 text-xs font-bold tracking-[0.25em] text-red-200 uppercase transition-all hover:bg-red-900/50"
+                  >
+                    Descartar y empezar de nuevo
+                  </button>
+                </div>
+              )}
+
               {seccion === 'cargar' && partida && (
                 <>
                   <p className="font-cinzel text-xs tracking-[0.35em] text-[#d8c68a]/70 uppercase">
                     Partida guardada
                   </p>
                   <h2 className="font-cinzel texto-oro mt-3 text-4xl font-bold tracking-[0.12em]">
-                    {partida.jugador}
+                    {partida.meta.jugador}
                   </h2>
                   <p className="mt-2 font-cinzel text-base tracking-[0.2em] text-[#d8c68a]">
                     {nombreReino}
@@ -192,21 +268,23 @@ export default function MenuInicio() {
                   <div className="mt-5 flex items-center gap-3">
                     <span
                       className="h-5 w-5 rounded-full border border-white/40"
-                      style={{ backgroundColor: partida.color, boxShadow: `0 0 10px ${partida.color}` }}
+                      style={{ backgroundColor: partida.meta.colorEstandarte, boxShadow: `0 0 10px ${partida.meta.colorEstandarte}` }}
                     />
                     <span className="font-cinzel text-xs tracking-[0.2em] text-white/60">
-                      Estandarte {partida.colorNombre}
+                      Estandarte {partida.meta.nombreEstandarte}
                     </span>
                   </div>
-                  <p className="mt-6 text-xs text-white/40">
-                    Creada el {new Date(partida.creada).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  <p className=" mt-6 text-xs text-white/40">
+                    Creada el {new Date(partida.meta.fechaCreacion).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                   <p className="mt-8 text-sm leading-relaxed text-white/60">
-                    Tu héroe aguarda en las fronteras del reino. El mapa de
-                    Hispania se desplegará en la próxima versión.
+                    La crónica aguarda en el turno {partida.turno}.
                   </p>
-                  <button className="btn-oro font-cinzel mt-8 px-10 py-3 text-sm font-bold tracking-[0.25em] uppercase" disabled>
-                    Continuar · Próximamente
+                  <button
+                    onClick={() => navigate('/mapa')}
+                    className="btn-oro font-cinzel mt-8 px-10 py-3 text-sm font-bold tracking-[0.25em] uppercase"
+                  >
+                    Continuar crónica
                   </button>
 
                   <div className="mt-10 border-t border-[#d4af37]/15 pt-6">

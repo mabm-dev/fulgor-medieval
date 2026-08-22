@@ -45,7 +45,7 @@ comprensible y divertido.
 
 ## Recursos iniciales
 
-- Comida.
+- Grano.
 - Madera.
 - Piedra.
 - Oro.
