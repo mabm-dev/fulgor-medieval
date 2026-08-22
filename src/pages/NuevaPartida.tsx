@@ -68,7 +68,7 @@ export default function NuevaPartida() {
 
     REINOS.forEach((r) => {
       const imagen = new Image()
-      imagen.src = `/imagenes/heroe-silueta-${r.id}.png`
+      imagen.src = `/imagenes/heroe-silueta-${r.id}.webp`
       imagen.onload = () => {
         if (cancelado) return
         const canvas = document.createElement('canvas')
@@ -133,7 +133,7 @@ export default function NuevaPartida() {
       {/* Imagen de los cinco heroes */}
       <img
         ref={imgRef}
-        src="/imagenes/registro-fondo.jpg"
+        src="/imagenes/registro-fondo.webp"
         alt="Los cinco reinos de Hispania"
         className="absolute inset-0 h-full w-full object-cover"
         onLoad={() => window.dispatchEvent(new Event('resize'))}

@@ -100,7 +100,7 @@ export default function MenuInicio() {
     <main className="menu-portada relative h-[100dvh] w-screen overflow-hidden bg-[#02070b]">
       <section className="menu-stage" aria-label="Menú principal de Fulgor Medieval">
         <img
-          src="/imagenes/menu-inicio-limpio.png"
+          src="/imagenes/menu-inicio-limpio.webp"
           alt=""
           draggable={false}
           className="menu-reference"
@@ -130,7 +130,7 @@ export default function MenuInicio() {
                 className="menu-hotspot"
               >
                 <img
-                  src="/imagenes/marco-hover.png"
+                  src="/imagenes/marco-hover.webp"
                   alt=""
                   draggable={false}
                   className="menu-option-frame"
@@ -138,7 +138,7 @@ export default function MenuInicio() {
                 <span className="menu-option-label">{item.rotulo}</span>
                 {(['cargar', 'config', 'creditos'] as ZonaId[]).includes(item.id) && (
                   <img
-                    src="/imagenes/separador-menu.png"
+                    src="/imagenes/separador-menu.webp"
                     alt=""
                     draggable={false}
                     className="menu-option-divider"
@@ -165,7 +165,7 @@ export default function MenuInicio() {
               className={mostrarMarco ? 'is-active' : undefined}
             >
               <img
-                src="/imagenes/marco-hover.png"
+                src="/imagenes/marco-hover.webp"
                 alt=""
                 draggable={false}
                 className="menu-option-frame"
@@ -173,7 +173,7 @@ export default function MenuInicio() {
               <span>{item.rotulo}</span>
               {(['cargar', 'config', 'creditos'] as ZonaId[]).includes(item.id) && (
                 <img
-                  src="/imagenes/separador-menu.png"
+                  src="/imagenes/separador-menu.webp"
                   alt=""
                   draggable={false}
                   className="menu-option-divider"
