@@ -1,4 +1,5 @@
 import type { IdentificadorReino } from '../game/domain/kingdom'
+import { rutaPublica } from '../rutaPublica'
 
 export interface Reino {
   id: IdentificadorReino
@@ -18,7 +19,7 @@ export const REINOS: Reino[] = [
     nombre: 'Castilla',
     heroe: 'Rodrigo',
     tituloHeroe: 'el Campeador',
-    imagen: '/imagenes/heroe-castilla.webp',
+    imagen: rutaPublica('imagenes/heroe-castilla.webp'),
     descripcion:
       'Tierra de campos dorados y fortalezas de piedra. Sus huestes avanzan con la disciplina de quien jamás retrocede.',
     tropas: 'Caballería noble y concejil · Lanceros · Ballesteros',
@@ -30,7 +31,7 @@ export const REINOS: Reino[] = [
     nombre: 'León',
     heroe: 'Urraca',
     tituloHeroe: 'la Leona',
-    imagen: '/imagenes/heroe-leon.webp',
+    imagen: rutaPublica('imagenes/heroe-leon.webp'),
     descripcion:
       'El reino que ruge bajo el estandarte del león. Murallas inquebrantables y soldados que luchan hasta el último aliento.',
     tropas: 'Infantería pesada · Milicias · Caballería',
@@ -42,7 +43,7 @@ export const REINOS: Reino[] = [
     nombre: 'Aragón',
     heroe: 'Jaime',
     tituloHeroe: 'el Conquistador',
-    imagen: '/imagenes/heroe-aragon.webp',
+    imagen: rutaPublica('imagenes/heroe-aragon.webp'),
     descripcion:
       'Del Pirineo al mar, su corona se forjó expandiendo fronteras. Veloz, ambiciosa y temida en campo abierto.',
     tropas: 'Almogávares · Ballesteros · Caballería feudal',
@@ -54,7 +55,7 @@ export const REINOS: Reino[] = [
     nombre: 'Navarra',
     heroe: 'Aznar',
     tituloHeroe: 'de Roncal',
-    imagen: '/imagenes/heroe-navarra.webp',
+    imagen: rutaPublica('imagenes/heroe-navarra.webp'),
     descripcion:
       'Señorío de montañas y desfiladeros. Sus gentes conocen cada piedra del camino y golpean donde nadie los espera.',
     tropas: 'Infanzones · Lanceros · Tiradores de montaña',
@@ -66,7 +67,7 @@ export const REINOS: Reino[] = [
     nombre: 'Granada',
     heroe: 'Zahir',
     tituloHeroe: 'de Granada',
-    imagen: '/imagenes/heroe-granada.webp',
+    imagen: rutaPublica('imagenes/heroe-granada.webp'),
     descripcion:
       'El último reino del sur, guardián de jardines y palacios. Sus jinetes caen sobre el enemigo como el viento del desierto.',
     tropas: 'Jinetes ligeros · Lanceros · Arqueros andalusíes',

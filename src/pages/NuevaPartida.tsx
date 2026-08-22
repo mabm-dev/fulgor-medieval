@@ -8,6 +8,7 @@ import {
 import {
   crearSesionPartida,
 } from '../game/systems/session'
+import { rutaPublica } from '../rutaPublica'
 
 /* Cajas de las siluetas de los héroes sobre la imagen original */
 const AURAS_HEROE: Record<string, { fx: number; fy: number; fw: number; fh: number }> = {
@@ -68,7 +69,7 @@ export default function NuevaPartida() {
 
     REINOS.forEach((r) => {
       const imagen = new Image()
-      imagen.src = `/imagenes/heroe-silueta-${r.id}.webp`
+      imagen.src = rutaPublica(`imagenes/heroe-silueta-${r.id}.webp`)
       imagen.onload = () => {
         if (cancelado) return
         const canvas = document.createElement('canvas')
@@ -133,7 +134,7 @@ export default function NuevaPartida() {
       {/* Imagen de los cinco heroes */}
       <img
         ref={imgRef}
-        src="/imagenes/registro-fondo.webp"
+        src={rutaPublica('imagenes/registro-fondo.webp')}
         alt="Los cinco reinos de Hispania"
         className="absolute inset-0 h-full w-full object-cover"
         onLoad={() => window.dispatchEvent(new Event('resize'))}
