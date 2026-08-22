@@ -58,19 +58,19 @@ export default function TurnHud({
   return (
     <section
       aria-label="Estado económico del reino"
-      className="relative z-20 flex shrink-0 flex-col items-stretch gap-3 border-b border-[#c8ad72]/25 bg-[#070b10]/95 px-3 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-md lg:grid lg:grid-cols-[11rem_minmax(0,1fr)_28rem] lg:items-center lg:gap-4 lg:px-5"
+      className="relative z-20 flex shrink-0 flex-col items-stretch gap-3 border-b border-oro/25 bg-noche/95 px-3 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-md lg:grid lg:grid-cols-[11rem_minmax(0,1fr)_28rem] lg:items-center lg:gap-4 lg:px-5"
     >
-      <div className="flex items-center gap-3 border-b border-[#c8ad72]/25 pb-3 lg:w-auto lg:border-r lg:border-b-0 lg:pr-5 lg:pb-0">
+      <div className="flex items-center gap-3 border-b border-oro/25 pb-3 lg:w-auto lg:border-r lg:border-b-0 lg:pr-5 lg:pb-0">
         <div>
-          <p className="font-cinzel text-[9px] tracking-[0.3em] text-[#c8ad72] uppercase">
+          <p className="font-cinzel text-[9px] tracking-[0.3em] text-oro uppercase">
             Turno
           </p>
-          <p className="font-cinzel w-8 text-center text-2xl leading-none tabular-nums text-[#f3e5c0]">
+          <p className="font-cinzel w-8 text-center text-2xl leading-none tabular-nums text-pergamino-palido">
             {estado.turno}
           </p>
         </div>
 
-        <span className="border border-[#c8ad72]/25 bg-black/30 px-2 py-1 text-[10px] tracking-[0.18em] text-white/55 uppercase">
+        <span className="border border-oro/25 bg-black/30 px-2 py-1 text-[10px] tracking-[0.18em] text-white/55 uppercase">
           {NOMBRES_FASE[estado.fase]}
         </span>
       </div>
@@ -91,7 +91,7 @@ export default function TurnHud({
               <dt className="text-[7px] tracking-[0.06em] text-white/45 uppercase sm:text-[9px] sm:tracking-[0.16em]">
                 {nombre}
               </dt>
-              <dd className="font-cinzel mx-auto mt-1 min-w-[3ch] text-center text-base tabular-nums text-[#e8d9ae]">
+              <dd className="font-cinzel mx-auto mt-1 min-w-[3ch] text-center text-base tabular-nums text-pergamino">
                 {cantidad}
               </dd>
             </div>
@@ -110,7 +110,7 @@ export default function TurnHud({
                 )
               }
               aria-expanded={registroAbierto}
-              className="font-cinzel border border-[#c8ad72]/30 bg-black/30 px-3 py-2 text-[10px] tracking-[0.15em] text-[#c8ad72]/80 uppercase transition-colors hover:border-[#c8ad72]/60 hover:text-[#ffe6a3]"
+              className="font-cinzel border border-oro/30 bg-black/30 px-3 py-2 text-[10px] tracking-[0.15em] text-oro/80 uppercase transition-colors hover:border-oro/60 hover:text-oro-brillante"
             >
               Registro del turno (
               {eventos.length})
@@ -120,7 +120,7 @@ export default function TurnHud({
               <ul
                 role="log"
                 aria-label="Registro del turno anterior"
-                className="absolute top-full right-0 z-30 mt-2 w-72 space-y-1.5 border border-[#c8ad72]/40 bg-[#070b10] p-3 text-left shadow-[0_12px_30px_rgba(0,0,0,0.7)]"
+                className="absolute top-full right-0 z-30 mt-2 w-72 space-y-1.5 border border-oro/40 bg-noche p-3 text-left shadow-[0_12px_30px_rgba(0,0,0,0.7)]"
               >
                 {eventos.map(
                   (evento, indice) => (
@@ -141,7 +141,7 @@ export default function TurnHud({
           mensaje && (
             <p
               role="status"
-              className="max-w-[55%] text-left text-xs text-[#c8ad72]/75 lg:w-52 lg:max-w-52 lg:flex-none lg:text-right"
+              className="max-w-[55%] text-left text-xs text-oro/75 lg:w-52 lg:max-w-52 lg:flex-none lg:text-right"
             >
               {mensaje}
             </p>
@@ -152,7 +152,7 @@ export default function TurnHud({
           type="button"
           onClick={onFinalizarTurno}
           disabled={finalizarDeshabilitado}
-          className="font-cinzel shrink-0 border border-[#c8ad72]/45 bg-[#151007] px-4 py-3 text-xs tracking-[0.16em] text-[#f3e5c0] uppercase transition-colors hover:border-[#e6c56f] hover:bg-[#241907] disabled:cursor-not-allowed disabled:opacity-40 sm:px-5"
+          className="font-cinzel shrink-0 border border-oro/45 bg-brasa px-4 py-3 text-xs tracking-[0.16em] text-pergamino-palido uppercase transition-colors hover:border-oro-viejo hover:bg-brasa-hover disabled:cursor-not-allowed disabled:opacity-40 sm:px-5"
         >
           Finalizar turno
         </button>

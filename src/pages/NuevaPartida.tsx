@@ -148,7 +148,7 @@ export default function NuevaPartida() {
         <h1 className="font-cinzel texto-oro text-4xl font-bold tracking-[0.2em] drop-shadow-[0_3px_10px_rgba(0,0,0,0.9)] md:text-5xl">
           ELIGE TU REINO
         </h1>
-        <p className="mt-3 font-cinzel text-xs tracking-[0.3em] text-[#e8d9ae]/85 uppercase">
+        <p className="mt-3 font-cinzel text-xs tracking-[0.3em] text-pergamino/85 uppercase">
           {reino ? 'Completa tu registro en el panel' : 'Pasa el ratón sobre un héroe y haz clic'}
         </p>
       </div>
@@ -246,7 +246,7 @@ export default function NuevaPartida() {
         <aside className="panel-derecho absolute top-0 right-0 z-40 h-full w-[min(480px,94vw)] overflow-y-auto">
           <button
             onClick={() => setReinoId(null)}
-            className="absolute top-5 right-5 z-10 font-cinzel text-xl text-[#d8c68a]/70 transition-colors hover:text-[#e8c96a]"
+            className="absolute top-5 right-5 z-10 font-cinzel text-xl text-oro-claro/70 transition-colors hover:text-ambar"
             aria-label="Cerrar"
           >
             ✕
@@ -259,7 +259,7 @@ export default function NuevaPartida() {
               alt={`${reino.heroe} ${reino.tituloHeroe}`}
               className="h-full w-full object-cover object-top"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#060502] via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-brasa-sombra via-transparent to-transparent" />
             <div className="absolute bottom-3 left-8">
               <p className="font-cinzel texto-oro text-3xl font-bold tracking-[0.15em]">
                 {reino.nombre.toUpperCase()}
@@ -273,11 +273,11 @@ export default function NuevaPartida() {
           <div className="flex flex-col gap-5 px-8 py-6">
             <p className="text-sm leading-relaxed text-white/75">{reino.descripcion}</p>
 
-            <div className="border-t border-[#d4af37]/20 pt-4">
-              <p className="font-cinzel text-[10px] font-bold tracking-[0.3em] text-[#d8c68a]/70 uppercase">
+            <div className="border-t border-dorado/20 pt-4">
+              <p className="font-cinzel text-[10px] font-bold tracking-[0.3em] text-oro-claro/70 uppercase">
                 Tropas del reino
               </p>
-              <p className="mt-2 text-sm leading-snug text-[#d8c68a]">{reino.tropas}</p>
+              <p className="mt-2 text-sm leading-snug text-oro-claro">{reino.tropas}</p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -292,7 +292,7 @@ export default function NuevaPartida() {
 
             {/* Registro del jugador */}
             <label className="mt-2 flex flex-col gap-2">
-              <span className="font-cinzel text-xs font-bold tracking-[0.25em] text-[#d8c68a] uppercase">
+              <span className="font-cinzel text-xs font-bold tracking-[0.25em] text-oro-claro uppercase">
                 Nombre del jugador
               </span>
               <input
@@ -301,7 +301,7 @@ export default function NuevaPartida() {
                 onChange={(e) => setJugador(e.target.value)}
                 maxLength={20}
                 placeholder="Escribe tu nombre, mi señor..."
-                className="border-b border-[#d4af37]/40 bg-transparent pb-2 font-cinzel text-xl text-white placeholder:text-white/25 focus:border-[#d4af37] focus:outline-none"
+                className="border-b border-dorado/40 bg-transparent pb-2 font-cinzel text-xl text-white placeholder:text-white/25 focus:border-dorado focus:outline-none"
               />
             </label>
 
