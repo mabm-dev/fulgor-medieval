@@ -76,13 +76,15 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # enablement crea el sitio de Pages por API si todavia no existe, con los
-      # permisos que el job ya tiene. Sin esto, el primer despliegue de un
-      # repositorio recien configurado falla con "Get Pages site failed".
+      # El sitio de Pages se crea una sola vez desde los ajustes del
+      # repositorio (Settings -> Pages -> Source: GitHub Actions). No se puede
+      # automatizar aqui: el parametro `enablement` de esta accion crea el
+      # sitio por API y eso exige `Administration: write`, un permiso que el
+      # GITHUB_TOKEN de un flujo no puede declarar —solo llega a `pages:
+      # write`, que publica pero no crea—. Probado: falla con "Resource not
+      # accessible by integration".
       - name: Configure Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
