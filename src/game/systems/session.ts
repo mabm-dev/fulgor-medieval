@@ -4,7 +4,18 @@ import {
 import {
   crearCapitalInicial,
 } from '../content/kingdomSettlements'
+import { PERFILES_FORMACION } from '../content/formations'
 import { crearHueste } from '../domain/hueste'
+import type { OpcionesFormacion } from '../domain/formation'
+import {
+  crearRegistroFormaciones,
+  existenFormaciones,
+} from '../domain/formationRegistry'
+import type { OpcionesHeroe } from '../domain/hero'
+import {
+  crearRegistroHeroes,
+  existenHeroes,
+} from '../domain/heroRegistry'
 import {
   crearEstadoPartida,
   type EstadoPartida,
@@ -65,27 +76,138 @@ export function crearSesionPartida(
     elegirEmplazamientoCapital(mapa),
   )
 
-  // Segunda facción (paso 6), presencia inerte: capital rival en el mapa,
-  // sin economía simulada —eso es v0.6—. Reino determinista (el siguiente
+  // Segunda facción (paso 6): capital rival en el mapa, sin economía
+  // simulada —eso sigue siendo v0.6—. Reino determinista (el siguiente
   // de la lista) y posición excluyendo la de la capital del jugador, para
-  // no chocar con ella.
+  // no chocar con ella. Se reutiliza el mismo `reinoRival` para la
+  // hueste y el héroe de más abajo: es el mismo reino, no hace falta
+  // volver a elegirlo.
+  const reinoRival = elegirReinoRival(
+    opciones.reinoJugador,
+  )
   const capitalRival = crearCapitalInicial(
-    elegirReinoRival(opciones.reinoJugador),
+    reinoRival,
     elegirEmplazamientoCapital(mapa, [
       capital.posicion,
     ]),
   )
 
-  // Pieza 4 del paso 6: una hueste inicial, para probar movimiento y
-  // exploración sin necesitar todavía una cadena de reclutamiento
-  // completa. Solo del jugador —la rival sigue siendo presencia inerte
-  // (pieza 2), sin nada que mover—.
+  // Bloque 2 de `v0.5`: cuatro formaciones por bando, tomadas tal cual
+  // del catálogo (`content/formations.ts`), sin cadena de reclutamiento
+  // —igual que la hueste exploradora de `v0.4`, probar el combate no
+  // debe exigir antes construir esa cadena—. El prefijo de id evita
+  // colisiones: las formaciones de ambos bandos conviven en un único
+  // registro, no uno por hueste.
+  function crearFormacionesIniciales(
+    prefijoId: string,
+  ): readonly OpcionesFormacion[] {
+    return Object.entries(
+      PERFILES_FORMACION,
+    ).map(([idPerfil, definicion]) => ({
+      id: `${prefijoId}-${idPerfil}`,
+      ...definicion,
+    }))
+  }
+
+  const formacionesJugador =
+    crearFormacionesIniciales('hueste-1')
+  const formacionesRival =
+    crearFormacionesIniciales(
+      'hueste-rival-1',
+    )
+
+  // Nombre y arquetipo son un valor de partida provisional, no una
+  // decisión de lore: no hay personajes con nombre propio en esta capa
+  // todavía —igual que "Hueste exploradora" tampoco lo es—. Arquetipo
+  // igual en ambos bandos a propósito: elegir arquetipos distintos por
+  // bando es una decisión de contenido que no toca a este bloque.
+  const heroeJugador: OpcionesHeroe = {
+    id: 'heroe-1',
+    nombre: 'Capitán de la hueste',
+    reinoId: opciones.reinoJugador,
+    arquetipo: 'caballero_frontera',
+  }
+  const heroeRival: OpcionesHeroe = {
+    id: 'heroe-rival-1',
+    nombre: 'Capitán rival',
+    reinoId: reinoRival,
+    arquetipo: 'caballero_frontera',
+  }
+
+  const formaciones = crearRegistroFormaciones([
+    ...formacionesJugador,
+    ...formacionesRival,
+  ])
+  const heroes = crearRegistroHeroes([
+    heroeJugador,
+    heroeRival,
+  ])
+
+  // Pieza 4 del paso 6 de `v0.4`, ahora con hueste y ejército completos.
+  // La rival no se mueve en `v0.5` —eso es IA estratégica, `v0.6`—: el
+  // jugador es quien busca el encuentro, no al revés.
   const hueste = crearHueste({
     id: 'hueste-1',
     nombre: 'Hueste exploradora',
     reinoId: opciones.reinoJugador,
     posicion: capital.posicion,
+    heroeId: heroeJugador.id,
+    formacionIds: formacionesJugador.map(
+      (formacion) => formacion.id,
+    ),
   })
+  const huesteRival = crearHueste({
+    id: 'hueste-rival-1',
+    nombre: 'Hueste rival',
+    reinoId: reinoRival,
+    posicion: capitalRival.posicion,
+    heroeId: heroeRival.id,
+    formacionIds: formacionesRival.map(
+      (formacion) => formacion.id,
+    ),
+  })
+
+  // Integridad referencial entre `Hueste` y sus registros: no la
+  // comprueba el dominio (`hueste.ts` no conoce otros registros, a
+  // propósito), así que la comprueba quien construye la sesión. Si esto
+  // llega a lanzar, es un error de programación aquí mismo —un id mal
+  // generado dos líneas más arriba—, no un dato de usuario.
+  const formacionIdsUsados = [
+    ...hueste.formacionIds,
+    ...huesteRival.formacionIds,
+  ]
+
+  if (
+    !existenFormaciones(
+      formaciones,
+      formacionIdsUsados,
+    )
+  ) {
+    throw new Error(
+      'Formación inicial no encontrada ' +
+        'en el registro',
+    )
+  }
+
+  const heroeIdsUsados = [
+    hueste.heroeId,
+    huesteRival.heroeId,
+  ].filter(
+    (id): id is string =>
+      id !== undefined,
+  )
+
+  if (
+    !existenHeroes(
+      heroes,
+      heroeIdsUsados,
+    )
+  ) {
+    throw new Error(
+      'Héroe inicial no encontrado en ' +
+        'el registro',
+    )
+  }
 
   const perfil = obtenerPerfilEconomico(
     opciones.reinoJugador,
@@ -112,7 +234,9 @@ export function crearSesionPartida(
     reinoJugador: opciones.reinoJugador,
     recursos: perfil.recursosIniciales,
     asentamientos: [capital, capitalRival],
-    huestes: [hueste],
+    huestes: [hueste, huesteRival],
+    formaciones: [...formaciones],
+    heroes: [...heroes],
     casillasExploradas: [
       ...visibilidadInicial,
     ],

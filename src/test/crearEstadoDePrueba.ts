@@ -38,6 +38,8 @@ export function crearEstadoDePrueba(
     recursos: opciones.recursos,
     asentamientos: opciones.asentamientos,
     huestes: opciones.huestes,
+    formaciones: opciones.formaciones,
+    heroes: opciones.heroes,
     casillasExploradas:
       opciones.casillasExploradas,
   })

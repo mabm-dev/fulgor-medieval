@@ -297,6 +297,64 @@ describe('avanzarPorRuta', () => {
       COSTE_TERRENO_DESCONOCIDO,
     ).toBe(1)
   })
+
+  it('se detiene un paso antes de una casilla bloqueada', () => {
+    const casillas = construirCasillas([
+      [
+        'llanura',
+        'llanura',
+        'llanura',
+      ],
+    ])
+
+    const resultado = avanzarPorRuta(
+      [
+        { q: 0, r: 0 },
+        { q: 1, r: 0 },
+        { q: 2, r: 0 },
+      ],
+      casillas,
+      todoExplorado(casillas),
+      PUNTOS_MOVIMIENTO_MAXIMOS,
+      (coordenada) =>
+        coordenada.q === 1 &&
+        coordenada.r === 0,
+    )
+
+    expect(resultado).toEqual({
+      posicion: { q: 0, r: 0 },
+      destinoAlcanzado: false,
+      bloqueadaEn: { q: 1, r: 0 },
+    })
+  })
+
+  it('no atraviesa una casilla bloqueada para llegar más allá', () => {
+    const casillas = construirCasillas([
+      [
+        'llanura',
+        'llanura',
+        'llanura',
+      ],
+    ])
+
+    const resultado = avanzarPorRuta(
+      [
+        { q: 0, r: 0 },
+        { q: 1, r: 0 },
+        { q: 2, r: 0 },
+      ],
+      casillas,
+      todoExplorado(casillas),
+      PUNTOS_MOVIMIENTO_MAXIMOS,
+      (coordenada) =>
+        coordenada.q === 1 &&
+        coordenada.r === 0,
+    )
+
+    expect(resultado.posicion).not.toEqual(
+      { q: 2, r: 0 },
+    )
+  })
 })
 
 describe('resolverMovimiento', () => {
@@ -338,6 +396,33 @@ describe('resolverMovimiento', () => {
     expect(resultado).toEqual({
       posicion: { q: 0, r: 0 },
       destinoAlcanzado: false,
+    })
+  })
+
+  it('reporta la casilla de un encuentro y no la de destino', () => {
+    const casillas = construirCasillas([
+      [
+        'llanura',
+        'llanura',
+        'llanura',
+      ],
+    ])
+
+    const resultado = resolverMovimiento(
+      { q: 0, r: 0 },
+      { q: 2, r: 0 },
+      casillas,
+      todoExplorado(casillas),
+      PUNTOS_MOVIMIENTO_MAXIMOS,
+      (coordenada) =>
+        coordenada.q === 1 &&
+        coordenada.r === 0,
+    )
+
+    expect(resultado).toEqual({
+      posicion: { q: 0, r: 0 },
+      destinoAlcanzado: false,
+      bloqueadaEn: { q: 1, r: 0 },
     })
   })
 })

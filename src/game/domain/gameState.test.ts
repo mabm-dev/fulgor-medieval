@@ -49,6 +49,8 @@ describe('estado de partida', () => {
       },
       asentamientos: [],
       huestes: [],
+      formaciones: [],
+      heroes: [],
       casillasExploradas: [],
     })
   })
@@ -192,6 +194,8 @@ describe('estado de partida', () => {
       },
       asentamientos: [],
       huestes: [],
+      formaciones: [],
+      heroes: [],
       casillasExploradas: [],
     })
     expect(Object.isFrozen(estado)).toBe(true)
@@ -322,6 +326,83 @@ describe('estado de partida', () => {
       Object.isFrozen(
         restaurado.asentamientos[0],
       ),
+    ).toBe(true)
+  })
+
+  it('crea y restaura formaciones, héroes y la hueste que los referencia', () => {
+    const original = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,
+      reinoJugador: 'castilla',
+      huestes: [
+        {
+          id: 'hueste-1',
+          nombre: 'Hueste exploradora',
+          reinoId: 'castilla',
+          posicion: { q: 0, r: 0 },
+          heroeId: 'heroe-1',
+          formacionIds: [
+            'hueste-1-lanceros',
+          ],
+        },
+      ],
+      formaciones: [
+        {
+          id: 'hueste-1-lanceros',
+          nombre: 'Lanceros concejiles',
+          tipo: 'infanteria',
+          cantidad: 50,
+          saludPorIntegrante: 10,
+          ataque: 4,
+          defensa: 6,
+          danoMin: 3,
+          danoMax: 5,
+          movimiento: 2,
+          iniciativa: 3,
+          alcance: 1,
+          disciplina: 65,
+          rasgos: ['muro_lanzas'],
+        },
+      ],
+      heroes: [
+        {
+          id: 'heroe-1',
+          nombre: 'Capitán de la hueste',
+          reinoId: 'castilla',
+          arquetipo: 'caballero_frontera',
+        },
+      ],
+    })
+
+    const restaurado =
+      restaurarEstadoPartida(
+        JSON.parse(
+          JSON.stringify(original),
+        ) as unknown,
+      )
+
+    expect(
+      restaurado.huestes[0].heroeId,
+    ).toBe('heroe-1')
+    expect(
+      restaurado.huestes[0].formacionIds,
+    ).toEqual(['hueste-1-lanceros'])
+    expect(
+      restaurado.formaciones[0].nombre,
+    ).toBe('Lanceros concejiles')
+    expect(
+      restaurado.formaciones[0].rasgos,
+    ).toEqual(['muro_lanzas'])
+    expect(
+      restaurado.heroes[0].arquetipo,
+    ).toBe('caballero_frontera')
+    expect(
+      Object.isFrozen(
+        restaurado.formaciones,
+      ),
+    ).toBe(true)
+    expect(
+      Object.isFrozen(restaurado.heroes),
     ).toBe(true)
   })
 

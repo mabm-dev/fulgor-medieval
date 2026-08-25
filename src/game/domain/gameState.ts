@@ -19,11 +19,27 @@ import {
   type RegistroHuestes,
 } from './huesteRegistry'
 import {
+  esTipoFormacion,
+  type OpcionesFormacion,
+} from './formation'
+import {
+  crearRegistroFormaciones,
+  type RegistroFormaciones,
+} from './formationRegistry'
+import {
+  esArquetipoHeroe,
+  type OpcionesHeroe,
+} from './hero'
+import {
+  crearRegistroHeroes,
+  type RegistroHeroes,
+} from './heroRegistry'
+import {
   crearReservaRecursos,
   type ReservaRecursos,
 } from './resources'
 
-export const VERSION_ESTADO_PARTIDA = 4
+export const VERSION_ESTADO_PARTIDA = 5
 
 export const FASES_TURNO = [
   'gestion',
@@ -58,6 +74,14 @@ export interface EstadoPartida {
     RegistroAsentamientos
   readonly huestes: RegistroHuestes
   /**
+   * `formaciones` y `heroes` llegan con `v0.5`. Registros aparte, no
+   * anidados dentro de cada `Hueste` —la hueste solo referencia sus
+   * identificadores, ver `domain/hueste.ts`—, por lo que viven aquí al
+   * mismo nivel que `huestes`, no dentro de su registro.
+   */
+  readonly formaciones: RegistroFormaciones
+  readonly heroes: RegistroHeroes
+  /**
    * Niebla de guerra: acumula para siempre, nunca se recorta. "Visible"
    * —lo que se ve ahora mismo— no se guarda, se deriva cada turno con
    * `systems/vision.ts`. Claves `claveHex`, mismo formato que en todo el
@@ -76,6 +100,10 @@ export interface OpcionesEstadoInicial {
     readonly OpcionesAsentamiento[]
   readonly huestes?:
     readonly OpcionesHueste[]
+  readonly formaciones?:
+    readonly OpcionesFormacion[]
+  readonly heroes?:
+    readonly OpcionesHeroe[]
   readonly casillasExploradas?:
     readonly string[]
 }
@@ -177,7 +205,12 @@ function leerCantidad(
   return cantidad
 }
 
-function leerEdificios(
+/**
+ * Reutilizada para `edificios`, `rasgos` de una formación y
+ * `formacionIds` de una hueste: los tres son "lista de textos, vacía si
+ * no viene" y no hay motivo para tres funciones casi idénticas.
+ */
+function leerListaTextos(
   datos: unknown,
 ): string[] {
   if (datos === undefined) {
@@ -188,15 +221,43 @@ function leerEdificios(
     throw new Error(ERROR_ESTADO_INVALIDO)
   }
 
-  return datos.map((edificioId) => {
-    if (typeof edificioId !== 'string') {
+  return datos.map((valor) => {
+    if (typeof valor !== 'string') {
       throw new Error(
         ERROR_ESTADO_INVALIDO,
       )
     }
 
-    return edificioId
+    return valor
   })
+}
+
+function leerNumeroOpcional(
+  valor: unknown,
+): number | undefined {
+  if (valor === undefined) {
+    return undefined
+  }
+
+  if (typeof valor !== 'number') {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return valor
+}
+
+function leerTextoOpcional(
+  valor: unknown,
+): string | undefined {
+  if (valor === undefined) {
+    return undefined
+  }
+
+  if (typeof valor !== 'string') {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return valor
 }
 
 function leerCasillasExploradas(
@@ -323,7 +384,7 @@ function leerAsentamiento(
       habitantes,
       capacidad,
     },
-    edificios: leerEdificios(
+    edificios: leerListaTextos(
       datos.edificios,
     ),
     fuero: leerFuero(datos.fuero),
@@ -387,6 +448,12 @@ function leerHueste(
       q,
       r,
     },
+    heroeId: leerTextoOpcional(
+      datos.heroeId,
+    ),
+    formacionIds: leerListaTextos(
+      datos.formacionIds,
+    ),
   }
 }
 
@@ -404,6 +471,138 @@ function leerRegistroHuestes(
   return crearRegistroHuestes(
     datos.map((hueste) =>
       leerHueste(hueste),
+    ),
+  )
+}
+
+function leerFormacion(
+  datos: unknown,
+): OpcionesFormacion {
+  if (!esRegistro(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  const id = datos.id
+  const nombre = datos.nombre
+  const tipo = datos.tipo
+  const cantidad = datos.cantidad
+  const saludPorIntegrante =
+    datos.saludPorIntegrante
+  const ataque = datos.ataque
+  const defensa = datos.defensa
+  const danoMin = datos.danoMin
+  const danoMax = datos.danoMax
+  const movimiento = datos.movimiento
+  const iniciativa = datos.iniciativa
+  const alcance = datos.alcance
+  const disciplina = datos.disciplina
+
+  if (
+    typeof id !== 'string' ||
+    typeof nombre !== 'string' ||
+    !esTipoFormacion(tipo) ||
+    typeof cantidad !== 'number' ||
+    typeof saludPorIntegrante !==
+      'number' ||
+    typeof ataque !== 'number' ||
+    typeof defensa !== 'number' ||
+    typeof danoMin !== 'number' ||
+    typeof danoMax !== 'number' ||
+    typeof movimiento !== 'number' ||
+    typeof iniciativa !== 'number' ||
+    typeof alcance !== 'number' ||
+    typeof disciplina !== 'number'
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return {
+    id,
+    nombre,
+    tipo,
+    cantidad,
+    saludPorIntegrante,
+    ataque,
+    defensa,
+    danoMin,
+    danoMax,
+    movimiento,
+    iniciativa,
+    alcance,
+    disciplina,
+    rasgos: leerListaTextos(
+      datos.rasgos,
+    ),
+    fatiga: leerNumeroOpcional(
+      datos.fatiga,
+    ),
+    moral: leerNumeroOpcional(
+      datos.moral,
+    ),
+  }
+}
+
+function leerRegistroFormaciones(
+  datos: unknown,
+): RegistroFormaciones {
+  if (datos === undefined) {
+    return crearRegistroFormaciones()
+  }
+
+  if (!Array.isArray(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return crearRegistroFormaciones(
+    datos.map((formacion) =>
+      leerFormacion(formacion),
+    ),
+  )
+}
+
+function leerHeroe(
+  datos: unknown,
+): OpcionesHeroe {
+  if (!esRegistro(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  const id = datos.id
+  const nombre = datos.nombre
+  const reinoId = datos.reinoId
+  const arquetipo = datos.arquetipo
+
+  if (
+    typeof id !== 'string' ||
+    typeof nombre !== 'string' ||
+    typeof reinoId !== 'string' ||
+    !esArquetipoHeroe(arquetipo)
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return {
+    id,
+    nombre,
+    reinoId,
+    arquetipo,
+  }
+}
+
+function leerRegistroHeroes(
+  datos: unknown,
+): RegistroHeroes {
+  if (datos === undefined) {
+    return crearRegistroHeroes()
+  }
+
+  if (!Array.isArray(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return crearRegistroHeroes(
+    datos.map((heroe) =>
+      leerHeroe(heroe),
     ),
   )
 }
@@ -431,6 +630,13 @@ export function crearEstadoPartida(
       ),
     huestes: crearRegistroHuestes(
       opciones.huestes,
+    ),
+    formaciones:
+      crearRegistroFormaciones(
+        opciones.formaciones,
+      ),
+    heroes: crearRegistroHeroes(
+      opciones.heroes,
     ),
     casillasExploradas:
       normalizarCasillasExploradas(
@@ -511,6 +717,13 @@ export function restaurarEstadoPartida(
       ),
     huestes: leerRegistroHuestes(
       datos.huestes,
+    ),
+    formaciones:
+      leerRegistroFormaciones(
+        datos.formaciones,
+      ),
+    heroes: leerRegistroHeroes(
+      datos.heroes,
     ),
     casillasExploradas:
       normalizarCasillasExploradas(

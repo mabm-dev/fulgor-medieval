@@ -92,6 +92,21 @@ describe('formatearEvento', () => {
     ).toBe('castillo completado en burgos')
   })
 
+  it('describe un encuentro de combate', () => {
+    expect(
+      formatearEvento({
+        tipo: 'encuentro_combate',
+        turno: 1,
+        huesteAtacanteId: 'hueste-1',
+        huesteDefensoraId:
+          'hueste-rival-1',
+        casilla: { q: 2, r: 0 },
+      }),
+    ).toBe(
+      'Encuentro en 2,0: hueste-1 contra hueste-rival-1',
+    )
+  })
+
   it('describe el cierre del turno', () => {
     expect(
       formatearEvento({

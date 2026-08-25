@@ -1,3 +1,4 @@
+import type { CoordenadaHex } from '../map/hex'
 import type {
   ReservaRecursos,
 } from './resources'
@@ -41,6 +42,20 @@ export interface EventoTurnoFinalizado
 }
 
 /**
+ * `v0.5`, bloque 2: una hueste intentó entrar en la casilla de una hueste
+ * de otro reino. Solo IDs, como el resto de eventos —nunca la `Hueste`
+ * completa—; el bloque 3 es quien resuelve la batalla en sí, este evento
+ * únicamente la anuncia.
+ */
+export interface EventoEncuentroCombate
+  extends EventoBaseTurno {
+  readonly tipo: 'encuentro_combate'
+  readonly huesteAtacanteId: string
+  readonly huesteDefensoraId: string
+  readonly casilla: CoordenadaHex
+}
+
+/**
  * No la emite el motor de turnos —`turns.ts` no conoce la persistencia—,
  * sino `finalizarTurnoSesion` en `systems/session.ts`, cuando
  * `guardarEstadoPartida` no puede escribir. Vive en el mismo canal de
@@ -59,3 +74,4 @@ export type EventoTurno =
   | EventoEdificioCompletado
   | EventoTurnoFinalizado
   | EventoGuardadoFallido
+  | EventoEncuentroCombate
