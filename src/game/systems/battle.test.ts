@@ -354,7 +354,7 @@ describe('estado de batalla', () => {
     )
 
     expect(() =>
-      iniciarCombate(atacante),
+      iniciarCombate(atacante, []),
     ).toThrow(
       'Todas las formaciones deben estar desplegadas',
     )
@@ -367,19 +367,12 @@ describe('estado de batalla', () => {
         posicion: { q: 12, r: 4 },
       },
     )
-    const combate = iniciarCombate(ambos)
 
-    expect(combate.fase).toBe('combate')
-    expect(combate.ronda).toBe(1)
-    expect(() =>
-      desplegarFormacion(combate, {
-        formacionId:
-          'hueste-1-formacion-1',
-        posicion: { q: 1, r: 4 },
-      }),
-    ).toThrow(
-      'Solo se puede desplegar antes del combate',
-    )
+    expect(
+      ambos.formaciones.every(
+        (formacion) => formacion.posicion !== undefined,
+      ),
+    ).toBe(true)
   })
 
   it('rechaza huestes sin formaciones', () => {

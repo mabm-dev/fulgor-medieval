@@ -1,3 +1,4 @@
+import type { RegistroFormaciones } from '../domain/formationRegistry'
 import type { Hueste } from '../domain/hueste'
 import {
   claveHex,
@@ -7,6 +8,7 @@ import {
   crearCampoBatalla,
   type CampoBatalla,
 } from './battlefield'
+import { crearColaIniciativa } from './battleInitiative'
 
 export const FASES_BATALLA = [
   'despliegue',
@@ -61,6 +63,12 @@ export interface EstadoBatalla {
   readonly campo: CampoBatalla
   readonly formaciones: readonly FormacionTactica[]
   readonly fase: FaseBatalla
+  /** Orden estable de activación de la ronda; vacío durante despliegue. */
+  readonly colaIniciativa: readonly string[]
+  /**
+   * Ausente durante el despliegue y siempre presente mientras se combate.
+   */
+  readonly formacionActivaId?: string
   /**
    * 0 mientras `fase` es `'despliegue'`: todavía no ha empezado ninguna
    * ronda de resolución. Pasa a 1 al entrar en `'combate'` —eso es la
@@ -180,6 +188,7 @@ export function crearEstadoBatalla(
       ),
     ]),
     fase: 'despliegue',
+    colaIniciativa: Object.freeze([]),
     ronda: 0,
   }
 
@@ -296,6 +305,7 @@ export function desplegarFormacion(
 
 export function iniciarCombate(
   estado: EstadoBatalla,
+  formaciones: RegistroFormaciones,
 ): EstadoBatalla {
   if (estado.fase !== 'despliegue') {
     throw new Error(
@@ -314,9 +324,24 @@ export function iniciarCombate(
     )
   }
 
+  const colaIniciativa = crearColaIniciativa(
+    estado.formaciones,
+    formaciones,
+  )
+  const formacionActivaId =
+    colaIniciativa[0]
+
+  if (formacionActivaId === undefined) {
+    throw new Error(
+      'La batalla no tiene formaciones activables',
+    )
+  }
+
   return Object.freeze({
     ...estado,
     fase: 'combate',
+    colaIniciativa,
+    formacionActivaId,
     ronda: 1,
   })
 }
