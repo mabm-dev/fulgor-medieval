@@ -26,6 +26,7 @@ export default function MenuInicio() {
   const [hover, setHover] = useState<ZonaId | null>(null)
   const [despedida, setDespedida] = useState(false)
   const [confirmarBorrado, setConfirmarBorrado] = useState(false)
+  const [errorBorrado, setErrorBorrado] = useState<string | null>(null)
 
   const [cargaMotor, setCargaMotor] = useState<ResultadoCargaPartida>(() =>
     cargarEstadoPartida(almacenamientoNavegador),
@@ -42,6 +43,7 @@ export default function MenuInicio() {
   const pulsar = (zona: ZonaId) => {
     setActivo(zona)
     setConfirmarBorrado(false)
+    setErrorBorrado(null)
     if (zona === 'empezar') {
       if (partida) {
         setSeccion('empezar')
@@ -58,15 +60,28 @@ export default function MenuInicio() {
     setSeccion(null)
     setActivo(null)
     setConfirmarBorrado(false)
+    setErrorBorrado(null)
   }
 
   const descartarGuardadoIncompatible = () => {
-    borrarEstadoPartida(almacenamientoNavegador)
+    const resultado = borrarEstadoPartida(almacenamientoNavegador)
+
+    if (resultado.tipo === 'error') {
+      setErrorBorrado(resultado.error.mensaje)
+      return
+    }
+
     setCargaMotor({ tipo: 'vacio' })
   }
 
   const eliminarPartida = () => {
-    borrarEstadoPartida(almacenamientoNavegador)
+    const resultado = borrarEstadoPartida(almacenamientoNavegador)
+
+    if (resultado.tipo === 'error') {
+      setErrorBorrado(resultado.error.mensaje)
+      return
+    }
+
     setCargaMotor({ tipo: 'vacio' })
     cerrar()
   }
@@ -238,19 +253,31 @@ export default function MenuInicio() {
                   <p className="font-cinzel text-xs tracking-[0.3em] text-red-300/90 uppercase">
                     {errorGuardado.motivo === 'version_incompatible'
                       ? 'Crónica de una versión anterior'
-                      : 'Crónica dañada'}
+                      : errorGuardado.motivo === 'corrupto'
+                        ? 'Crónica dañada'
+                        : 'Almacenamiento no disponible'}
                   </p>
                   <p className="mt-3 text-sm leading-relaxed text-white/60">
                     {errorGuardado.motivo === 'version_incompatible'
                       ? 'Esta partida se guardó con una versión anterior del juego y ya no puede continuarse.'
-                      : 'El archivo de esta partida no se ha podido leer.'}
+                      : errorGuardado.motivo === 'corrupto'
+                        ? 'El archivo de esta partida no se ha podido leer.'
+                        : 'El navegador ha impedido acceder a la partida. Revisa los permisos o el modo privado antes de intentarlo de nuevo.'}
                   </p>
-                  <button
-                    onClick={descartarGuardadoIncompatible}
-                    className="font-cinzel mt-5 border border-red-700 bg-red-950/40 px-8 py-2.5 text-xs font-bold tracking-[0.25em] text-red-200 uppercase transition-all hover:bg-red-900/50"
-                  >
-                    Descartar y empezar de nuevo
-                  </button>
+                  {(errorGuardado.motivo === 'version_incompatible' ||
+                    errorGuardado.motivo === 'corrupto') && (
+                    <button
+                      onClick={descartarGuardadoIncompatible}
+                      className="font-cinzel mt-5 border border-red-700 bg-red-950/40 px-8 py-2.5 text-xs font-bold tracking-[0.25em] text-red-200 uppercase transition-all hover:bg-red-900/50"
+                    >
+                      Descartar y empezar de nuevo
+                    </button>
+                  )}
+                  {errorBorrado && (
+                    <p role="alert" className="mt-4 text-sm text-red-300">
+                      No se pudo borrar la crónica: {errorBorrado}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -288,6 +315,11 @@ export default function MenuInicio() {
                   </button>
 
                   <div className="mt-10 border-t border-dorado/15 pt-6">
+                    {errorBorrado && (
+                      <p role="alert" className="mb-4 text-sm text-red-300">
+                        No se pudo borrar la crónica: {errorBorrado}
+                      </p>
+                    )}
                     {!confirmarBorrado ? (
                       <button
                         onClick={() => setConfirmarBorrado(true)}

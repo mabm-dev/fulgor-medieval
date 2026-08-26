@@ -24,6 +24,7 @@ import {
 } from './formation'
 import {
   crearRegistroFormaciones,
+  existenFormaciones,
   type RegistroFormaciones,
 } from './formationRegistry'
 import {
@@ -607,9 +608,84 @@ function leerRegistroHeroes(
   )
 }
 
+function validarReferenciasMilitares(
+  huestes: RegistroHuestes,
+  formaciones: RegistroFormaciones,
+  heroes: RegistroHeroes,
+): void {
+  const formacionesAsignadas =
+    new Set<string>()
+  const heroesAsignados = new Set<string>()
+  const heroesPorId = new Map(
+    heroes.map((heroe) => [heroe.id, heroe]),
+  )
+
+  for (const hueste of huestes) {
+    if (
+      !existenFormaciones(
+        formaciones,
+        hueste.formacionIds,
+      )
+    ) {
+      throw new Error(ERROR_ESTADO_INVALIDO)
+    }
+
+    for (const formacionId of hueste.formacionIds) {
+      if (
+        formacionesAsignadas.has(
+          formacionId,
+        )
+      ) {
+        throw new Error(
+          ERROR_ESTADO_INVALIDO,
+        )
+      }
+
+      formacionesAsignadas.add(
+        formacionId,
+      )
+    }
+
+    if (hueste.heroeId === undefined) {
+      continue
+    }
+
+    const heroe = heroesPorId.get(
+      hueste.heroeId,
+    )
+
+    if (
+      heroe === undefined ||
+      heroe.reinoId !== hueste.reinoId ||
+      heroesAsignados.has(hueste.heroeId)
+    ) {
+      throw new Error(ERROR_ESTADO_INVALIDO)
+    }
+
+    heroesAsignados.add(hueste.heroeId)
+  }
+}
+
 export function crearEstadoPartida(
   opciones: OpcionesEstadoInicial,
 ): EstadoPartida {
+  const huestes = crearRegistroHuestes(
+    opciones.huestes,
+  )
+  const formaciones =
+    crearRegistroFormaciones(
+      opciones.formaciones,
+    )
+  const heroes = crearRegistroHeroes(
+    opciones.heroes,
+  )
+
+  validarReferenciasMilitares(
+    huestes,
+    formaciones,
+    heroes,
+  )
+
   const estado: EstadoPartida = {
     version: VERSION_ESTADO_PARTIDA,
     semillaMapa: leerSemilla(
@@ -628,16 +704,9 @@ export function crearEstadoPartida(
       crearRegistroAsentamientos(
         opciones.asentamientos,
       ),
-    huestes: crearRegistroHuestes(
-      opciones.huestes,
-    ),
-    formaciones:
-      crearRegistroFormaciones(
-        opciones.formaciones,
-      ),
-    heroes: crearRegistroHeroes(
-      opciones.heroes,
-    ),
+    huestes,
+    formaciones,
+    heroes,
     casillasExploradas:
       normalizarCasillasExploradas(
         opciones.casillasExploradas ?? [],
@@ -678,6 +747,23 @@ export function restaurarEstadoPartida(
     throw new Error(ERROR_ESTADO_INVALIDO)
   }
 
+  const huestes = leerRegistroHuestes(
+    datos.huestes,
+  )
+  const formaciones =
+    leerRegistroFormaciones(
+      datos.formaciones,
+    )
+  const heroes = leerRegistroHeroes(
+    datos.heroes,
+  )
+
+  validarReferenciasMilitares(
+    huestes,
+    formaciones,
+    heroes,
+  )
+
   const estado: EstadoPartida = {
     version: VERSION_ESTADO_PARTIDA,
     semillaMapa: leerSemilla(
@@ -715,16 +801,9 @@ export function restaurarEstadoPartida(
       leerRegistroAsentamientos(
         datos.asentamientos,
       ),
-    huestes: leerRegistroHuestes(
-      datos.huestes,
-    ),
-    formaciones:
-      leerRegistroFormaciones(
-        datos.formaciones,
-      ),
-    heroes: leerRegistroHeroes(
-      datos.heroes,
-    ),
+    huestes,
+    formaciones,
+    heroes,
     casillasExploradas:
       normalizarCasillasExploradas(
         leerCasillasExploradas(

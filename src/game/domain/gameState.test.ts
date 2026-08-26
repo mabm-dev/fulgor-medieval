@@ -5,6 +5,7 @@ import {
 } from 'vitest'
 import {
   crearEstadoPartida,
+  ERROR_ESTADO_INVALIDO,
   FASES_TURNO,
   restaurarEstadoPartida,
   VERSION_ESTADO_PARTIDA,
@@ -404,6 +405,140 @@ describe('estado de partida', () => {
     expect(
       Object.isFrozen(restaurado.heroes),
     ).toBe(true)
+  })
+
+  it('rechaza una hueste que referencia una formación ausente', () => {
+    const estado = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,
+      reinoJugador: 'castilla',
+      huestes: [
+        {
+          id: 'hueste-1',
+          nombre: 'Hueste exploradora',
+          reinoId: 'castilla',
+          posicion: { q: 0, r: 0 },
+          formacionIds: ['formacion-1'],
+        },
+      ],
+      formaciones: [
+        {
+          id: 'formacion-1',
+          nombre: 'Lanceros',
+          tipo: 'infanteria',
+          cantidad: 50,
+          saludPorIntegrante: 10,
+          ataque: 4,
+          defensa: 6,
+          danoMin: 3,
+          danoMax: 5,
+          movimiento: 2,
+          iniciativa: 3,
+          alcance: 1,
+          disciplina: 65,
+        },
+      ],
+    })
+
+    expect(() =>
+      restaurarEstadoPartida({
+        ...estado,
+        formaciones: [],
+      }),
+    ).toThrow(ERROR_ESTADO_INVALIDO)
+  })
+
+  it('rechaza una hueste que referencia un héroe ausente', () => {
+    expect(() =>
+      crearEstadoPartida({
+        semillaMapa: 12345,
+        meta: META,
+        reinoJugador: 'castilla',
+        huestes: [
+          {
+            id: 'hueste-1',
+            nombre: 'Hueste exploradora',
+            reinoId: 'castilla',
+            posicion: { q: 0, r: 0 },
+            heroeId: 'heroe-ausente',
+          },
+        ],
+      }),
+    ).toThrow(ERROR_ESTADO_INVALIDO)
+  })
+
+  it('rechaza un héroe asignado a una hueste de otro reino', () => {
+    expect(() =>
+      crearEstadoPartida({
+        semillaMapa: 12345,
+        meta: META,
+        reinoJugador: 'castilla',
+        huestes: [
+          {
+            id: 'hueste-1',
+            nombre: 'Hueste exploradora',
+            reinoId: 'castilla',
+            posicion: { q: 0, r: 0 },
+            heroeId: 'heroe-1',
+          },
+        ],
+        heroes: [
+          {
+            id: 'heroe-1',
+            nombre: 'Capitán rival',
+            reinoId: 'leon',
+            arquetipo: 'infanzon',
+          },
+        ],
+      }),
+    ).toThrow(ERROR_ESTADO_INVALIDO)
+  })
+
+  it('rechaza una formación asignada a dos huestes', () => {
+    const estado = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,
+      reinoJugador: 'castilla',
+      formaciones: [
+        {
+          id: 'formacion-1',
+          nombre: 'Lanceros',
+          tipo: 'infanteria',
+          cantidad: 50,
+          saludPorIntegrante: 10,
+          ataque: 4,
+          defensa: 6,
+          danoMin: 3,
+          danoMax: 5,
+          movimiento: 2,
+          iniciativa: 3,
+          alcance: 1,
+          disciplina: 65,
+        },
+      ],
+    })
+
+    expect(() =>
+      restaurarEstadoPartida({
+        ...estado,
+        huestes: [
+          {
+            id: 'hueste-1',
+            nombre: 'Primera hueste',
+            reinoId: 'castilla',
+            posicion: { q: 0, r: 0 },
+            formacionIds: ['formacion-1'],
+          },
+          {
+            id: 'hueste-2',
+            nombre: 'Segunda hueste',
+            reinoId: 'castilla',
+            posicion: { q: 1, r: 0 },
+            formacionIds: ['formacion-1'],
+          },
+        ],
+      }),
+    ).toThrow(ERROR_ESTADO_INVALIDO)
   })
 
   it('asigna fuero de frontera a un asentamiento guardado antes de esta mejora', () => {
