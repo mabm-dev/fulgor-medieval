@@ -244,7 +244,11 @@ export function moverFormacionTactica(
     )
   }
 
-  if (claveHex(tactica.posicion) === claveHex(opciones.destino)) {
+  const posicionOrigen = tactica.posicion
+  if (posicionOrigen === undefined) {
+    throw new Error('La formación activa no tiene posición')
+  }
+  if (claveHex(posicionOrigen) === claveHex(opciones.destino)) {
     throw new Error(
       'La formación ya está en esa casilla',
     )
@@ -260,7 +264,7 @@ export function moverFormacionTactica(
       .map((candidata) => claveHex(candidata.posicion as CoordenadaHex)),
   )
   const ruta = calcularRutaTactica(
-    tactica.posicion,
+    posicionOrigen,
     opciones.destino,
     estado.campo,
     ocupadas,
