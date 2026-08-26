@@ -1,5 +1,9 @@
 import type { Hueste } from '../domain/hueste'
 import {
+  claveHex,
+  type CoordenadaHex,
+} from '../map/hex'
+import {
   crearCampoBatalla,
   type CampoBatalla,
 } from './battlefield'
@@ -12,6 +16,28 @@ export const FASES_BATALLA = [
 
 export type FaseBatalla =
   (typeof FASES_BATALLA)[number]
+
+export const BANDOS_BATALLA = [
+  'atacante',
+  'defensor',
+] as const
+
+export type BandoBatalla =
+  (typeof BANDOS_BATALLA)[number]
+
+export const COLUMNAS_DESPLIEGUE_POR_BANDO = 2
+
+export interface FormacionTactica {
+  /**
+   * Vínculo con la formación persistente. Sus bajas, moral y fatiga no
+   * se duplican aquí: el motor las reconciliará al terminar la batalla.
+   */
+  readonly formacionId: string
+  readonly huesteId: string
+  readonly bando: BandoBatalla
+  /** Ausente hasta que la formación se coloca durante el despliegue. */
+  readonly posicion?: CoordenadaHex
+}
 
 /**
  * Estado en memoria de una batalla táctica, **desacoplado de
@@ -33,12 +59,12 @@ export interface EstadoBatalla {
   readonly reinoAtacante: string
   readonly reinoDefensor: string
   readonly campo: CampoBatalla
+  readonly formaciones: readonly FormacionTactica[]
   readonly fase: FaseBatalla
   /**
    * 0 mientras `fase` es `'despliegue'`: todavía no ha empezado ninguna
    * ronda de resolución. Pasa a 1 al entrar en `'combate'` —eso es la
-   * siguiente pieza del bloque 3, el ciclo de ronda de
-   * `combate-tactico.md`; aquí solo se deja el campo listo para ello—.
+   * confirmación del despliegue que deja el campo listo para la ronda.
    */
   readonly ronda: number
 }
@@ -47,6 +73,27 @@ export interface OpcionesEstadoBatalla {
   readonly huesteAtacante: Hueste
   readonly huesteDefensora: Hueste
   readonly semillaCampo: number
+}
+
+function crearFormacionesTacticas(
+  hueste: Hueste,
+  bando: BandoBatalla,
+): readonly FormacionTactica[] {
+  return hueste.formacionIds.map(
+    (formacionId) =>
+      Object.freeze({
+        formacionId,
+        huesteId: hueste.id,
+        bando,
+      }),
+  )
+}
+
+function esMismaCoordenada(
+  primera: CoordenadaHex,
+  segunda: CoordenadaHex,
+): boolean {
+  return claveHex(primera) === claveHex(segunda)
 }
 
 /**
@@ -89,6 +136,31 @@ export function crearEstadoBatalla(
     )
   }
 
+  if (
+    huesteAtacante.formacionIds.length === 0 ||
+    huesteDefensora.formacionIds.length === 0
+  ) {
+    throw new Error(
+      'Cada hueste debe aportar al menos ' +
+        'una formación al combate',
+    )
+  }
+
+  const idsFormaciones = [
+    ...huesteAtacante.formacionIds,
+    ...huesteDefensora.formacionIds,
+  ]
+
+  if (
+    new Set(idsFormaciones).size !==
+    idsFormaciones.length
+  ) {
+    throw new Error(
+      'Una formación no puede combatir ' +
+        'en ambos bandos',
+    )
+  }
+
   const estado: EstadoBatalla = {
     huesteAtacanteId: huesteAtacante.id,
     huesteDefensoraId: huesteDefensora.id,
@@ -97,9 +169,154 @@ export function crearEstadoBatalla(
     campo: crearCampoBatalla({
       semilla: semillaCampo,
     }),
+    formaciones: Object.freeze([
+      ...crearFormacionesTacticas(
+        huesteAtacante,
+        'atacante',
+      ),
+      ...crearFormacionesTacticas(
+        huesteDefensora,
+        'defensor',
+      ),
+    ]),
     fase: 'despliegue',
     ronda: 0,
   }
 
   return Object.freeze(estado)
+}
+
+export function esCasillaDespliegueValida(
+  campo: CampoBatalla,
+  bando: BandoBatalla,
+  posicion: CoordenadaHex,
+): boolean {
+  if (
+    !Number.isSafeInteger(posicion.q) ||
+    !Number.isSafeInteger(posicion.r) ||
+    posicion.r < 0 ||
+    posicion.r >= campo.alto
+  ) {
+    return false
+  }
+
+  if (bando === 'atacante') {
+    return (
+      posicion.q >= 0 &&
+      posicion.q <
+        COLUMNAS_DESPLIEGUE_POR_BANDO
+    )
+  }
+
+  return (
+    posicion.q >=
+      campo.ancho -
+        COLUMNAS_DESPLIEGUE_POR_BANDO &&
+    posicion.q < campo.ancho
+  )
+}
+
+export interface OpcionesDespliegueFormacion {
+  readonly formacionId: string
+  readonly posicion: CoordenadaHex
+}
+
+export function desplegarFormacion(
+  estado: EstadoBatalla,
+  opciones: OpcionesDespliegueFormacion,
+): EstadoBatalla {
+  if (estado.fase !== 'despliegue') {
+    throw new Error(
+      'Solo se puede desplegar antes del combate',
+    )
+  }
+
+  const formacion = estado.formaciones.find(
+    (candidata) =>
+      candidata.formacionId ===
+      opciones.formacionId,
+  )
+
+  if (formacion === undefined) {
+    throw new Error(
+      `Formación táctica no encontrada: ${opciones.formacionId}`,
+    )
+  }
+
+  if (
+    !esCasillaDespliegueValida(
+      estado.campo,
+      formacion.bando,
+      opciones.posicion,
+    )
+  ) {
+    throw new Error(
+      'La casilla no pertenece a la zona ' +
+        `de despliegue del ${formacion.bando}`,
+    )
+  }
+
+  const ocupada = estado.formaciones.some(
+    (candidata) =>
+      candidata.formacionId !==
+        formacion.formacionId &&
+      candidata.posicion !== undefined &&
+      esMismaCoordenada(
+        candidata.posicion,
+        opciones.posicion,
+      ),
+  )
+
+  if (ocupada) {
+    throw new Error(
+      'La casilla de despliegue ya está ocupada',
+    )
+  }
+
+  const posicion = Object.freeze({
+    q: opciones.posicion.q,
+    r: opciones.posicion.r,
+  })
+  const formaciones = estado.formaciones.map(
+    (candidata) =>
+      candidata.formacionId ===
+      formacion.formacionId
+        ? Object.freeze({
+            ...candidata,
+            posicion,
+          })
+        : candidata,
+  )
+
+  return Object.freeze({
+    ...estado,
+    formaciones: Object.freeze(formaciones),
+  })
+}
+
+export function iniciarCombate(
+  estado: EstadoBatalla,
+): EstadoBatalla {
+  if (estado.fase !== 'despliegue') {
+    throw new Error(
+      'La batalla ya ha salido del despliegue',
+    )
+  }
+
+  if (
+    estado.formaciones.some(
+      (formacion) =>
+        formacion.posicion === undefined,
+    )
+  ) {
+    throw new Error(
+      'Todas las formaciones deben estar desplegadas',
+    )
+  }
+
+  return Object.freeze({
+    ...estado,
+    fase: 'combate',
+    ronda: 1,
+  })
 }
