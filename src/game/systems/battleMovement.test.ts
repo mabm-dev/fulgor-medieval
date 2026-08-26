@@ -113,21 +113,22 @@ function crearEstadoDesplegado(
 describe('rutas tácticas', () => {
   it('elige el rodeo de menor coste cuando el camino directo es caro', () => {
     const campo = crearCampo([
-      ['despejado', 'escarpado', 'despejado'],
-      ['despejado', 'despejado', 'despejado'],
+      ['despejado', 'escarpado', 'escarpado', 'despejado'],
+      ['despejado', 'despejado', 'despejado', 'despejado'],
     ])
 
     expect(
       calcularRutaTactica(
         { q: 0, r: 0 },
-        { q: 2, r: 0 },
+        { q: 3, r: 0 },
         campo,
       ),
     ).toEqual([
       { q: 0, r: 0 },
       { q: 0, r: 1 },
       { q: 1, r: 1 },
-      { q: 2, r: 0 },
+      { q: 2, r: 1 },
+      { q: 3, r: 0 },
     ])
   })
 
@@ -207,9 +208,13 @@ describe('movimiento táctico', () => {
 
   it('rechaza atravesar una casilla ocupada', () => {
     const estado = crearEstadoDesplegado(['a', 'a2'], ['d'])
+    const campoEstrecho = crearCampo([
+      ['despejado', 'despejado', 'despejado'],
+    ])
+    const estadoEstrecho = Object.freeze({ ...estado, campo: campoEstrecho })
     expect(() =>
       moverFormacionTactica(
-        estado,
+        estadoEstrecho,
         {
           formacionId: 'a',
           destino: { q: 2, r: 0 },
