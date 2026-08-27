@@ -8,6 +8,7 @@ import {
   crearCampoBatalla,
   type CampoBatalla,
 } from './battlefield'
+import { crearAleatorioDeterminista } from '../map/random'
 import { crearColaIniciativa } from './battleInitiative'
 
 export const FASES_BATALLA = [
@@ -75,6 +76,8 @@ export interface EstadoBatalla {
    * confirmación del despliegue que deja el campo listo para la ronda.
    */
   readonly ronda: number
+  /** Estado del azar de combate; se avanza de forma inmutable en cada ataque. */
+  readonly semillaAzar: number
 }
 
 export interface OpcionesEstadoBatalla {
@@ -177,6 +180,9 @@ export function crearEstadoBatalla(
     campo: crearCampoBatalla({
       semilla: semillaCampo,
     }),
+    semillaAzar: crearAleatorioDeterminista(
+      semillaCampo,
+    ).obtenerEstado(),
     formaciones: Object.freeze([
       ...crearFormacionesTacticas(
         huesteAtacante,
