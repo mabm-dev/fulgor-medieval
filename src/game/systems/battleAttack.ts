@@ -72,13 +72,15 @@ export function atacarFormacionTactica(
   if (objetivoTactico.posicion === undefined) {
     throw new Error('La formación objetivo no tiene posición')
   }
+  const posicionAtacante = atacanteTactico.posicion
+  const posicionObjetivo = objetivoTactico.posicion
   const atacante = obtenerFormacion(formaciones, opciones.atacanteId)
   const objetivo = obtenerFormacion(formaciones, opciones.objetivoId)
   if (atacante === undefined || objetivo === undefined) {
     throw new Error('Falta una formación persistente para resolver el ataque')
   }
   if (
-    distanciaHex(atacanteTactico.posicion, objetivoTactico.posicion) >
+    distanciaHex(posicionAtacante, posicionObjetivo) >
     atacante.alcance
   ) {
     throw new Error('La formación objetivo está fuera de alcance')
@@ -88,7 +90,7 @@ export function atacarFormacionTactica(
   const tiradaDano = azar.entero(atacante.danoMin, atacante.danoMax)
   const bonificadorDefensaTerreno = obtenerTerrenoDefensor(
     estado,
-    objetivoTactico.posicion,
+    posicionObjetivo,
   )
   const impactoPorIntegrante = Math.max(
     0,
