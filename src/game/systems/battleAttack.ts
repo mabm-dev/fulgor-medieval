@@ -72,6 +72,9 @@ export function atacarFormacionTactica(
   if (objetivoTactico.posicion === undefined) {
     throw new Error('La formación objetivo no tiene posición')
   }
+  if (atacanteTactico.posicion === undefined) {
+    throw new Error('La formación atacante no tiene posición')
+  }
   const posicionAtacante = atacanteTactico.posicion
   const posicionObjetivo = objetivoTactico.posicion
   const atacante = obtenerFormacion(formaciones, opciones.atacanteId)
