@@ -131,4 +131,9 @@ export function finalizarActivacion(
 
   return Object.freeze({
     ...estado,
+    formacionActivaId: estado.colaIniciativa[siguienteIndice],
+    ronda: comienzaNuevaRonda
+      ? estado.ronda + 1
+      : estado.ronda,
+  })
 }
