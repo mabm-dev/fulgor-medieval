@@ -183,10 +183,10 @@ export function crearEstadoBatalla(
       semilla: semillaCampo,
     }),
     semillaAzar: crearAleatorioDeterminista(
-    retiradas: Object.freeze([]),
       semillaCampo,
     ).obtenerEstado(),
     formaciones: Object.freeze([
+    retiradas: Object.freeze([]),
       ...crearFormacionesTacticas(
         huesteAtacante,
         'atacante',
