@@ -180,10 +180,10 @@ export function crearEstadoBatalla(
     reinoAtacante: huesteAtacante.reinoId,
     reinoDefensor: huesteDefensora.reinoId,
     campo: crearCampoBatalla({
-    retiradas: Object.freeze([]),
       semilla: semillaCampo,
     }),
     semillaAzar: crearAleatorioDeterminista(
+    retiradas: Object.freeze([]),
       semillaCampo,
     ).obtenerEstado(),
     formaciones: Object.freeze([
