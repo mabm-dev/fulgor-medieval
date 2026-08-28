@@ -62,6 +62,8 @@ export interface EstadoBatalla {
   readonly reinoAtacante: string
   readonly reinoDefensor: string
   readonly campo: CampoBatalla
+  /** Identificadores de formaciones que abandonaron el campo. */
+  readonly retiradas: readonly string[]
   readonly formaciones: readonly FormacionTactica[]
   readonly fase: FaseBatalla
   /** Orden estable de activación de la ronda; vacío durante despliegue. */
@@ -178,6 +180,7 @@ export function crearEstadoBatalla(
     reinoAtacante: huesteAtacante.reinoId,
     reinoDefensor: huesteDefensora.reinoId,
     campo: crearCampoBatalla({
+    retiradas: Object.freeze([]),
       semilla: semillaCampo,
     }),
     semillaAzar: crearAleatorioDeterminista(

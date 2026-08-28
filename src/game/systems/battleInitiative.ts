@@ -102,20 +102,33 @@ export function finalizarActivacion(
     )
   }
 
-  const comienzaNuevaRonda =
-    indiceActual ===
-    estado.colaIniciativa.length - 1
-  const siguienteIndice =
-    comienzaNuevaRonda
-      ? 0
-      : indiceActual + 1
+  let siguienteIndice: number | undefined
+  let comienzaNuevaRonda = false
+
+  for (
+    let paso = 1;
+    paso <= estado.colaIniciativa.length;
+    paso += 1
+  ) {
+    const indice =
+      (indiceActual + paso) % estado.colaIniciativa.length
+    const id = estado.colaIniciativa[indice]
+
+    if (id !== undefined && !estado.retiradas.includes(id)) {
+      siguienteIndice = indice
+      comienzaNuevaRonda = indice <= indiceActual
+      break
+    }
+  }
+
+  if (siguienteIndice === undefined) {
+    return Object.freeze({
+      ...estado,
+      fase: 'resuelta',
+      formacionActivaId: undefined,
+    })
+  }
 
   return Object.freeze({
     ...estado,
-    formacionActivaId:
-      estado.colaIniciativa[siguienteIndice],
-    ronda: comienzaNuevaRonda
-      ? estado.ronda + 1
-      : estado.ronda,
-  })
 }
