@@ -107,6 +107,30 @@ describe('formatearEvento', () => {
     )
   })
 
+  it('resume el desenlace y las bajas de una batalla', () => {
+    expect(
+      formatearEvento({
+        tipo: 'batalla_resuelta',
+        turno: 2,
+        huesteAtacanteId: 'hueste-1',
+        huesteDefensoraId: 'hueste-rival-1',
+        ganador: 'atacante',
+        rondas: 3,
+        consecuencias: [
+          {
+            formacionId: 'd',
+            bajas: 12,
+            cantidadFinal: 28,
+            moralFinal: 31,
+            fatigaFinal: 4,
+            retirada: true,
+            destruida: false,
+          },
+        ],
+      }),
+    ).toBe('Batalla resuelta: victoria del atacante, 12 bajas')
+  })
+
   it('describe el cierre del turno', () => {
     expect(
       formatearEvento({

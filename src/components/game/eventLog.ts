@@ -89,6 +89,17 @@ export function formatearEvento(
         )}: ${evento.huesteAtacanteId} ` +
         `contra ${evento.huesteDefensoraId}`
       )
+    case 'batalla_resuelta': {
+      const bajas = evento.consecuencias.reduce(
+        (total, consecuencia) => total + consecuencia.bajas,
+        0,
+      )
+      const desenlace = evento.ganador === 'empate'
+        ? 'empate'
+        : `victoria del ${evento.ganador}`
+
+      return `Batalla resuelta: ${desenlace}, ${bajas} bajas`
+    }
     case 'turno_finalizado':
       return `Turno ${evento.turno} resuelto`
     case 'guardado_fallido':

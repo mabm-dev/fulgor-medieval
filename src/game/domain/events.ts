@@ -55,6 +55,31 @@ export interface EventoEncuentroCombate
   readonly casilla: CoordenadaHex
 }
 
+export interface ConsecuenciaFormacionBatalla {
+  readonly formacionId: string
+  readonly bajas: number
+  readonly cantidadFinal: number
+  readonly moralFinal: number
+  readonly fatigaFinal: number
+  readonly retirada: boolean
+  readonly destruida: boolean
+}
+
+/** Único evento que traslada el resultado táctico al estado estratégico. */
+export interface EventoBatallaResuelta
+  extends EventoBaseTurno {
+  readonly tipo: 'batalla_resuelta'
+  readonly huesteAtacanteId: string
+  readonly huesteDefensoraId: string
+  readonly ganador:
+    | 'atacante'
+    | 'defensor'
+    | 'empate'
+  readonly rondas: number
+  readonly consecuencias:
+    readonly ConsecuenciaFormacionBatalla[]
+}
+
 /**
  * No la emite el motor de turnos —`turns.ts` no conoce la persistencia—,
  * sino `finalizarTurnoSesion` en `systems/session.ts`, cuando
@@ -75,3 +100,4 @@ export type EventoTurno =
   | EventoTurnoFinalizado
   | EventoGuardadoFallido
   | EventoEncuentroCombate
+  | EventoBatallaResuelta

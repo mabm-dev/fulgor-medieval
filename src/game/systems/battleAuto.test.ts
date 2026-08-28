@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   crearRegistroFormaciones,
+  obtenerFormacion,
   removerFormacion,
   type RegistroFormaciones,
 } from '../domain/formationRegistry'
@@ -94,6 +95,24 @@ describe('resolución automática táctica', () => {
     })
     expect(resultado.activaciones[0]?.ataque?.bajas).toBeGreaterThan(0)
     expect(resultado.estado.formacionActivaId).toBe('d')
+    expect(
+      obtenerFormacion(resultado.formaciones, 'a')?.fatiga,
+    ).toBe(1)
+    expect(
+      obtenerFormacion(resultado.formaciones, 'd')?.cantidad,
+    ).toBeLessThan(50)
+  })
+
+  it('termina la batalla cuando las bajas dejan un bando fuera de liza', () => {
+    const combate = crearCombate()
+    const resultado = resolverBatallaAutomatica(
+      combate.estado,
+      combate.registro,
+    )
+
+    expect(resultado.motivo).toBe('resuelta')
+    expect(resultado.estado.fase).toBe('resuelta')
+    expect(resultado.activaciones.length).toBeLessThan(100)
   })
 
   it('repite las mismas activaciones para el mismo estado inicial', () => {
