@@ -114,7 +114,7 @@ export function finalizarActivacion(
       (indiceActual + paso) % estado.colaIniciativa.length
     const id = estado.colaIniciativa[indice]
 
-    if (id !== undefined && !estado.retiradas.includes(id)) {
+    if (id !== undefined && !(estado.retiradas ?? []).includes(id)) {
       siguienteIndice = indice
       comienzaNuevaRonda = indice <= indiceActual
       break

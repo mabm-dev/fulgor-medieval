@@ -106,12 +106,12 @@ export function retirarFormacion(
     throw new Error(`Formación táctica no encontrada: ${formacionId}`)
   }
 
-  if (estado.retiradas.includes(formacionId)) {
+  if ((estado.retiradas ?? []).includes(formacionId)) {
     throw new Error('La formación ya se ha retirado')
   }
 
   const retiradas = Object.freeze([
-    ...estado.retiradas,
+    ...(estado.retiradas ?? []),
     formacionId,
   ])
 
@@ -134,7 +134,7 @@ function quedanFormaciones(
   return estado.formaciones.some(
     (tactica) =>
       tactica.bando === bando &&
-      !estado.retiradas.includes(tactica.formacionId) &&
+      !(estado.retiradas ?? []).includes(tactica.formacionId) &&
       obtenerFormacion(formaciones, tactica.formacionId) !== undefined,
   )
 }
