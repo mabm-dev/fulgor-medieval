@@ -186,7 +186,6 @@ export function crearEstadoBatalla(
       semillaCampo,
     ).obtenerEstado(),
     formaciones: Object.freeze([
-    retiradas: Object.freeze([]),
       ...crearFormacionesTacticas(
         huesteAtacante,
         'atacante',
@@ -197,6 +196,7 @@ export function crearEstadoBatalla(
       ),
     ]),
     fase: 'despliegue',
+    retiradas: Object.freeze([]),
     colaIniciativa: Object.freeze([]),
     ronda: 0,
   }
