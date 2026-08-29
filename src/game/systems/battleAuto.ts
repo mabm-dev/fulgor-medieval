@@ -1,51 +1,25 @@
-import {
-  crearFormacion,
-} from '../domain/formation'
-import {
-  actualizarFormacion,
-  obtenerFormacion,
-  removerFormacion,
-  type RegistroFormaciones,
+import type {
+  RegistroFormaciones,
 } from '../domain/formationRegistry'
 import type {
-  BandoBatalla,
   EstadoBatalla,
 } from './battle'
 import {
-  atacarFormacionTactica,
-  type ResultadoAtaqueTactico,
-} from './battleAttack'
+  ejecutarOrdenTactica,
+  FATIGA_POR_ACTIVACION,
+  type RegistroActivacionTactica,
+} from './battleAction'
 import {
   decidirOrdenTactica,
-  type OrdenTactica,
 } from './battleAi'
 import {
-  finalizarActivacion,
-} from './battleInitiative'
-import {
-  esperar,
-  moverFormacionTactica,
-} from './battleMovement'
-import {
   comprobarFinBatalla,
-  evaluarMoral,
 } from './battleMorale'
 
 export const MAX_ACTIVACIONES_AUTOMATICAS = 100
-export const FATIGA_POR_ACTIVACION = 1
-
-export interface RegistroActivacionAutomatica {
-  readonly bando: BandoBatalla
-  readonly orden: OrdenTactica
-  readonly ataque?: Readonly<Pick<
-    ResultadoAtaqueTactico,
-    | 'objetivoId'
-    | 'tiradaDano'
-    | 'bonificadorDefensaTerreno'
-    | 'dano'
-    | 'bajas'
-  >>
-}
+export { FATIGA_POR_ACTIVACION }
+export type RegistroActivacionAutomatica =
+  RegistroActivacionTactica
 
 export interface ResultadoBatallaAutomatica {
   readonly estado: EstadoBatalla
@@ -53,12 +27,6 @@ export interface ResultadoBatallaAutomatica {
   readonly formaciones: RegistroFormaciones
   readonly activaciones: readonly RegistroActivacionAutomatica[]
   readonly motivo: 'resuelta' | 'limite'
-}
-
-interface ResultadoEjecucionOrden {
-  readonly estado: EstadoBatalla
-  readonly formaciones: RegistroFormaciones
-  readonly registro: RegistroActivacionAutomatica
 }
 
 function validarLimite(
@@ -76,174 +44,6 @@ function validarLimite(
   return limite
 }
 
-function aplicarFatiga(
-  formaciones: RegistroFormaciones,
-  formacionId: string,
-): RegistroFormaciones {
-  const formacion = obtenerFormacion(
-    formaciones,
-    formacionId,
-  )
-
-  if (formacion === undefined) {
-    throw new Error(
-      `Formación persistente no encontrada: ${formacionId}`,
-    )
-  }
-
-  return actualizarFormacion(
-    formaciones,
-    crearFormacion({
-      ...formacion,
-      fatiga: Math.min(
-        100,
-        formacion.fatiga + FATIGA_POR_ACTIVACION,
-      ),
-    }),
-  )
-}
-
-function marcarFueraDeLiza(
-  estado: EstadoBatalla,
-  formacionId: string,
-): EstadoBatalla {
-  if ((estado.retiradas ?? []).includes(formacionId)) {
-    return estado
-  }
-
-  let actualizado: EstadoBatalla = Object.freeze({
-    ...estado,
-    retiradas: Object.freeze([
-      ...(estado.retiradas ?? []),
-      formacionId,
-    ]),
-  })
-
-  if (
-    actualizado.fase === 'combate' &&
-    actualizado.formacionActivaId === formacionId
-  ) {
-    actualizado = finalizarActivacion(actualizado)
-  }
-
-  return actualizado
-}
-
-function aplicarAtaqueTemporal(
-  formaciones: RegistroFormaciones,
-  resultado: ResultadoAtaqueTactico,
-): {
-  readonly estado: EstadoBatalla
-  readonly formaciones: RegistroFormaciones
-} {
-  let actualizadas = aplicarFatiga(
-    formaciones,
-    resultado.atacanteId,
-  )
-  const objetivo = obtenerFormacion(
-    actualizadas,
-    resultado.objetivoId,
-  )
-
-  if (objetivo === undefined) {
-    throw new Error(
-      `Formación objetivo no encontrada: ${resultado.objetivoId}`,
-    )
-  }
-
-  const bajas = Math.min(
-    resultado.bajas,
-    objetivo.cantidad,
-  )
-  const destruida = bajas === objetivo.cantidad
-  const moral = evaluarMoral(objetivo, bajas)
-
-  actualizadas = destruida
-    ? removerFormacion(actualizadas, objetivo.id)
-    : actualizarFormacion(
-        actualizadas,
-        crearFormacion({
-          ...objetivo,
-          cantidad: objetivo.cantidad - bajas,
-          moral: moral.moralNueva,
-        }),
-      )
-
-  return {
-    estado: destruida || moral.retiradaRecomendada
-      ? marcarFueraDeLiza(resultado.estado, objetivo.id)
-      : resultado.estado,
-    formaciones: actualizadas,
-  }
-}
-
-function ejecutarOrden(
-  estado: EstadoBatalla,
-  formaciones: RegistroFormaciones,
-  bando: BandoBatalla,
-): ResultadoEjecucionOrden {
-  const orden = decidirOrdenTactica(
-    estado,
-    formaciones,
-    bando,
-  )
-
-  if (orden.tipo === 'atacar') {
-    const resultado = atacarFormacionTactica(
-      estado,
-      {
-        atacanteId: orden.atacanteId,
-        objetivoId: orden.objetivoId,
-      },
-      formaciones,
-    )
-    const consecuencias = aplicarAtaqueTemporal(
-      formaciones,
-      resultado,
-    )
-
-    return {
-      estado: consecuencias.estado,
-      formaciones: consecuencias.formaciones,
-      registro: Object.freeze({
-        bando,
-        orden,
-        ataque: Object.freeze({
-          objetivoId: resultado.objetivoId,
-          tiradaDano: resultado.tiradaDano,
-          bonificadorDefensaTerreno:
-            resultado.bonificadorDefensaTerreno,
-          dano: resultado.dano,
-          bajas: resultado.bajas,
-        }),
-      }),
-    }
-  }
-
-  const siguienteEstado = orden.tipo === 'mover'
-    ? moverFormacionTactica(
-        estado,
-        {
-          formacionId: orden.formacionId,
-          destino: orden.destino,
-        },
-        formaciones,
-      )
-    : esperar(estado)
-
-  return {
-    estado: siguienteEstado,
-    formaciones: aplicarFatiga(
-      formaciones,
-      orden.formacionId,
-    ),
-    registro: Object.freeze({
-      bando,
-      orden,
-    }),
-  }
-}
-
 function crearResultado(
   estado: EstadoBatalla,
   formaciones: RegistroFormaciones,
@@ -259,9 +59,8 @@ function crearResultado(
 }
 
 /**
- * Ejecuta el combate automático con las mismas reglas que el modo manual.
- * Bajas, moral y fatiga se aplican sobre un registro temporal, de modo que
- * la batalla puede concluir sin modificar todavía el estado estratégico.
+ * Ejecuta el combate automático con el mismo ejecutor que consume la vista
+ * manual. El registro temporal permite resolver sin tocar EstadoPartida.
  */
 export function resolverBatallaAutomatica(
   estadoInicial: EstadoBatalla,
@@ -309,10 +108,15 @@ export function resolverBatallaAutomatica(
       )
     }
 
-    const ejecucion = ejecutarOrden(
+    const orden = decidirOrdenTactica(
       estado,
       formaciones,
       formacionActiva.bando,
+    )
+    const ejecucion = ejecutarOrdenTactica(
+      estado,
+      formaciones,
+      orden,
     )
     estado = ejecucion.estado
     formaciones = ejecucion.formaciones
