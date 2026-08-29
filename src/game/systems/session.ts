@@ -5,6 +5,9 @@ import {
   crearCapitalInicial,
 } from '../content/kingdomSettlements'
 import { PERFILES_FORMACION } from '../content/formations'
+import type {
+  EventoTurno,
+} from '../domain/events'
 import { crearHueste } from '../domain/hueste'
 import type { OpcionesFormacion } from '../domain/formation'
 import {
@@ -38,6 +41,10 @@ import {
   type AlmacenamientoPartida,
   type ResultadoCargaPartida,
 } from '../persistence/saveGame'
+import {
+  cerrarSesionBatalla,
+  type SesionBatalla,
+} from './battleSession'
 import {
   finalizarTurno,
   type OpcionesFinalizarTurno,
@@ -269,6 +276,16 @@ export function finalizarTurnoSesion(
     estado,
     opciones,
   )
+  const hayEncuentroPendiente = resultado.eventos.some(
+    (evento) => evento.tipo === 'encuentro_combate',
+  )
+
+  // La batalla es efímera: mientras no se cierre, una recarga debe
+  // recuperar el turno anterior al choque, no guardar un encuentro sin
+  // resolver. El cierre táctico persiste el resultado completo.
+  if (hayEncuentroPendiente) {
+    return resultado
+  }
 
   const guardado = guardarEstadoPartida(
     almacenamiento,
@@ -290,4 +307,41 @@ export function finalizarTurnoSesion(
       },
     ],
   }
+}
+
+export interface ResultadoCierreBatallaSesion {
+  readonly estado: EstadoPartida
+  readonly eventos: readonly EventoTurno[]
+}
+
+/** Reconcilia una batalla resuelta y guarda el regreso al mapa. */
+export function cerrarBatallaSesion(
+  almacenamiento: AlmacenamientoPartida,
+  estado: EstadoPartida,
+  sesion: SesionBatalla,
+): ResultadoCierreBatallaSesion {
+  const cierre = cerrarSesionBatalla(
+    estado,
+    sesion,
+  )
+  const guardado = guardarEstadoPartida(
+    almacenamiento,
+    cierre.estado,
+  )
+  const eventos: EventoTurno[] = [
+    cierre.evento,
+  ]
+
+  if (guardado.tipo === 'error') {
+    eventos.push({
+      tipo: 'guardado_fallido',
+      turno: cierre.estado.turno,
+      mensaje: guardado.error.mensaje,
+    })
+  }
+
+  return Object.freeze({
+    estado: cierre.estado,
+    eventos: Object.freeze(eventos),
+  })
 }

@@ -189,7 +189,8 @@ export function iniciarCombateSesion(
   })
 }
 
-function prepararDespliegueAutomatico(
+/** Coloca ambos bandos en líneas estables y deja lista la primera ronda. */
+export function prepararSesionBatallaParaCombate(
   sesion: SesionBatalla,
 ): SesionBatalla {
   if (sesion.estado.fase !== 'despliegue') {
@@ -259,7 +260,9 @@ export function resolverSesionBatallaAutomatica(
   sesion: SesionBatalla,
   limite?: number,
 ): SesionBatalla {
-  const preparada = prepararDespliegueAutomatico(sesion)
+  const preparada = prepararSesionBatallaParaCombate(
+    sesion,
+  )
   const resultado = resolverBatallaAutomatica(
     preparada.estado,
     preparada.formaciones,

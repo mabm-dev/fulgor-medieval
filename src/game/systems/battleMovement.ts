@@ -214,6 +214,63 @@ function obtenerFormacionTactica(
   return formacion
 }
 
+/** Casillas libres que la formación activa puede alcanzar esta activación. */
+export function calcularDestinosMovimientoTactico(
+  estado: EstadoBatalla,
+  formaciones: RegistroFormaciones,
+): readonly CoordenadaHex[] {
+  const formacionId = estado.formacionActivaId
+
+  if (estado.fase !== 'combate' || formacionId === undefined) {
+    return Object.freeze([])
+  }
+
+  const tactica = obtenerFormacionTactica(
+    estado,
+    formacionId,
+  )
+  const formacion = obtenerFormacion(
+    formaciones,
+    formacionId,
+  )
+
+  if (formacion === undefined || tactica.posicion === undefined) {
+    return Object.freeze([])
+  }
+
+  const ocupadas = new Set(
+    estado.formaciones
+      .filter(
+        (candidata) =>
+          candidata.formacionId !== formacionId &&
+          candidata.posicion !== undefined &&
+          !(estado.retiradas ?? []).includes(candidata.formacionId),
+      )
+      .map((candidata) => claveHex(
+        candidata.posicion as CoordenadaHex,
+      )),
+  )
+  const resultado = ejecutarDijkstraTactico(
+    tactica.posicion,
+    estado.campo,
+    ocupadas,
+  )
+
+  return Object.freeze(
+    estado.campo.casillas
+      .filter((casilla) => {
+        const clave = claveHex(casilla.coordenada)
+        const distancia = resultado.distancias.get(clave)
+
+        return clave !== claveHex(tactica.posicion as CoordenadaHex) &&
+          !ocupadas.has(clave) &&
+          distancia !== undefined &&
+          distancia <= formacion.movimiento
+      })
+      .map((casilla) => casilla.coordenada),
+  )
+}
+
 export interface OpcionesMovimientoTactico {
   readonly formacionId: string
   readonly destino: CoordenadaHex
@@ -259,7 +316,10 @@ export function moverFormacionTactica(
       .filter(
         (candidata) =>
           candidata.formacionId !== opciones.formacionId &&
-          candidata.posicion !== undefined,
+          candidata.posicion !== undefined &&
+          !estado.retiradas.includes(
+            candidata.formacionId,
+          ),
       )
       .map((candidata) => claveHex(candidata.posicion as CoordenadaHex)),
   )

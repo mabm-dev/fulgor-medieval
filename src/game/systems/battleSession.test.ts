@@ -14,6 +14,7 @@ import {
   desplegarFormacionSesion,
   ejecutarOrdenSesion,
   iniciarCombateSesion,
+  prepararSesionBatallaParaCombate,
   resolverSesionBatallaAutomatica,
 } from './battleSession'
 
@@ -115,6 +116,28 @@ describe('sesión de batalla', () => {
     expect(
       obtenerFormacion(sesion.formaciones, 'a')?.fatiga,
     ).toBe(1)
+  })
+
+  it('prepara un despliegue estable para entrar en combate manual', () => {
+    const inicial = crearSesionBatallaDesdeEncuentro(
+      crearPartida(),
+      crearEncuentro(),
+    )
+    const primera = prepararSesionBatallaParaCombate(
+      inicial,
+    )
+    const segunda = prepararSesionBatallaParaCombate(
+      inicial,
+    )
+
+    expect(primera).toEqual(segunda)
+    expect(primera.estado.fase).toBe('combate')
+    expect(primera.estado.ronda).toBe(1)
+    expect(
+      primera.estado.formaciones.every(
+        (formacion) => formacion.posicion !== undefined,
+      ),
+    ).toBe(true)
   })
 
   it('despliega y resuelve automáticamente ambos bandos', () => {

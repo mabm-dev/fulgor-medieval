@@ -12,6 +12,7 @@ import {
   iniciarCombate,
 } from './battle'
 import {
+  calcularDestinosMovimientoTactico,
   calcularRutaTactica,
   esperar,
   moverFormacionTactica,
@@ -169,6 +170,31 @@ describe('movimiento táctico', () => {
     expect(movido.ronda).toBe(1)
   })
 
+  it('expone solo los destinos alcanzables y libres para la interfaz', () => {
+    const estado = crearEstadoDesplegado(['a', 'a2'], ['d'])
+    const destinos = calcularDestinosMovimientoTactico(
+      estado,
+      crearRegistro(
+        { a: 8, a2: 7, d: 5 },
+        { a: 1 },
+      ),
+    )
+    const claves = destinos.map(claveHex)
+
+    expect(claves).toContain(
+      claveHex({ q: 0, r: 1 }),
+    )
+    expect(claves).not.toContain(
+      claveHex({ q: 0, r: 0 }),
+    )
+    expect(claves).not.toContain(
+      claveHex({ q: 1, r: 0 }),
+    )
+    expect(claves).not.toContain(
+      claveHex({ q: 2, r: 0 }),
+    )
+  })
+
   it('rechaza una ruta cuyo coste supera movimiento', () => {
     const estado = crearEstadoDesplegado()
     expect(() =>
@@ -222,5 +248,31 @@ describe('movimiento táctico', () => {
         crearRegistro({ a: 8, a2: 7, d: 5 }),
       ),
     ).toThrow('No existe una ruta táctica hasta la casilla indicada')
+  })
+
+  it('permite atravesar la posición abandonada por una retirada', () => {
+    const estado = crearEstadoDesplegado(['a', 'a2'], ['d'])
+    const campoEstrecho = crearCampo([
+      ['despejado', 'despejado', 'despejado'],
+    ])
+    const estadoEstrecho = Object.freeze({
+      ...estado,
+      campo: campoEstrecho,
+      retiradas: Object.freeze(['a2']),
+    })
+    const movido = moverFormacionTactica(
+      estadoEstrecho,
+      {
+        formacionId: 'a',
+        destino: { q: 2, r: 0 },
+      },
+      crearRegistro({ a: 8, a2: 7, d: 5 }),
+    )
+
+    expect(
+      movido.formaciones.find(
+        (formacion) => formacion.formacionId === 'a',
+      )?.posicion,
+    ).toEqual({ q: 2, r: 0 })
   })
 })
