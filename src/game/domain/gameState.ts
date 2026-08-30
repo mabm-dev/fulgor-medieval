@@ -589,6 +589,7 @@ function leerRegistroFormaciones(
 
 function leerHeroe(
   datos: unknown,
+  esPrincipalPorDefecto = false,
 ): OpcionesHeroe {
   if (!esRegistro(datos)) {
     throw new Error(ERROR_ESTADO_INVALIDO)
@@ -598,7 +599,8 @@ function leerHeroe(
   const nombre = datos.nombre
   const reinoId = datos.reinoId
   const arquetipo = datos.arquetipo
-  const esPrincipal = datos.esPrincipal ?? false
+  const esPrincipal =
+    datos.esPrincipal ?? esPrincipalPorDefecto
   const estado = datos.estado ?? 'activo'
 
   if (
@@ -628,6 +630,7 @@ function leerHeroe(
 
 function leerRegistroHeroes(
   datos: unknown,
+  reinoJugador?: IdentificadorReino,
 ): RegistroHeroes {
   if (datos === undefined) {
     return crearRegistroHeroes()
@@ -637,10 +640,27 @@ function leerRegistroHeroes(
     throw new Error(ERROR_ESTADO_INVALIDO)
   }
 
+  let principalLegadoAsignado = false
+
   return crearRegistroHeroes(
-    datos.map((heroe) =>
-      leerHeroe(heroe),
-    ),
+    datos.map((heroe) => {
+      const esPrincipalLegado =
+        !principalLegadoAsignado &&
+        reinoJugador !== undefined &&
+        esRegistro(heroe) &&
+        heroe.esPrincipal === undefined &&
+        typeof heroe.reinoId === 'string' &&
+        heroe.reinoId.trim() === reinoJugador
+
+      if (esPrincipalLegado) {
+        principalLegadoAsignado = true
+      }
+
+      return leerHeroe(
+        heroe,
+        esPrincipalLegado,
+      )
+    }),
   )
 }
 
@@ -785,6 +805,9 @@ export function restaurarEstadoPartida(
     throw new Error(ERROR_ESTADO_INVALIDO)
   }
 
+  const reinoJugador = leerReino(
+    datos.reinoJugador,
+  )
   const huestes = leerRegistroHuestes(
     datos.huestes,
   )
@@ -794,6 +817,7 @@ export function restaurarEstadoPartida(
     )
   const heroes = leerRegistroHeroes(
     datos.heroes,
+    reinoJugador,
   )
 
   validarReferenciasMilitares(
@@ -810,9 +834,7 @@ export function restaurarEstadoPartida(
     meta: leerMeta(datos.meta),
     turno: datos.turno,
     fase: datos.fase,
-    reinoJugador: leerReino(
-      datos.reinoJugador,
-    ),
+    reinoJugador,
     recursos: crearReservaRecursos({
       grano: leerCantidad(
         datos.recursos,

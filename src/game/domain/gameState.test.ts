@@ -379,12 +379,17 @@ describe('estado de partida', () => {
       ],
     })
 
+    const datosLegado = JSON.parse(
+      JSON.stringify(original),
+    ) as {
+      heroes: Array<Record<string, unknown>>
+    }
+    delete datosLegado.heroes[0]?.esPrincipal
+    delete datosLegado.heroes[0]?.estado
+    delete datosLegado.heroes[0]?.capturadoPorReinoId
+
     const restaurado =
-      restaurarEstadoPartida(
-        JSON.parse(
-          JSON.stringify(original),
-        ) as unknown,
-      )
+      restaurarEstadoPartida(datosLegado)
 
     expect(
       restaurado.huestes[0]
@@ -405,6 +410,12 @@ describe('estado de partida', () => {
     expect(
       restaurado.heroes[0].arquetipo,
     ).toBe('caballero_frontera')
+    expect(
+      restaurado.heroes[0].esPrincipal,
+    ).toBe(true)
+    expect(
+      restaurado.heroes[0].estado,
+    ).toBe('activo')
     expect(
       Object.isFrozen(
         restaurado.formaciones,

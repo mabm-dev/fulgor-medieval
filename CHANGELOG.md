@@ -15,6 +15,8 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
   movimiento disponible.
 - Estado persistente del héroe para distinguir actividad, heridas, muerte y
   cautiverio, con el reino captor preparado para la futura negociación.
+- Compatibilidad con partidas v0.5: al faltar los nuevos campos, el primer
+  héroe del reino del jugador se reconoce como principal y continúa activo.
 
 ### Corregido
 
