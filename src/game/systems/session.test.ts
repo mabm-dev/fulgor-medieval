@@ -132,14 +132,14 @@ describe('sesión de partida', () => {
     )
   })
 
-  it('funda una hueste en la capital propia', () => {
+  it('funda una hueste en la capital propia y otra en la rival', () => {
     const estado = crearSesionPartida(
       crearAlmacenamientoMemoria(),
       OPCIONES,
     )
 
     expect(estado.huestes).toHaveLength(
-      1,
+      2,
     )
     expect(
       estado.huestes[0].reinoId,
@@ -149,6 +149,57 @@ describe('sesión de partida', () => {
     ).toEqual(
       estado.asentamientos[0].posicion,
     )
+    expect(
+      estado.huestes[1].reinoId,
+    ).toBe(
+      estado.asentamientos[1].reinoId,
+    )
+    expect(
+      estado.huestes[1].posicion,
+    ).toEqual(
+      estado.asentamientos[1].posicion,
+    )
+  })
+
+  it('equipa cada hueste con cuatro formaciones y un héroe propios', () => {
+    const estado = crearSesionPartida(
+      crearAlmacenamientoMemoria(),
+      OPCIONES,
+    )
+
+    expect(estado.formaciones).toHaveLength(
+      8,
+    )
+    expect(estado.heroes).toHaveLength(2)
+
+    for (const hueste of estado.huestes) {
+      expect(
+        hueste.formacionIds,
+      ).toHaveLength(4)
+      expect(
+        hueste.heroeId,
+      ).toBeDefined()
+
+      for (const formacionId of hueste.formacionIds) {
+        const formacion =
+          estado.formaciones.find(
+            (candidata) =>
+              candidata.id ===
+              formacionId,
+          )
+
+        expect(formacion).toBeDefined()
+      }
+
+      const heroe = estado.heroes.find(
+        (candidato) =>
+          candidato.id === hueste.heroeId,
+      )
+
+      expect(heroe?.reinoId).toBe(
+        hueste.reinoId,
+      )
+    }
   })
 
   it('planta la capital sobre una llanura del mapa', () => {

@@ -10,6 +10,7 @@ import {
   type ReservaRecursos,
   type TipoRecurso,
 } from '../../game/domain/resources'
+import { claveHex } from '../../game/map/hex'
 
 const NOMBRES_RECURSO: Record<
   TipoRecurso,
@@ -81,6 +82,24 @@ export function formatearEvento(
       return `${nombreEdificio(
         evento.edificioId,
       )} completado en ${evento.asentamientoId}`
+    case 'encuentro_combate':
+      return (
+        `Encuentro en ${claveHex(
+          evento.casilla,
+        )}: ${evento.huesteAtacanteId} ` +
+        `contra ${evento.huesteDefensoraId}`
+      )
+    case 'batalla_resuelta': {
+      const bajas = evento.consecuencias.reduce(
+        (total, consecuencia) => total + consecuencia.bajas,
+        0,
+      )
+      const desenlace = evento.ganador === 'empate'
+        ? 'empate'
+        : `victoria del ${evento.ganador}`
+
+      return `Batalla resuelta: ${desenlace}, ${bajas} bajas`
+    }
     case 'turno_finalizado':
       return `Turno ${evento.turno} resuelto`
     case 'guardado_fallido':

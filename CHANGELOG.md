@@ -5,6 +5,34 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
 
 ## [Sin publicar]
 
+## [0.5.0] - 2026-08-30
+
+### Añadido
+
+- Formaciones persistentes de infantería, distancia y caballería, con cuatro
+  perfiles iniciales por hueste.
+- Héroes por arquetipo y órdenes tácticas limitadas por puntos de mando.
+- Encuentros al intentar entrar en una casilla ocupada por una hueste rival.
+- Campo de batalla hexagonal determinista de 13 × 9 con tres terrenos.
+- Despliegue por zonas, cola de iniciativa y activaciones por ronda.
+- Movimiento táctico por coste, espera, ataque a distancia, daño determinista,
+  bajas, moral, retirada y condición de victoria.
+- IA táctica diferenciada por tipo de formación y resolución automática
+  mediante el mismo ejecutor que emplea el jugador.
+- Vista táctica jugable con partes de ambos bandos, órdenes, tiradas,
+  modificadores del terreno, moral y fatiga.
+- Sesión efímera de batalla y reconciliación de sus consecuencias con el mapa.
+- Prueba de integración del flujo completo desde el movimiento estratégico
+  hasta el guardado del resultado y el regreso al mapa.
+
+### Cambiado
+
+- El estado guardado pasa a la versión 5 para incluir los registros de
+  formaciones y héroes.
+- El guardado del turno se aplaza mientras exista un encuentro sin resolver;
+  una recarga vuelve al estado previo al choque.
+- Las formaciones retiradas dejan de bloquear rutas tácticas.
+
 ## [0.4.0] - 2026-08-22
 
 ### Añadido

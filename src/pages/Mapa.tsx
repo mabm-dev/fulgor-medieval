@@ -3,6 +3,7 @@ import {
   useState,
 } from 'react'
 import { Navigate, useNavigate } from 'react-router'
+import BattleView from '../components/battle/BattleView'
 import TurnHud from '../components/game/TurnHud'
 import HexMap from '../components/map/HexMap'
 import MapViewport from '../components/map/MapViewport'
@@ -16,6 +17,7 @@ import {
   obtenerPerfilEconomico,
 } from '../game/content/kingdomEconomy'
 import type {
+  EventoEncuentroCombate,
   EventoTurno,
 } from '../game/domain/events'
 import type {
@@ -44,9 +46,14 @@ import {
   almacenamientoNavegador,
 } from '../game/persistence/browserStorage'
 import {
+  cerrarBatallaSesion,
   finalizarTurnoSesion,
   cargarSesionPartida,
 } from '../game/systems/session'
+import {
+  crearSesionBatallaDesdeEncuentro,
+  type SesionBatalla,
+} from '../game/systems/battleSession'
 import {
   comprobarConstruccion,
 } from '../game/systems/settlementConstruction'
@@ -211,6 +218,11 @@ export default function Mapa() {
   const [eventosTurno, setEventosTurno] =
     useState<readonly EventoTurno[]>(
       [],
+    )
+
+  const [sesionBatalla, setSesionBatalla] =
+    useState<SesionBatalla | null>(
+      null,
     )
 
   const [
@@ -602,12 +614,52 @@ export default function Mapa() {
       },
     )
 
+    const encuentro = resultado.eventos.find(
+      (evento): evento is EventoEncuentroCombate =>
+        evento.tipo === 'encuentro_combate',
+    )
+
     setEstadoJuego(resultado.estado)
+    if (encuentro !== undefined) {
+      setSesionBatalla(
+        crearSesionBatallaDesdeEncuentro(resultado.estado, encuentro),
+      )
+    }
     setOrdenesConstruccion({})
     setOrdenesMovimiento({})
     setEventosTurno(resultado.eventos)
     setMensajeTurno(
       `Turno ${estadoJuego.turno} resuelto`,
+    )
+  }
+
+  const cerrarBatalla = (
+    sesion: SesionBatalla,
+  ) => {
+    const cierre = cerrarBatallaSesion(
+      almacenamientoNavegador,
+      estadoJuego,
+      sesion,
+    )
+
+    setEstadoJuego(cierre.estado)
+    setEventosTurno((actuales) => [
+      ...actuales,
+      ...cierre.eventos,
+    ])
+    setMensajeTurno(
+      `Batalla del turno ${sesion.encuentro.turno} resuelta`,
+    )
+    setSesionBatalla(null)
+  }
+
+  if (sesionBatalla !== null) {
+    return (
+      <BattleView
+        sesion={sesionBatalla}
+        onCambiarSesion={setSesionBatalla}
+        onCerrar={cerrarBatalla}
+      />
     )
   }
 

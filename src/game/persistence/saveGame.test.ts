@@ -136,6 +136,59 @@ describe('guardado versionado', () => {
     ).toEqual({ tipo: 'vacio' })
   })
 
+  it('no lanza si el navegador bloquea la lectura', () => {
+    const error = new DOMException(
+      'lectura bloqueada',
+      'SecurityError',
+    )
+    const almacenamiento: AlmacenamientoPartida = {
+      getItem: () => {
+        throw error
+      },
+      setItem: () => {},
+      removeItem: () => {},
+    }
+
+    expect(() =>
+      cargarEstadoPartida(
+        almacenamiento,
+      ),
+    ).not.toThrow()
+    expect(
+      cargarEstadoPartida(
+        almacenamiento,
+      ),
+    ).toEqual({
+      tipo: 'error',
+      error: {
+        motivo: 'almacenamiento_no_disponible',
+        mensaje: 'lectura bloqueada',
+      },
+    })
+  })
+
+  it('clasifica un fallo desconocido de lectura', () => {
+    const almacenamiento: AlmacenamientoPartida = {
+      getItem: () => {
+        throw new Error('fallo del adaptador')
+      },
+      setItem: () => {},
+      removeItem: () => {},
+    }
+
+    expect(
+      cargarEstadoPartida(
+        almacenamiento,
+      ),
+    ).toEqual({
+      tipo: 'error',
+      error: {
+        motivo: 'desconocido',
+        mensaje: 'fallo del adaptador',
+      },
+    })
+  })
+
   it('distingue una versión incompatible', () => {
     const almacenamiento =
       crearAlmacenamientoMemoria()
@@ -242,11 +295,37 @@ describe('guardado versionado', () => {
       almacenamiento,
       estado,
     )
-    borrarEstadoPartida(almacenamiento)
+    expect(
+      borrarEstadoPartida(almacenamiento),
+    ).toEqual({ tipo: 'exito' })
 
     expect(
       cargarEstadoPartida(almacenamiento),
     ).toEqual({ tipo: 'vacio' })
+  })
+
+  it('no lanza si el navegador bloquea el borrado', () => {
+    const error = new DOMException(
+      'borrado bloqueado',
+      'SecurityError',
+    )
+    const almacenamiento: AlmacenamientoPartida = {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {
+        throw error
+      },
+    }
+
+    expect(
+      borrarEstadoPartida(almacenamiento),
+    ).toEqual({
+      tipo: 'error',
+      error: {
+        motivo: 'almacenamiento_no_disponible',
+        mensaje: 'borrado bloqueado',
+      },
+    })
   })
 
   it('no lanza si la cuota de almacenamiento está agotada', () => {

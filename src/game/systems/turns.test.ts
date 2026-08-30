@@ -872,6 +872,130 @@ describe('resolución del turno', () => {
     )
   })
 
+  it('detiene el movimiento y genera un encuentro al toparse con una hueste rival', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+      huestes: [
+        crearHuesteDePrueba({
+          q: 0,
+          r: 0,
+        }),
+        crearHuesteDePrueba(
+          { q: 2, r: 0 },
+          {
+            id: 'hueste-rival-1',
+            reinoId: 'leon',
+          },
+        ),
+      ],
+    })
+
+    const resultado = finalizarTurno(
+      estado,
+      {
+        casillas:
+          construirCasillasEnRadio(
+            { q: 0, r: 0 },
+            4,
+          ),
+        ordenes: [
+          {
+            tipo: 'Movimiento',
+            huesteId: 'hueste-1',
+            destino: { q: 3, r: 0 },
+          },
+        ],
+      },
+    )
+
+    const huesteJugador =
+      resultado.estado.huestes.find(
+        (hueste) =>
+          hueste.id === 'hueste-1',
+      )
+    const huesteRival =
+      resultado.estado.huestes.find(
+        (hueste) =>
+          hueste.id === 'hueste-rival-1',
+      )
+
+    // Se detiene un paso antes, no entra en la casilla rival.
+    expect(
+      huesteJugador?.posicion,
+    ).toEqual({ q: 1, r: 0 })
+    // La rival no se mueve en v0.5: sigue donde estaba.
+    expect(
+      huesteRival?.posicion,
+    ).toEqual({ q: 2, r: 0 })
+
+    expect(
+      resultado.eventos,
+    ).toContainEqual({
+      tipo: 'encuentro_combate',
+      turno: 1,
+      huesteAtacanteId: 'hueste-1',
+      huesteDefensoraId: 'hueste-rival-1',
+      casilla: { q: 2, r: 0 },
+    })
+  })
+
+  it('no genera un encuentro contra una hueste del mismo reino', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+      huestes: [
+        crearHuesteDePrueba({
+          q: 0,
+          r: 0,
+        }),
+        crearHuesteDePrueba(
+          { q: 2, r: 0 },
+          { id: 'hueste-2' },
+        ),
+      ],
+    })
+
+    const resultado = finalizarTurno(
+      estado,
+      {
+        casillas:
+          construirCasillasEnRadio(
+            { q: 0, r: 0 },
+            4,
+          ),
+        ordenes: [
+          {
+            tipo: 'Movimiento',
+            huesteId: 'hueste-1',
+            destino: { q: 2, r: 0 },
+          },
+        ],
+      },
+    )
+
+    const huesteJugador =
+      resultado.estado.huestes.find(
+        (hueste) =>
+          hueste.id === 'hueste-1',
+      )
+
+    expect(
+      huesteJugador?.posicion,
+    ).toEqual({ q: 2, r: 0 })
+    expect(
+      resultado.eventos.some(
+        (evento) =>
+          evento.tipo ===
+          'encuentro_combate',
+      ),
+    ).toBe(false)
+  })
+
   it('una hueste fuera de suministro marcha menos que una junto a la capital', () => {
     const casillas = construirCasillasEnRadio(
       { q: 0, r: 0 },

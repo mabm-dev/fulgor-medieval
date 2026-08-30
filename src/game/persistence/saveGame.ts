@@ -26,6 +26,8 @@ export interface AlmacenamientoPartida {
 export type MotivoCargaFallida =
   | 'version_incompatible'
   | 'corrupto'
+  | 'almacenamiento_no_disponible'
+  | 'desconocido'
 
 export interface ErrorCargaPartida {
   readonly motivo: MotivoCargaFallida
@@ -59,6 +61,9 @@ export type ResultadoGuardadoPartida =
       readonly tipo: 'error'
       readonly error: ErrorGuardadoPartida
     }
+
+export type ResultadoBorradoPartida =
+  ResultadoGuardadoPartida
 
 export function serializarEstadoPartida(
   estado: EstadoPartida,
@@ -147,9 +152,32 @@ export function guardarEstadoPartida(
 export function cargarEstadoPartida(
   almacenamiento: AlmacenamientoPartida,
 ): ResultadoCargaPartida {
-  const contenido = almacenamiento.getItem(
-    CLAVE_ESTADO_PARTIDA,
-  )
+  let contenido: string | null
+
+  try {
+    contenido = almacenamiento.getItem(
+      CLAVE_ESTADO_PARTIDA,
+    )
+  } catch (causa) {
+    const mensaje =
+      causa instanceof Error
+        ? causa.message
+        : 'No se pudo acceder a la partida guardada'
+
+    const fallo: ResultadoCargaPartida = {
+      tipo: 'error',
+      error: Object.freeze({
+        motivo:
+          clasificarErrorGuardado(causa) ===
+          'almacenamiento_no_disponible'
+            ? 'almacenamiento_no_disponible'
+            : 'desconocido',
+        mensaje,
+      }),
+    }
+
+    return Object.freeze(fallo)
+  }
 
   if (contenido === null) {
     const vacio: ResultadoCargaPartida = {
@@ -191,8 +219,32 @@ export function cargarEstadoPartida(
 
 export function borrarEstadoPartida(
   almacenamiento: AlmacenamientoPartida,
-): void {
-  almacenamiento.removeItem(
-    CLAVE_ESTADO_PARTIDA,
-  )
+): ResultadoBorradoPartida {
+  try {
+    almacenamiento.removeItem(
+      CLAVE_ESTADO_PARTIDA,
+    )
+
+    const exito: ResultadoBorradoPartida = {
+      tipo: 'exito',
+    }
+
+    return Object.freeze(exito)
+  } catch (causa) {
+    const mensaje =
+      causa instanceof Error
+        ? causa.message
+        : 'No se pudo borrar la partida'
+
+    const fallo: ResultadoBorradoPartida = {
+      tipo: 'error',
+      error: Object.freeze({
+        motivo:
+          clasificarErrorGuardado(causa),
+        mensaje,
+      }),
+    }
+
+    return Object.freeze(fallo)
+  }
 }

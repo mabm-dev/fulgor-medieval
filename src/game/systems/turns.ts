@@ -10,7 +10,11 @@ import type {
 import type {
   CasillaMapa,
 } from '../map/generateMap'
-import type { CoordenadaHex } from '../map/hex'
+import {
+  claveHex,
+  type CoordenadaHex,
+} from '../map/hex'
+import type { Hueste } from '../domain/hueste'
 import {
   crearReservaRecursos,
   sumarReservas,
@@ -147,12 +151,62 @@ function repartirOrdenes(
 }
 
 /**
+ * Registro de un intento de entrar en la casilla de una hueste de otro
+ * reino (`v0.5`, bloque 2). Solo anuncia el choque —bajas, moral y demás
+ * son del motor de batalla, bloque 3—; por eso lleva IDs, no las
+ * `Hueste` completas, igual que `EdificioCompletadoResultado` en
+ * `settlementConstruction.ts` lleva `asentamientoId`, no el asentamiento.
+ */
+interface EncuentroCombate {
+  readonly huesteAtacanteId: string
+  readonly huesteDefensoraId: string
+  readonly casilla: CoordenadaHex
+}
+
+interface ResultadoResolucionMovimientos {
+  readonly huestes: RegistroHuestes
+  readonly encuentros: readonly EncuentroCombate[]
+}
+
+/**
+ * `undefined` si ninguna hueste de otro reino distinto a `reinoPropio`
+ * ocupa `coordenada`. Con solo dos reinos en juego en `v0.5` (jugador y
+ * rival, `systems/session.ts`) no puede haber más de una, pero la
+ * búsqueda no lo asume: se queda con la primera que encuentre.
+ */
+function buscarHuesteEnemigaEnCasilla(
+  huestes: RegistroHuestes,
+  reinoPropio: string,
+  coordenada: CoordenadaHex,
+): Hueste | undefined {
+  return huestes.find(
+    (otra) =>
+      otra.reinoId !== reinoPropio &&
+      claveHex(otra.posicion) ===
+        claveHex(coordenada),
+  )
+}
+
+/**
  * Solo mueve huestes propias: una orden hacia una hueste inexistente o de
  * otro reino lanza —igual que `iniciarProyectosConstruccion` con un
  * asentamiento que no existe, no hay nada que mover en silencio—. Usa la
  * exploración de **antes** de resolver el turno (`CU-04`): la ruta se
  * calcula con lo que ya se sabía al empezar, no con lo que este mismo
  * turno pueda revelar.
+ *
+ * Todas las órdenes del turno se resuelven contra la misma instantánea de
+ * posiciones —la de inicio de turno, `huestes`—, nunca unas contra otras:
+ * mover primero una hueste no cambia lo que ve la siguiente orden al
+ * resolverse.
+ *
+ * Regla de encuentro (`v0.5`, bloque 2): una hueste que intenta entrar en
+ * la casilla de una hueste de **otro** reino se detiene un paso antes
+ * —no atraviesa al rival para llegar más lejos, `movement.ts` lo
+ * garantiza comprobando cada paso de la ruta— y genera un
+ * `EncuentroCombate`. No resuelve la batalla, eso es el bloque 3. Dos
+ * huestes del mismo reino siguen pudiendo compartir casilla
+ * (`huesteRegistry.ts`).
  */
 /**
  * `asentamientosPropios` decide el suministro (radio fijo alrededor de
@@ -169,7 +223,7 @@ function resolverOrdenesMovimiento(
     Record<string, CasillaMapa>
   >,
   exploradas: ReadonlySet<string>,
-): RegistroHuestes {
+): ResultadoResolucionMovimientos {
   const huestesPorId = new Map(
     huestes.map((hueste) => [
       hueste.id,
@@ -180,6 +234,7 @@ function resolverOrdenesMovimiento(
     string,
     CoordenadaHex
   >()
+  const encuentros: EncuentroCombate[] = []
 
   for (const orden of ordenes) {
     const hueste = huestesPorId.get(
@@ -210,23 +265,54 @@ function resolverOrdenesMovimiento(
       casillas,
       exploradas,
       puntos,
+      (coordenada) =>
+        buscarHuesteEnemigaEnCasilla(
+          huestes,
+          hueste.reinoId,
+          coordenada,
+        ) !== undefined,
     )
 
     posicionesActualizadas.set(
       hueste.id,
       resultado.posicion,
     )
+
+    if (
+      resultado.bloqueadaEn !== undefined
+    ) {
+      const casilla = resultado.bloqueadaEn
+      const defensora =
+        buscarHuesteEnemigaEnCasilla(
+          huestes,
+          hueste.reinoId,
+          casilla,
+        )
+
+      if (defensora !== undefined) {
+        encuentros.push({
+          huesteAtacanteId: hueste.id,
+          huesteDefensoraId: defensora.id,
+          casilla,
+        })
+      }
+    }
   }
 
-  return crearRegistroHuestes(
-    huestes.map((hueste) => ({
-      ...hueste,
-      posicion:
-        posicionesActualizadas.get(
-          hueste.id,
-        ) ?? hueste.posicion,
-    })),
-  )
+  return {
+    huestes: crearRegistroHuestes(
+      huestes.map((hueste) => ({
+        ...hueste,
+        posicion:
+          posicionesActualizadas.get(
+            hueste.id,
+          ) ?? hueste.posicion,
+      })),
+    ),
+    encuentros: Object.freeze(
+      encuentros,
+    ),
+  }
 }
 
 /**
@@ -376,17 +462,19 @@ export function finalizarTurno(
 
   // 3. Movimiento: no depende de la economía ni la construcción, así que
   // se resuelve en paralelo a esos dos pasos, no después.
-  const huestesActualizadas =
-    resolverOrdenesMovimiento(
-      estado.huestes,
-      asentamientosPropios,
-      estado.reinoJugador,
-      movimientos,
-      opciones.casillas,
-      new Set(
-        estado.casillasExploradas,
-      ),
-    )
+  const {
+    huestes: huestesActualizadas,
+    encuentros,
+  } = resolverOrdenesMovimiento(
+    estado.huestes,
+    asentamientosPropios,
+    estado.reinoJugador,
+    movimientos,
+    opciones.casillas,
+    new Set(
+      estado.casillasExploradas,
+    ),
+  )
 
   // 2. Las obras nuevas del turno se validan y descuentan al final, sobre
   // lo que quede tras producir y consumir — construir es la última decisión
@@ -468,6 +556,18 @@ export function finalizarTurno(
               completado.asentamientoId,
             edificioId:
               completado.edificioId,
+          }),
+      ),
+      ...encuentros.map(
+        (encuentro) =>
+          Object.freeze({
+            tipo: 'encuentro_combate',
+            turno: estado.turno,
+            huesteAtacanteId:
+              encuentro.huesteAtacanteId,
+            huesteDefensoraId:
+              encuentro.huesteDefensoraId,
+            casilla: encuentro.casilla,
           }),
       ),
       Object.freeze({

@@ -281,6 +281,14 @@ export function calcularAlcanceMovimiento(
 export interface ResultadoMovimiento {
   readonly posicion: CoordenadaHex
   readonly destinoAlcanzado: boolean
+  /**
+   * Presente solo si `estaBloqueada` detuvo el avance —`v0.5`, regla de
+   * encuentro—: la casilla que se intentó pisar y no se pudo. Este
+   * módulo no sabe *por qué* está bloqueada —no conoce huestes ni
+   * reinos, eso es cosa de quien pasa el predicado, `systems/turns.ts`—,
+   * solo que lo está y dónde.
+   */
+  readonly bloqueadaEn?: CoordenadaHex
 }
 
 /**
@@ -289,12 +297,21 @@ export interface ResultadoMovimiento {
  * coste completo —convención del género: una hueste nunca se queda
  * parada a un paso de una casilla cara, esa casilla solo la deja sin
  * puntos para la siguiente—.
+ *
+ * `estaBloqueada` es un predicado genérico, no algo tipado contra
+ * `Hueste` o `reinoId`: este módulo es pathfinding puro y no depende del
+ * dominio. Se comprueba **antes** de entrar en cada casilla de la ruta,
+ * no solo en el destino final —si no, se podría atravesar una casilla
+ * bloqueada para llegar a otra libre más allá—.
  */
 export function avanzarPorRuta(
   ruta: readonly CoordenadaHex[],
   casillas: Readonly<Record<string, CasillaMapa>>,
   exploradas: ReadonlySet<string>,
   puntosDisponibles: number = PUNTOS_MOVIMIENTO_MAXIMOS,
+  estaBloqueada?: (
+    coordenada: CoordenadaHex,
+  ) => boolean,
 ): ResultadoMovimiento {
   let posicion = ruta[0]
   let puntosRestantes = puntosDisponibles
@@ -304,14 +321,24 @@ export function avanzarPorRuta(
     indice < ruta.length &&
     puntosRestantes > 0
   ) {
+    const siguiente = ruta[indice]
+
+    if (estaBloqueada?.(siguiente)) {
+      return {
+        posicion,
+        destinoAlcanzado: false,
+        bloqueadaEn: siguiente,
+      }
+    }
+
     const coste =
       costeCasilla(
-        ruta[indice],
+        siguiente,
         casillas,
         exploradas,
       ) ?? 0
 
-    posicion = ruta[indice]
+    posicion = siguiente
     puntosRestantes -= coste
     indice += 1
   }
@@ -336,6 +363,9 @@ export function resolverMovimiento(
   casillas: Readonly<Record<string, CasillaMapa>>,
   exploradas: ReadonlySet<string>,
   puntosDisponibles: number = PUNTOS_MOVIMIENTO_MAXIMOS,
+  estaBloqueada?: (
+    coordenada: CoordenadaHex,
+  ) => boolean,
 ): ResultadoMovimiento {
   const ruta = calcularRuta(
     origen,
@@ -356,5 +386,6 @@ export function resolverMovimiento(
     casillas,
     exploradas,
     puntosDisponibles,
+    estaBloqueada,
   )
 }
