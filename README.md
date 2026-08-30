@@ -14,9 +14,10 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 
 **[▶ Jugar en el navegador](https://mabm-dev.github.io/fulgor-medieval/)**
 
-> Estado: **pre-alpha v0.4**. Ya se puede fundar un reino, hacerlo crecer,
-> construir, mover huestes por un mapa cubierto de niebla y compartir frontera
-> con una facción rival. El siguiente hito es **v0.5 — Combate táctico**.
+> Estado: **pre-alpha v0.5**. Ya se puede llevar una hueste hasta el enemigo,
+> desplegar cuatro formaciones sobre un campo táctico y resolver el encuentro
+> manualmente o con el mismo motor automático. El siguiente hito es
+> **v0.6 — Rival y diplomacia**.
 
 ## Lo que ya funciona
 
@@ -37,9 +38,15 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 - Niebla de guerra con casillas visibles, exploradas y ocultas.
 - Huestes con rutas de marcha, coste por terreno y estado de suministro.
 - Una segunda facción con capital propia sobre el mismo mapa.
+- Encuentros al intentar entrar en la casilla de una hueste rival.
+- Campo táctico determinista de 13 × 9 con tres terrenos y despliegue previo.
+- Cuatro formaciones por bando con iniciativa, alcance, bajas, moral y fatiga.
+- Órdenes de héroe limitadas por mando y comportamiento según el arquetipo.
+- Combate manual y resolución automática sobre exactamente el mismo motor.
+- Reconciliación de bajas, retiradas y desgaste con el mapa estratégico.
 - Guardado automático y recuperación validada de la sesión.
 - HUD económico adaptable con registro de eventos del turno.
-- Suite automatizada de 333 pruebas, lint, TypeScript, build y CI.
+- Suite automatizada de 509 pruebas, lint, TypeScript, build y CI.
 
 ## Visión jugable
 

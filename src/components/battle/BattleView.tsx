@@ -114,7 +114,7 @@ function obtenerObjetivosAtacables(
 
 function describirOrden(orden: OrdenTactica): string {
   if (orden.tipo === 'heroica') {
-    return 'Orden del heroe: ' + orden.orden
+    return 'Orden del héroe: ' + orden.orden
   }
 
   if (orden.tipo === 'atacar') {
@@ -197,6 +197,11 @@ function PanelBando({
                       ? `Hex ${tactica.posicion.q},${tactica.posicion.r}`
                       : 'Sin desplegar'}
               </p>
+              {formacion && (
+                <p className="mt-1 text-[9px] tracking-[0.08em] text-white/45 uppercase">
+                  Moral {formacion.moral} · Fatiga {formacion.fatiga}
+                </p>
+              )}
             </li>
           )
         })}
@@ -470,12 +475,12 @@ export default function BattleView({
                             obtenerOrdenesHeroe(heroeJugador.arquetipo)[0] ?? 'carga_frontal',
                           ))
                         } catch (causa) {
-                          setMensaje(causa instanceof Error ? causa.message : 'La orden del heroe no pudo ejecutarse')
+                          setMensaje(causa instanceof Error ? causa.message : 'La orden del héroe no pudo ejecutarse')
                         }
                       }}
                       className="font-cinzel border border-oro/55 bg-[#33250b] px-4 py-2 text-[10px] tracking-[0.15em] text-oro-claro uppercase transition-all hover:border-oro hover:shadow-[0_0_18px_rgba(212,175,55,0.2)]"
                     >
-                      Orden del heroe {sesion.estado.puntosMandoAtacante}
+                      Orden del héroe · {sesion.estado.puntosMandoAtacante}
                     </button>
                   )}
                 </>
@@ -529,7 +534,9 @@ export default function BattleView({
                       · {describirOrden(registro.orden)}
                       {registro.ataque && (
                         <span className="block text-oro/60">
-                          {registro.ataque.bajas} bajas
+                          {registro.ataque.bajas} bajas · daño {registro.ataque.dano}
+                          {' '}· tirada {registro.ataque.tiradaDano}
+                          {' '}· defensa del terreno +{registro.ataque.bonificadorDefensaTerreno}
                         </span>
                       )}
                     </li>

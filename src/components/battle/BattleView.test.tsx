@@ -99,6 +99,8 @@ describe('BattleView', () => {
     expect(sesion.estado.formaciones[0]?.bando).toBe('atacante')
     expect(html).toContain('Esperar')
     expect(html).toContain('Orden sugerida')
+    expect(html).toContain('Orden del héroe · 1')
+    expect(html).toContain('Moral 100 · Fatiga 0')
     expect(html).not.toContain('Formar líneas y combatir')
   })
 
@@ -111,5 +113,6 @@ describe('BattleView', () => {
     expect(sesion.estado.fase).toBe('resuelta')
     expect(html).toContain('Aplicar resultado y volver al mapa')
     expect(html).toContain('Victoria:')
+    expect(html).toContain('defensa del terreno')
   })
 })

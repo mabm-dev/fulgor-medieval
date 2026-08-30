@@ -1,7 +1,7 @@
 {
   "name": "fulgor-medieval",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "Videojuego 4X medieval por turnos ambientado en una Hispania legendaria.",
   "type": "module",
   "scripts": {
