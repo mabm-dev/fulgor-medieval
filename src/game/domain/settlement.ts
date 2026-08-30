@@ -161,7 +161,12 @@ function validarEdificios(
     },
   )
 
-  return Object.freeze(edificios)
+  // Las partidas creadas antes de esta regla podían contener el mismo
+  // edificio varias veces. Se normalizan al restaurarlas para no repetir
+  // sus efectos económicos y conservar el guardado del jugador.
+  return Object.freeze([
+    ...new Set(edificios),
+  ])
 }
 
 function validarProyectoConstruccion(

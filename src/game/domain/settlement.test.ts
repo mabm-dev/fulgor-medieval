@@ -223,6 +223,23 @@ describe('asentamiento', () => {
     ).toBe(true)
   })
 
+  it('elimina edificios duplicados de una partida anterior', () => {
+    const asentamiento = crearAsentamiento(
+      crearOpciones({
+        edificios: [
+          'granero',
+          ' granero ',
+          'cantera',
+        ],
+      }),
+    )
+
+    expect(asentamiento.edificios).toEqual([
+      'granero',
+      'cantera',
+    ])
+  })
+
   it('rechaza un identificador de edificio vacío', () => {
     expect(() =>
       crearAsentamiento(

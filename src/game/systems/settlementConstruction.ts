@@ -96,18 +96,26 @@ export function avanzarProyectosConstruccion(
         }
       }
 
-      completados.push({
-        asentamientoId: asentamiento.id,
-        edificioId: proyecto.edificioId,
-      })
+      const yaConstruido =
+        asentamiento.edificios.includes(
+          proyecto.edificioId,
+        )
+
+      if (!yaConstruido) {
+        completados.push({
+          asentamientoId: asentamiento.id,
+          edificioId: proyecto.edificioId,
+        })
+      }
 
       const definicion = obtenerDefinicion(
         proyecto.edificioId,
       )
 
       const poblacion =
+        !yaConstruido &&
         definicion.efecto.tipo ===
-        'capacidad'
+          'capacidad'
           ? crearPoblacion({
               habitantes:
                 asentamiento.poblacion
@@ -121,16 +129,15 @@ export function avanzarProyectosConstruccion(
           : asentamiento.poblacion
 
       return {
-        id: asentamiento.id,
-        nombre: asentamiento.nombre,
-        reinoId: asentamiento.reinoId,
-        tipo: asentamiento.tipo,
-        posicion: asentamiento.posicion,
+        ...asentamiento,
         poblacion,
-        edificios: [
-          ...asentamiento.edificios,
-          proyecto.edificioId,
-        ],
+        edificios: yaConstruido
+          ? asentamiento.edificios
+          : [
+              ...asentamiento.edificios,
+              proyecto.edificioId,
+            ],
+        proyectoConstruccion: undefined,
       }
     },
   )
@@ -181,6 +188,7 @@ function anilloTieneTerreno(
 
 export type MotivoNoConstruible =
   | 'obra_en_marcha'
+  | 'ya_construido'
   | 'edificio_desconocido'
   | 'tipo_insuficiente'
   | 'terreno_ausente'
@@ -232,6 +240,18 @@ export function comprobarConstruccion(
   }
 
   const definicion = EDIFICIOS[edificioId]
+
+  if (
+    asentamiento.edificios.includes(
+      edificioId,
+    )
+  ) {
+    return {
+      puede: false,
+      motivo: 'ya_construido',
+      mensaje: `${definicion.nombre} ya está construido en ${asentamiento.nombre}`,
+    }
+  }
 
   if (
     !cumpleAsentamientoMinimo(

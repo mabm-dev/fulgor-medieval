@@ -154,6 +154,39 @@ describe('avanzarProyectosConstruccion', () => {
     ).toBe(2500)
   })
 
+  it('no duplica un edificio ni su efecto si un guardado antiguo repite el proyecto', () => {
+    const asentamiento =
+      crearAsentamientoDePrueba({
+        tipo: 'villa',
+        edificios: ['murallas'],
+        poblacion: {
+          habitantes: 100,
+          capacidad: 2500,
+        },
+        proyectoConstruccion: {
+          edificioId: 'murallas',
+          turnosRestantes: 1,
+        },
+      })
+
+    const resultado =
+      avanzarProyectosConstruccion(
+        crearRegistroAsentamientos([
+          asentamiento,
+        ]),
+      )
+
+    expect(
+      resultado.asentamientos[0]
+        ?.edificios,
+    ).toEqual(['murallas'])
+    expect(
+      resultado.asentamientos[0]
+        ?.poblacion.capacidad,
+    ).toBe(2500)
+    expect(resultado.completados).toEqual([])
+  })
+
   it('no toca un asentamiento sin obra en marcha', () => {
     const asentamiento =
       crearAsentamientoDePrueba()
@@ -475,6 +508,33 @@ describe('comprobarConstruccion', () => {
         ? undefined
         : comprobacion.motivo,
     ).toBe('obra_en_marcha')
+  })
+
+  it('rechaza con motivo "ya_construido"', () => {
+    const asentamiento =
+      crearAsentamientoDePrueba({
+        edificios: ['granero'],
+      })
+
+    const comprobacion =
+      comprobarConstruccion(
+        asentamiento,
+        'granero',
+        crearReservaRecursos({
+          madera: 100,
+        }),
+        construirCasillasUniformes(
+          asentamiento.posicion,
+          'llanura',
+        ),
+      )
+
+    expect(comprobacion.puede).toBe(false)
+    expect(
+      comprobacion.puede
+        ? undefined
+        : comprobacion.motivo,
+    ).toBe('ya_construido')
   })
 
   it('rechaza con motivo "tipo_insuficiente"', () => {
