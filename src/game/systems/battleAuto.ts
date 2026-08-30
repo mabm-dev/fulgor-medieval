@@ -4,13 +4,14 @@ import type {
 import type {
   EstadoBatalla,
 } from './battle'
+import type { RegistroHeroes } from '../domain/heroRegistry'
 import {
   ejecutarOrdenTactica,
   FATIGA_POR_ACTIVACION,
   type RegistroActivacionTactica,
 } from './battleAction'
 import {
-  decidirOrdenTactica,
+  decidirOrdenConHeroe,
 } from './battleAi'
 import {
   comprobarFinBatalla,
@@ -66,6 +67,7 @@ export function resolverBatallaAutomatica(
   estadoInicial: EstadoBatalla,
   formacionesIniciales: RegistroFormaciones,
   limite = MAX_ACTIVACIONES_AUTOMATICAS,
+  heroes: RegistroHeroes = [],
 ): ResultadoBatallaAutomatica {
   validarLimite(limite)
 
@@ -108,10 +110,11 @@ export function resolverBatallaAutomatica(
       )
     }
 
-    const orden = decidirOrdenTactica(
+    const orden = decidirOrdenConHeroe(
       estado,
       formaciones,
       formacionActiva.bando,
+      heroes,
     )
     const ejecucion = ejecutarOrdenTactica(
       estado,

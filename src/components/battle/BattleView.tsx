@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { REINOS } from '../../data/reinos'
 import type { Formacion } from '../../game/domain/formation'
+import { obtenerOrdenesHeroe } from '../../game/domain/hero'
 import {
   obtenerFormacion,
 } from '../../game/domain/formationRegistry'
@@ -14,6 +15,8 @@ import type {
   FormacionTactica,
 } from '../../game/systems/battle'
 import {
+  crearOrdenHeroica,
+  decidirOrdenConHeroe,
   decidirOrdenTactica,
   type OrdenTactica,
 } from '../../game/systems/battleAi'
@@ -110,6 +113,10 @@ function obtenerObjetivosAtacables(
 }
 
 function describirOrden(orden: OrdenTactica): string {
+  if (orden.tipo === 'heroica') {
+    return 'Orden del heroe: ' + orden.orden
+  }
+
   if (orden.tipo === 'atacar') {
     return `Atacó a ${orden.objetivoId}`
   }
@@ -218,6 +225,12 @@ export default function BattleView({
         activa.formacionId,
       )
   const turnoJugador = activa?.bando === 'atacante'
+  const heroeJugador = sesion.heroes.find(
+    (heroe) => heroe.id === sesion.estado.heroeAtacanteId,
+  )
+  const puedeOrdenHeroe = turnoJugador &&
+    heroeJugador !== undefined &&
+    sesion.estado.puntosMandoAtacante > 0
   const destinosMovimiento = useMemo(
     () => turnoJugador
       ? calcularDestinosMovimientoTactico(
@@ -297,11 +310,18 @@ export default function BattleView({
     if (activa === undefined) return
 
     aplicarOrden(
-      decidirOrdenTactica(
-        sesion.estado,
-        sesion.formaciones,
-        activa.bando,
-      ),
+      turnoJugador
+        ? decidirOrdenTactica(
+            sesion.estado,
+            sesion.formaciones,
+            activa.bando,
+          )
+        : decidirOrdenConHeroe(
+            sesion.estado,
+            sesion.formaciones,
+            activa.bando,
+            sesion.heroes,
+          ),
     )
   }
 
@@ -437,6 +457,27 @@ export default function BattleView({
                   >
                     Orden sugerida
                   </button>
+                  {puedeOrdenHeroe && heroeJugador !== undefined && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          aplicarOrden(crearOrdenHeroica(
+                            sesion.estado,
+                            sesion.formaciones,
+                            heroeJugador,
+                            'atacante',
+                            obtenerOrdenesHeroe(heroeJugador.arquetipo)[0] ?? 'carga_frontal',
+                          ))
+                        } catch (causa) {
+                          setMensaje(causa instanceof Error ? causa.message : 'La orden del heroe no pudo ejecutarse')
+                        }
+                      }}
+                      className="font-cinzel border border-oro/55 bg-[#33250b] px-4 py-2 text-[10px] tracking-[0.15em] text-oro-claro uppercase transition-all hover:border-oro hover:shadow-[0_0_18px_rgba(212,175,55,0.2)]"
+                    >
+                      Orden del heroe {sesion.estado.puntosMandoAtacante}
+                    </button>
+                  )}
                 </>
               )}
 

@@ -4,6 +4,7 @@ import type {
 import type {
   EstadoPartida,
 } from '../domain/gameState'
+import type { RegistroHeroes } from '../domain/heroRegistry'
 import {
   crearRegistroFormaciones,
   obtenerFormacion,
@@ -40,6 +41,7 @@ import {
 export interface SesionBatalla {
   readonly encuentro: EventoEncuentroCombate
   readonly estado: EstadoBatalla
+  readonly heroes: RegistroHeroes
   readonly formaciones: RegistroFormaciones
   readonly activaciones: readonly RegistroActivacionTactica[]
 }
@@ -159,6 +161,7 @@ export function crearSesionBatallaDesdeEncuentro(
       }),
     }),
     estado,
+    heroes: partida.heroes,
     formaciones,
     activaciones: Object.freeze([]),
   })
@@ -267,6 +270,7 @@ export function resolverSesionBatallaAutomatica(
     preparada.estado,
     preparada.formaciones,
     limite,
+    preparada.heroes,
   )
 
   return Object.freeze({

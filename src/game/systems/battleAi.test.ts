@@ -4,7 +4,7 @@ import {
   type RegistroFormaciones,
 } from '../domain/formationRegistry'
 import { crearHueste } from '../domain/hueste'
-import type { CoordenadaHex } from '../map/hex'
+import { distanciaHex, type CoordenadaHex } from '../map/hex'
 import {
   crearEstadoBatalla,
   desplegarFormacion,
@@ -16,12 +16,14 @@ function crearRegistro(
   ids: readonly string[],
   iniciativas: Readonly<Record<string, number>> = {},
   alcances: Readonly<Record<string, number>> = {},
+  tipos: Readonly<Record<string, 'infanteria' | 'distancia' | 'caballeria'>> = {},
+  morales: Readonly<Record<string, number>> = {},
 ): RegistroFormaciones {
   return crearRegistroFormaciones(
     ids.map((id) => ({
       id,
       nombre: id,
-      tipo: 'infanteria' as const,
+      tipo: tipos[id] ?? 'infanteria',
       cantidad: 50,
       saludPorIntegrante: 10,
       ataque: 4,
@@ -32,6 +34,7 @@ function crearRegistro(
       iniciativa: iniciativas[id] ?? 1,
       alcance: alcances[id] ?? 1,
       disciplina: 65,
+      moral: morales[id] ?? 100,
     })),
   )
 }
@@ -175,6 +178,53 @@ describe('decisión táctica de la IA', () => {
     })
   })
 
+
+
+  it('la formacion de distancia se repliega si el enemigo entra en melee', () => {
+    const { estado } = crearEstadoDePrueba(
+      ['a'], ['d'], { a: 1, d: 10 },
+      { a: { q: 5, r: 0 }, d: { q: 6, r: 0 } },
+    )
+    const registro = crearRegistro(
+      ['a', 'd'], { a: 1, d: 10 }, { d: 3 }, { d: 'distancia' },
+    )
+    const orden = decidirOrdenTactica(estado, registro, 'defensor')
+    expect(orden.tipo).toBe('mover')
+    if (orden.tipo === 'mover') {
+      expect(orden.destino).not.toEqual({ q: 6, r: 0 })
+    }
+  })
+
+  it('la formacion de distancia busca una casilla dentro de su alcance', () => {
+    const { estado } = crearEstadoDePrueba(
+      ['a'], ['d'], { a: 1, d: 10 },
+      { a: { q: 6, r: 0 }, d: { q: 10, r: 0 } },
+    )
+    const registro = crearRegistro(
+      ['a', 'd'], { a: 1, d: 10 }, { d: 3 }, { d: 'distancia' },
+    )
+    const orden = decidirOrdenTactica(estado, registro, 'defensor')
+    expect(orden.tipo).toBe('mover')
+    if (orden.tipo === 'mover') {
+      expect(distanciaHex(orden.destino, { q: 6, r: 0 })).toBeLessThanOrEqual(3)
+    }
+  })
+
+
+  it('la caballeria busca una casilla de flanqueo junto al objetivo', () => {
+    const { estado } = crearEstadoDePrueba(
+      ['a'], ['d'], { a: 1, d: 10 },
+      { a: { q: 5, r: 0 }, d: { q: 9, r: 0 } },
+    )
+    const registro = crearRegistro(
+      ['a', 'd'], { a: 1, d: 10 }, {}, { d: 'caballeria' },
+    )
+    const orden = decidirOrdenTactica(estado, registro, 'defensor')
+    expect(orden.tipo).toBe('mover')
+    if (orden.tipo === 'mover') {
+      expect(distanciaHex(orden.destino, { q: 5, r: 0 })).toBeLessThan(4)
+    }
+  })
   it('rechaza decidir por un bando distinto al de la formación activa', () => {
     const { estado, formaciones } = crearEstadoDePrueba()
 

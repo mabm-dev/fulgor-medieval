@@ -6,6 +6,7 @@ import type {
   EstadoBatalla,
   FormacionTactica,
 } from './battle'
+import { PUNTOS_MANDO_HEROE_POR_RONDA } from './battle'
 
 interface FormacionConIniciativa {
   readonly formacionId: string
@@ -135,5 +136,17 @@ export function finalizarActivacion(
     ronda: comienzaNuevaRonda
       ? estado.ronda + 1
       : estado.ronda,
+    ...(comienzaNuevaRonda
+      ? {
+          puntosMandoAtacante:
+            estado.heroeAtacanteId === undefined
+              ? 0
+              : PUNTOS_MANDO_HEROE_POR_RONDA,
+          puntosMandoDefensor:
+            estado.heroeDefensorId === undefined
+              ? 0
+              : PUNTOS_MANDO_HEROE_POR_RONDA,
+        }
+      : {}),
   })
 }

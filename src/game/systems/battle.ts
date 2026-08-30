@@ -61,6 +61,10 @@ export interface EstadoBatalla {
   readonly huesteDefensoraId: string
   readonly reinoAtacante: string
   readonly reinoDefensor: string
+  readonly heroeAtacanteId?: string
+  readonly heroeDefensorId?: string
+  readonly puntosMandoAtacante: number
+  readonly puntosMandoDefensor: number
   readonly campo: CampoBatalla
   /** Identificadores de formaciones que abandonaron el campo. */
   readonly retiradas: readonly string[]
@@ -81,6 +85,8 @@ export interface EstadoBatalla {
   /** Estado del azar de combate; se avanza de forma inmutable en cada ataque. */
   readonly semillaAzar: number
 }
+
+export const PUNTOS_MANDO_HEROE_POR_RONDA = 1
 
 export interface OpcionesEstadoBatalla {
   readonly huesteAtacante: Hueste
@@ -179,6 +185,20 @@ export function crearEstadoBatalla(
     huesteDefensoraId: huesteDefensora.id,
     reinoAtacante: huesteAtacante.reinoId,
     reinoDefensor: huesteDefensora.reinoId,
+    ...(huesteAtacante.heroeId === undefined
+      ? {}
+      : { heroeAtacanteId: huesteAtacante.heroeId }),
+    ...(huesteDefensora.heroeId === undefined
+      ? {}
+      : { heroeDefensorId: huesteDefensora.heroeId }),
+    puntosMandoAtacante:
+      huesteAtacante.heroeId === undefined
+        ? 0
+        : PUNTOS_MANDO_HEROE_POR_RONDA,
+    puntosMandoDefensor:
+      huesteDefensora.heroeId === undefined
+        ? 0
+        : PUNTOS_MANDO_HEROE_POR_RONDA,
     campo: crearCampoBatalla({
       semilla: semillaCampo,
     }),
