@@ -81,10 +81,19 @@ export interface OrdenMovimiento {
   readonly destino: CoordenadaHex
 }
 
+export interface OrdenCancelarMovimiento {
+  readonly tipo: 'CancelarMovimiento'
+  readonly huesteId: string
+}
+
+type OrdenMarcha =
+  | OrdenMovimiento
+  | OrdenCancelarMovimiento
+
 export type OrdenTurno =
   | OrdenCrecimiento
   | OrdenConstruccion
-  | OrdenMovimiento
+  | OrdenMarcha
 
 export interface OpcionesFinalizarTurno {
   readonly casillas: Readonly<
@@ -110,13 +119,13 @@ function repartirOrdenes(
 ): {
   crecimientos: OrdenCrecimientoAsentamiento[]
   construcciones: OrdenConstruccionAsentamiento[]
-  movimientos: OrdenMovimiento[]
+  movimientos: OrdenMarcha[]
 } {
   const crecimientos: OrdenCrecimientoAsentamiento[] =
     []
   const construcciones: OrdenConstruccionAsentamiento[] =
     []
-  const movimientos: OrdenMovimiento[] = []
+  const movimientos: OrdenMarcha[] = []
 
   for (const orden of ordenes) {
     switch (orden.tipo) {
@@ -136,6 +145,7 @@ function repartirOrdenes(
         })
         break
       case 'Movimiento':
+      case 'CancelarMovimiento':
         movimientos.push(orden)
         break
       default:
@@ -218,7 +228,7 @@ function resolverOrdenesMovimiento(
   huestes: RegistroHuestes,
   asentamientosPropios: RegistroAsentamientos,
   reinoJugador: IdentificadorReino,
-  ordenes: readonly OrdenMovimiento[],
+  ordenes: readonly OrdenMarcha[],
   casillas: Readonly<
     Record<string, CasillaMapa>
   >,
@@ -230,11 +240,10 @@ function resolverOrdenesMovimiento(
       hueste,
     ]),
   )
-  const posicionesActualizadas = new Map<
+  const ordenesPorHueste = new Map<
     string,
-    CoordenadaHex
+    OrdenMarcha
   >()
-  const encuentros: EncuentroCombate[] = []
 
   for (const orden of ordenes) {
     const hueste = huestesPorId.get(
@@ -251,6 +260,49 @@ function resolverOrdenesMovimiento(
       )
     }
 
+    ordenesPorHueste.set(
+      hueste.id,
+      orden,
+    )
+  }
+
+  const actualizaciones = new Map<
+    string,
+    {
+      readonly posicion: CoordenadaHex
+      readonly destinoMarcha?:
+        CoordenadaHex
+    }
+  >()
+  const encuentros: EncuentroCombate[] = []
+
+  for (const hueste of huestes) {
+    if (hueste.reinoId !== reinoJugador) {
+      continue
+    }
+
+    const orden =
+      ordenesPorHueste.get(hueste.id)
+
+    if (
+      orden?.tipo ===
+      'CancelarMovimiento'
+    ) {
+      actualizaciones.set(hueste.id, {
+        posicion: hueste.posicion,
+      })
+      continue
+    }
+
+    const destino =
+      orden?.tipo === 'Movimiento'
+        ? orden.destino
+        : hueste.destinoMarcha
+
+    if (destino === undefined) {
+      continue
+    }
+
     const puntos =
       calcularPuntosMovimientoTurno(
         estaEnSuministro(
@@ -261,7 +313,7 @@ function resolverOrdenesMovimiento(
 
     const resultado = resolverMovimiento(
       hueste.posicion,
-      orden.destino,
+      destino,
       casillas,
       exploradas,
       puntos,
@@ -273,10 +325,13 @@ function resolverOrdenesMovimiento(
         ) !== undefined,
     )
 
-    posicionesActualizadas.set(
-      hueste.id,
-      resultado.posicion,
-    )
+    actualizaciones.set(hueste.id, {
+      posicion: resultado.posicion,
+      ...(resultado.destinoAlcanzado ||
+      resultado.bloqueadaEn !== undefined
+        ? {}
+        : { destinoMarcha: destino }),
+    })
 
     if (
       resultado.bloqueadaEn !== undefined
@@ -301,13 +356,21 @@ function resolverOrdenesMovimiento(
 
   return {
     huestes: crearRegistroHuestes(
-      huestes.map((hueste) => ({
-        ...hueste,
-        posicion:
-          posicionesActualizadas.get(
-            hueste.id,
-          ) ?? hueste.posicion,
-      })),
+      huestes.map((hueste) => {
+        const actualizacion =
+          actualizaciones.get(hueste.id)
+
+        return actualizacion === undefined
+          ? hueste
+          : {
+              ...hueste,
+              posicion:
+                actualizacion.posicion,
+              destinoMarcha:
+                actualizacion
+                  .destinoMarcha,
+            }
+      }),
     ),
     encuentros: Object.freeze(
       encuentros,

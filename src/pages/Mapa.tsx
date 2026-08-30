@@ -62,8 +62,10 @@ import {
 } from '../game/systems/settlementEconomy'
 import {
   calcularAlcanceMovimiento,
+  proyectarMarcha,
 } from '../game/systems/movement'
 import {
+  calcularPuntosMovimientoTurno,
   estaEnSuministro,
 } from '../game/systems/supply'
 import {
@@ -117,15 +119,17 @@ function nombreEdificio(
  */
 function SeccionHuestesEnCasilla({
   huestes,
-  ordenesMovimiento,
+  destinosMarcha,
   huestesFueraDeSuministro,
   onMover,
   onCancelar,
 }: {
   readonly huestes: RegistroHuestes
-  readonly ordenesMovimiento: Record<
-    string,
-    CoordenadaHex
+  readonly destinosMarcha: Readonly<
+    Record<
+      string,
+      CoordenadaHex | null | undefined
+    >
   >
   readonly huestesFueraDeSuministro: ReadonlySet<string>
   readonly onMover: (
@@ -145,51 +149,68 @@ function SeccionHuestesEnCasilla({
         Huestes aquí
       </p>
       <ul className="mt-2 space-y-2">
-        {huestes.map((hueste) => (
-          <li
-            key={hueste.id}
-            className="flex items-center justify-between gap-2"
-          >
-            <span className="flex flex-col">
-              <span className="text-sm text-pergamino">
-                {hueste.nombre}
-              </span>
-              {huestesFueraDeSuministro.has(
-                hueste.id,
-              ) && (
-                <span className="text-[10px] tracking-[0.1em] text-aviso uppercase">
-                  Fuera de suministro
+        {huestes.map((hueste) => {
+          const destino =
+            destinosMarcha[hueste.id]
+
+          return (
+            <li
+              key={hueste.id}
+              className="flex items-center justify-between gap-2"
+            >
+              <span className="flex flex-col">
+                <span className="text-sm text-pergamino">
+                  {hueste.nombre}
                 </span>
-              )}
-            </span>
-            {ordenesMovimiento[
-              hueste.id
-            ] ? (
-              <span className="flex items-center gap-2 text-xs text-white/50">
-                En marcha
+                {huestesFueraDeSuministro.has(
+                  hueste.id,
+                ) && (
+                  <span className="text-[10px] tracking-[0.1em] text-aviso uppercase">
+                    Fuera de suministro
+                  </span>
+                )}
+              </span>
+              {destino ? (
+                <span className="flex flex-col items-end gap-1 text-xs text-white/50">
+                  <span>
+                    En marcha · {destino.q},{' '}
+                    {destino.r}
+                  </span>
+                  <span className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onMover(hueste.id)
+                      }
+                      className="text-acero-claro underline decoration-dotted transition-colors hover:text-white"
+                    >
+                      Cambiar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onCancelar(hueste.id)
+                      }
+                      className="text-oro/70 underline decoration-dotted transition-colors hover:text-oro-brillante"
+                    >
+                      Cancelar
+                    </button>
+                  </span>
+                </span>
+              ) : (
                 <button
                   type="button"
                   onClick={() =>
-                    onCancelar(hueste.id)
+                    onMover(hueste.id)
                   }
-                  className="text-oro/70 underline decoration-dotted transition-colors hover:text-oro-brillante"
+                  className="font-cinzel border border-acero/40 px-3 py-1 text-[10px] tracking-[0.15em] text-acero-claro uppercase transition-colors hover:border-acero hover:text-white"
                 >
-                  Cancelar
+                  Mover
                 </button>
-              </span>
-            ) : (
-              <button
-                type="button"
-                onClick={() =>
-                  onMover(hueste.id)
-                }
-                className="font-cinzel border border-acero/40 px-3 py-1 text-[10px] tracking-[0.15em] text-acero-claro uppercase transition-colors hover:border-acero hover:text-white"
-              >
-                Mover
-              </button>
-            )}
-          </li>
-        ))}
+              )}
+            </li>
+          )
+        })}
       </ul>
     </div>
   )
@@ -241,7 +262,10 @@ export default function Mapa() {
     ordenesMovimiento,
     setOrdenesMovimiento,
   ] = useState<
-    Record<string, CoordenadaHex>
+    Record<
+      string,
+      CoordenadaHex | null
+    >
   >({})
 
   const semillaMapa = estadoJuego?.semillaMapa
@@ -332,13 +356,14 @@ export default function Mapa() {
     [estadoJuego],
   )
 
-  // La capital rival no se dibuja mientras su casilla siga oculta del
-  // todo: la niebla también aplica a los asentamientos, no solo al
-  // terreno.
+  // En esta pre-alpha la capital rival es un objetivo conocido: se
+  // mantiene señalada aunque el terreno circundante siga bajo la niebla.
   const asentamientosVisibles = useMemo(
     () =>
       (estadoJuego?.asentamientos ?? []).filter(
         (asentamiento) =>
+          asentamiento.reinoId !==
+            estadoJuego?.reinoJugador ||
           estadoNiebla(
             claveHex(
               asentamiento.posicion,
@@ -358,6 +383,8 @@ export default function Mapa() {
     () =>
       (estadoJuego?.huestes ?? []).filter(
         (hueste) =>
+          hueste.reinoId !==
+            estadoJuego?.reinoJugador ||
           estadoNiebla(
             claveHex(hueste.posicion),
             casillasVisibles,
@@ -440,6 +467,102 @@ export default function Mapa() {
     casillasExploradasSet,
   ])
 
+  const destinosMovimientoEfectivos =
+    useMemo(() => {
+      const destinos: Record<
+        string,
+        CoordenadaHex | null | undefined
+      > = {}
+
+      if (estadoJuego === null) {
+        return destinos
+      }
+
+      for (const hueste of estadoJuego.huestes) {
+        if (
+          hueste.reinoId !==
+          estadoJuego.reinoJugador
+        ) {
+          continue
+        }
+
+        destinos[hueste.id] =
+          Object.prototype.hasOwnProperty.call(
+            ordenesMovimiento,
+            hueste.id,
+          )
+            ? ordenesMovimiento[hueste.id]
+            : hueste.destinoMarcha
+      }
+
+      return destinos
+    }, [estadoJuego, ordenesMovimiento])
+
+  const marchaActiva = useMemo(() => {
+    if (estadoJuego === null) {
+      return null
+    }
+
+    const hueste = estadoJuego.huestes.find(
+      (candidata) =>
+        candidata.reinoId ===
+          estadoJuego.reinoJugador &&
+        destinosMovimientoEfectivos[
+          candidata.id
+        ] != null,
+    )
+
+    if (hueste === undefined) {
+      return null
+    }
+
+    const destino =
+      destinosMovimientoEfectivos[
+        hueste.id
+      ]
+
+    return destino == null
+      ? null
+      : { hueste, destino }
+  }, [
+    estadoJuego,
+    destinosMovimientoEfectivos,
+  ])
+
+  const proyeccionMarcha = useMemo(() => {
+    if (
+      estadoJuego === null ||
+      marchaActiva === null
+    ) {
+      return null
+    }
+
+    const asentamientosPropios =
+      estadoJuego.asentamientos.filter(
+        (asentamiento) =>
+          asentamiento.reinoId ===
+          estadoJuego.reinoJugador,
+      )
+    return proyectarMarcha(
+      marchaActiva.hueste.posicion,
+      marchaActiva.destino,
+      casillas,
+      casillasExploradasSet,
+      (posicion) =>
+        calcularPuntosMovimientoTurno(
+          estaEnSuministro(
+            posicion,
+            asentamientosPropios,
+          ),
+        ),
+    )
+  }, [
+    estadoJuego,
+    marchaActiva,
+    casillas,
+    casillasExploradasSet,
+  ])
+
   if (!estadoJuego || !mapa) {
     return (
       <Navigate
@@ -457,6 +580,17 @@ export default function Mapa() {
   const reino = REINOS.find(
     (candidato) =>
       candidato.id === estadoJuego.reinoJugador,
+  )
+  const huesteRival =
+    estadoJuego.huestes.find(
+      (hueste) =>
+        hueste.reinoId !==
+        estadoJuego.reinoJugador,
+    )
+  const reinoRival = REINOS.find(
+    (candidato) =>
+      candidato.id ===
+      huesteRival?.reinoId,
   )
 
   const costeMovimiento = casillaSeleccionada
@@ -512,38 +646,72 @@ export default function Mapa() {
   const manejarClicCasilla = (
     casilla: CasillaMapa,
   ) => {
-    if (huesteSeleccionadaId !== null) {
-      setOrdenesMovimiento((actual) => ({
-        ...actual,
-        [huesteSeleccionadaId]:
-          casilla.coordenada,
-      }))
-      setHuesteSeleccionadaId(null)
+    setCasillaSeleccionada(casilla)
+
+    if (huesteSeleccionadaId === null) {
+      return
     }
 
-    setCasillaSeleccionada(casilla)
+    const hueste = estadoJuego.huestes.find(
+      (candidata) =>
+        candidata.id ===
+        huesteSeleccionadaId,
+    )
+
+    if (hueste === undefined) {
+      return
+    }
+
+    const asentamientosPropios =
+      estadoJuego.asentamientos.filter(
+        (asentamiento) =>
+          asentamiento.reinoId ===
+          estadoJuego.reinoJugador,
+      )
+    const proyeccion = proyectarMarcha(
+      hueste.posicion,
+      casilla.coordenada,
+      casillas,
+      casillasExploradasSet,
+      (posicion) =>
+        calcularPuntosMovimientoTurno(
+          estaEnSuministro(
+            posicion,
+            asentamientosPropios,
+          ),
+        ),
+    )
+
+    if (proyeccion === null) {
+      setMensajeTurno(
+        'No hay una ruta transitable hasta esa casilla',
+      )
+      return
+    }
+
+    setOrdenesMovimiento((actual) => ({
+      ...actual,
+      [huesteSeleccionadaId]:
+        casilla.coordenada,
+    }))
+    setHuesteSeleccionadaId(null)
+    setMensajeTurno(
+      proyeccion.turnos === 0
+        ? 'La hueste ya está en esa casilla'
+        : `Ruta trazada: ${proyeccion.turnos} ${proyeccion.turnos === 1 ? 'turno estimado' : 'turnos estimados'}`,
+    )
   }
 
   const cancelarMovimiento = (
     huesteId: string,
   ) => {
-    setOrdenesMovimiento((actual) => {
-      const resto: Record<
-        string,
-        CoordenadaHex
-      > = {}
-
-      for (const [
-        id,
-        destino,
-      ] of Object.entries(actual)) {
-        if (id !== huesteId) {
-          resto[id] = destino
-        }
-      }
-
-      return resto
-    })
+    setOrdenesMovimiento((actual) => ({
+      ...actual,
+      [huesteId]: null,
+    }))
+    setMensajeTurno(
+      'La marcha se cancelará al resolver el turno',
+    )
   }
 
   const encolarConstruccion = (
@@ -596,11 +764,19 @@ export default function Mapa() {
     const ordenesMovimientoArray =
       Object.entries(
         ordenesMovimiento,
-      ).map(([huesteId, destino]) => ({
-        tipo: 'Movimiento' as const,
-        huesteId,
-        destino,
-      }))
+      ).map(([huesteId, destino]) =>
+        destino === null
+          ? {
+              tipo:
+                'CancelarMovimiento' as const,
+              huesteId,
+            }
+          : {
+              tipo: 'Movimiento' as const,
+              huesteId,
+              destino,
+            },
+      )
 
     const resultado = finalizarTurnoSesion(
       almacenamientoNavegador,
@@ -757,9 +933,94 @@ export default function Mapa() {
               huestesFueraDeSuministro={[
                 ...huestesFueraDeSuministro,
               ]}
+              reinoJugadorId={
+                estadoJuego.reinoJugador
+              }
+              rutaMovimiento={
+                proyeccionMarcha?.ruta ?? []
+              }
+              hitosTurnoMovimiento={
+                proyeccionMarcha
+                  ?.finalesTurno ?? []
+              }
             />
           </MapViewport>
         </div>
+        {huesteRival && (
+          <aside
+            aria-label="Objetivo rival"
+            className="absolute top-8 left-8 z-10 w-64 border border-[#b95a49]/60 bg-[#170b0a]/95 p-4 shadow-[0_0_30px_rgba(125,36,28,0.35)] backdrop-blur-md"
+          >
+            <p className="font-cinzel text-[10px] tracking-[0.28em] text-[#ef9b87] uppercase">
+              Objetivo de combate
+            </p>
+            <h2 className="font-cinzel mt-2 text-lg text-pergamino-palido">
+              {reinoRival?.nombre ??
+                huesteRival.reinoId}
+            </h2>
+            <p className="mt-1 text-xs text-white/60">
+              Hueste rival en{' '}
+              <span className="font-mono text-[#ef9b87]">
+                {huesteRival.posicion.q},
+                {huesteRival.posicion.r}
+              </span>
+            </p>
+            <p className="mt-3 text-xs leading-relaxed text-white/50">
+              Busca el estandarte rojo y ordena una
+              marcha hasta su casilla para iniciar la
+              batalla táctica.
+            </p>
+          </aside>
+        )}
+
+        {marchaActiva && proyeccionMarcha && (
+          <aside
+            aria-label="Plan de marcha"
+            className="absolute bottom-24 left-8 z-10 w-72 border border-oro/45 bg-[#17120b]/95 p-4 shadow-[0_0_30px_rgba(0,0,0,0.75)] backdrop-blur-md"
+          >
+            <p className="font-cinzel text-[10px] tracking-[0.28em] text-oro uppercase">
+              Plan de marcha
+            </p>
+            <div className="mt-2 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-sm text-pergamino">
+                  {marchaActiva.hueste.nombre}
+                </p>
+                <p className="mt-1 font-mono text-xs text-white/45">
+                  destino {marchaActiva.destino.q},
+                  {marchaActiva.destino.r}
+                </p>
+              </div>
+              <p className="text-right">
+                <strong className="font-cinzel text-3xl text-oro-brillante">
+                  {proyeccionMarcha.turnos}
+                </strong>
+                <span className="ml-1 text-[10px] tracking-[0.12em] text-white/45 uppercase">
+                  {proyeccionMarcha.turnos === 1
+                    ? 'turno'
+                    : 'turnos'}
+                </span>
+              </p>
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-white/50">
+              La ruta dorada continuará automáticamente
+              al resolver cada turno. Las cifras pueden
+              variar al descubrir terreno.
+            </p>
+            <button
+              type="button"
+              onClick={() =>
+                cancelarMovimiento(
+                  marchaActiva.hueste.id,
+                )
+              }
+              className="font-cinzel mt-3 text-[10px] tracking-[0.16em] text-oro/70 uppercase underline decoration-dotted transition-colors hover:text-oro-brillante"
+            >
+              Cancelar marcha
+            </button>
+          </aside>
+        )}
+
         {huesteSeleccionada ? (
           <aside className="absolute top-8 right-8 z-10 w-64 border border-acero/45 bg-noche/95 p-5 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
             <button
@@ -793,8 +1054,9 @@ export default function Mapa() {
             )}
 
             <p className="mt-4 text-sm leading-relaxed text-white/60">
-              Elige una casilla resaltada en el mapa para marcar el
-              destino de este turno.
+              Elige cualquier casilla transitable. El azul muestra el
+              alcance de este turno; después verás la ruta dorada completa
+              y cuánto falta para llegar.
             </p>
 
             <button
@@ -906,6 +1168,11 @@ export default function Mapa() {
                 ).map((edificioId) => {
                   const definicion =
                     EDIFICIOS[edificioId]
+                  const yaConstruido =
+                    asentamientoSeleccionado
+                      .edificios.includes(
+                        edificioId,
+                      )
                   const comprobacion =
                     comprobarConstruccion(
                       asentamientoSeleccionado,
@@ -958,7 +1225,9 @@ export default function Mapa() {
                         </span>
                       </span>
                       <span className="mt-0.5 text-xs text-white/45">
-                        {coste}
+                        {yaConstruido
+                          ? 'Construido'
+                          : coste}
                       </span>
                     </button>
                   )
@@ -970,8 +1239,8 @@ export default function Mapa() {
               huestes={
                 huestesPropiasEnCasillaSeleccionada
               }
-              ordenesMovimiento={
-                ordenesMovimiento
+              destinosMarcha={
+                destinosMovimientoEfectivos
               }
               huestesFueraDeSuministro={
                 huestesFueraDeSuministro
@@ -1049,8 +1318,8 @@ export default function Mapa() {
                 huestes={
                   huestesPropiasEnCasillaSeleccionada
                 }
-                ordenesMovimiento={
-                  ordenesMovimiento
+                destinosMarcha={
+                  destinosMovimientoEfectivos
                 }
                 huestesFueraDeSuministro={
                   huestesFueraDeSuministro

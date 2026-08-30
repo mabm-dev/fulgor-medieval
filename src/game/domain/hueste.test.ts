@@ -62,6 +62,39 @@ describe('hueste', () => {
     ).not.toContain('heroeId')
   })
 
+  it('guarda un destino de marcha inmutable', () => {
+    const hueste = crearHueste(
+      crearOpciones({
+        destinoMarcha: { q: 9, r: 4 },
+      }),
+    )
+
+    expect(hueste.destinoMarcha).toEqual({
+      q: 9,
+      r: 4,
+    })
+    expect(
+      Object.isFrozen(
+        hueste.destinoMarcha,
+      ),
+    ).toBe(true)
+  })
+
+  it('rechaza un destino de marcha decimal', () => {
+    expect(() =>
+      crearHueste(
+        crearOpciones({
+          destinoMarcha: {
+            q: 1.5,
+            r: 0,
+          },
+        }),
+      ),
+    ).toThrow(
+      'La posición debe contener coordenadas enteras',
+    )
+  })
+
   it('normaliza sus textos', () => {
     const hueste = crearHueste(
       crearOpciones({

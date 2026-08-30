@@ -36,6 +36,9 @@ const OPACIDAD_EXPLORADA = 0.4
 const COLOR_ALCANCE_MOVIMIENTO = '#5fb3d9'
 const COLOR_HUESTE = '#5fb3d9'
 const COLOR_HUESTE_SELECCIONADA = '#8fd4f0'
+const COLOR_HUESTE_RIVAL = '#c65b4a'
+const COLOR_ASENTAMIENTO_RIVAL = '#9f3f35'
+const COLOR_RUTA_MOVIMIENTO = '#f1c66d'
 const COLOR_FUERA_DE_SUMINISTRO = '#e0a458'
 
 interface HexMapProps {
@@ -57,6 +60,11 @@ interface HexMapProps {
   readonly casillasAlcanceMovimiento?: readonly string[]
   /** IDs de hueste fuera de la red de suministro (`systems/supply.ts`). */
   readonly huestesFueraDeSuministro?: readonly string[]
+  readonly reinoJugadorId?: string
+  /** Ruta estratégica completa, con origen y destino incluidos. */
+  readonly rutaMovimiento?: readonly CoordenadaHex[]
+  /** Posiciones previstas al terminar cada turno de marcha. */
+  readonly hitosTurnoMovimiento?: readonly CoordenadaHex[]
 }
 
 interface HexagonoVisual {
@@ -126,6 +134,9 @@ export default function HexMap({
   huesteSeleccionadaId = null,
   casillasAlcanceMovimiento = [],
   huestesFueraDeSuministro = [],
+  reinoJugadorId,
+  rutaMovimiento = [],
+  hitosTurnoMovimiento = [],
 }: HexMapProps) {
   const clavesTrabajadas = useMemo(
     () =>
@@ -345,6 +356,72 @@ export default function HexMap({
         </g>
       )}
 
+      {rutaMovimiento.length > 1 && (
+        <g
+          aria-hidden="true"
+          pointerEvents="none"
+          data-ruta-movimiento="true"
+        >
+          <polyline
+            points={rutaMovimiento
+              .map((coordenada) => {
+                const centro = centroHex(
+                  coordenada,
+                  radio,
+                )
+                return `${centro.x},${centro.y}`
+              })
+              .join(' ')}
+            fill="none"
+            stroke={COLOR_RUTA_MOVIMIENTO}
+            strokeWidth={radio * 0.1}
+            strokeDasharray="8 5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+            style={{
+              filter:
+                'drop-shadow(0 0 4px rgba(241,198,109,0.75))',
+            }}
+          />
+          {hitosTurnoMovimiento.map(
+            (coordenada, indice) => {
+              const centro = centroHex(
+                coordenada,
+                radio,
+              )
+
+              return (
+                <g
+                  key={`hito-ruta-${indice + 1}`}
+                  data-turno-ruta={indice + 1}
+                >
+                  <circle
+                    cx={centro.x}
+                    cy={centro.y}
+                    r={radio * 0.22}
+                    fill="#17120b"
+                    stroke={COLOR_RUTA_MOVIMIENTO}
+                    strokeWidth={radio * 0.06}
+                  />
+                  <text
+                    x={centro.x}
+                    y={centro.y}
+                    dy="0.34em"
+                    textAnchor="middle"
+                    fontSize={radio * 0.28}
+                    fontWeight="700"
+                    fill={COLOR_RUTA_MOVIMIENTO}
+                  >
+                    {indice + 1}
+                  </text>
+                </g>
+              )
+            },
+          )}
+        </g>
+      )}
+
       {clavesTrabajadas.size > 0 && (
         <g
           aria-hidden="true"
@@ -391,15 +468,32 @@ export default function HexMap({
               asentamiento.posicion,
               radio,
             )
+            const esRival =
+              reinoJugadorId !== undefined &&
+              asentamiento.reinoId !==
+                reinoJugadorId
 
             return (
-              <g key={asentamiento.id}>
+              <g
+                key={asentamiento.id}
+                data-bando-mapa={
+                  esRival ? 'rival' : 'propio'
+                }
+              >
                 <circle
                   cx={centro.x}
                   cy={centro.y}
                   r={radio * 0.4}
-                  fill="#ffe6a3"
-                  stroke="#241907"
+                  fill={
+                    esRival
+                      ? COLOR_ASENTAMIENTO_RIVAL
+                      : '#ffe6a3'
+                  }
+                  stroke={
+                    esRival
+                      ? '#f1a28f'
+                      : '#241907'
+                  }
                   strokeWidth={radio * 0.05}
                 />
                 <text
@@ -434,11 +528,18 @@ export default function HexMap({
               idsFueraDeSuministro.has(
                 hueste.id,
               )
+            const esRival =
+              reinoJugadorId !== undefined &&
+              hueste.reinoId !==
+                reinoJugadorId
             const mitad = radio * 0.28
 
             return (
               <polygon
                 key={hueste.id}
+                data-bando-mapa={
+                  esRival ? 'rival' : 'propio'
+                }
                 points={[
                   `${centro.x},${centro.y - mitad}`,
                   `${centro.x + mitad},${centro.y}`,
@@ -446,9 +547,11 @@ export default function HexMap({
                   `${centro.x - mitad},${centro.y}`,
                 ].join(' ')}
                 fill={
-                  seleccionada
-                    ? COLOR_HUESTE_SELECCIONADA
-                    : COLOR_HUESTE
+                  esRival
+                    ? COLOR_HUESTE_RIVAL
+                    : seleccionada
+                      ? COLOR_HUESTE_SELECCIONADA
+                      : COLOR_HUESTE
                 }
                 stroke={
                   fueraDeSuministro
@@ -469,9 +572,11 @@ export default function HexMap({
                 }}
               >
                 <title>
-                  {fueraDeSuministro
-                    ? `${hueste.nombre} (fuera de suministro)`
-                    : hueste.nombre}
+                  {esRival
+                    ? `Rival: ${hueste.nombre}`
+                    : fueraDeSuministro
+                      ? `${hueste.nombre} (fuera de suministro)`
+                      : hueste.nombre}
                 </title>
               </polygon>
             )

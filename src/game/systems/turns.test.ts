@@ -77,6 +77,7 @@ function crearHuesteDePrueba(
   cambios: {
     id?: string
     reinoId?: string
+    destinoMarcha?: CoordenadaHex
   } = {},
 ) {
   return {
@@ -734,6 +735,124 @@ describe('resolución del turno', () => {
       resultado.estado.huestes[0]
         .posicion,
     ).toEqual({ q: 2, r: 0 })
+  })
+
+  it('recuerda el destino y continúa la marcha en turnos posteriores', () => {
+    const casillas =
+      construirCasillasEnRadio(
+        { q: 0, r: 0 },
+        10,
+      )
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+      huestes: [
+        crearHuesteDePrueba({
+          q: 0,
+          r: 0,
+        }),
+      ],
+    })
+
+    const primero = finalizarTurno(
+      estado,
+      {
+        casillas,
+        ordenes: [
+          {
+            tipo: 'Movimiento',
+            huesteId: 'hueste-1',
+            destino: { q: 7, r: 0 },
+          },
+        ],
+      },
+    )
+
+    expect(
+      primero.estado.huestes[0]
+        .posicion,
+    ).toEqual({ q: 4, r: 0 })
+    expect(
+      primero.estado.huestes[0]
+        .destinoMarcha,
+    ).toEqual({ q: 7, r: 0 })
+
+    const segundo = finalizarTurno(
+      primero.estado,
+      { casillas },
+    )
+
+    expect(
+      segundo.estado.huestes[0]
+        .posicion,
+    ).toEqual({ q: 6, r: 0 })
+    expect(
+      segundo.estado.huestes[0]
+        .destinoMarcha,
+    ).toEqual({ q: 7, r: 0 })
+
+    const tercero = finalizarTurno(
+      segundo.estado,
+      { casillas },
+    )
+
+    expect(
+      tercero.estado.huestes[0]
+        .posicion,
+    ).toEqual({ q: 7, r: 0 })
+    expect(
+      tercero.estado.huestes[0]
+        .destinoMarcha,
+    ).toBeUndefined()
+  })
+
+  it('cancela una marcha persistente sin mover la hueste', () => {
+    const estado = crearEstadoDePrueba({
+      reinoJugador: 'castilla',
+      asentamientos: [
+        crearAsentamientoDePrueba(100),
+      ],
+      huestes: [
+        crearHuesteDePrueba(
+          { q: 0, r: 0 },
+          {
+            destinoMarcha: {
+              q: 4,
+              r: 0,
+            },
+          },
+        ),
+      ],
+    })
+
+    const resultado = finalizarTurno(
+      estado,
+      {
+        casillas:
+          construirCasillasEnRadio(
+            { q: 0, r: 0 },
+            6,
+          ),
+        ordenes: [
+          {
+            tipo:
+              'CancelarMovimiento',
+            huesteId: 'hueste-1',
+          },
+        ],
+      },
+    )
+
+    expect(
+      resultado.estado.huestes[0]
+        .posicion,
+    ).toEqual({ q: 0, r: 0 })
+    expect(
+      resultado.estado.huestes[0]
+        .destinoMarcha,
+    ).toBeUndefined()
   })
 
   it('una hueste sin orden se queda donde estaba', () => {

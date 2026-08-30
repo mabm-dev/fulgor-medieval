@@ -36,8 +36,8 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 - Frontera interior que se ensancha con la población, repartida entre
   asentamientos vecinos.
 - Niebla de guerra con casillas visibles, exploradas y ocultas.
-- Huestes con rutas de marcha, coste por terreno y estado de suministro.
-- Una segunda facción con capital propia sobre el mismo mapa.
+- Huestes con marchas persistentes, ruta por turnos, coste y suministro.
+- Una segunda facción señalada como objetivo para acceder al combate.
 - Encuentros al intentar entrar en la casilla de una hueste rival.
 - Campo táctico determinista de 13 × 9 con tres terrenos y despliegue previo.
 - Cuatro formaciones por bando con iniciativa, alcance, bajas, moral y fatiga.
@@ -46,7 +46,7 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 - Reconciliación de bajas, retiradas y desgaste con el mapa estratégico.
 - Guardado automático y recuperación validada de la sesión.
 - HUD económico adaptable con registro de eventos del turno.
-- Suite automatizada de 509 pruebas, lint, TypeScript, build y CI.
+- Suite automatizada de 521 pruebas, lint, TypeScript, build y CI.
 
 ## Visión jugable
 

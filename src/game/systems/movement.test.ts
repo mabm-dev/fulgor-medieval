@@ -16,6 +16,7 @@ import {
   calcularRuta,
   COSTE_TERRENO_DESCONOCIDO,
   PUNTOS_MOVIMIENTO_MAXIMOS,
+  proyectarMarcha,
   resolverMovimiento,
 } from './movement'
 
@@ -424,6 +425,89 @@ describe('resolverMovimiento', () => {
       destinoAlcanzado: false,
       bloqueadaEn: { q: 1, r: 0 },
     })
+  })
+})
+
+describe('proyectarMarcha', () => {
+  it('marca la posición final de cada turno hasta el destino', () => {
+    const casillas = construirCasillas([
+      [
+        'llanura',
+        'llanura',
+        'llanura',
+        'llanura',
+        'llanura',
+        'llanura',
+        'llanura',
+        'llanura',
+      ],
+    ])
+
+    const proyeccion = proyectarMarcha(
+      { q: 0, r: 0 },
+      { q: 7, r: 0 },
+      casillas,
+      todoExplorado(casillas),
+      3,
+    )
+
+    expect(proyeccion?.turnos).toBe(3)
+    expect(
+      proyeccion?.finalesTurno,
+    ).toEqual([
+      { q: 3, r: 0 },
+      { q: 6, r: 0 },
+      { q: 7, r: 0 },
+    ])
+    expect(proyeccion?.ruta).toHaveLength(8)
+  })
+
+  it('recalcula el presupuesto de cada turno a lo largo de la ruta', () => {
+    const casillas = construirCasillas([
+      [
+        'llanura',
+        'llanura',
+        'llanura',
+        'llanura',
+        'llanura',
+        'llanura',
+        'llanura',
+        'llanura',
+      ],
+    ])
+
+    const proyeccion = proyectarMarcha(
+      { q: 0, r: 0 },
+      { q: 7, r: 0 },
+      casillas,
+      todoExplorado(casillas),
+      (posicion) =>
+        posicion.q <= 2 ? 4 : 2,
+    )
+
+    expect(proyeccion?.turnos).toBe(3)
+    expect(
+      proyeccion?.finalesTurno,
+    ).toEqual([
+      { q: 4, r: 0 },
+      { q: 6, r: 0 },
+      { q: 7, r: 0 },
+    ])
+  })
+
+  it('devuelve null si no existe una ruta transitable', () => {
+    const casillas = construirCasillas([
+      ['llanura', 'agua', 'llanura'],
+    ])
+
+    expect(
+      proyectarMarcha(
+        { q: 0, r: 0 },
+        { q: 2, r: 0 },
+        casillas,
+        todoExplorado(casillas),
+      ),
+    ).toBeNull()
   })
 })
 

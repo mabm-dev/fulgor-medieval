@@ -389,3 +389,107 @@ export function resolverMovimiento(
     estaBloqueada,
   )
 }
+
+export interface ProyeccionMarcha {
+  readonly ruta: readonly CoordenadaHex[]
+  readonly finalesTurno:
+    readonly CoordenadaHex[]
+  readonly turnos: number
+}
+
+export type PresupuestoMarcha =
+  | number
+  | ((
+      posicion: CoordenadaHex,
+    ) => number)
+
+/**
+ * Previsión para la interfaz: dibuja la ruta conocida y marca dónde
+ * terminaría la hueste cada turno si mantiene el presupuesto actual.
+ * La cifra es estimada porque el terreno oculto se recalcula al explorarlo.
+ */
+export function proyectarMarcha(
+  origen: CoordenadaHex,
+  destino: CoordenadaHex,
+  casillas: Readonly<Record<string, CasillaMapa>>,
+  exploradas: ReadonlySet<string>,
+  puntosPorTurno: PresupuestoMarcha =
+    PUNTOS_MOVIMIENTO_MAXIMOS,
+): ProyeccionMarcha | null {
+  const ruta = calcularRuta(
+    origen,
+    destino,
+    casillas,
+    exploradas,
+  )
+
+  if (ruta === null) {
+    return null
+  }
+
+  if (
+    claveHex(origen) === claveHex(destino)
+  ) {
+    return Object.freeze({
+      ruta: Object.freeze([...ruta]),
+      finalesTurno: Object.freeze([]),
+      turnos: 0,
+    })
+  }
+
+  const finalesTurno: CoordenadaHex[] = []
+  let posicion = origen
+
+  for (
+    let turno = 0;
+    turno < Object.keys(casillas).length;
+    turno += 1
+  ) {
+    const tramo = calcularRuta(
+      posicion,
+      destino,
+      casillas,
+      exploradas,
+    )
+
+    if (tramo === null) {
+      return null
+    }
+
+    const puntosDisponibles =
+      typeof puntosPorTurno === 'number'
+        ? puntosPorTurno
+        : puntosPorTurno(posicion)
+    const avance = avanzarPorRuta(
+      tramo,
+      casillas,
+      exploradas,
+      puntosDisponibles,
+    )
+
+    if (
+      claveHex(avance.posicion) ===
+      claveHex(posicion)
+    ) {
+      return null
+    }
+
+    finalesTurno.push(
+      avance.posicion,
+    )
+    posicion = avance.posicion
+
+    if (avance.destinoAlcanzado) {
+      return Object.freeze({
+        ruta: Object.freeze([...ruta]),
+        finalesTurno:
+          Object.freeze([
+            ...finalesTurno,
+          ]),
+        turnos: finalesTurno.length,
+      })
+    }
+  }
+
+  return null
+}

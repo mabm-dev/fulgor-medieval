@@ -357,4 +357,63 @@ describe('HexMap', () => {
       'fill-opacity="0.18"',
     )
   })
+
+  it('dibuja la ruta y numera el final previsto de cada turno', () => {
+    const html = renderToStaticMarkup(
+      <HexMap
+        mapa={crearMapaPrueba()}
+        radio={28}
+        rutaMovimiento={[
+          { q: 0, r: 0 },
+          { q: 1, r: 0 },
+          { q: 2, r: 0 },
+        ]}
+        hitosTurnoMovimiento={[
+          { q: 1, r: 0 },
+          { q: 2, r: 0 },
+        ]}
+      />,
+    )
+
+    expect(html).toContain(
+      'data-ruta-movimiento="true"',
+    )
+    expect(html).toContain(
+      'data-turno-ruta="1"',
+    )
+    expect(html).toContain(
+      'data-turno-ruta="2"',
+    )
+  })
+
+  it('diferencia en rojo una hueste rival conocida', () => {
+    const mapa = crearMapaPrueba()
+    const rival = crearHueste({
+      id: 'hueste-rival',
+      nombre: 'Hueste rival',
+      reinoId: 'leon',
+      posicion:
+        mapa.casillas[1].coordenada,
+    })
+
+    const html = renderToStaticMarkup(
+      <HexMap
+        mapa={mapa}
+        radio={28}
+        huestes={[rival]}
+        reinoJugadorId="castilla"
+      />,
+    )
+
+    expect(html).toContain(
+      'data-bando-mapa="rival"',
+    )
+    expect(html).toContain(
+      'fill="#c65b4a"',
+    )
+    expect(html).toContain(
+      'Rival: Hueste rival',
+    )
+  })
+
 })

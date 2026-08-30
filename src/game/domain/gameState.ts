@@ -415,6 +415,27 @@ function leerRegistroAsentamientos(
   )
 }
 
+function leerCoordenadaOpcional(
+  datos: unknown,
+): OpcionesHueste['destinoMarcha'] {
+  if (datos === undefined) {
+    return undefined
+  }
+
+  if (
+    !esRegistro(datos) ||
+    typeof datos.q !== 'number' ||
+    typeof datos.r !== 'number'
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return {
+    q: datos.q,
+    r: datos.r,
+  }
+}
+
 function leerHueste(
   datos: unknown,
 ): OpcionesHueste {
@@ -449,6 +470,10 @@ function leerHueste(
       q,
       r,
     },
+    destinoMarcha:
+      leerCoordenadaOpcional(
+        datos.destinoMarcha,
+      ),
     heroeId: leerTextoOpcional(
       datos.heroeId,
     ),

@@ -20,6 +20,7 @@ export interface Hueste {
   readonly nombre: string
   readonly reinoId: string
   readonly posicion: CoordenadaHex
+  readonly destinoMarcha?: CoordenadaHex
   readonly heroeId?: string
   readonly formacionIds: readonly string[]
 }
@@ -29,6 +30,7 @@ export interface OpcionesHueste {
   readonly nombre: string
   readonly reinoId: string
   readonly posicion: CoordenadaHex
+  readonly destinoMarcha?: CoordenadaHex
   readonly heroeId?: string
   readonly formacionIds?: readonly string[]
 }
@@ -157,11 +159,22 @@ export function crearHueste(
   const heroeId = validarHeroeId(
     opciones.heroeId,
   )
+  const destinoMarcha =
+    opciones.destinoMarcha === undefined
+      ? undefined
+      : validarCoordenada(
+          opciones.destinoMarcha,
+        )
 
-  const hueste: Hueste =
-    heroeId === undefined
-      ? base
-      : { ...base, heroeId }
+  const hueste: Hueste = {
+    ...base,
+    ...(heroeId === undefined
+      ? {}
+      : { heroeId }),
+    ...(destinoMarcha === undefined
+      ? {}
+      : { destinoMarcha }),
+  }
 
   return Object.freeze(hueste)
 }

@@ -5,6 +5,18 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
 
 ## [Sin publicar]
 
+### Añadido
+
+- Marchas persistentes entre turnos con ruta estratégica, hitos numerados y
+  estimación de llegada que tiene en cuenta el suministro.
+- Objetivo rival conocido y diferenciado en rojo para facilitar el acceso al
+  combate táctico de la pre-alpha.
+
+### Corregido
+
+- Los edificios ya terminados no pueden volver a construirse ni acumular sus
+  efectos; los duplicados de guardados anteriores se normalizan al cargarlos.
+
 ## [0.5.0] - 2026-08-30
 
 ### Añadido

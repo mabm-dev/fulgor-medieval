@@ -341,6 +341,10 @@ describe('estado de partida', () => {
           nombre: 'Hueste exploradora',
           reinoId: 'castilla',
           posicion: { q: 0, r: 0 },
+          destinoMarcha: {
+            q: 8,
+            r: 3,
+          },
           heroeId: 'heroe-1',
           formacionIds: [
             'hueste-1-lanceros',
@@ -382,6 +386,10 @@ describe('estado de partida', () => {
         ) as unknown,
       )
 
+    expect(
+      restaurado.huestes[0]
+        .destinoMarcha,
+    ).toEqual({ q: 8, r: 3 })
     expect(
       restaurado.huestes[0].heroeId,
     ).toBe('heroe-1')
