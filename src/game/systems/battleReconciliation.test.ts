@@ -32,11 +32,24 @@ function crearPartida() {
     huestes: [
       {
         id: 'hueste-a', nombre: 'Atacante', reinoId: 'castilla',
-        posicion: { q: 0, r: 0 }, formacionIds: ['a'],
+        posicion: { q: 0, r: 0 }, heroeId: 'heroe-a',
+        formacionIds: ['a'],
       },
       {
         id: 'hueste-d', nombre: 'Defensor', reinoId: 'leon',
-        posicion: { q: 1, r: 0 }, formacionIds: ['d'],
+        posicion: { q: 1, r: 0 }, heroeId: 'heroe-d',
+        formacionIds: ['d'],
+      },
+    ],
+    heroes: [
+      {
+        id: 'heroe-a', nombre: 'Señor de Castilla',
+        reinoId: 'castilla', arquetipo: 'caballero_frontera',
+        esPrincipal: true,
+      },
+      {
+        id: 'heroe-d', nombre: 'Capitán leonés',
+        reinoId: 'leon', arquetipo: 'infanzon',
       },
     ],
     formaciones: [
@@ -130,7 +143,7 @@ describe('reconciliación estratégica de batalla', () => {
     ).toBe(50)
   })
 
-  it('elimina una formación destruida y limpia su referencia en la hueste', () => {
+  it('disuelve la hueste destruida y da muerte a su capitán', () => {
     const partida = crearPartida()
     const batalla = crearCombate(partida)
     const resultado: ResultadoBatallaAutomatica = Object.freeze({
@@ -155,8 +168,22 @@ describe('reconciliación estratégica de batalla', () => {
     expect(
       reconciliado.estado.huestes.find(
         (hueste) => hueste.id === 'hueste-d',
-      )?.formacionIds,
-    ).toEqual([])
+      ),
+    ).toBeUndefined()
+    expect(
+      reconciliado.estado.heroes.find(
+        (heroe) => heroe.id === 'heroe-d',
+      ),
+    ).toMatchObject({
+      estado: 'muerto',
+      capturadoPorReinoId: undefined,
+    })
+    expect(reconciliado.evento.consecuenciasHeroes).toEqual([
+      {
+        heroeId: 'heroe-d',
+        desenlace: 'muerto',
+      },
+    ])
     expect(
       reconciliado.evento.consecuencias.find(
         (consecuencia) => consecuencia.formacionId === 'd',
@@ -167,6 +194,48 @@ describe('reconciliación estratégica de batalla', () => {
       retirada: true,
       destruida: true,
     })
+  })
+
+  it('deja herido y cautivo al héroe principal derrotado', () => {
+    const partida = crearPartida()
+    const batalla = crearCombate(partida)
+    const resultado: ResultadoBatallaAutomatica = Object.freeze({
+      estado: Object.freeze({
+        ...batalla,
+        fase: 'resuelta',
+        formacionActivaId: undefined,
+        retiradas: Object.freeze(['a']),
+      }),
+      formaciones: removerFormacion(partida.formaciones, 'a'),
+      activaciones: Object.freeze([]),
+      motivo: 'resuelta',
+    })
+    const reconciliado = reconciliarResultadoBatalla(
+      partida,
+      resultado,
+    )
+
+    expect(
+      reconciliado.estado.huestes.some(
+        (hueste) => hueste.id === 'hueste-a',
+      ),
+    ).toBe(false)
+    expect(
+      reconciliado.estado.heroes.find(
+        (heroe) => heroe.id === 'heroe-a',
+      ),
+    ).toMatchObject({
+      esPrincipal: true,
+      estado: 'herido',
+      capturadoPorReinoId: 'leon',
+    })
+    expect(reconciliado.evento.consecuenciasHeroes).toEqual([
+      {
+        heroeId: 'heroe-a',
+        desenlace: 'herido_capturado',
+        capturadoPorReinoId: 'leon',
+      },
+    ])
   })
 
   it('rechaza aplicar un resultado que todavía alcanzó solo el límite', () => {

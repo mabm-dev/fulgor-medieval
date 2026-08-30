@@ -29,6 +29,7 @@ import {
 } from './formationRegistry'
 import {
   esArquetipoHeroe,
+  esEstadoHeroe,
   type OpcionesHeroe,
 } from './hero'
 import {
@@ -597,12 +598,16 @@ function leerHeroe(
   const nombre = datos.nombre
   const reinoId = datos.reinoId
   const arquetipo = datos.arquetipo
+  const esPrincipal = datos.esPrincipal ?? false
+  const estado = datos.estado ?? 'activo'
 
   if (
     typeof id !== 'string' ||
     typeof nombre !== 'string' ||
     typeof reinoId !== 'string' ||
-    !esArquetipoHeroe(arquetipo)
+    !esArquetipoHeroe(arquetipo) ||
+    typeof esPrincipal !== 'boolean' ||
+    !esEstadoHeroe(estado)
   ) {
     throw new Error(ERROR_ESTADO_INVALIDO)
   }
@@ -612,6 +617,12 @@ function leerHeroe(
     nombre,
     reinoId,
     arquetipo,
+    esPrincipal,
+    estado,
+    capturadoPorReinoId:
+      leerTextoOpcional(
+        datos.capturadoPorReinoId,
+      ),
   }
 }
 
@@ -682,6 +693,8 @@ function validarReferenciasMilitares(
     if (
       heroe === undefined ||
       heroe.reinoId !== hueste.reinoId ||
+      heroe.estado !== 'activo' ||
+      heroe.capturadoPorReinoId !== undefined ||
       heroesAsignados.has(hueste.heroeId)
     ) {
       throw new Error(ERROR_ESTADO_INVALIDO)

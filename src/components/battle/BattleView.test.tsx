@@ -18,6 +18,7 @@ import {
   resolverSesionBatallaAutomatica,
   type SesionBatalla,
 } from '../../game/systems/battleSession'
+import Battlefield from './Battlefield'
 import BattleView from './BattleView'
 
 function crearAlmacenamiento(): AlmacenamientoPartida {
@@ -102,6 +103,33 @@ describe('BattleView', () => {
     expect(html).toContain('Orden del héroe · 1')
     expect(html).toContain('Moral 100 · Fatiga 0')
     expect(html).not.toContain('Formar líneas y combatir')
+  })
+
+  it('dibuja la ruta táctica con sus pasos numerados', () => {
+    const sesion = prepararSesionBatallaParaCombate(
+      crearSesionPrueba(),
+    )
+    const origen = sesion.estado.formaciones[0]?.posicion
+
+    if (origen === undefined) {
+      throw new Error('Falta la posición inicial')
+    }
+
+    const html = renderToStaticMarkup(
+      <Battlefield
+        sesion={sesion}
+        rutaMovimiento={[
+          origen,
+          { q: origen.q + 1, r: origen.r },
+          { q: origen.q + 2, r: origen.r },
+        ]}
+      />,
+    )
+
+    expect(html).toContain('data-ruta-movimiento')
+    expect(html).toContain('<polyline')
+    expect(html).toContain('>1</text>')
+    expect(html).toContain('>2</text>')
   })
 
   it('ofrece aplicar el resultado al terminar la batalla', () => {

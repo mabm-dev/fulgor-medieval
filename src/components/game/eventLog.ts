@@ -98,7 +98,24 @@ export function formatearEvento(
         ? 'empate'
         : `victoria del ${evento.ganador}`
 
-      return `Batalla resuelta: ${desenlace}, ${bajas} bajas`
+      const heroes = evento.consecuenciasHeroes.map(
+        (consecuencia) => {
+          if (consecuencia.desenlace === 'muerto') {
+            return consecuencia.heroeId + ' murió'
+          }
+          if (consecuencia.desenlace === 'herido_capturado') {
+            return consecuencia.heroeId + ' quedó herido y cautivo de ' +
+              consecuencia.capturadoPorReinoId
+          }
+          return consecuencia.heroeId + ' quedó herido'
+        },
+      )
+      const detalleHeroes = heroes.length === 0
+        ? ''
+        : '; ' + heroes.join(', ')
+
+      return 'Batalla resuelta: ' + desenlace + ', ' +
+        bajas + ' bajas' + detalleHeroes
     }
     case 'turno_finalizado':
       return `Turno ${evento.turno} resuelto`

@@ -33,6 +33,9 @@ describe('héroe', () => {
       nombre: 'Rodrigo de Frontera',
       reinoId: 'castilla',
       arquetipo: 'caballero_frontera',
+      esPrincipal: false,
+      estado: 'activo',
+      capturadoPorReinoId: undefined,
     })
     expect(Object.isFrozen(heroe)).toBe(
       true,
@@ -48,6 +51,9 @@ describe('héroe', () => {
       Object.keys(heroe).sort(),
     ).toEqual([
       'arquetipo',
+      'capturadoPorReinoId',
+      'esPrincipal',
+      'estado',
       'id',
       'nombre',
       'reinoId',
@@ -68,6 +74,32 @@ describe('héroe', () => {
       'Rodrigo de Frontera',
     )
     expect(heroe.reinoId).toBe('castilla')
+  })
+
+  it('representa a un protagonista herido y cautivo', () => {
+    const heroe = crearHeroe(
+      crearOpciones({
+        esPrincipal: true,
+        estado: 'herido',
+        capturadoPorReinoId: 'leon',
+      }),
+    )
+
+    expect(heroe).toMatchObject({
+      esPrincipal: true,
+      estado: 'herido',
+      capturadoPorReinoId: 'leon',
+    })
+  })
+
+  it('rechaza cautiverios incompatibles con el estado', () => {
+    expect(() =>
+      crearHeroe(
+        crearOpciones({
+          capturadoPorReinoId: 'leon',
+        }),
+      ),
+    ).toThrow('cautiverio')
   })
 
   it('rechaza un identificador vacío', () => {

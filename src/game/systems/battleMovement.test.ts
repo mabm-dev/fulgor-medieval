@@ -13,6 +13,7 @@ import {
 } from './battle'
 import {
   calcularDestinosMovimientoTactico,
+  calcularIndicadorMovimientoTactico,
   calcularRutaTactica,
   esperar,
   moverFormacionTactica,
@@ -144,6 +145,39 @@ describe('rutas tácticas', () => {
         { q: 2, r: 0 },
         campo,
         new Set([claveHex({ q: 1, r: 0 })]),
+      ),
+    ).toBeNull()
+  })
+})
+
+describe('indicador de movimiento táctico', () => {
+  it('expone la ruta, su coste real y el movimiento disponible', () => {
+    const estado = crearEstadoDesplegado()
+    const indicador = calcularIndicadorMovimientoTactico(
+      estado,
+      crearRegistro({ a: 8, d: 5 }, { a: 3 }),
+      { q: 2, r: 0 },
+    )
+
+    expect(indicador).toMatchObject({
+      coste: 2,
+      movimientoDisponible: 3,
+    })
+    expect(indicador?.ruta.map(claveHex)).toEqual([
+      claveHex({ q: 0, r: 0 }),
+      claveHex({ q: 1, r: 0 }),
+      claveHex({ q: 2, r: 0 }),
+    ])
+  })
+
+  it('no señala destinos fuera del movimiento disponible', () => {
+    const estado = crearEstadoDesplegado()
+
+    expect(
+      calcularIndicadorMovimientoTactico(
+        estado,
+        crearRegistro({ a: 8, d: 5 }, { a: 1 }),
+        { q: 3, r: 0 },
       ),
     ).toBeNull()
   })

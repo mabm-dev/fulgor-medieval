@@ -133,6 +133,7 @@ export function crearSesionPartida(
     nombre: 'Capitán de la hueste',
     reinoId: opciones.reinoJugador,
     arquetipo: 'caballero_frontera',
+    esPrincipal: true,
   }
   const heroeRival: OpcionesHeroe = {
     id: 'heroe-rival-1',

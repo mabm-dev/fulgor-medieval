@@ -8,6 +8,15 @@ export const ARQUETIPOS_HEROE = [
 export type ArquetipoHeroe =
   (typeof ARQUETIPOS_HEROE)[number]
 
+export const ESTADOS_HEROE = [
+  'activo',
+  'herido',
+  'muerto',
+] as const
+
+export type EstadoHeroe =
+  (typeof ESTADOS_HEROE)[number]
+
 export const TIPOS_ORDEN_HEROE = [
   'carga_frontal',
   'grito_guerra',
@@ -40,6 +49,9 @@ export interface Heroe {
   readonly nombre: string
   readonly reinoId: string
   readonly arquetipo: ArquetipoHeroe
+  readonly esPrincipal: boolean
+  readonly estado: EstadoHeroe
+  readonly capturadoPorReinoId?: string
 }
 
 export interface OpcionesHeroe {
@@ -47,6 +59,9 @@ export interface OpcionesHeroe {
   readonly nombre: string
   readonly reinoId: string
   readonly arquetipo: ArquetipoHeroe
+  readonly esPrincipal?: boolean
+  readonly estado?: EstadoHeroe
+  readonly capturadoPorReinoId?: string
 }
 
 const ORDENES_POR_ARQUETIPO: Readonly<
@@ -111,6 +126,29 @@ export function esArquetipoHeroe(
   )
 }
 
+export function esEstadoHeroe(
+  valor: unknown,
+): valor is EstadoHeroe {
+  return (
+    typeof valor === 'string' &&
+    ESTADOS_HEROE.some(
+      (estado) => estado === valor,
+    )
+  )
+}
+
+function validarEstado(
+  estado: EstadoHeroe,
+): EstadoHeroe {
+  if (!esEstadoHeroe(estado)) {
+    throw new Error(
+      'El estado del héroe no es válido',
+    )
+  }
+
+  return estado
+}
+
 function validarArquetipo(
   arquetipo: ArquetipoHeroe,
 ): ArquetipoHeroe {
@@ -127,6 +165,32 @@ function validarArquetipo(
 export function crearHeroe(
   opciones: OpcionesHeroe,
 ): Heroe {
+  const reinoId = normalizarTexto(
+    'El reino',
+    opciones.reinoId,
+  )
+  const estado = validarEstado(
+    opciones.estado ?? 'activo',
+  )
+  const capturadoPorReinoId =
+    opciones.capturadoPorReinoId === undefined
+      ? undefined
+      : normalizarTexto(
+          'El reino captor',
+          opciones.capturadoPorReinoId,
+        )
+
+  if (
+    capturadoPorReinoId !== undefined &&
+    (estado === 'activo' ||
+      estado === 'muerto' ||
+      capturadoPorReinoId === reinoId)
+  ) {
+    throw new Error(
+      'El cautiverio del héroe no es válido',
+    )
+  }
+
   const heroe: Heroe = {
     id: normalizarTexto(
       'El identificador',
@@ -136,13 +200,13 @@ export function crearHeroe(
       'El nombre',
       opciones.nombre,
     ),
-    reinoId: normalizarTexto(
-      'El reino',
-      opciones.reinoId,
-    ),
+    reinoId,
     arquetipo: validarArquetipo(
       opciones.arquetipo,
     ),
+    esPrincipal: opciones.esPrincipal ?? false,
+    estado,
+    capturadoPorReinoId,
   }
 
   return Object.freeze(heroe)

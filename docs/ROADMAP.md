@@ -43,6 +43,7 @@
 
 - Un reino controlado por IA.
 - Relaciones, pacto, comercio y guerra.
+- Rescate, intercambio o concesiones por héroes cautivos.
 - Objetivo de victoria y derrota.
 
 ## v0.7 — Tutorial

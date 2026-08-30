@@ -25,6 +25,7 @@ import {
 } from '../../game/systems/battleMorale'
 import {
   calcularDestinosMovimientoTactico,
+  calcularIndicadorMovimientoTactico,
 } from '../../game/systems/battleMovement'
 import {
   ejecutarOrdenSesion,
@@ -218,6 +219,10 @@ export default function BattleView({
   const [mensaje, setMensaje] = useState(
     'Elige cómo librar el encuentro.',
   )
+  const [
+    destinoPrevisualizado,
+    setDestinoPrevisualizado,
+  ] = useState<CoordenadaHex>()
   const activa = sesion.estado.formaciones.find(
     (tactica) =>
       tactica.formacionId ===
@@ -257,6 +262,16 @@ export default function BattleView({
     ),
     [destinosMovimiento],
   )
+  const indicadorMovimiento = useMemo(
+    () => destinoPrevisualizado === undefined
+      ? null
+      : calcularIndicadorMovimientoTactico(
+          sesion.estado,
+          sesion.formaciones,
+          destinoPrevisualizado,
+        ),
+    [destinoPrevisualizado, sesion],
+  )
   const victoria = sesion.estado.fase === 'resuelta'
     ? evaluarVictoria(
         sesion.estado,
@@ -270,6 +285,7 @@ export default function BattleView({
         sesion,
         orden,
       )
+      setDestinoPrevisualizado(undefined)
       onCambiarSesion(siguiente)
       setMensaje(describirOrden(orden))
     } catch (causa) {
@@ -412,8 +428,20 @@ export default function BattleView({
               sesion={sesion}
               destinosMovimiento={destinosMovimiento}
               objetivosAtaque={objetivosAtaque}
+              rutaMovimiento={indicadorMovimiento?.ruta}
+              onPrevisualizarCasilla={setDestinoPrevisualizado}
               onSeleccionarCasilla={manejarCasilla}
             />
+            {indicadorMovimiento !== null && (
+              <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 border border-oro/70 bg-[#120d05]/95 px-4 py-2 text-center shadow-[0_8px_24px_rgba(0,0,0,0.65)]">
+                <p className="font-cinzel text-[10px] tracking-[0.16em] text-oro-claro uppercase">
+                  Ruta marcada · coste {indicadorMovimiento.coste}/{indicadorMovimiento.movimientoDisponible}
+                </p>
+                <p className="mt-0.5 text-[10px] text-pergamino/55">
+                  {indicadorMovimiento.ruta.length - 1} pasos · haz clic para marchar
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="mt-3 grid gap-3 border-t border-oro/20 pt-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
@@ -426,9 +454,16 @@ export default function BattleView({
                   ? 'Las zonas azul y carmesí marcan las líneas iniciales.'
                   : sesion.estado.fase === 'resuelta'
                     ? `Victoria: ${victoria?.ganador ?? 'empate'}. La campaña espera el resultado.`
-                    : formacionActiva
-                      ? `${formacionActiva.nombre} tiene la iniciativa. ${mensaje}`
-                      : mensaje}
+                    : indicadorMovimiento !== null && formacionActiva
+                      ? formacionActiva.nombre + ': ruta de ' +
+                        (indicadorMovimiento.ruta.length - 1) +
+                        ' pasos, coste ' + indicadorMovimiento.coste +
+                        ' de ' + indicadorMovimiento.movimientoDisponible + '.'
+                      : formacionActiva
+                        ? formacionActiva.nombre +
+                          ' tiene la iniciativa. ' + mensaje +
+                          ' Pasa el cursor por una casilla azul para ver la ruta y su coste.'
+                        : mensaje}
               </p>
             </div>
 

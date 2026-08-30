@@ -127,8 +127,17 @@ describe('formatearEvento', () => {
             destruida: false,
           },
         ],
+        consecuenciasHeroes: [
+          {
+            heroeId: 'heroe-rival-1',
+            desenlace: 'muerto',
+          },
+        ],
       }),
-    ).toBe('Batalla resuelta: victoria del atacante, 12 bajas')
+    ).toBe(
+      'Batalla resuelta: victoria del atacante, 12 bajas; ' +
+      'heroe-rival-1 murió',
+    )
   })
 
   it('describe el cierre del turno', () => {

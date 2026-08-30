@@ -65,6 +65,15 @@ export interface ConsecuenciaFormacionBatalla {
   readonly destruida: boolean
 }
 
+export interface ConsecuenciaHeroeBatalla {
+  readonly heroeId: string
+  readonly desenlace:
+    | 'muerto'
+    | 'herido'
+    | 'herido_capturado'
+  readonly capturadoPorReinoId?: string
+}
+
 /** Único evento que traslada el resultado táctico al estado estratégico. */
 export interface EventoBatallaResuelta
   extends EventoBaseTurno {
@@ -78,6 +87,8 @@ export interface EventoBatallaResuelta
   readonly rondas: number
   readonly consecuencias:
     readonly ConsecuenciaFormacionBatalla[]
+  readonly consecuenciasHeroes:
+    readonly ConsecuenciaHeroeBatalla[]
 }
 
 /**

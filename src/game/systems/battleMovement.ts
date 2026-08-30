@@ -157,7 +157,7 @@ export function calcularRutaTactica(
   return ruta
 }
 
-function costeRutaTactica(
+export function costeRutaTactica(
   ruta: readonly CoordenadaHex[],
   campo: CampoBatalla,
 ): number {
@@ -177,6 +177,76 @@ function costeRutaTactica(
       ].costeMovimiento
     )
   }, 0)
+}
+
+export interface IndicadorMovimientoTactico {
+  readonly ruta: readonly CoordenadaHex[]
+  readonly coste: number
+  readonly movimientoDisponible: number
+}
+
+/**
+ * Devuelve la misma ruta y el mismo coste que validará el movimiento. Está
+ * pensada para que la interfaz no tenga que imitar las reglas del motor.
+ */
+export function calcularIndicadorMovimientoTactico(
+  estado: EstadoBatalla,
+  formaciones: RegistroFormaciones,
+  destino: CoordenadaHex,
+): IndicadorMovimientoTactico | null {
+  const formacionId = estado.formacionActivaId
+
+  if (estado.fase !== 'combate' || formacionId === undefined) {
+    return null
+  }
+
+  const tactica = estado.formaciones.find(
+    (candidata) => candidata.formacionId === formacionId,
+  )
+  const formacion = obtenerFormacion(formaciones, formacionId)
+
+  if (
+    tactica?.posicion === undefined ||
+    formacion === undefined ||
+    claveHex(tactica.posicion) === claveHex(destino)
+  ) {
+    return null
+  }
+
+  const ocupadas = new Set(
+    estado.formaciones
+      .filter(
+        (candidata) =>
+          candidata.formacionId !== formacionId &&
+          candidata.posicion !== undefined &&
+          !estado.retiradas.includes(candidata.formacionId),
+      )
+      .map((candidata) => claveHex(
+        candidata.posicion as CoordenadaHex,
+      )),
+  )
+  const ruta = calcularRutaTactica(
+    tactica.posicion,
+    destino,
+    estado.campo,
+    ocupadas,
+  )
+
+  if (ruta === null) {
+    return null
+  }
+
+  const coste = costeRutaTactica(ruta, estado.campo)
+
+  if (coste > formacion.movimiento) {
+    return null
+  }
+
+  return Object.freeze({
+    ruta: Object.freeze([...ruta]),
+    coste,
+    movimientoDisponible: formacion.movimiento,
+  })
 }
 
 function obtenerFormacionTactica(

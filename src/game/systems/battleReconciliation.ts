@@ -1,5 +1,6 @@
 import type {
   ConsecuenciaFormacionBatalla,
+  ConsecuenciaHeroeBatalla,
   EventoBatallaResuelta,
 } from '../domain/events'
 import type {
@@ -11,7 +12,12 @@ import {
   type RegistroFormaciones,
 } from '../domain/formationRegistry'
 import {
+  crearRegistroHeroes,
+  type RegistroHeroes,
+} from '../domain/heroRegistry'
+import {
   crearRegistroHuestes,
+  type RegistroHuestes,
 } from '../domain/huesteRegistry'
 import type {
   EstadoBatalla,
@@ -170,6 +176,101 @@ function aplicarFormaciones(
   return crearRegistroFormaciones(opciones)
 }
 
+interface ConsecuenciasMilitares {
+  readonly huestes: RegistroHuestes
+  readonly heroes: RegistroHeroes
+  readonly consecuenciasHeroes:
+    readonly ConsecuenciaHeroeBatalla[]
+}
+
+function aplicarConsecuenciasMilitares(
+  estado: EstadoPartida,
+  batalla: EstadoBatalla,
+  formacionesConVida: ReadonlySet<string>,
+): ConsecuenciasMilitares {
+  const participantes = new Set([
+    batalla.huesteAtacanteId,
+    batalla.huesteDefensoraId,
+  ])
+  const actualizadas = estado.huestes.map((hueste) => ({
+    ...hueste,
+    formacionIds: hueste.formacionIds.filter(
+      (id) => formacionesConVida.has(id),
+    ),
+  }))
+  const eliminadas = actualizadas.filter(
+    (hueste) =>
+      participantes.has(hueste.id) &&
+      hueste.formacionIds.length === 0,
+  )
+  const idsEliminadas = new Set(
+    eliminadas.map((hueste) => hueste.id),
+  )
+  const consecuenciasHeroes: ConsecuenciaHeroeBatalla[] = []
+
+  const heroes = crearRegistroHeroes(
+    estado.heroes.map((heroe) => {
+      const hueste = eliminadas.find(
+        (candidata) => candidata.heroeId === heroe.id,
+      )
+
+      if (hueste === undefined) {
+        return heroe
+      }
+
+      if (!heroe.esPrincipal) {
+        consecuenciasHeroes.push(Object.freeze({
+          heroeId: heroe.id,
+          desenlace: 'muerto',
+        }))
+
+        return {
+          ...heroe,
+          estado: 'muerto' as const,
+          capturadoPorReinoId: undefined,
+        }
+      }
+
+      const rivalId = hueste.id === batalla.huesteAtacanteId
+        ? batalla.huesteDefensoraId
+        : batalla.huesteAtacanteId
+      const rival = actualizadas.find(
+        (candidata) => candidata.id === rivalId,
+      )
+      const capturadoPorReinoId =
+        rival !== undefined && !idsEliminadas.has(rival.id)
+          ? rival.reinoId
+          : undefined
+      const desenlace = capturadoPorReinoId === undefined
+        ? 'herido' as const
+        : 'herido_capturado' as const
+
+      consecuenciasHeroes.push(Object.freeze({
+        heroeId: heroe.id,
+        desenlace,
+        capturadoPorReinoId,
+      }))
+
+      return {
+        ...heroe,
+        estado: 'herido' as const,
+        capturadoPorReinoId,
+      }
+    }),
+  )
+
+  return Object.freeze({
+    huestes: crearRegistroHuestes(
+      actualizadas.filter(
+        (hueste) => !idsEliminadas.has(hueste.id),
+      ),
+    ),
+    heroes,
+    consecuenciasHeroes:
+      Object.freeze(consecuenciasHeroes),
+  })
+}
+
 /**
  * Único punto que aplica las consecuencias tácticas sobre EstadoPartida.
  * Requiere una batalla terminada y devuelve tanto el nuevo estado como el
@@ -217,14 +318,12 @@ export function reconciliarResultadoBatalla(
   const formacionesConVida = new Set(
     formaciones.map((formacion) => formacion.id),
   )
-  const huestes = crearRegistroHuestes(
-    estado.huestes.map((hueste) => ({
-      ...hueste,
-      formacionIds: hueste.formacionIds.filter(
-        (id) => formacionesConVida.has(id),
-      ),
-    })),
-  )
+  const consecuenciasMilitares =
+    aplicarConsecuenciasMilitares(
+      estado,
+      resultado.estado,
+      formacionesConVida,
+    )
   const consecuencias = crearConsecuencias(
     estado,
     resultado.estado,
@@ -238,13 +337,16 @@ export function reconciliarResultadoBatalla(
     ganador: victoria.ganador,
     rondas: resultado.estado.ronda,
     consecuencias,
+    consecuenciasHeroes:
+      consecuenciasMilitares.consecuenciasHeroes,
   })
 
   return Object.freeze({
     estado: Object.freeze({
       ...estado,
       formaciones,
-      huestes,
+      huestes: consecuenciasMilitares.huestes,
+      heroes: consecuenciasMilitares.heroes,
     }),
     evento,
   })

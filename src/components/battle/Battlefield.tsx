@@ -36,6 +36,10 @@ interface BattlefieldProps {
   readonly sesion: SesionBatalla
   readonly destinosMovimiento?: readonly CoordenadaHex[]
   readonly objetivosAtaque?: readonly string[]
+  readonly rutaMovimiento?: readonly CoordenadaHex[]
+  readonly onPrevisualizarCasilla?: (
+    coordenada: CoordenadaHex | undefined,
+  ) => void
   readonly onSeleccionarCasilla?: (
     coordenada: CoordenadaHex,
   ) => void
@@ -96,6 +100,8 @@ export default function Battlefield({
   sesion,
   destinosMovimiento = [],
   objetivosAtaque = [],
+  rutaMovimiento = [],
+  onPrevisualizarCasilla,
   onSeleccionarCasilla,
 }: BattlefieldProps) {
   const hexagonos = useMemo(
@@ -133,6 +139,21 @@ export default function Battlefield({
   const viewBox = useMemo(
     () => calcularViewBox(hexagonos),
     [hexagonos],
+  )
+  const centrosPorClave = useMemo(
+    () => new Map(
+      hexagonos.map((hexagono) => [
+        hexagono.clave,
+        hexagono.centro,
+      ]),
+    ),
+    [hexagonos],
+  )
+  const puntosRuta = useMemo(
+    () => rutaMovimiento
+      .map((coordenada) => centrosPorClave.get(claveHex(coordenada)))
+      .filter((punto): punto is Punto => punto !== undefined),
+    [centrosPorClave, rutaMovimiento],
   )
 
   return (
@@ -199,6 +220,18 @@ export default function Battlefield({
             data-destino-movimiento={esDestino || undefined}
             data-objetivo-ataque={esObjetivo || undefined}
             onClick={activar}
+            onMouseEnter={() => {
+              if (esDestino) {
+                onPrevisualizarCasilla?.(hexagono.coordenada)
+              }
+            }}
+            onMouseLeave={() => onPrevisualizarCasilla?.(undefined)}
+            onFocus={() => {
+              if (esDestino) {
+                onPrevisualizarCasilla?.(hexagono.coordenada)
+              }
+            }}
+            onBlur={() => onPrevisualizarCasilla?.(undefined)}
             onKeyDown={(evento) => {
               if (
                 interactiva &&
@@ -290,6 +323,49 @@ export default function Battlefield({
           </g>
         )
       })}
+
+      {puntosRuta.length > 1 && (
+        <g data-ruta-movimiento pointerEvents="none" aria-hidden="true">
+          <polyline
+            points={puntosRuta
+              .map((punto) => punto.x + ',' + punto.y)
+              .join(' ')}
+            fill="none"
+            stroke="#f2c14e"
+            strokeWidth="7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="4 10"
+            vectorEffect="non-scaling-stroke"
+            opacity="0.9"
+          />
+          {puntosRuta.slice(1).map((punto, indice) => (
+            <g key={punto.x + ',' + punto.y}>
+              <circle
+                cx={punto.x}
+                cy={punto.y}
+                r="11"
+                fill="#241705"
+                stroke="#ffe38a"
+                strokeWidth="2"
+                vectorEffect="non-scaling-stroke"
+              />
+              <text
+                x={punto.x}
+                y={punto.y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fill="#fff3c4"
+                fontFamily="Cinzel, serif"
+                fontSize="10"
+                fontWeight="700"
+              >
+                {indice + 1}
+              </text>
+            </g>
+          ))}
+        </g>
+      )}
     </svg>
   )
 }

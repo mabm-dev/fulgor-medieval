@@ -56,7 +56,7 @@ puede emitir una orden por ronda, limitada por puntos de mando.
 
 1. Determinar iniciativa.
 2. Activar una formación.
-3. Mover, actuar o esperar.
+3. Previsualizar ruta, pasos y coste antes de mover, actuar o esperar.
 4. Resolver daño, contraataque y efectos.
 5. Comprobar moral y retirada.
 6. Recuperar o consumir puntos de mando.
@@ -65,7 +65,10 @@ puede emitir una orden por ronda, limitada por puntos de mando.
 ## Persistencia estratégica
 
 Las bajas, heridas, prisioneros, fatiga y suministros continúan después de la
-batalla. Retirarse a tiempo puede ser una decisión correcta.
+batalla. Una hueste sin formaciones se disuelve: su capitán muere; el héroe
+principal queda herido y cautivo del vencedor. El reino captor se conserva
+para que v0.6 pueda resolver rescates, intercambios, pactos u otras concesiones.
+Retirarse a tiempo puede ser una decisión correcta.
 
 ## Tipos de encuentro
 

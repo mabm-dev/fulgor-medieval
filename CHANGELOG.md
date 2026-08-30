@@ -11,11 +11,17 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
   estimación de llegada que tiene en cuenta el suministro.
 - Objetivo rival conocido y diferenciado en rojo para facilitar el acceso al
   combate táctico de la pre-alpha.
+- Previsualización táctica de la ruta con trazo, pasos numerados, coste y
+  movimiento disponible.
+- Estado persistente del héroe para distinguir actividad, heridas, muerte y
+  cautiverio, con el reino captor preparado para la futura negociación.
 
 ### Corregido
 
 - Los edificios ya terminados no pueden volver a construirse ni acumular sus
   efectos; los duplicados de guardados anteriores se normalizan al cargarlos.
+- Una hueste que pierde todas sus formaciones se disuelve en el mapa; su
+  capitán muere o, si es el héroe principal, queda herido y cautivo.
 
 ## [0.5.0] - 2026-08-30
 
