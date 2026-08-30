@@ -255,14 +255,20 @@ export default function MenuInicio() {
                       ? 'Crónica de una versión anterior'
                       : errorGuardado.motivo === 'corrupto'
                         ? 'Crónica dañada'
-                        : 'Almacenamiento no disponible'}
+                        : errorGuardado.motivo ===
+                            'almacenamiento_no_disponible'
+                          ? 'Almacenamiento no disponible'
+                          : 'No se pudo abrir la crónica'}
                   </p>
                   <p className="mt-3 text-sm leading-relaxed text-white/60">
                     {errorGuardado.motivo === 'version_incompatible'
                       ? 'Esta partida se guardó con una versión anterior del juego y ya no puede continuarse.'
                       : errorGuardado.motivo === 'corrupto'
                         ? 'El archivo de esta partida no se ha podido leer.'
-                        : 'El navegador ha impedido acceder a la partida. Revisa los permisos o el modo privado antes de intentarlo de nuevo.'}
+                        : errorGuardado.motivo ===
+                            'almacenamiento_no_disponible'
+                          ? 'El navegador ha impedido acceder a la partida. Revisa los permisos o el modo privado antes de intentarlo de nuevo.'
+                          : errorGuardado.mensaje}
                   </p>
                   {(errorGuardado.motivo === 'version_incompatible' ||
                     errorGuardado.motivo === 'corrupto') && (

@@ -398,9 +398,9 @@ export function crearOrdenHeroica(
   const idEsperado = bando === 'atacante'
     ? estado.heroeAtacanteId
     : estado.heroeDefensorId
-  if (idEsperado !== heroe.id) throw new Error('El heroe no dirige este bando')
-  if (puntosMandoDisponibles(estado, bando) < 1) throw new Error('El heroe no tiene puntos de mando')
-  if (!obtenerOrdenesHeroe(heroe.arquetipo).includes(orden)) throw new Error('El heroe no conoce esa orden')
+  if (idEsperado !== heroe.id) throw new Error('El héroe no dirige este bando')
+  if (puntosMandoDisponibles(estado, bando) < 1) throw new Error('El héroe no tiene puntos de mando')
+  if (!obtenerOrdenesHeroe(heroe.arquetipo).includes(orden)) throw new Error('El héroe no conoce esa orden')
   const ordenBase = decidirOrdenTactica(estado, formaciones, bando)
   return Object.freeze({
     tipo: 'heroica',

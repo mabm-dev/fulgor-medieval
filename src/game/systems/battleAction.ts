@@ -306,19 +306,19 @@ export function ejecutarOrdenTactica(
     (tactica) => tactica.formacionId === orden.formacionId,
   )?.bando
   if (bando === undefined) {
-    throw new Error('Formacion tactica no encontrada')
+    throw new Error('Formación táctica no encontrada')
   }
   const idEsperado = bando === 'atacante'
     ? estado.heroeAtacanteId
     : estado.heroeDefensorId
   if (idEsperado !== orden.heroeId) {
-    throw new Error('El heroe no dirige este bando')
+    throw new Error('El héroe no dirige este bando')
   }
   const puntos = bando === 'atacante'
     ? estado.puntosMandoAtacante
     : estado.puntosMandoDefensor
   if (puntos < 1) {
-    throw new Error('El heroe no tiene puntos de mando')
+    throw new Error('El héroe no tiene puntos de mando')
   }
 
   const resultadoBase = ejecutarOrdenBasica(
