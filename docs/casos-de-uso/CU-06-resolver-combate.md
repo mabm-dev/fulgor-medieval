@@ -33,11 +33,15 @@ Resolver el encuentro entre ejércitos mediante decisiones tácticas legibles.
 
 - El resultado depende de las mismas reglas en modo manual y automático.
 - Las bajas y la fatiga persisten.
-- Una hueste destruida desaparece y su héroe recibe un desenlace persistente.
+- La hueste derrotada desaparece aunque conserve supervivientes retirados;
+  estos constan como dispersados y no abren otro combate desde la misma casilla.
+- El héroe de la hueste derrotada recibe un desenlace persistente.
 - El héroe principal derrotado queda herido y cautivo, nunca disponible para
   encabezar otra hueste mientras continúe así.
 - La interfaz explica fase, orden, espera usada, defensa, daño, moral, ruta y
   coste de movimiento, sin numerar cada paso como si fuese otra activación.
+- El parte reserva una altura estable y el tablero no se desplaza cuando sus
+  mensajes pasan de una a dos líneas o viceversa.
 - Una formación retirada o destruida desaparece del campo y no puede volver a
   actuar ni recibir ataques; la victoria bloquea inmediatamente nuevas órdenes.
 - El combate no modifica el estado estratégico por fuera de sus eventos.

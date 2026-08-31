@@ -33,6 +33,11 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
 - Las formaciones fuera de liza ya no pueden atacar, ser objetivo ni ocultar
   visualmente a una unidad que ocupe después su antigua casilla.
 - La sesión rechaza nuevas órdenes en cuanto uno de los bandos queda derrotado.
+- El parte del campo reserva una altura estable para que el tablero táctico no
+  salte al alternar mensajes de una y dos líneas.
+- La hueste derrotada se disuelve también cuando conserva formaciones
+  retiradas: sus supervivientes quedan dispersados y ya no pueden provocar un
+  nuevo combate inmediato desde la misma casilla.
 
 ## [0.5.0] - 2026-08-30
 

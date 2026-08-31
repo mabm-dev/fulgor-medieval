@@ -107,6 +107,16 @@ describe('BattleView', () => {
     expect(html).not.toContain('Formar líneas y combatir')
   })
 
+  it('reserva dos líneas al parte para que el tablero no salte', () => {
+    const html = renderizar(
+      prepararSesionBatallaParaCombate(crearSesionPrueba()),
+    )
+
+    expect(html).toContain('data-parte-campo="true"')
+    expect(html).toContain('md:min-h-[5.25rem]')
+    expect(html).toContain('md:min-h-[2.75rem]')
+  })
+
   it('dibuja una ruta punteada con un único 1 en el destino', () => {
     const sesion = prepararSesionBatallaParaCombate(
       crearSesionPrueba(),

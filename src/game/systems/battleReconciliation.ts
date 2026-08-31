@@ -147,6 +147,7 @@ function crearConsecuencias(
 function aplicarFormaciones(
   estado: EstadoPartida,
   idsParticipantes: ReadonlySet<string>,
+  idsFormacionesDerrotadas: ReadonlySet<string>,
   formacionesFinales: RegistroFormaciones,
 ): RegistroFormaciones {
   const finalesPorId = new Map(
@@ -159,6 +160,10 @@ function aplicarFormaciones(
     (formacion) => {
       if (!idsParticipantes.has(formacion.id)) {
         return [formacion]
+      }
+
+      if (idsFormacionesDerrotadas.has(formacion.id)) {
+        return []
       }
 
       const final = finalesPorId.get(formacion.id)
@@ -174,6 +179,29 @@ function aplicarFormaciones(
   )
 
   return crearRegistroFormaciones(opciones)
+}
+
+function obtenerIdsFormacionesDerrotadas(
+  estado: EstadoPartida,
+  batalla: EstadoBatalla,
+  ganador: 'atacante' | 'defensor' | 'empate',
+): ReadonlySet<string> {
+  const huestesDerrotadas = ganador === 'empate'
+    ? new Set([
+        batalla.huesteAtacanteId,
+        batalla.huesteDefensoraId,
+      ])
+    : new Set([
+        ganador === 'atacante'
+          ? batalla.huesteDefensoraId
+          : batalla.huesteAtacanteId,
+      ])
+
+  return new Set(
+    estado.huestes
+      .filter((hueste) => huestesDerrotadas.has(hueste.id))
+      .flatMap((hueste) => hueste.formacionIds),
+  )
 }
 
 interface ConsecuenciasMilitares {
@@ -310,9 +338,16 @@ export function reconciliarResultadoBatalla(
     )
   }
 
+  const idsFormacionesDerrotadas =
+    obtenerIdsFormacionesDerrotadas(
+      estado,
+      resultado.estado,
+      victoria.ganador,
+    )
   const formaciones = aplicarFormaciones(
     estado,
     idsParticipantes,
+    idsFormacionesDerrotadas,
     resultado.formaciones,
   )
   const formacionesConVida = new Set(

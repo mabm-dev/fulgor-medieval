@@ -77,7 +77,9 @@ La interfaz presenta cada maniobra en tres momentos legibles: selección de la
 formación activa, preparación de la orden y resolución. El bando automático
 mantiene pausas deliberadas entre esos momentos. La ruta de movimiento se
 dibuja como una cadena punteada y solo su destino lleva el número `1`: el
-número representa una única orden, no los puntos de movimiento consumidos.
+número representa una única orden, no los puntos de movimiento consumidos. El
+parte del campo reserva espacio para dos líneas, de forma que el tablero no se
+desplace verticalmente cuando cambia la longitud del mensaje.
 
 Una formación retirada o destruida queda fuera de la cola, deja libre su
 casilla visual y no puede atacar ni ser objetivo. En cuanto un bando se queda
@@ -86,10 +88,17 @@ sin formaciones en liza, la sesión bloquea cualquier orden posterior.
 ## Persistencia estratégica
 
 Las bajas, heridas, prisioneros, fatiga y suministros continúan después de la
-batalla. Una hueste sin formaciones se disuelve: su capitán muere; el héroe
-principal queda herido y cautivo del vencedor. El reino captor se conserva
-para que v0.6 pueda resolver rescates, intercambios, pactos u otras concesiones.
-Retirarse a tiempo puede ser una decisión correcta.
+batalla. En v0.5, la hueste derrotada se disuelve aunque alguna formación haya
+abandonado el campo con supervivientes: estos quedan dispersados, se conservan
+en el parte táctico como supervivientes y no permanecen en el mapa como una
+hueste capaz de encadenar otro combate inmediato. La hueste vencedora sí
+conserva sus formaciones restantes.
+
+Al disolverse una hueste, su capitán muere; el héroe principal queda herido y
+cautivo del vencedor. El reino captor se conserva para que v0.6 pueda resolver
+rescates, intercambios, pactos u otras concesiones. Un sistema posterior de
+reagrupamiento podrá recuperar supervivientes dispersados sin reabrir el mismo
+encuentro en la misma casilla.
 
 ## Tipos de encuentro
 

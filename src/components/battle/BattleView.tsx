@@ -636,12 +636,18 @@ export default function BattleView({
             )}
           </div>
 
-          <div className="mt-3 grid gap-3 border-t border-oro/20 pt-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+          <div
+            data-parte-campo
+            className="mt-3 grid gap-3 border-t border-oro/20 pt-3 md:min-h-[5.25rem] md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
+          >
             <div>
               <p className="text-[9px] tracking-[0.2em] text-white/35 uppercase">
                 Parte del campo
               </p>
-              <p role="status" className="mt-1 text-sm text-pergamino/80">
+              <p
+                role="status"
+                className="mt-1 text-sm text-pergamino/80 md:min-h-[2.75rem]"
+              >
                 {sesion.estado.fase === 'despliegue'
                   ? 'Las zonas azul y carmesí marcan las líneas iniciales.'
                   : sesion.estado.fase === 'resuelta'

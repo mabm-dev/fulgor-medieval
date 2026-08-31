@@ -3,6 +3,7 @@ import {
   crearEstadoPartida,
 } from '../domain/gameState'
 import {
+  crearRegistroFormaciones,
   obtenerFormacion,
   removerFormacion,
 } from '../domain/formationRegistry'
@@ -19,7 +20,9 @@ import {
   reconciliarResultadoBatalla,
 } from './battleReconciliation'
 
-function crearPartida() {
+function crearPartida(
+  incluirSegundaFormacionAtacante = false,
+) {
   return crearEstadoPartida({
     semillaMapa: 4,
     meta: {
@@ -33,7 +36,9 @@ function crearPartida() {
       {
         id: 'hueste-a', nombre: 'Atacante', reinoId: 'castilla',
         posicion: { q: 0, r: 0 }, heroeId: 'heroe-a',
-        formacionIds: ['a'],
+        formacionIds: incluirSegundaFormacionAtacante
+          ? ['a', 'a2']
+          : ['a'],
       },
       {
         id: 'hueste-d', nombre: 'Defensor', reinoId: 'leon',
@@ -57,6 +62,12 @@ function crearPartida() {
         id: 'a', nombre: 'Atacante', tipo: 'infanteria', cantidad: 50,
         saludPorIntegrante: 10, ataque: 6, defensa: 6, danoMin: 3, danoMax: 5,
         movimiento: 2, iniciativa: 10, alcance: 1, disciplina: 65,
+      },
+      {
+        id: 'a2', nombre: 'Segundo grupo atacante', tipo: 'infanteria',
+        cantidad: 50, saludPorIntegrante: 10, ataque: 6, defensa: 6,
+        danoMin: 3, danoMax: 5, movimiento: 2, iniciativa: 9,
+        alcance: 1, disciplina: 65,
       },
       {
         id: 'd', nombre: 'Defensor', tipo: 'infanteria', cantidad: 50,
@@ -93,6 +104,12 @@ function crearCombate(partida: ReturnType<typeof crearPartida>) {
     formacionId: 'a',
     posicion: { q: 0, r: 0 },
   })
+  if (atacante.formacionIds.includes('a2')) {
+    estado = desplegarFormacion(estado, {
+      formacionId: 'a2',
+      posicion: { q: 0, r: 1 },
+    })
+  }
   estado = desplegarFormacion(estado, {
     formacionId: 'd',
     posicion: { q: 12, r: 0 },
@@ -104,7 +121,9 @@ function crearCombate(partida: ReturnType<typeof crearPartida>) {
         ...tactica,
         posicion: tactica.formacionId === 'a'
           ? { q: 0, r: 0 }
-          : { q: 1, r: 0 },
+          : tactica.formacionId === 'a2'
+            ? { q: 0, r: 1 }
+            : { q: 1, r: 0 },
       }),
     )),
   })
@@ -236,6 +255,72 @@ describe('reconciliación estratégica de batalla', () => {
         capturadoPorReinoId: 'leon',
       },
     ])
+  })
+
+  it('disuelve la hueste derrotada aunque conserve supervivientes retirados', () => {
+    const partida = crearPartida(true)
+    const batalla = crearCombate(partida)
+    const resultado: ResultadoBatallaAutomatica = Object.freeze({
+      estado: Object.freeze({
+        ...batalla,
+        fase: 'resuelta',
+        formacionActivaId: undefined,
+        retiradas: Object.freeze(['a', 'a2']),
+      }),
+      formaciones: crearRegistroFormaciones(
+        partida.formaciones.map((formacion) =>
+          formacion.id === 'a' || formacion.id === 'a2'
+            ? { ...formacion, cantidad: 6, moral: 20 }
+            : formacion,
+        ),
+      ),
+      activaciones: Object.freeze([]),
+      motivo: 'resuelta',
+    })
+    const reconciliado = reconciliarResultadoBatalla(
+      partida,
+      resultado,
+    )
+
+    expect(
+      obtenerFormacion(reconciliado.estado.formaciones, 'a'),
+    ).toBeUndefined()
+    expect(
+      obtenerFormacion(reconciliado.estado.formaciones, 'a2'),
+    ).toBeUndefined()
+    expect(
+      reconciliado.estado.huestes.some(
+        (hueste) => hueste.id === 'hueste-a',
+      ),
+    ).toBe(false)
+    expect(
+      reconciliado.estado.heroes.find(
+        (heroe) => heroe.id === 'heroe-a',
+      ),
+    ).toMatchObject({
+      estado: 'herido',
+      capturadoPorReinoId: 'leon',
+    })
+    expect(
+      reconciliado.evento.consecuencias.find(
+        (consecuencia) => consecuencia.formacionId === 'a',
+      ),
+    ).toMatchObject({
+      bajas: 44,
+      cantidadFinal: 6,
+      retirada: true,
+      destruida: false,
+    })
+    expect(
+      reconciliado.evento.consecuencias.find(
+        (consecuencia) => consecuencia.formacionId === 'a2',
+      ),
+    ).toMatchObject({
+      bajas: 44,
+      cantidadFinal: 6,
+      retirada: true,
+      destruida: false,
+    })
   })
 
   it('rechaza aplicar un resultado que todavía alcanzó solo el límite', () => {
