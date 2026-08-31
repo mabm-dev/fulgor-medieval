@@ -114,8 +114,9 @@ export function formatearEvento(
         ? ''
         : '; ' + heroes.join(', ')
 
+      const asentamiento = evento.asentamientoCapturadoId === undefined ? "" : "; asentamiento conquistado: " + evento.asentamientoCapturadoId
       return 'Batalla resuelta: ' + desenlace + ', ' +
-        bajas + ' bajas' + detalleHeroes
+        bajas + ' bajas' + detalleHeroes + asentamiento
     }
     case 'turno_finalizado':
       return `Turno ${evento.turno} resuelto`

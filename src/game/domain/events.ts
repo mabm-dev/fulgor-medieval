@@ -89,6 +89,8 @@ export interface EventoBatallaResuelta
     readonly ConsecuenciaFormacionBatalla[]
   readonly consecuenciasHeroes:
     readonly ConsecuenciaHeroeBatalla[]
+  /** ID del asentamiento transferido al vencedor, si la batalla fue en él. */
+  readonly asentamientoCapturadoId?: string
 }
 
 /**

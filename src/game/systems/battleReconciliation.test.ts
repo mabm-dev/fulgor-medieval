@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { crearCapitalInicial } from "../content/kingdomSettlements"
 import {
   crearEstadoPartida,
 } from '../domain/gameState'
@@ -22,6 +23,7 @@ import {
 
 function crearPartida(
   incluirSegundaFormacionAtacante = false,
+  incluirCiudadDefensora = false,
 ) {
   return crearEstadoPartida({
     semillaMapa: 4,
@@ -32,6 +34,9 @@ function crearPartida(
       fechaCreacion: '2026-08-29',
     },
     reinoJugador: 'castilla',
+    asentamientos: incluirCiudadDefensora
+      ? [crearCapitalInicial('leon', { q: 1, r: 0 })]
+      : [],
     huestes: [
       {
         id: 'hueste-a', nombre: 'Atacante', reinoId: 'castilla',
@@ -163,7 +168,7 @@ describe('reconciliación estratégica de batalla', () => {
   })
 
   it('disuelve la hueste destruida y da muerte a su capitán', () => {
-    const partida = crearPartida()
+    const partida = crearPartida(false, true)
     const batalla = crearCombate(partida)
     const resultado: ResultadoBatallaAutomatica = Object.freeze({
       estado: Object.freeze({
@@ -181,6 +186,8 @@ describe('reconciliación estratégica de batalla', () => {
       resultado,
     )
 
+    expect(reconciliado.estado.asentamientos.find((asentamiento) => asentamiento.id === "leon")?.reinoId).toBe("castilla")
+    expect(reconciliado.evento.asentamientoCapturadoId).toBe("leon")
     expect(
       obtenerFormacion(reconciliado.estado.formaciones, 'd'),
     ).toBeUndefined()

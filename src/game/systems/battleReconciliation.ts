@@ -19,9 +19,14 @@ import {
   crearRegistroHuestes,
   type RegistroHuestes,
 } from '../domain/huesteRegistry'
+import {
+  crearRegistroAsentamientos,
+  type RegistroAsentamientos,
+} from "../domain/settlementRegistry"
+import { claveHex } from "../map/hex"
 import type {
   EstadoBatalla,
-} from './battle'
+} from "./battle"
 import type {
   ResultadoBatallaAutomatica,
 } from './battleAuto'
@@ -174,6 +179,52 @@ function aplicarFormaciones(
   )
 
   return crearRegistroFormaciones(opciones)
+}
+
+interface ConsecuenciaAsentamiento {
+  readonly asentamientos: RegistroAsentamientos
+  readonly asentamientoCapturadoId?: string
+}
+
+function aplicarCapturaAsentamiento(
+  estado: EstadoPartida,
+  batalla: EstadoBatalla,
+  ganador: "atacante" | "defensor" | "empate",
+): ConsecuenciaAsentamiento {
+  if (ganador !== "atacante") {
+    return { asentamientos: estado.asentamientos }
+  }
+
+  const defensor = estado.huestes.find(
+    (hueste) => hueste.id === batalla.huesteDefensoraId,
+  )
+
+  if (defensor === undefined) {
+    return { asentamientos: estado.asentamientos }
+  }
+
+  const asentamiento = estado.asentamientos.find(
+    (candidata) =>
+      candidata.reinoId === batalla.reinoDefensor &&
+      claveHex(candidata.posicion) === claveHex(defensor.posicion),
+  )
+
+  if (asentamiento === undefined) {
+    return { asentamientos: estado.asentamientos }
+  }
+
+  const asentamientos = crearRegistroAsentamientos(
+    estado.asentamientos.map((candidata) =>
+      candidata.id === asentamiento.id
+        ? { ...candidata, reinoId: batalla.reinoAtacante }
+        : candidata,
+    ),
+  )
+
+  return {
+    asentamientos,
+    asentamientoCapturadoId: asentamiento.id,
+  }
 }
 
 interface ConsecuenciasMilitares {
@@ -329,6 +380,11 @@ export function reconciliarResultadoBatalla(
     resultado.estado,
     resultado.formaciones,
   )
+  const consecuenciaAsentamiento = aplicarCapturaAsentamiento(
+    estado,
+    resultado.estado,
+    victoria.ganador,
+  )
   const evento: EventoBatallaResuelta = Object.freeze({
     tipo: 'batalla_resuelta',
     turno: estado.turno,
@@ -339,6 +395,9 @@ export function reconciliarResultadoBatalla(
     consecuencias,
     consecuenciasHeroes:
       consecuenciasMilitares.consecuenciasHeroes,
+    ...(consecuenciaAsentamiento.asentamientoCapturadoId === undefined
+      ? {}
+      : { asentamientoCapturadoId: consecuenciaAsentamiento.asentamientoCapturadoId }),
   })
 
   return Object.freeze({
@@ -347,6 +406,7 @@ export function reconciliarResultadoBatalla(
       formaciones,
       huestes: consecuenciasMilitares.huestes,
       heroes: consecuenciasMilitares.heroes,
+      asentamientos: consecuenciaAsentamiento.asentamientos,
     }),
     evento,
   })

@@ -89,6 +89,26 @@ function obtenerFormacionesBando(
     }))
 }
 
+function describirDesenlacePerdedor(
+  sesion: SesionBatalla,
+  ganador: BandoBatalla | "empate",
+): string {
+  if (ganador === "empate") {
+    return ""
+  }
+
+  const perdedor = ganador === "atacante"
+    ? "defensor"
+    : "atacante"
+  const supervivientes = obtenerFormacionesBando(
+    sesion,
+    perdedor,
+  ).some(({ formacion }) => (formacion?.cantidad ?? 0) > 0)
+
+  return supervivientes
+    ? " La hueste derrotada se retira con supervivientes."
+    : " La hueste derrotada ha sido aniquilada."
+}
 function obtenerObjetivosAtacables(
   sesion: SesionBatalla,
 ): readonly string[] {
@@ -651,7 +671,7 @@ export default function BattleView({
                 {sesion.estado.fase === 'despliegue'
                   ? 'Las zonas azul y carmesí marcan las líneas iniciales.'
                   : sesion.estado.fase === 'resuelta'
-                    ? `Victoria: ${victoria?.ganador ?? 'empate'}. La campaña espera el resultado.`
+                    ? `Victoria: ${victoria?.ganador ?? 'empate'}. La campaña espera el resultado.` + describirDesenlacePerdedor(sesion, victoria?.ganador ?? 'empate')
                     : indicadorMovimiento !== null && formacionActiva
                       ? formacionActiva.nombre + ': ruta de ' +
                         (indicadorMovimiento.ruta.length - 1) +
