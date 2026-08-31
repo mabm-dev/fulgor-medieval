@@ -224,10 +224,23 @@ function buscarHuesteEnemigaEnCasilla(
  * suministro es del reino del jugador, la rival no abastece a nadie del
  * jugador aunque esté cerca.
  */
+function huesteTieneEfectivos(
+  hueste: Hueste,
+  formaciones: EstadoPartida["formaciones"],
+): boolean {
+  if (hueste.formacionIds.length === 0) {
+    return true
+  }
+  return hueste.formacionIds.some((id) =>
+    (formaciones.find((formacion) => formacion.id === id)?.cantidad ?? 0) > 0,
+  )
+}
+
 function resolverOrdenesMovimiento(
   huestes: RegistroHuestes,
   asentamientosPropios: RegistroAsentamientos,
   reinoJugador: IdentificadorReino,
+  formaciones: EstadoPartida["formaciones"],
   ordenes: readonly OrdenMarcha[],
   casillas: Readonly<
     Record<string, CasillaMapa>
@@ -252,7 +265,8 @@ function resolverOrdenesMovimiento(
 
     if (
       hueste === undefined ||
-      hueste.reinoId !== reinoJugador
+      hueste.reinoId !== reinoJugador ||
+      !huesteTieneEfectivos(hueste, formaciones)
     ) {
       throw new Error(
         'Hueste no encontrada: ' +
@@ -278,6 +292,9 @@ function resolverOrdenesMovimiento(
 
   for (const hueste of huestes) {
     if (hueste.reinoId !== reinoJugador) {
+      continue
+    }
+    if (!huesteTieneEfectivos(hueste, formaciones)) {
       continue
     }
 
@@ -532,6 +549,7 @@ export function finalizarTurno(
     estado.huestes,
     asentamientosPropios,
     estado.reinoJugador,
+    estado.formaciones,
     movimientos,
     opciones.casillas,
     new Set(

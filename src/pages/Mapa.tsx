@@ -111,6 +111,13 @@ function nombreEdificio(
     ? EDIFICIOS[edificioId].nombre
     : edificioId
 }
+function huesteTieneEfectivos(estado: EstadoPartida, huesteId: string): boolean {
+  const hueste = estado.huestes.find((candidata) => candidata.id === huesteId)
+  return hueste?.formacionIds.some((id) =>
+    (estado.formaciones.find((formacion) => formacion.id === id)?.cantidad ?? 0) > 0,
+  ) ?? false
+}
+
 
 /**
  * Se repite en el panel de asentamiento y en el de terreno genérico —una
@@ -382,7 +389,7 @@ export default function Mapa() {
   const huestesVisibles = useMemo(
     () =>
       (estadoJuego?.huestes ?? []).filter(
-        (hueste) => hueste.formacionIds.length > 0 && (
+        (hueste) => huesteTieneEfectivos(estadoJuego, hueste.id) && (
           hueste.reinoId !== estadoJuego?.reinoJugador ||
           estadoNiebla(
             claveHex(hueste.posicion),
@@ -584,7 +591,7 @@ export default function Mapa() {
   const huesteRival =
     estadoJuego.huestes.find(
       (hueste) =>
-        hueste.formacionIds.length > 0 &&
+        huesteTieneEfectivos(estadoJuego, hueste.id) &&
         hueste.reinoId !==
         estadoJuego.reinoJugador,
     )
@@ -631,12 +638,10 @@ export default function Mapa() {
     casillaSeleccionada
       ? estadoJuego.huestes.filter(
           (hueste) =>
-            hueste.reinoId ===
-              estadoJuego.reinoJugador &&
+            hueste.reinoId === estadoJuego.reinoJugador &&
+            huesteTieneEfectivos(estadoJuego, hueste.id) &&
             claveHex(hueste.posicion) ===
-              claveHex(
-                casillaSeleccionada.coordenada,
-              ),
+              claveHex(casillaSeleccionada.coordenada),
         )
       : []
 
