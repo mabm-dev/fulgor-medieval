@@ -4,6 +4,7 @@ import { crearHueste } from '../domain/hueste'
 import type { CampoBatalla, CasillaTactica } from './battlefield'
 import { crearEstadoBatalla, desplegarFormacion, iniciarCombate } from './battle'
 import { atacarFormacionTactica } from './battleAttack'
+import { esperar } from './battleMovement'
 
 function crearCampo(
   terrenoObjetivo: CasillaTactica['terreno'] = 'despejado',
@@ -94,6 +95,41 @@ describe('ataque táctico', () => {
 
     expect(ataqueEscarpado.bonificadorDefensaTerreno).toBe(3)
     expect(ataqueEscarpado.dano).toBeLessThan(ataqueDespejado.dano)
+  })
+
+  it('suma la orden de defender a la protección del terreno', () => {
+    const combate = crearEstadoCombate()
+    const defendiendo = Object.freeze({
+      ...combate.estado,
+      defendiendo: Object.freeze(['d']),
+    })
+    const normal = atacarFormacionTactica(
+      combate.estado,
+      { atacanteId: 'a', objetivoId: 'd' },
+      combate.registro,
+    )
+    const defendido = atacarFormacionTactica(
+      defendiendo,
+      { atacanteId: 'a', objetivoId: 'd' },
+      combate.registro,
+    )
+
+    expect(defendido.bonificadorDefensaOrden).toBe(2)
+    expect(defendido.dano).toBeLessThan(normal.dano)
+  })
+
+  it('permite atacar al recuperar la activación después de esperar', () => {
+    const combate = crearEstadoCombate()
+    const aplazado = esperar(combate.estado)
+    const resultado = atacarFormacionTactica(
+      aplazado,
+      { atacanteId: 'a', objetivoId: 'd' },
+      combate.registro,
+    )
+
+    expect(aplazado.esperasRonda).toEqual(['a'])
+    expect(resultado.dano).toBeGreaterThan(0)
+    expect(resultado.estado.formacionActivaId).toBe('d')
   })
 
   it('rechaza objetivos fuera de alcance o del propio bando', () => {

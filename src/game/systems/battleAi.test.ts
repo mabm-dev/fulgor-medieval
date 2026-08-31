@@ -11,6 +11,7 @@ import {
   iniciarCombate,
 } from './battle'
 import { decidirOrdenTactica } from './battleAi'
+import { finalizarActivacion } from './battleInitiative'
 
 function crearRegistro(
   ids: readonly string[],
@@ -98,8 +99,19 @@ function crearEstadoDePrueba(
     })
   }
 
+  let combate = iniciarCombate(estado, formaciones)
+
+  while (
+    combate.formaciones.find(
+      (tactica) =>
+        tactica.formacionId === combate.formacionActivaId,
+    )?.bando === 'atacante'
+  ) {
+    combate = finalizarActivacion(combate)
+  }
+
   return {
-    estado: iniciarCombate(estado, formaciones),
+    estado: combate,
     formaciones,
   }
 }
@@ -163,7 +175,7 @@ describe('decisión táctica de la IA', () => {
     })
   })
 
-  it('espera si no quedan objetivos enemigos en liza', () => {
+  it('se defiende si no quedan objetivos enemigos en liza', () => {
     const { estado, formaciones } = crearEstadoDePrueba()
     const retirado = Object.freeze({
       ...estado,
@@ -173,7 +185,7 @@ describe('decisión táctica de la IA', () => {
     expect(
       decidirOrdenTactica(retirado, formaciones, 'defensor'),
     ).toEqual({
-      tipo: 'esperar',
+      tipo: 'defender',
       formacionId: 'd',
     })
   })

@@ -8,13 +8,18 @@ Resolver el encuentro entre ejércitos mediante decisiones tácticas legibles.
 
 1. El juego presenta fuerzas, terreno y objetivo.
 2. El jugador despliega sus formaciones.
-3. Las unidades se activan por iniciativa.
-4. El juego previsualiza la ruta y el coste sobre las casillas alcanzables.
-5. El jugador mueve, ataca, espera o usa una habilidad.
-6. El héroe puede emitir una orden por ronda si dispone de mando.
-7. Moral, bajas y retirada se comprueban.
-8. La batalla termina al cumplir su objetivo.
-9. El resultado vuelve al mapa estratégico.
+3. Actúan primero todas las formaciones atacantes y después las defensoras.
+4. Cada bando se ordena por tipo de tropa y posición visual.
+5. El juego previsualiza la ruta y el coste sobre las casillas alcanzables.
+6. El jugador mueve, ataca, espera, defiende o usa una habilidad.
+7. Esperar aplaza la formación al final de su bando; solo puede hacerse una
+   vez por ronda; al volver puede mover, defender o atacar si tiene alcance.
+8. Defender concede +2 hasta la siguiente acción de esa formación.
+9. El héroe puede emitir una orden por ronda si dispone de mando.
+10. La fase defensora se ejecuta automáticamente con el mismo orden.
+11. Moral, bajas y retirada se comprueban.
+12. La batalla termina al cumplir su objetivo.
+13. El resultado vuelve al mapa estratégico.
 
 ## Alternativas
 
@@ -29,5 +34,6 @@ Resolver el encuentro entre ejércitos mediante decisiones tácticas legibles.
 - Una hueste destruida desaparece y su héroe recibe un desenlace persistente.
 - El héroe principal derrotado queda herido y cautivo, nunca disponible para
   encabezar otra hueste mientras continúe así.
-- La interfaz explica modificadores de daño, moral, ruta y coste de movimiento.
+- La interfaz explica fase, orden, espera usada, defensa, daño, moral, ruta y
+  coste de movimiento.
 - El combate no modifica el estado estratégico por fuera de sus eventos.

@@ -41,6 +41,7 @@ export interface RegistroActivacionTactica {
     | 'objetivoId'
     | 'tiradaDano'
     | 'bonificadorDefensaTerreno'
+    | 'bonificadorDefensaOrden'
     | 'dano'
     | 'bajas'
   >>
@@ -127,6 +128,11 @@ function marcarFueraDeLiza(
       ...(estado.retiradas ?? []),
       formacionId,
     ]),
+    defendiendo: Object.freeze(
+      estado.defendiendo.filter(
+        (id) => id !== formacionId,
+      ),
+    ),
   })
 
   if (
@@ -187,6 +193,37 @@ function aplicarAtaqueTemporal(
   }
 }
 
+function limpiarDefensaAnterior(
+  estado: EstadoBatalla,
+  formacionId: string,
+): EstadoBatalla {
+  if (!estado.defendiendo.includes(formacionId)) {
+    return estado
+  }
+
+  return Object.freeze({
+    ...estado,
+    defendiendo: Object.freeze(
+      estado.defendiendo.filter(
+        (id) => id !== formacionId,
+      ),
+    ),
+  })
+}
+
+function aplicarDefensa(
+  estado: EstadoBatalla,
+  formacionId: string,
+): EstadoBatalla {
+  return finalizarActivacion(Object.freeze({
+    ...estado,
+    defendiendo: Object.freeze([
+      ...estado.defendiendo,
+      formacionId,
+    ]),
+  }))
+}
+
 /** Aplica una orden manual o automática sobre el mismo estado temporal. */
 function ejecutarOrdenBasica(
   estado: EstadoBatalla,
@@ -199,9 +236,14 @@ function ejecutarOrdenBasica(
     actorId,
   )
 
+  const estadoPreparado = limpiarDefensaAnterior(
+    estado,
+    actorId,
+  )
+
   if (orden.tipo === 'atacar') {
     const resultado = atacarFormacionTactica(
-      estado,
+      estadoPreparado,
       {
         atacanteId: orden.atacanteId,
         objetivoId: orden.objetivoId,
@@ -224,6 +266,8 @@ function ejecutarOrdenBasica(
           tiradaDano: resultado.tiradaDano,
           bonificadorDefensaTerreno:
             resultado.bonificadorDefensaTerreno,
+          bonificadorDefensaOrden:
+            resultado.bonificadorDefensaOrden,
           dano: resultado.dano,
           bajas: resultado.bajas,
         }),
@@ -233,14 +277,19 @@ function ejecutarOrdenBasica(
 
   const siguienteEstado = orden.tipo === 'mover'
     ? moverFormacionTactica(
-        estado,
+        estadoPreparado,
         {
           formacionId: orden.formacionId,
           destino: orden.destino,
         },
         formaciones,
       )
-    : esperar(estado)
+    : orden.tipo === 'defender'
+      ? aplicarDefensa(
+          estadoPreparado,
+          orden.formacionId,
+        )
+      : esperar(estadoPreparado)
 
   return Object.freeze({
     estado: siguienteEstado,

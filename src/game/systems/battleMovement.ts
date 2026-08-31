@@ -13,7 +13,10 @@ import type {
   EstadoBatalla,
   FormacionTactica,
 } from './battle'
-import { finalizarActivacion } from './battleInitiative'
+import {
+  aplazarActivacion,
+  finalizarActivacion,
+} from './battleInitiative'
 
 interface ResultadoDijkstraTactico {
   readonly distancias: ReadonlyMap<string, number>
@@ -434,5 +437,5 @@ export function moverFormacionTactica(
 export function esperar(
   estado: EstadoBatalla,
 ): EstadoBatalla {
-  return finalizarActivacion(estado)
+  return aplazarActivacion(estado)
 }

@@ -111,11 +111,19 @@ describe('sesión de batalla', () => {
       formacionId: 'a',
     })
 
+    expect(sesion.estado.formacionActivaId).toBe('a')
+    expect(sesion.estado.esperasRonda).toEqual(['a'])
+    sesion = ejecutarOrdenSesion(sesion, {
+      tipo: 'defender',
+      formacionId: 'a',
+    })
+
     expect(sesion.estado.formacionActivaId).toBe('d')
-    expect(sesion.activaciones).toHaveLength(1)
+    expect(sesion.estado.defendiendo).toEqual(['a'])
+    expect(sesion.activaciones).toHaveLength(2)
     expect(
       obtenerFormacion(sesion.formaciones, 'a')?.fatiga,
-    ).toBe(1)
+    ).toBe(2)
   })
 
   it('prepara un despliegue estable para entrar en combate manual', () => {

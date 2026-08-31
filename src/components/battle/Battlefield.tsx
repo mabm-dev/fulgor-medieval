@@ -186,6 +186,10 @@ export default function Battlefield({
             )
         const esActiva = tactica?.formacionId ===
           sesion.estado.formacionActivaId
+        const esDefendiendo = tactica !== undefined &&
+          sesion.estado.defendiendo.includes(
+            tactica.formacionId,
+          )
         const esObjetivo = tactica !== undefined &&
           idsObjetivo.has(tactica.formacionId)
         const esDestino = clavesMovimiento.has(
@@ -286,14 +290,19 @@ export default function Battlefield({
                 data-formacion-id={formacion.id}
                 data-bando={tactica.bando}
                 data-activa={esActiva || undefined}
+                data-defendiendo={esDefendiendo || undefined}
               >
                 <circle
                   cx={hexagono.centro.x}
                   cy={hexagono.centro.y}
                   r={RADIO * 0.48}
                   fill={tactica.bando === 'atacante' ? '#183b4b' : '#531f20'}
-                  stroke={esActiva ? '#ffe6a3' : '#e8d9ae'}
-                  strokeWidth={esActiva ? 4 : 2}
+                  stroke={esActiva
+                    ? '#ffe6a3'
+                    : esDefendiendo
+                      ? '#8fd8f4'
+                      : '#e8d9ae'}
+                  strokeWidth={esActiva || esDefendiendo ? 4 : 2}
                   className={esActiva ? 'animate-pulse' : undefined}
                 />
                 <text

@@ -17,6 +17,10 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
   cautiverio, con el reino captor preparado para la futura negociación.
 - Compatibilidad con partidas v0.5: al faltar los nuevos campos, el primer
   héroe del reino del jugador se reconoce como principal y continúa activo.
+- Rondas tácticas por fases completas: atacante antes que defensor, con orden
+  por tipo de tropa y posición visual.
+- Espera aplazada una vez por ronda y acción de defender con +2 temporal.
+- Fase defensora automática y señalización del bando activo en la interfaz.
 
 ### Corregido
 

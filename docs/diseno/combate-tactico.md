@@ -41,6 +41,11 @@ formación en el tablero.
 El héroe dirige desde fuera de la rejilla. Aporta atributos al ejército y
 puede emitir una orden por ronda, limitada por puntos de mando.
 
+Un capitán común podrá convertirse en héroe al cumplir determinadas
+situaciones durante la campaña. Las condiciones, recompensas y límites de ese
+ascenso se escribirán más adelante; por ahora queda como regla de progresión
+reservada y no se asignan requisitos provisionales.
+
 Órdenes iniciales:
 
 - reagrupar;
@@ -54,13 +59,19 @@ puede emitir una orden por ronda, limitada por puntos de mando.
 
 ## Resolución de ronda
 
-1. Determinar iniciativa.
-2. Activar una formación.
-3. Previsualizar ruta, pasos y coste antes de mover, actuar o esperar.
-4. Resolver daño, contraataque y efectos.
-5. Comprobar moral y retirada.
-6. Recuperar o consumir puntos de mando.
-7. Terminar la ronda.
+1. Actúa todo el bando atacante.
+2. Actúa todo el bando defensor, controlado automáticamente.
+3. Dentro de cada bando se agrupa por tipo: infantería, distancia y caballería.
+4. Dentro de cada tipo se sigue la posición visual: superior antes que
+   inferior y, a igual altura, izquierda antes que derecha.
+5. La formación activa puede mover, esperar o defender; si tiene un objetivo
+   válido también puede atacar.
+6. Esperar la aplaza hasta después de la última formación de su bando. Solo se
+   permite una vez por ronda y, al volver, puede mover, defender o atacar si
+   posición y alcance permiten un objetivo válido.
+7. Defender concede +2 a defensa hasta que esa formación vuelva a actuar.
+8. Moral, bajas, retirada y puntos de mando se resuelven con cada acción.
+9. Tras la última formación defensora comienza una nueva ronda atacante.
 
 ## Persistencia estratégica
 

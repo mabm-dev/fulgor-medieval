@@ -40,6 +40,10 @@ export type OrdenTacticaBasica =
       readonly tipo: 'esperar'
       readonly formacionId: string
     }>
+  | Readonly<{
+      readonly tipo: 'defender'
+      readonly formacionId: string
+    }>
 
 export type OrdenTactica = OrdenTacticaBasica | Readonly<{
   readonly tipo: 'heroica'
@@ -449,7 +453,7 @@ export function decidirOrdenConHeroe(
     formacionId: formacion.id,
     objetivoFormacionId: apoyo.id,
     orden: ordenApoyo,
-    ordenBase: Object.freeze({ tipo: 'esperar', formacionId: formacion.id }),
+    ordenBase: Object.freeze({ tipo: 'defender', formacionId: formacion.id }),
   })
 }
 
@@ -532,7 +536,7 @@ export function decidirOrdenTactica(
   }
 
   return Object.freeze({
-    tipo: 'esperar',
+    tipo: 'defender',
     formacionId: activa.tactica.formacionId,
   })
 }

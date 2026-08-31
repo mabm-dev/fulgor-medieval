@@ -257,13 +257,15 @@ describe('movimiento táctico', () => {
     ).toThrow('Solo puede actuar la formación activa')
   })
 
-  it('esperar cierra la activación sin cambiar posiciones', () => {
+  it('esperar aplaza la activación una sola vez sin mover', () => {
     const estado = crearEstadoDesplegado()
     const esperado = esperar(estado)
 
-    expect(esperado.formacionActivaId).toBe('d')
+    expect(esperado.formacionActivaId).toBe('a')
     expect(esperado.ronda).toBe(1)
+    expect(esperado.esperasRonda).toEqual(['a'])
     expect(esperado.formaciones).toEqual(estado.formaciones)
+    expect(() => esperar(esperado)).toThrow('ya ha esperado')
   })
 
   it('rechaza atravesar una casilla ocupada', () => {

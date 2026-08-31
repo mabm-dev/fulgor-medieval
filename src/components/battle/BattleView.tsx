@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { REINOS } from '../../data/reinos'
 import type { Formacion } from '../../game/domain/formation'
 import { obtenerOrdenesHeroe } from '../../game/domain/hero'
@@ -123,10 +123,12 @@ function describirOrden(orden: OrdenTactica): string {
   }
 
   if (orden.tipo === 'mover') {
-    return `Avanzó a ${orden.destino.q}, ${orden.destino.r}`
+    return 'Avanzó a ' + orden.destino.q + ', ' + orden.destino.r
   }
 
-  return 'Esperó y mantuvo la línea'
+  return orden.tipo === 'defender'
+    ? 'Adoptó una posición defensiva (+2 defensa)'
+    : 'Esperó y actuará al final de su bando'
 }
 
 function PanelBando({
@@ -175,6 +177,9 @@ function PanelBando({
           const retirada = sesion.estado.retiradas.includes(
             tactica.formacionId,
           )
+          const defendiendo = sesion.estado.defendiendo.includes(
+            tactica.formacionId,
+          )
 
           return (
             <li
@@ -192,8 +197,10 @@ function PanelBando({
               <p className="mt-0.5 text-[9px] tracking-[0.12em] text-white/35 uppercase">
                 {retirada
                   ? 'Fuera de liza'
-                  : activa
-                    ? 'Activa'
+                  : defendiendo
+                    ? 'Defendiendo · +2 defensa'
+                    : activa
+                      ? 'Activa'
                     : tactica.posicion
                       ? `Hex ${tactica.posicion.q},${tactica.posicion.r}`
                       : 'Sin desplegar'}
@@ -235,6 +242,10 @@ export default function BattleView({
         activa.formacionId,
       )
   const turnoJugador = activa?.bando === 'atacante'
+  const haEsperado = activa !== undefined &&
+    sesion.estado.esperasRonda.includes(
+      activa.formacionId,
+    )
   const heroeJugador = sesion.heroes.find(
     (heroe) => heroe.id === sesion.estado.heroeAtacanteId,
   )
@@ -346,6 +357,46 @@ export default function BattleView({
     )
   }
 
+  useEffect(() => {
+    const tacticaActiva = sesion.estado.formaciones.find(
+      (tactica) =>
+        tactica.formacionId ===
+        sesion.estado.formacionActivaId,
+    )
+
+    if (
+      sesion.estado.fase !== 'combate' ||
+      tacticaActiva?.bando !== 'defensor'
+    ) {
+      return
+    }
+
+    const temporizador = window.setTimeout(() => {
+      try {
+        const orden = decidirOrdenConHeroe(
+          sesion.estado,
+          sesion.formaciones,
+          'defensor',
+          sesion.heroes,
+        )
+        const siguiente = ejecutarOrdenSesion(
+          sesion,
+          orden,
+        )
+        onCambiarSesion(siguiente)
+        setMensaje(describirOrden(orden))
+      } catch (causa) {
+        setMensaje(
+          causa instanceof Error
+            ? causa.message
+            : 'La fase rival no pudo continuar',
+        )
+      }
+    }, 650)
+
+    return () => window.clearTimeout(temporizador)
+  }, [onCambiarSesion, sesion])
+
   const prepararCombate = () => {
     try {
       onCambiarSesion(
@@ -405,6 +456,7 @@ export default function BattleView({
             </p>
             <p className="font-cinzel text-sm text-oro-claro capitalize">
               {sesion.estado.fase} · ronda {sesion.estado.ronda}
+              {activa && ' · fase ' + activa.bando}
             </p>
           </div>
           {sesion.estado.fase !== 'resuelta' && (
@@ -482,13 +534,24 @@ export default function BattleView({
                 <>
                   <button
                     type="button"
+                    disabled={haEsperado}
                     onClick={() => aplicarOrden({
                       tipo: 'esperar',
                       formacionId: activa.formacionId,
                     })}
-                    className="font-cinzel border border-white/25 bg-black/35 px-4 py-2 text-[10px] tracking-[0.15em] text-white/65 uppercase transition-colors hover:border-white/55 hover:text-white"
+                    className="font-cinzel border border-white/25 bg-black/35 px-4 py-2 text-[10px] tracking-[0.15em] text-white/65 uppercase transition-colors hover:border-white/55 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
                   >
-                    Esperar
+                    {haEsperado ? 'Espera ya usada' : 'Esperar'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => aplicarOrden({
+                      tipo: 'defender',
+                      formacionId: activa.formacionId,
+                    })}
+                    className="font-cinzel border border-[#79b9d3]/55 bg-[#0b2934] px-4 py-2 text-[10px] tracking-[0.15em] text-[#a9dff2] uppercase transition-all hover:border-[#b9ebfa] hover:shadow-[0_0_18px_rgba(95,179,217,0.2)]"
+                  >
+                    Defender · +2
                   </button>
                   <button
                     type="button"
@@ -522,13 +585,12 @@ export default function BattleView({
               )}
 
               {sesion.estado.fase === 'combate' && !turnoJugador && activa && (
-                <button
-                  type="button"
-                  onClick={ejecutarOrdenSugerida}
-                  className="font-cinzel border border-[#a9574d] bg-[#321112] px-5 py-2.5 text-[10px] tracking-[0.17em] text-[#f3b0a6] uppercase transition-all hover:-translate-y-0.5 hover:border-[#e27a6d] hover:shadow-[0_0_20px_rgba(185,74,62,0.22)]"
+                <p
+                  role="status"
+                  className="font-cinzel border border-[#a9574d]/60 bg-[#321112]/80 px-5 py-2.5 text-[10px] tracking-[0.17em] text-[#f3b0a6] uppercase"
                 >
-                  Resolver acción rival
-                </button>
+                  Fase rival automática…
+                </p>
               )}
 
               {sesion.estado.fase === 'resuelta' && (
@@ -571,7 +633,8 @@ export default function BattleView({
                         <span className="block text-oro/60">
                           {registro.ataque.bajas} bajas · daño {registro.ataque.dano}
                           {' '}· tirada {registro.ataque.tiradaDano}
-                          {' '}· defensa del terreno +{registro.ataque.bonificadorDefensaTerreno}
+                          {' '}· terreno +{registro.ataque.bonificadorDefensaTerreno}
+                          {' '}· orden defensiva +{registro.ataque.bonificadorDefensaOrden}
                         </span>
                       )}
                     </li>

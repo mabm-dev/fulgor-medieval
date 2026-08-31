@@ -5,6 +5,8 @@ import { DEFINICIONES_TERRENO_TACTICO } from './battlefieldTerrain'
 import type { EstadoBatalla, FormacionTactica } from './battle'
 import { finalizarActivacion } from './battleInitiative'
 
+export const BONO_DEFENSA_ORDEN = 2
+
 export interface OpcionesAtaqueTactico {
   readonly atacanteId: string
   readonly objetivoId: string
@@ -16,6 +18,7 @@ export interface ResultadoAtaqueTactico {
   readonly objetivoId: string
   readonly tiradaDano: number
   readonly bonificadorDefensaTerreno: number
+  readonly bonificadorDefensaOrden: number
   readonly dano: number
   readonly bajas: number
 }
@@ -95,9 +98,16 @@ export function atacarFormacionTactica(
     estado,
     posicionObjetivo,
   )
+  const bonificadorDefensaOrden =
+    estado.defendiendo.includes(opciones.objetivoId)
+      ? BONO_DEFENSA_ORDEN
+      : 0
   const impactoPorIntegrante = Math.max(
     0,
-    atacante.ataque + tiradaDano - objetivo.defensa - bonificadorDefensaTerreno,
+    atacante.ataque + tiradaDano -
+      objetivo.defensa -
+      bonificadorDefensaTerreno -
+      bonificadorDefensaOrden,
   )
   const dano = impactoPorIntegrante * atacante.cantidad
   const bajas = dano === 0
@@ -117,6 +127,7 @@ export function atacarFormacionTactica(
     objetivoId: opciones.objetivoId,
     tiradaDano,
     bonificadorDefensaTerreno,
+    bonificadorDefensaOrden,
     dano,
     bajas,
   }

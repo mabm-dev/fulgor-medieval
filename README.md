@@ -40,14 +40,15 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 - Una segunda facción señalada como objetivo para acceder al combate.
 - Encuentros al intentar entrar en la casilla de una hueste rival.
 - Campo táctico determinista de 13 × 9 con tres terrenos y despliegue previo.
-- Cuatro formaciones por bando con iniciativa, alcance, bajas, moral y fatiga.
+- Cuatro formaciones por bando con fases alternas, orden espacial, alcance,
+  espera aplazada, defensa, bajas, moral y fatiga.
 - Órdenes de héroe limitadas por mando y comportamiento según el arquetipo.
 - Combate manual y resolución automática sobre exactamente el mismo motor.
 - Rutas tácticas previsualizadas con pasos y coste de movimiento real.
 - Reconciliación de bajas, retirada, disolución de huestes y destino del héroe.
 - Guardado automático y recuperación validada de la sesión.
 - HUD económico adaptable con registro de eventos del turno.
-- Suite automatizada de 527 pruebas, lint, TypeScript, build y CI.
+- Suite automatizada de 530 pruebas, lint, TypeScript, build y CI.
 
 ## Visión jugable
 

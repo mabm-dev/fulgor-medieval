@@ -1,4 +1,8 @@
-import type { RegistroFormaciones } from '../domain/formationRegistry'
+import type { TipoFormacion } from '../domain/formation'
+import {
+  obtenerFormacion,
+  type RegistroFormaciones,
+} from '../domain/formationRegistry'
 import type { Hueste } from '../domain/hueste'
 import {
   claveHex,
@@ -38,6 +42,8 @@ export interface FormacionTactica {
   readonly formacionId: string
   readonly huesteId: string
   readonly bando: BandoBatalla
+  /** Se deriva del registro persistente al comenzar el combate. */
+  readonly tipo?: TipoFormacion
   /** Ausente hasta que la formación se coloca durante el despliegue. */
   readonly posicion?: CoordenadaHex
 }
@@ -70,8 +76,12 @@ export interface EstadoBatalla {
   readonly retiradas: readonly string[]
   readonly formaciones: readonly FormacionTactica[]
   readonly fase: FaseBatalla
-  /** Orden estable de activación de la ronda; vacío durante despliegue. */
+  /** Atacantes primero; dentro de cada bando, tipo y posición visual. */
   readonly colaIniciativa: readonly string[]
+  /** Formaciones que ya aplazaron una activación en esta ronda. */
+  readonly esperasRonda: readonly string[]
+  /** Formaciones con la bonificación temporal de defender. */
+  readonly defendiendo: readonly string[]
   /**
    * Ausente durante el despliegue y siempre presente mientras se combate.
    */
@@ -218,6 +228,8 @@ export function crearEstadoBatalla(
     fase: 'despliegue',
     retiradas: Object.freeze([]),
     colaIniciativa: Object.freeze([]),
+    esperasRonda: Object.freeze([]),
+    defendiendo: Object.freeze([]),
     ronda: 0,
   }
 
@@ -353,8 +365,28 @@ export function iniciarCombate(
     )
   }
 
+  const formacionesTacticas = Object.freeze(
+    estado.formaciones.map((tactica) => {
+      const formacion = obtenerFormacion(
+        formaciones,
+        tactica.formacionId,
+      )
+
+      if (formacion === undefined) {
+        throw new Error(
+          'Formación persistente no encontrada: ' +
+            tactica.formacionId,
+        )
+      }
+
+      return Object.freeze({
+        ...tactica,
+        tipo: formacion.tipo,
+      })
+    }),
+  )
   const colaIniciativa = crearColaIniciativa(
-    estado.formaciones,
+    formacionesTacticas,
     formaciones,
   )
   const formacionActivaId =
@@ -369,6 +401,7 @@ export function iniciarCombate(
   return Object.freeze({
     ...estado,
     fase: 'combate',
+    formaciones: formacionesTacticas,
     colaIniciativa,
     formacionActivaId,
     ronda: 1,

@@ -11,6 +11,7 @@ import {
   type EstadoBatalla,
 } from './battle'
 import {
+  aplazarActivacion,
   crearColaIniciativa,
   finalizarActivacion,
 } from './battleInitiative'
@@ -84,7 +85,7 @@ function crearBatallaDesplegada():
 }
 
 describe('iniciativa de batalla', () => {
-  it('ordena por iniciativa y desempata por identificador', () => {
+  it('ordena por bando, tipo y posición visual', () => {
     const estado = crearBatallaDesplegada()
 
     expect(
@@ -93,8 +94,8 @@ describe('iniciativa de batalla', () => {
         crearFormacionesDePrueba(),
       ),
     ).toEqual([
-      'a-rapida',
       'a-lenta',
+      'a-rapida',
       'd-igual',
     ])
   })
@@ -108,13 +109,13 @@ describe('iniciativa de batalla', () => {
     expect(combate.fase).toBe('combate')
     expect(combate.ronda).toBe(1)
     expect(combate.colaIniciativa).toEqual([
-      'a-rapida',
       'a-lenta',
+      'a-rapida',
       'd-igual',
     ])
     expect(
       combate.formacionActivaId,
-    ).toBe('a-rapida')
+    ).toBe('a-lenta')
     expect(() =>
       desplegarFormacion(combate, {
         formacionId: 'a-rapida',
@@ -142,7 +143,7 @@ describe('iniciativa de batalla', () => {
 
     expect(
       segundo.formacionActivaId,
-    ).toBe('a-lenta')
+    ).toBe('a-rapida')
     expect(segundo.ronda).toBe(1)
     expect(
       tercero.formacionActivaId,
@@ -150,8 +151,30 @@ describe('iniciativa de batalla', () => {
     expect(tercero.ronda).toBe(1)
     expect(
       nuevaRonda.formacionActivaId,
-    ).toBe('a-rapida')
+    ).toBe('a-lenta')
     expect(nuevaRonda.ronda).toBe(2)
+  })
+
+  it('aplaza una formación al final de su bando solo una vez', () => {
+    const combate = iniciarCombate(
+      crearBatallaDesplegada(),
+      crearFormacionesDePrueba(),
+    )
+    const aplazado = aplazarActivacion(combate)
+
+    expect(aplazado.formacionActivaId).toBe('a-rapida')
+    expect(aplazado.colaIniciativa).toEqual([
+      'a-rapida',
+      'a-lenta',
+      'd-igual',
+    ])
+    expect(aplazado.esperasRonda).toEqual(['a-lenta'])
+
+    const vuelveAActuar = finalizarActivacion(aplazado)
+    expect(vuelveAActuar.formacionActivaId).toBe('a-lenta')
+    expect(() =>
+      aplazarActivacion(vuelveAActuar),
+    ).toThrow('ya ha esperado')
   })
 
   it('rechaza una formación táctica ausente del registro persistente', () => {
@@ -201,9 +224,9 @@ describe('iniciativa de batalla', () => {
     )
     expect(
       combate.formacionActivaId,
-    ).toBe('a-rapida')
+    ).toBe('a-lenta')
     expect(
       siguiente.formacionActivaId,
-    ).toBe('a-lenta')
+    ).toBe('a-rapida')
   })
 })
