@@ -45,8 +45,8 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 - Órdenes de héroe limitadas por mando y comportamiento según el arquetipo.
 - Combate manual y resolución automática sobre exactamente el mismo motor.
 - Rutas tácticas punteadas con destino único, coste y movimiento real.
-- Reconciliación de bajas y retirada; la hueste derrotada se disuelve y sus
-  supervivientes quedan dispersados, con desenlace persistente para el héroe.
+- Reconciliación de bajas y retirada; las huestes supervivientes reaparecen
+  tras retirarse y las completamente eliminadas desaparecen con su héroe.
 - Guardado automático y recuperación validada de la sesión.
 - HUD económico adaptable con registro de eventos del turno.
 - Suite automatizada de 535 pruebas, lint, TypeScript, build y CI.

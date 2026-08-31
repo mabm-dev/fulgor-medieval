@@ -88,17 +88,15 @@ sin formaciones en liza, la sesión bloquea cualquier orden posterior.
 ## Persistencia estratégica
 
 Las bajas, heridas, prisioneros, fatiga y suministros continúan después de la
-batalla. En v0.5, la hueste derrotada se disuelve aunque alguna formación haya
-abandonado el campo con supervivientes: estos quedan dispersados, se conservan
-en el parte táctico como supervivientes y no permanecen en el mapa como una
-hueste capaz de encadenar otro combate inmediato. La hueste vencedora sí
-conserva sus formaciones restantes.
+batalla. En v0.5, una hueste derrotada por retirada conserva las formaciones
+que aún tienen integrantes y vuelve a aparecer en el mapa estratégico. La
+retirada no mata ni captura a su héroe, aunque deja sus tropas reducidas y
+fuera del campo táctico.
 
-Al disolverse una hueste, su capitán muere; el héroe principal queda herido y
-cautivo del vencedor. El reino captor se conserva para que v0.6 pueda resolver
-rescates, intercambios, pactos u otras concesiones. Un sistema posterior de
-reagrupamiento podrá recuperar supervivientes dispersados sin reabrir el mismo
-encuentro en la misma casilla.
+Solo se disuelve la hueste cuando todas sus formaciones quedan eliminadas.
+Entonces su capitán muere; el héroe principal queda herido y cautivo del
+vencedor. El reino captor se conserva para que v0.6 pueda resolver rescates,
+intercambios, pactos u otras concesiones.
 
 ## Tipos de encuentro
 

@@ -33,9 +33,9 @@ Resolver el encuentro entre ejércitos mediante decisiones tácticas legibles.
 
 - El resultado depende de las mismas reglas en modo manual y automático.
 - Las bajas y la fatiga persisten.
-- La hueste derrotada desaparece aunque conserve supervivientes retirados;
-  estos constan como dispersados y no abren otro combate desde la misma casilla.
-- El héroe de la hueste derrotada recibe un desenlace persistente.
+- Una hueste que se retira conserva sus formaciones supervivientes y vuelve a
+  aparecer en el mapa.
+- Una hueste sin formaciones vivas desaparece y su héroe recibe un desenlace persistente.
 - El héroe principal derrotado queda herido y cautivo, nunca disponible para
   encabezar otra hueste mientras continúe así.
 - La interfaz explica fase, orden, espera usada, defensa, daño, moral, ruta y

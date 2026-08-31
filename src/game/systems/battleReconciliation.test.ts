@@ -257,7 +257,7 @@ describe('reconciliación estratégica de batalla', () => {
     ])
   })
 
-  it('disuelve la hueste derrotada aunque conserve supervivientes retirados', () => {
+  it('conserva la hueste derrotada cuando sus formaciones se retiran con supervivientes', () => {
     const partida = crearPartida(true)
     const batalla = crearCombate(partida)
     const resultado: ResultadoBatallaAutomatica = Object.freeze({
@@ -284,23 +284,36 @@ describe('reconciliación estratégica de batalla', () => {
 
     expect(
       obtenerFormacion(reconciliado.estado.formaciones, 'a'),
-    ).toBeUndefined()
+    ).toMatchObject({
+      cantidad: 6,
+      moral: 20,
+    })
     expect(
       obtenerFormacion(reconciliado.estado.formaciones, 'a2'),
-    ).toBeUndefined()
+    ).toMatchObject({
+      cantidad: 6,
+      moral: 20,
+    })
     expect(
-      reconciliado.estado.huestes.some(
+      reconciliado.estado.huestes.find(
         (hueste) => hueste.id === 'hueste-a',
       ),
-    ).toBe(false)
+    ).toMatchObject({
+      formacionIds: ['a', 'a2'],
+    })
     expect(
       reconciliado.estado.heroes.find(
         (heroe) => heroe.id === 'heroe-a',
       ),
     ).toMatchObject({
-      estado: 'herido',
-      capturadoPorReinoId: 'leon',
+      estado: 'activo',
     })
+    expect(
+      reconciliado.estado.heroes.find(
+        (heroe) => heroe.id === 'heroe-a',
+      )?.capturadoPorReinoId,
+    ).toBeUndefined()
+    expect(reconciliado.evento.consecuenciasHeroes).toEqual([])
     expect(
       reconciliado.evento.consecuencias.find(
         (consecuencia) => consecuencia.formacionId === 'a',
