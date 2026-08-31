@@ -382,14 +382,14 @@ export default function Mapa() {
   const huestesVisibles = useMemo(
     () =>
       (estadoJuego?.huestes ?? []).filter(
-        (hueste) =>
-          hueste.reinoId !==
-            estadoJuego?.reinoJugador ||
+        (hueste) => hueste.formacionIds.length > 0 && (
+          hueste.reinoId !== estadoJuego?.reinoJugador ||
           estadoNiebla(
             claveHex(hueste.posicion),
             casillasVisibles,
             casillasExploradasSet,
-          ) !== 'oculta',
+          ) !== 'oculta'
+        ),
       ),
     [
       estadoJuego,
@@ -584,6 +584,7 @@ export default function Mapa() {
   const huesteRival =
     estadoJuego.huestes.find(
       (hueste) =>
+        hueste.formacionIds.length > 0 &&
         hueste.reinoId !==
         estadoJuego.reinoJugador,
     )
