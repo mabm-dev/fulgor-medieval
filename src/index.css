@@ -484,3 +484,111 @@
     animation: none;
   }
 }
+
+
+/* ═══════════════ COMBATE TÁCTICO · cadencia y dramatismo ═══════════════ */
+
+.batalla-anuncio {
+  z-index: 20;
+  min-width: 14rem;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.72),
+    inset 0 0 22px rgba(255, 255, 255, 0.035);
+  animation: batallaAnuncio 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.batalla-unidad-prepara {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: batallaUnidadPrepara 0.82s ease-in-out infinite;
+}
+
+.batalla-unidad-resuelve {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: batallaUnidadResuelve 0.62s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.batalla-orden-pulso {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: batallaOrdenPulso 0.9s ease-out infinite;
+}
+
+.batalla-impacto {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: batallaImpacto 0.72s ease-out infinite;
+}
+
+@keyframes batallaAnuncio {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@keyframes batallaUnidadPrepara {
+  0%,
+  100% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+  50% {
+    filter: brightness(1.55) drop-shadow(0 0 8px rgba(255, 227, 138, 0.8));
+    transform: scale(1.12);
+  }
+}
+
+@keyframes batallaUnidadResuelve {
+  0% {
+    filter: brightness(1.8);
+    transform: scale(0.82);
+  }
+  58% {
+    transform: scale(1.22);
+  }
+  100% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+}
+
+@keyframes batallaOrdenPulso {
+  from {
+    opacity: 0.95;
+    transform: scale(0.78);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+@keyframes batallaImpacto {
+  from {
+    opacity: 1;
+    stroke-width: 5;
+    transform: scale(0.72);
+  }
+  to {
+    opacity: 0;
+    stroke-width: 1;
+    transform: scale(1.65);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .batalla-anuncio,
+  .batalla-unidad-prepara,
+  .batalla-unidad-resuelve,
+  .batalla-orden-pulso,
+  .batalla-impacto {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+}

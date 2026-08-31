@@ -144,6 +144,29 @@ describe('ataque táctico', () => {
     expect(() => atacarFormacionTactica(fuera.estado, { atacanteId: 'a', objetivoId: 'a' }, fuera.registro)).toThrow('propio bando')
   })
 
+  it('rechaza atacantes y objetivos que ya están fuera de liza', () => {
+    const combate = crearEstadoCombate()
+    const atacanteRetirado = Object.freeze({
+      ...combate.estado,
+      retiradas: Object.freeze(['a']),
+    })
+    const objetivoRetirado = Object.freeze({
+      ...combate.estado,
+      retiradas: Object.freeze(['d']),
+    })
+
+    expect(() => atacarFormacionTactica(
+      atacanteRetirado,
+      { atacanteId: 'a', objetivoId: 'd' },
+      combate.registro,
+    )).toThrow('atacante está fuera de liza')
+    expect(() => atacarFormacionTactica(
+      objetivoRetirado,
+      { atacanteId: 'a', objetivoId: 'd' },
+      combate.registro,
+    )).toThrow('objetivo está fuera de liza')
+  })
+
   it('consume la activación aunque la defensa anule el daño', () => {
     const combate = crearEstadoCombate(undefined, 1)
     const registro = crearRegistro(100)

@@ -73,6 +73,16 @@ reservada y no se asignan requisitos provisionales.
 8. Moral, bajas, retirada y puntos de mando se resuelven con cada acción.
 9. Tras la última formación defensora comienza una nueva ronda atacante.
 
+La interfaz presenta cada maniobra en tres momentos legibles: selección de la
+formación activa, preparación de la orden y resolución. El bando automático
+mantiene pausas deliberadas entre esos momentos. La ruta de movimiento se
+dibuja como una cadena punteada y solo su destino lleva el número `1`: el
+número representa una única orden, no los puntos de movimiento consumidos.
+
+Una formación retirada o destruida queda fuera de la cola, deja libre su
+casilla visual y no puede atacar ni ser objetivo. En cuanto un bando se queda
+sin formaciones en liza, la sesión bloquea cualquier orden posterior.
+
 ## Persistencia estratégica
 
 Las bajas, heridas, prisioneros, fatiga y suministros continúan después de la

@@ -7,6 +7,7 @@ import {
 } from '../domain/gameState'
 import {
   obtenerFormacion,
+  removerFormacion,
 } from '../domain/formationRegistry'
 import {
   cerrarSesionBatalla,
@@ -159,6 +160,30 @@ describe('sesión de batalla', () => {
     expect(sesion.estado.fase).toBe('resuelta')
     expect(sesion.activaciones.length).toBeGreaterThan(0)
     expect(sesion.activaciones.length).toBeLessThan(100)
+  })
+
+  it('no acepta otra orden cuando uno de los bandos ya está derrotado', () => {
+    const preparada = prepararSesionBatallaParaCombate(
+      crearSesionBatallaDesdeEncuentro(
+        crearPartida(),
+        crearEncuentro(),
+      ),
+    )
+    const terminada = Object.freeze({
+      ...preparada,
+      formaciones: removerFormacion(
+        preparada.formaciones,
+        'd',
+      ),
+    })
+
+    expect(() => ejecutarOrdenSesion(
+      terminada,
+      {
+        tipo: 'defender',
+        formacionId: 'a',
+      },
+    )).toThrow('batalla ya ha terminado')
   })
 
   it('cierra la sesión y devuelve el resultado al mapa estratégico', () => {

@@ -237,6 +237,17 @@ export function ejecutarOrdenSesion(
   sesion: SesionBatalla,
   orden: OrdenTactica,
 ): SesionBatalla {
+  const comprobacionInicial = comprobarFinBatalla(
+    sesion.estado,
+    sesion.formaciones,
+  )
+
+  if (comprobacionInicial.victoria.terminada) {
+    throw new Error(
+      'La batalla ya ha terminado: ninguna formación puede volver a actuar',
+    )
+  }
+
   const ejecucion = ejecutarOrdenTactica(
     sesion.estado,
     sesion.formaciones,

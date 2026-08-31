@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { REINOS } from '../../data/reinos'
 import type { Formacion } from '../../game/domain/formation'
 import { obtenerOrdenesHeroe } from '../../game/domain/hero'
@@ -48,6 +48,21 @@ interface BattleViewProps {
 const NOMBRES_BANDO: Record<BandoBatalla, string> = {
   atacante: 'Vanguardia propia',
   defensor: 'Hueste rival',
+}
+
+const RETARDO_SELECCION_RIVAL = 800
+const RETARDO_PREPARACION_PROPIA = 450
+const RETARDO_PREPARACION_RIVAL = 1100
+const RETARDO_RESOLUCION_PROPIA = 650
+const RETARDO_RESOLUCION_RIVAL = 950
+
+interface AnimacionTactica {
+  readonly orden: OrdenTactica
+  readonly actorId: string
+  readonly objetivoId?: string
+  readonly bando: BandoBatalla
+  readonly fase: 'preparando' | 'resolviendo'
+  readonly automatica: boolean
 }
 
 function obtenerNombreReino(reinoId: string): string {
@@ -111,6 +126,28 @@ function obtenerObjetivosAtacables(
         ) <= formacionActiva.alcance,
     )
     .map((candidata) => candidata.formacionId)
+}
+
+function obtenerActorOrden(orden: OrdenTactica): string {
+  if (orden.tipo === 'atacar') {
+    return orden.atacanteId
+  }
+
+  return orden.formacionId
+}
+
+function obtenerObjetivoOrden(
+  orden: OrdenTactica,
+): string | undefined {
+  if (orden.tipo === 'atacar') {
+    return orden.objetivoId
+  }
+
+  if (orden.tipo === 'heroica' && orden.ordenBase.tipo === 'atacar') {
+    return orden.ordenBase.objetivoId
+  }
+
+  return undefined
 }
 
 function describirOrden(orden: OrdenTactica): string {
@@ -230,6 +267,8 @@ export default function BattleView({
     destinoPrevisualizado,
     setDestinoPrevisualizado,
   ] = useState<CoordenadaHex>()
+  const [animacion, setAnimacion] =
+    useState<AnimacionTactica>()
   const activa = sesion.estado.formaciones.find(
     (tactica) =>
       tactica.formacionId ===
@@ -242,6 +281,7 @@ export default function BattleView({
         activa.formacionId,
       )
   const turnoJugador = activa?.bando === 'atacante'
+  const controlesBloqueados = animacion !== undefined
   const haEsperado = activa !== undefined &&
     sesion.estado.esperasRonda.includes(
       activa.formacionId,
@@ -253,19 +293,19 @@ export default function BattleView({
     heroeJugador !== undefined &&
     sesion.estado.puntosMandoAtacante > 0
   const destinosMovimiento = useMemo(
-    () => turnoJugador
+    () => turnoJugador && !controlesBloqueados
       ? calcularDestinosMovimientoTactico(
           sesion.estado,
           sesion.formaciones,
         )
       : [],
-    [sesion, turnoJugador],
+    [controlesBloqueados, sesion, turnoJugador],
   )
   const objetivosAtaque = useMemo(
-    () => turnoJugador
+    () => turnoJugador && !controlesBloqueados
       ? obtenerObjetivosAtacables(sesion)
       : [],
-    [sesion, turnoJugador],
+    [controlesBloqueados, sesion, turnoJugador],
   )
   const clavesMovimiento = useMemo(
     () => new Set(
@@ -274,14 +314,22 @@ export default function BattleView({
     [destinosMovimiento],
   )
   const indicadorMovimiento = useMemo(
-    () => destinoPrevisualizado === undefined
-      ? null
-      : calcularIndicadorMovimientoTactico(
-          sesion.estado,
-          sesion.formaciones,
-          destinoPrevisualizado,
-        ),
-    [destinoPrevisualizado, sesion],
+    () =>
+      destinoPrevisualizado === undefined ||
+      !clavesMovimiento.has(
+        claveHex(destinoPrevisualizado),
+      )
+        ? null
+        : calcularIndicadorMovimientoTactico(
+            sesion.estado,
+            sesion.formaciones,
+            destinoPrevisualizado,
+          ),
+    [
+      clavesMovimiento,
+      destinoPrevisualizado,
+      sesion,
+    ],
   )
   const victoria = sesion.estado.fase === 'resuelta'
     ? evaluarVictoria(
@@ -290,26 +338,45 @@ export default function BattleView({
       )
     : null
 
-  const aplicarOrden = (orden: OrdenTactica) => {
-    try {
-      const siguiente = ejecutarOrdenSesion(
-        sesion,
-        orden,
-      )
-      setDestinoPrevisualizado(undefined)
-      onCambiarSesion(siguiente)
-      setMensaje(describirOrden(orden))
-    } catch (causa) {
-      setMensaje(
-        causa instanceof Error
-          ? causa.message
-          : 'La orden no pudo ejecutarse',
-      )
+  const prepararOrden = useCallback((
+    orden: OrdenTactica,
+    automatica = false,
+  ) => {
+    if (animacion !== undefined) {
+      return
     }
-  }
+
+    const actorId = obtenerActorOrden(orden)
+    const tactica = sesion.estado.formaciones.find(
+      (candidata) => candidata.formacionId === actorId,
+    )
+
+    if (tactica === undefined) {
+      setMensaje('La formación que debía actuar ya no está en el campo')
+      return
+    }
+
+    setDestinoPrevisualizado(undefined)
+    setAnimacion(Object.freeze({
+      orden,
+      actorId,
+      objetivoId: obtenerObjetivoOrden(orden),
+      bando: tactica.bando,
+      fase: 'preparando',
+      automatica,
+    }))
+    setMensaje(
+      (automatica ? 'La hueste rival' : 'Tu formación') +
+        ' prepara su maniobra…',
+    )
+  }, [animacion, sesion.estado.formaciones])
 
   const manejarCasilla = (coordenada: CoordenadaHex) => {
-    if (!turnoJugador || activa === undefined) {
+    if (
+      controlesBloqueados ||
+      !turnoJugador ||
+      activa === undefined
+    ) {
       return
     }
 
@@ -321,7 +388,7 @@ export default function BattleView({
     )
 
     if (objetivo !== undefined) {
-      aplicarOrden({
+      prepararOrden({
         tipo: 'atacar',
         atacanteId: activa.formacionId,
         objetivoId: objetivo.formacionId,
@@ -330,7 +397,7 @@ export default function BattleView({
     }
 
     if (clavesMovimiento.has(claveHex(coordenada))) {
-      aplicarOrden({
+      prepararOrden({
         tipo: 'mover',
         formacionId: activa.formacionId,
         destino: coordenada,
@@ -341,7 +408,7 @@ export default function BattleView({
   const ejecutarOrdenSugerida = () => {
     if (activa === undefined) return
 
-    aplicarOrden(
+    prepararOrden(
       turnoJugador
         ? decidirOrdenTactica(
             sesion.estado,
@@ -358,6 +425,49 @@ export default function BattleView({
   }
 
   useEffect(() => {
+    if (animacion === undefined) {
+      return
+    }
+
+    const retardo = animacion.fase === 'preparando'
+      ? animacion.automatica
+        ? RETARDO_PREPARACION_RIVAL
+        : RETARDO_PREPARACION_PROPIA
+      : animacion.automatica
+        ? RETARDO_RESOLUCION_RIVAL
+        : RETARDO_RESOLUCION_PROPIA
+
+    const temporizador = window.setTimeout(() => {
+      if (animacion.fase === 'resolviendo') {
+        setAnimacion(undefined)
+        return
+      }
+
+      try {
+        const siguiente = ejecutarOrdenSesion(
+          sesion,
+          animacion.orden,
+        )
+        setAnimacion(Object.freeze({
+          ...animacion,
+          fase: 'resolviendo',
+        }))
+        onCambiarSesion(siguiente)
+        setMensaje(describirOrden(animacion.orden))
+      } catch (causa) {
+        setAnimacion(undefined)
+        setMensaje(
+          causa instanceof Error
+            ? causa.message
+            : 'La orden no pudo ejecutarse',
+        )
+      }
+    }, retardo)
+
+    return () => window.clearTimeout(temporizador)
+  }, [animacion, onCambiarSesion, sesion])
+
+  useEffect(() => {
     const tacticaActiva = sesion.estado.formaciones.find(
       (tactica) =>
         tactica.formacionId ===
@@ -365,6 +475,7 @@ export default function BattleView({
     )
 
     if (
+      animacion !== undefined ||
       sesion.estado.fase !== 'combate' ||
       tacticaActiva?.bando !== 'defensor'
     ) {
@@ -379,12 +490,7 @@ export default function BattleView({
           'defensor',
           sesion.heroes,
         )
-        const siguiente = ejecutarOrdenSesion(
-          sesion,
-          orden,
-        )
-        onCambiarSesion(siguiente)
-        setMensaje(describirOrden(orden))
+        prepararOrden(orden, true)
       } catch (causa) {
         setMensaje(
           causa instanceof Error
@@ -392,10 +498,10 @@ export default function BattleView({
             : 'La fase rival no pudo continuar',
         )
       }
-    }, 650)
+    }, RETARDO_SELECCION_RIVAL)
 
     return () => window.clearTimeout(temporizador)
-  }, [onCambiarSesion, sesion])
+  }, [animacion, prepararOrden, sesion])
 
   const prepararCombate = () => {
     try {
@@ -432,6 +538,7 @@ export default function BattleView({
   return (
     <main
       aria-label="Vista táctica de batalla"
+      aria-busy={controlesBloqueados}
       className="relative h-screen w-screen overflow-y-auto bg-[#030608] text-white"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_48%_35%,rgba(188,122,45,0.16),transparent_38%),linear-gradient(135deg,rgba(25,47,55,0.32),transparent_45%,rgba(70,20,18,0.22))]" />
@@ -462,8 +569,9 @@ export default function BattleView({
           {sesion.estado.fase !== 'resuelta' && (
             <button
               type="button"
+              disabled={controlesBloqueados}
               onClick={resolverAutomaticamente}
-              className="font-cinzel border border-oro/40 bg-[#211708]/80 px-4 py-2 text-[10px] tracking-[0.16em] text-oro-claro uppercase transition-all hover:-translate-y-0.5 hover:border-oro-brillante hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+              className="font-cinzel border border-oro/40 bg-[#211708]/80 px-4 py-2 text-[10px] tracking-[0.16em] text-oro-claro uppercase transition-all hover:-translate-y-0.5 hover:border-oro-brillante hover:shadow-[0_0_20px_rgba(212,175,55,0.2)] disabled:cursor-not-allowed disabled:opacity-35"
             >
               Resolver automáticamente
             </button>
@@ -481,9 +589,41 @@ export default function BattleView({
               destinosMovimiento={destinosMovimiento}
               objetivosAtaque={objetivosAtaque}
               rutaMovimiento={indicadorMovimiento?.ruta}
-              onPrevisualizarCasilla={setDestinoPrevisualizado}
-              onSeleccionarCasilla={manejarCasilla}
+              formacionAnimadaId={animacion?.actorId}
+              objetivoAnimadoId={animacion?.objetivoId}
+              faseAnimacion={animacion?.fase}
+              onPrevisualizarCasilla={
+                controlesBloqueados
+                  ? undefined
+                  : setDestinoPrevisualizado
+              }
+              onSeleccionarCasilla={
+                controlesBloqueados
+                  ? undefined
+                  : manejarCasilla
+              }
             />
+            {animacion !== undefined && (
+              <div
+                data-animacion-batalla={animacion.fase}
+                className={
+                  'batalla-anuncio pointer-events-none absolute top-4 left-1/2 ' +
+                  '-translate-x-1/2 border px-6 py-3 text-center ' +
+                  (animacion.bando === 'atacante'
+                    ? 'border-acero/70 bg-[#071d28]/95 text-acero-claro'
+                    : 'border-[#c75a4f]/70 bg-[#2a0c0d]/95 text-[#f0a095]')
+                }
+              >
+                <p className="font-cinzel text-[9px] tracking-[0.24em] uppercase">
+                  {NOMBRES_BANDO[animacion.bando]}
+                </p>
+                <p className="font-cinzel mt-1 text-xs tracking-[0.12em] uppercase">
+                  {animacion.fase === 'preparando'
+                    ? 'Prepara la maniobra'
+                    : describirOrden(animacion.orden)}
+                </p>
+              </div>
+            )}
             {indicadorMovimiento !== null && (
               <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 border border-oro/70 bg-[#120d05]/95 px-4 py-2 text-center shadow-[0_8px_24px_rgba(0,0,0,0.65)]">
                 <p className="font-cinzel text-[10px] tracking-[0.16em] text-oro-claro uppercase">
@@ -534,8 +674,8 @@ export default function BattleView({
                 <>
                   <button
                     type="button"
-                    disabled={haEsperado}
-                    onClick={() => aplicarOrden({
+                    disabled={haEsperado || controlesBloqueados}
+                    onClick={() => prepararOrden({
                       tipo: 'esperar',
                       formacionId: activa.formacionId,
                     })}
@@ -545,7 +685,8 @@ export default function BattleView({
                   </button>
                   <button
                     type="button"
-                    onClick={() => aplicarOrden({
+                    disabled={controlesBloqueados}
+                    onClick={() => prepararOrden({
                       tipo: 'defender',
                       formacionId: activa.formacionId,
                     })}
@@ -555,6 +696,7 @@ export default function BattleView({
                   </button>
                   <button
                     type="button"
+                    disabled={controlesBloqueados}
                     onClick={ejecutarOrdenSugerida}
                     className="font-cinzel border border-acero/50 bg-[#0a2733] px-4 py-2 text-[10px] tracking-[0.15em] text-acero-claro uppercase transition-all hover:border-acero-claro hover:shadow-[0_0_18px_rgba(95,179,217,0.2)]"
                   >
@@ -565,7 +707,7 @@ export default function BattleView({
                       type="button"
                       onClick={() => {
                         try {
-                          aplicarOrden(crearOrdenHeroica(
+                          prepararOrden(crearOrdenHeroica(
                             sesion.estado,
                             sesion.formaciones,
                             heroeJugador,
@@ -596,8 +738,9 @@ export default function BattleView({
               {sesion.estado.fase === 'resuelta' && (
                 <button
                   type="button"
+                  disabled={controlesBloqueados}
                   onClick={() => onCerrar(sesion)}
-                  className="font-cinzel border border-oro/70 bg-gradient-to-b from-[#44330f] to-[#161004] px-6 py-3 text-xs tracking-[0.2em] text-oro-brillante uppercase transition-all hover:-translate-y-0.5 hover:shadow-[0_0_28px_rgba(212,175,55,0.32)]"
+                  className="font-cinzel border border-oro/70 bg-gradient-to-b from-[#44330f] to-[#161004] px-6 py-3 text-xs tracking-[0.2em] text-oro-brillante uppercase transition-all hover:-translate-y-0.5 hover:shadow-[0_0_28px_rgba(212,175,55,0.32)] disabled:cursor-wait disabled:opacity-45"
                 >
                   Aplicar resultado y volver al mapa
                 </button>

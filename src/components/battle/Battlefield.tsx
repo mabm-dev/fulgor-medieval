@@ -37,6 +37,9 @@ interface BattlefieldProps {
   readonly destinosMovimiento?: readonly CoordenadaHex[]
   readonly objetivosAtaque?: readonly string[]
   readonly rutaMovimiento?: readonly CoordenadaHex[]
+  readonly formacionAnimadaId?: string
+  readonly objetivoAnimadoId?: string
+  readonly faseAnimacion?: 'preparando' | 'resolviendo'
   readonly onPrevisualizarCasilla?: (
     coordenada: CoordenadaHex | undefined,
   ) => void
@@ -88,9 +91,11 @@ function obtenerIniciales(nombre: string): string {
 function formacionEnCasilla(
   formaciones: readonly FormacionTactica[],
   clave: string,
+  retiradas: ReadonlySet<string>,
 ): FormacionTactica | undefined {
   return formaciones.find(
     (formacion) =>
+      !retiradas.has(formacion.formacionId) &&
       formacion.posicion !== undefined &&
       claveHex(formacion.posicion) === clave,
   )
@@ -101,6 +106,9 @@ export default function Battlefield({
   destinosMovimiento = [],
   objetivosAtaque = [],
   rutaMovimiento = [],
+  formacionAnimadaId,
+  objetivoAnimadoId,
+  faseAnimacion,
   onPrevisualizarCasilla,
   onSeleccionarCasilla,
 }: BattlefieldProps) {
@@ -155,6 +163,7 @@ export default function Battlefield({
       .filter((punto): punto is Punto => punto !== undefined),
     [centrosPorClave, rutaMovimiento],
   )
+  const destinoRuta = puntosRuta.at(-1)
 
   return (
     <svg
@@ -175,10 +184,9 @@ export default function Battlefield({
         const tactica = formacionEnCasilla(
           sesion.estado.formaciones,
           hexagono.clave,
+          retiradas,
         )
-        const retirada = tactica !== undefined &&
-          retiradas.has(tactica.formacionId)
-        const formacion = tactica === undefined || retirada
+        const formacion = tactica === undefined
           ? undefined
           : obtenerFormacion(
               sesion.formaciones,
@@ -192,6 +200,10 @@ export default function Battlefield({
           )
         const esObjetivo = tactica !== undefined &&
           idsObjetivo.has(tactica.formacionId)
+        const esActorAnimado = tactica?.formacionId ===
+          formacionAnimadaId
+        const esObjetivoAnimado = tactica?.formacionId ===
+          objetivoAnimadoId
         const esDestino = clavesMovimiento.has(
           hexagono.clave,
         )
@@ -291,6 +303,13 @@ export default function Battlefield({
                 data-bando={tactica.bando}
                 data-activa={esActiva || undefined}
                 data-defendiendo={esDefendiendo || undefined}
+                data-animacion={
+                  esActorAnimado
+                    ? faseAnimacion
+                    : esObjetivoAnimado
+                      ? 'impacto'
+                      : undefined
+                }
               >
                 <circle
                   cx={hexagono.centro.x}
@@ -303,8 +322,31 @@ export default function Battlefield({
                       ? '#8fd8f4'
                       : '#e8d9ae'}
                   strokeWidth={esActiva || esDefendiendo ? 4 : 2}
-                  className={esActiva ? 'animate-pulse' : undefined}
+                  className={[
+                    esActiva ? 'animate-pulse' : '',
+                    esActorAnimado
+                      ? faseAnimacion === 'preparando'
+                        ? 'batalla-unidad-prepara'
+                        : 'batalla-unidad-resuelve'
+                      : '',
+                  ].filter(Boolean).join(' ') || undefined}
                 />
+                {(esActorAnimado || esObjetivoAnimado) && (
+                  <circle
+                    cx={hexagono.centro.x}
+                    cy={hexagono.centro.y}
+                    r={RADIO * 0.66}
+                    fill="none"
+                    stroke={esObjetivoAnimado ? '#ef6b5b' : '#ffe38a'}
+                    strokeWidth="3"
+                    vectorEffect="non-scaling-stroke"
+                    className={
+                      esObjetivoAnimado
+                        ? 'batalla-impacto'
+                        : 'batalla-orden-pulso'
+                    }
+                  />
+                )}
                 <text
                   x={hexagono.centro.x}
                   y={hexagono.centro.y - 1}
@@ -348,11 +390,11 @@ export default function Battlefield({
             vectorEffect="non-scaling-stroke"
             opacity="0.9"
           />
-          {puntosRuta.slice(1).map((punto, indice) => (
-            <g key={punto.x + ',' + punto.y}>
+          {destinoRuta && (
+            <g data-destino-ruta>
               <circle
-                cx={punto.x}
-                cy={punto.y}
+                cx={destinoRuta.x}
+                cy={destinoRuta.y}
                 r="11"
                 fill="#241705"
                 stroke="#ffe38a"
@@ -360,8 +402,8 @@ export default function Battlefield({
                 vectorEffect="non-scaling-stroke"
               />
               <text
-                x={punto.x}
-                y={punto.y}
+                x={destinoRuta.x}
+                y={destinoRuta.y}
                 textAnchor="middle"
                 dominantBaseline="central"
                 fill="#fff3c4"
@@ -369,10 +411,10 @@ export default function Battlefield({
                 fontSize="10"
                 fontWeight="700"
               >
-                {indice + 1}
+                1
               </text>
             </g>
-          ))}
+          )}
         </g>
       )}
     </svg>

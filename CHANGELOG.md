@@ -11,8 +11,8 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
   estimación de llegada que tiene en cuenta el suministro.
 - Objetivo rival conocido y diferenciado en rojo para facilitar el acceso al
   combate táctico de la pre-alpha.
-- Previsualización táctica de la ruta con trazo, pasos numerados, coste y
-  movimiento disponible.
+- Previsualización táctica de la ruta con trazo punteado, un único indicador
+  `1` en el destino, coste y movimiento disponible.
 - Estado persistente del héroe para distinguir actividad, heridas, muerte y
   cautiverio, con el reino captor preparado para la futura negociación.
 - Compatibilidad con partidas v0.5: al faltar los nuevos campos, el primer
@@ -21,6 +21,8 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
   por tipo de tropa y posición visual.
 - Espera aplazada una vez por ronda y acción de defender con +2 temporal.
 - Fase defensora automática y señalización del bando activo en la interfaz.
+- Cadencia visual para ambos bandos con preparación, resolución, impacto y
+  pausas más largas durante las maniobras automáticas.
 
 ### Corregido
 
@@ -28,6 +30,9 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
   efectos; los duplicados de guardados anteriores se normalizan al cargarlos.
 - Una hueste que pierde todas sus formaciones se disuelve en el mapa; su
   capitán muere o, si es el héroe principal, queda herido y cautivo.
+- Las formaciones fuera de liza ya no pueden atacar, ser objetivo ni ocultar
+  visualmente a una unidad que ocupe después su antigua casilla.
+- La sesión rechaza nuevas órdenes en cuanto uno de los bandos queda derrotado.
 
 ## [0.5.0] - 2026-08-30
 

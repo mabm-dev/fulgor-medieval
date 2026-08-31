@@ -107,7 +107,7 @@ describe('BattleView', () => {
     expect(html).not.toContain('Formar líneas y combatir')
   })
 
-  it('dibuja la ruta táctica con sus pasos numerados', () => {
+  it('dibuja una ruta punteada con un único 1 en el destino', () => {
     const sesion = prepararSesionBatallaParaCombate(
       crearSesionPrueba(),
     )
@@ -130,8 +130,55 @@ describe('BattleView', () => {
 
     expect(html).toContain('data-ruta-movimiento')
     expect(html).toContain('<polyline')
+    expect(html.match(/data-destino-ruta/g)).toHaveLength(1)
     expect(html).toContain('>1</text>')
-    expect(html).toContain('>2</text>')
+    expect(html).not.toContain('>2</text>')
+  })
+
+  it('no deja que una retirada oculte a otra unidad en la misma casilla', () => {
+    const sesion = prepararSesionBatallaParaCombate(
+      crearSesionPrueba(),
+    )
+    const retirado = sesion.estado.formaciones[0]
+    const superviviente = sesion.estado.formaciones[1]
+
+    if (
+      retirado === undefined ||
+      superviviente === undefined ||
+      superviviente.posicion === undefined
+    ) {
+      throw new Error('Faltan formaciones para comprobar el solapamiento')
+    }
+
+    const estado = Object.freeze({
+      ...sesion.estado,
+      retiradas: Object.freeze([retirado.formacionId]),
+      formaciones: Object.freeze(
+        sesion.estado.formaciones.map((tactica) =>
+          tactica.formacionId === retirado.formacionId
+            ? Object.freeze({
+                ...tactica,
+                posicion: superviviente.posicion,
+              })
+            : tactica,
+        ),
+      ),
+    })
+    const html = renderToStaticMarkup(
+      <Battlefield
+        sesion={Object.freeze({ ...sesion, estado })}
+        formacionAnimadaId={superviviente.formacionId}
+        faseAnimacion="preparando"
+      />,
+    )
+
+    expect(html).not.toContain(
+      `data-formacion-id="${retirado.formacionId}"`,
+    )
+    expect(html).toContain(
+      `data-formacion-id="${superviviente.formacionId}"`,
+    )
+    expect(html).toContain('data-animacion="preparando"')
   })
 
   it('ofrece aplicar el resultado al terminar la batalla', () => {

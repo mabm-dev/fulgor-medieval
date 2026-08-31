@@ -33,6 +33,9 @@ function obtenerFormacionTactica(
   if (estado.formacionActivaId !== id) {
     throw new Error('Solo puede actuar la formación activa')
   }
+  if (estado.retiradas.includes(id)) {
+    throw new Error('La formación atacante está fuera de liza')
+  }
   const tactica = estado.formaciones.find((candidata) => candidata.formacionId === id)
   if (tactica === undefined) {
     throw new Error(`Formación táctica no encontrada: ${id}`)
@@ -68,6 +71,9 @@ export function atacarFormacionTactica(
   )
   if (objetivoTactico === undefined) {
     throw new Error(`Formación objetivo no encontrada: ${opciones.objetivoId}`)
+  }
+  if (estado.retiradas.includes(opciones.objetivoId)) {
+    throw new Error('La formación objetivo está fuera de liza')
   }
   if (objetivoTactico.bando === atacanteTactico.bando) {
     throw new Error('Una formación no puede atacar a su propio bando')

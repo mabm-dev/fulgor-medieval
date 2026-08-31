@@ -44,11 +44,11 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
   espera aplazada, defensa, bajas, moral y fatiga.
 - Órdenes de héroe limitadas por mando y comportamiento según el arquetipo.
 - Combate manual y resolución automática sobre exactamente el mismo motor.
-- Rutas tácticas previsualizadas con pasos y coste de movimiento real.
+- Rutas tácticas punteadas con destino único, coste y movimiento real.
 - Reconciliación de bajas, retirada, disolución de huestes y destino del héroe.
 - Guardado automático y recuperación validada de la sesión.
 - HUD económico adaptable con registro de eventos del turno.
-- Suite automatizada de 530 pruebas, lint, TypeScript, build y CI.
+- Suite automatizada de 533 pruebas, lint, TypeScript, build y CI.
 
 ## Visión jugable
 
