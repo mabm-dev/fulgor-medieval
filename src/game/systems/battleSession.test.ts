@@ -149,6 +149,34 @@ describe('sesión de batalla', () => {
     ).toBe(true)
   })
 
+  it('solo retira la hueste mediante una orden explícita del jugador', () => {
+    const preparada = prepararSesionBatallaParaCombate(
+      crearSesionBatallaDesdeEncuentro(
+        crearPartida(),
+        crearEncuentro(),
+      ),
+    )
+    const activaId = preparada.estado.formacionActivaId
+
+    if (activaId === undefined) {
+      throw new Error('La batalla no tiene formación activa')
+    }
+
+    const retirada = ejecutarOrdenSesion(
+      preparada,
+      {
+        tipo: 'retirarse',
+        formacionId: activaId,
+      },
+    )
+
+    expect(retirada.estado.fase).toBe('resuelta')
+    expect(retirada.estado.retiradas).toContain(activaId)
+    expect(
+      obtenerFormacion(retirada.formaciones, activaId)?.cantidad,
+    ).toBe(50)
+  })
+
   it('despliega y resuelve automáticamente ambos bandos', () => {
     const sesion = resolverSesionBatallaAutomatica(
       crearSesionBatallaDesdeEncuentro(

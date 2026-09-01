@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { EventoEncuentroCombate } from '../domain/events'
+import type {
+  EventoBatallaResuelta,
+  EventoEncuentroCombate,
+} from '../domain/events'
 import { obtenerFormacion } from '../domain/formationRegistry'
 import { DIMENSIONES_MAPA_PREDETERMINADO, generarMapa } from '../map/generateMap'
 import { claveHex, vecinosHex } from '../map/hex'
@@ -97,6 +100,24 @@ describe('flujo completo del combate tactico', () => {
     expect(sesion.estado.fase).toBe('resuelta')
     expect(cierre.eventos).toHaveLength(1)
     expect(cierre.eventos[0]?.tipo).toBe('batalla_resuelta')
+    const desenlace = cierre.eventos[0] as EventoBatallaResuelta
+    const huestePerdedoraId = desenlace.ganador === 'atacante'
+      ? encuentro.huesteDefensoraId
+      : encuentro.huesteAtacanteId
+    const huesteGanadoraId = desenlace.ganador === 'atacante'
+      ? encuentro.huesteAtacanteId
+      : encuentro.huesteDefensoraId
+
+    expect(
+      cierre.estado.huestes.find(
+        (hueste) => hueste.id === huestePerdedoraId,
+      ),
+    ).toBeUndefined()
+    expect(
+      cierre.estado.huestes.find(
+        (hueste) => hueste.id === huesteGanadoraId,
+      ),
+    ).toBeDefined()
     expect(cierre.estado.turno).toBe(2)
     expect(cierre.estado.formaciones).not.toEqual(antesDelChoque.formaciones)
     expect(

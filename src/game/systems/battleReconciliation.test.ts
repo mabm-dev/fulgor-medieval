@@ -217,7 +217,7 @@ describe('reconciliación estratégica de batalla', () => {
     ).toMatchObject({
       bajas: 50,
       cantidadFinal: 0,
-      retirada: true,
+      retirada: false,
       destruida: true,
     })
   })

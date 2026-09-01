@@ -142,7 +142,8 @@ function crearConsecuencias(
         cantidadFinal: final?.cantidad ?? 0,
         moralFinal: final?.moral ?? 0,
         fatigaFinal: final?.fatiga ?? inicial.fatiga,
-        retirada: retiradas.has(tactica.formacionId),
+        retirada:
+          final !== undefined && retiradas.has(tactica.formacionId),
         destruida: final === undefined || final.cantidad === 0,
       })
     }),

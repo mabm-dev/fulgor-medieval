@@ -113,6 +113,39 @@ describe('resolución automática táctica', () => {
     expect(resultado.motivo).toBe('resuelta')
     expect(resultado.estado.fase).toBe('resuelta')
     expect(resultado.activaciones.length).toBeLessThan(100)
+
+    const atacanteVivo = obtenerFormacion(
+      resultado.formaciones,
+      'a',
+    ) !== undefined
+    const defensorVivo = obtenerFormacion(
+      resultado.formaciones,
+      'd',
+    ) !== undefined
+
+    expect(atacanteVivo).not.toBe(defensorVivo)
+  })
+
+  it('no convierte una quiebra de moral en retirada automática', () => {
+    const combate = crearCombate()
+    const registro = crearRegistroFormaciones(
+      combate.registro.map((formacion) =>
+        formacion.id === 'd'
+          ? { ...formacion, moral: 1 }
+          : formacion,
+      ),
+    )
+    const resultado = resolverBatallaAutomatica(
+      combate.estado,
+      registro,
+      1,
+    )
+
+    expect(
+      obtenerFormacion(resultado.formaciones, 'd')?.cantidad,
+    ).toBeGreaterThan(0)
+    expect(resultado.estado.retiradas).not.toContain('d')
+    expect(resultado.estado.fase).toBe('combate')
   })
 
   it('repite las mismas activaciones para el mismo estado inicial', () => {

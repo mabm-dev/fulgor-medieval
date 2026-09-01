@@ -29,6 +29,7 @@ import {
 } from './battleMovement'
 import {
   evaluarMoral,
+  retirarHueste,
 } from './battleMorale'
 
 export const FATIGA_POR_ACTIVACION = 1
@@ -186,7 +187,7 @@ function aplicarAtaqueTemporal(
       )
 
   return {
-    estado: destruida || moral.retiradaRecomendada
+    estado: destruida
       ? marcarFueraDeLiza(resultado.estado, objetivo.id)
       : resultado.estado,
     formaciones: actualizadas,
@@ -240,6 +241,20 @@ function ejecutarOrdenBasica(
     estado,
     actorId,
   )
+
+  if (orden.tipo === 'retirarse') {
+    return Object.freeze({
+      estado: retirarHueste(
+        estadoPreparado,
+        orden.formacionId,
+      ),
+      formaciones,
+      registro: Object.freeze({
+        bando,
+        orden,
+      }),
+    })
+  }
 
   if (orden.tipo === 'atacar') {
     const resultado = atacarFormacionTactica(

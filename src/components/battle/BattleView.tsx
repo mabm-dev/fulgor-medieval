@@ -183,6 +183,10 @@ function describirOrden(orden: OrdenTactica): string {
     return 'Avanzó a ' + orden.destino.q + ', ' + orden.destino.r
   }
 
+  if (orden.tipo === 'retirarse') {
+    return 'La hueste abandonó voluntariamente el campo'
+  }
+
   return orden.tipo === 'defender'
     ? 'Adoptó una posición defensiva (+2 defensa)'
     : 'Esperó y actuará al final de su bando'
@@ -719,6 +723,17 @@ export default function BattleView({
                     className="font-cinzel border border-[#79b9d3]/55 bg-[#0b2934] px-4 py-2 text-[10px] tracking-[0.15em] text-[#a9dff2] uppercase transition-all hover:border-[#b9ebfa] hover:shadow-[0_0_18px_rgba(95,179,217,0.2)]"
                   >
                     Defender · +2
+                  </button>
+                  <button
+                    type="button"
+                    disabled={controlesBloqueados}
+                    onClick={() => prepararOrden({
+                      tipo: 'retirarse',
+                      formacionId: activa.formacionId,
+                    })}
+                    className="font-cinzel border border-[#a9574d]/70 bg-[#321112] px-4 py-2 text-[10px] tracking-[0.15em] text-[#f3b0a6] uppercase transition-all hover:border-[#e78779] hover:shadow-[0_0_18px_rgba(169,87,77,0.25)]"
+                  >
+                    Retirar hueste
                   </button>
                   <button
                     type="button"

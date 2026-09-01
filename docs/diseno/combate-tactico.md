@@ -70,8 +70,11 @@ reservada y no se asignan requisitos provisionales.
    permite una vez por ronda y, al volver, puede mover, defender o atacar si
    posición y alcance permiten un objetivo válido.
 7. Defender concede +2 a defensa hasta que esa formación vuelva a actuar.
-8. Moral, bajas, retirada y puntos de mando se resuelven con cada acción.
-9. Tras la última formación defensora comienza una nueva ronda atacante.
+8. Las bajas reducen la moral, pero una quiebra nunca provoca una retirada
+   automática.
+9. La hueste completa solo se retira mediante la orden explícita
+   «Retirar hueste». La IA no utiliza esta orden.
+10. Tras la última formación defensora comienza una nueva ronda atacante.
 
 La interfaz presenta cada maniobra en tres momentos legibles: selección de la
 formación activa, preparación de la orden y resolución. El bando automático
@@ -82,8 +85,10 @@ parte del campo reserva espacio para dos líneas, de forma que el tablero no se
 desplace verticalmente cuando cambia la longitud del mensaje.
 
 Una formación retirada o destruida queda fuera de la cola, deja libre su
-casilla visual y no puede atacar ni ser objetivo. En cuanto un bando se queda
-sin formaciones en liza, la sesión bloquea cualquier orden posterior.
+casilla visual y no puede atacar ni ser objetivo. Si no se ordena la retirada,
+la batalla continúa hasta que todas las formaciones de uno de los bandos han
+sido destruidas. En cuanto un bando se queda sin formaciones en liza, la
+sesión bloquea cualquier orden posterior.
 
 ## Persistencia estratégica
 

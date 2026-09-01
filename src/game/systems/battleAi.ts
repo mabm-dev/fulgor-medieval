@@ -44,6 +44,10 @@ export type OrdenTacticaBasica =
       readonly tipo: 'defender'
       readonly formacionId: string
     }>
+  | Readonly<{
+      readonly tipo: 'retirarse'
+      readonly formacionId: string
+    }>
 
 export type OrdenTactica = OrdenTacticaBasica | Readonly<{
   readonly tipo: 'heroica'

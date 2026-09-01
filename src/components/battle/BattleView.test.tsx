@@ -102,6 +102,7 @@ describe('BattleView', () => {
     expect(html).toContain('Orden sugerida')
     expect(html).toContain('Orden del héroe · 1')
     expect(html).toContain('Defender · +2')
+    expect(html).toContain('Retirar hueste')
     expect(html).toContain('fase atacante')
     expect(html).toContain('Moral 100 · Fatiga 0')
     expect(html).not.toContain('Formar líneas y combatir')

@@ -121,6 +121,49 @@ export function retirarFormacion(
   }))
 }
 
+/**
+ * Retira voluntariamente la hueste completa del bando que tiene la
+ * iniciativa. La moral nunca llama a esta función: solo una orden explícita.
+ */
+export function retirarHueste(
+  estado: EstadoBatalla,
+  formacionId: string,
+): EstadoBatalla {
+  if (estado.fase !== 'combate') {
+    throw new Error('Solo se puede retirar durante el combate')
+  }
+
+  if (estado.formacionActivaId !== formacionId) {
+    throw new Error('Solo puede retirarse la hueste activa')
+  }
+
+  const activa = estado.formaciones.find(
+    (formacion) => formacion.formacionId === formacionId,
+  )
+
+  if (activa === undefined) {
+    throw new Error(`Formación táctica no encontrada: ${formacionId}`)
+  }
+
+  const retiradas = new Set(estado.retiradas ?? [])
+
+  for (const formacion of estado.formaciones) {
+    if (formacion.bando === activa.bando) {
+      retiradas.add(formacion.formacionId)
+    }
+  }
+
+  return Object.freeze({
+    ...estado,
+    retiradas: Object.freeze([...retiradas]),
+    defendiendo: Object.freeze(
+      estado.defendiendo.filter(
+        (id) => !retiradas.has(id),
+      ),
+    ),
+  })
+}
+
 export interface ResultadoVictoria {
   readonly terminada: boolean
   readonly ganador?: BandoBatalla | 'empate'
