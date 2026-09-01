@@ -107,6 +107,34 @@ describe('estado de partida', () => {
     })
   })
 
+  it('conserva las relaciones diplomáticas al restaurar la partida', () => {
+    const estado = crearEstadoPartida({
+      semillaMapa: 7,
+      meta: META,
+      reinoJugador: 'castilla',
+      diplomacia: [
+        {
+          reinoA: 'leon',
+          reinoB: 'castilla',
+          estado: 'paz',
+          intencion: 'neutral',
+        },
+      ],
+    })
+    const restaurado = restaurarEstadoPartida(
+      JSON.parse(JSON.stringify(estado)),
+    )
+
+    expect(restaurado.diplomacia).toEqual([
+      {
+        reinoA: 'castilla',
+        reinoB: 'leon',
+        estado: 'paz',
+        intencion: 'neutral',
+      },
+    ])
+  })
+
   it('rechaza una semilla que no es entera', () => {
     expect(() =>
       crearEstadoPartida({

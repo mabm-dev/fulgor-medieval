@@ -8,6 +8,9 @@ import { PERFILES_FORMACION } from '../content/formations'
 import type {
   EventoTurno,
 } from '../domain/events'
+import {
+  crearRegistroDiplomatico,
+} from '../domain/diplomacy'
 import { crearHueste } from '../domain/hueste'
 import type { OpcionesFormacion } from '../domain/formation'
 import {
@@ -222,6 +225,14 @@ export function crearSesionPartida(
   const perfilRival = obtenerPerfilEconomico(
     reinoRival,
   )
+  const diplomacia = crearRegistroDiplomatico([
+    {
+      reinoA: opciones.reinoJugador,
+      reinoB: reinoRival,
+      estado: 'guerra',
+      intencion: 'conquista',
+    },
+  ])
 
   const meta: MetaPartida = {
     jugador: opciones.jugador,
@@ -246,6 +257,7 @@ export function crearSesionPartida(
     recursosRivales: {
       [reinoRival]: perfilRival.recursosIniciales,
     },
+    diplomacia,
     asentamientos: [capital, capitalRival],
     huestes: [hueste, huesteRival],
     formaciones: [...formaciones],

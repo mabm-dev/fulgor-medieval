@@ -44,9 +44,10 @@
 - Un reino controlado por IA, con personalidad y objetivos estratégicos.
 - Movimiento rival provisional implementado: elige la hueste propia más cercana y puede iniciar un encuentro al contactar; la diplomacia regulará esa intención después.
 - Economía rival implementada: cada reino conserva su tesoro, produce, consume y elige construcciones válidas sin repetir edificios.
-- La rival solo perseguirá o atacará cuando la relación y su intención lo
-  permitan; la paz y una personalidad pacífica bloquean la agresión por defecto.
-- Relaciones, pacto, comercio y guerra.
+- Diplomacia base implementada: relaciones explícitas de paz, pacto, comercio
+  y guerra, con intención neutral, defensiva, de disputa, conquista o misión.
+  La rival solo persigue o ataca cuando la relación y su intención lo permiten.
+- Interfaz y consecuencias avanzadas de relaciones, pacto, comercio y guerra.
 - Rescate, intercambio o concesiones por héroes cautivos.
 - Condiciones para que un capitán ascienda a héroe.
 - Objetivo de victoria y derrota.

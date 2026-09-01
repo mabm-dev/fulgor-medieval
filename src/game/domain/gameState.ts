@@ -3,6 +3,13 @@ import {
   type IdentificadorReino,
 } from './kingdom'
 import {
+  crearRegistroDiplomatico,
+  esEstadoRelacion,
+  esIntencionDiplomatica,
+  type OpcionesRelacionDiplomatica,
+  type RegistroDiplomatico,
+} from './diplomacy'
+import {
   esTipoAsentamiento,
   esTipoFuero,
   FUERO_POR_DEFECTO,
@@ -72,6 +79,8 @@ export interface EstadoPartida {
   readonly fase: FaseTurno
   readonly reinoJugador: IdentificadorReino
   readonly recursos: ReservaRecursos
+  /** Relaciones explicitas entre reinos; ausente en partidas legadas. */
+  readonly diplomacia?: RegistroDiplomatico
   /**
    * Tesoro separado de cada reino no jugable. Es opcional para conservar
    * compatibilidad con estados de prueba y partidas anteriores a la IA rival.
@@ -108,6 +117,7 @@ export interface OpcionesEstadoInicial {
   readonly recursosRivales?: Readonly<
     Record<string, Partial<ReservaRecursos>>
   >
+  readonly diplomacia?: readonly OpcionesRelacionDiplomatica[]
   readonly asentamientos?:
     readonly OpcionesAsentamiento[]
   readonly huestes?:
@@ -223,6 +233,62 @@ function crearRecursosRivales(
   }
 
   return Object.freeze(resultado)
+}
+
+function crearDiplomacia(
+  valores: readonly OpcionesRelacionDiplomatica[] | undefined,
+): RegistroDiplomatico | undefined {
+  if (valores === undefined) {
+    return undefined
+  }
+
+  return crearRegistroDiplomatico(valores)
+}
+
+function leerRelacionDiplomatica(
+  datos: unknown,
+): OpcionesRelacionDiplomatica {
+  if (!esRegistro(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  const reinoA = datos.reinoA
+  const reinoB = datos.reinoB
+  const estado = datos.estado
+  const intencion = datos.intencion
+
+  if (
+    typeof reinoA !== 'string' ||
+    typeof reinoB !== 'string' ||
+    !esEstadoRelacion(estado) ||
+    !esIntencionDiplomatica(intencion)
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return {
+    reinoA,
+    reinoB,
+    estado,
+    intencion,
+  }
+}
+
+function leerDiplomacia(
+  datos: unknown,
+): RegistroDiplomatico | undefined {
+  if (datos === undefined) {
+    return undefined
+  }
+  if (!Array.isArray(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return crearRegistroDiplomatico(
+    datos.map((relacion) =>
+      leerRelacionDiplomatica(relacion),
+    ),
+  )
 }
 
 function leerRecursosRivales(
@@ -807,6 +873,9 @@ export function crearEstadoPartida(
     crearRecursosRivales(
       opciones.recursosRivales,
     )
+  const diplomacia = crearDiplomacia(
+    opciones.diplomacia,
+  )
 
   const estado: EstadoPartida = {
     version: VERSION_ESTADO_PARTIDA,
@@ -822,6 +891,9 @@ export function crearEstadoPartida(
     recursos: crearReservaRecursos(
       opciones.recursos,
     ),
+    ...(diplomacia === undefined
+      ? {}
+      : { diplomacia }),
     ...(recursosRivales === undefined
       ? {}
       : { recursosRivales }),
@@ -895,6 +967,9 @@ export function restaurarEstadoPartida(
 
   const recursosRivales =
     leerRecursosRivales(datos.recursosRivales)
+  const diplomacia = leerDiplomacia(
+    datos.diplomacia,
+  )
   const estado: EstadoPartida = {
     version: VERSION_ESTADO_PARTIDA,
     semillaMapa: leerSemilla(
@@ -926,6 +1001,9 @@ export function restaurarEstadoPartida(
         'oro',
       ),
     }),
+    ...(diplomacia === undefined
+      ? {}
+      : { diplomacia }),
     ...(recursosRivales === undefined
       ? {}
       : { recursosRivales }),

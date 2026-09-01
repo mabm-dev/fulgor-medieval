@@ -112,6 +112,14 @@ describe('sesión de partida', () => {
     expect(
       estado.asentamientos[1].reinoId,
     ).not.toBe('castilla')
+    expect(estado.diplomacia).toEqual([
+      {
+        reinoA: 'castilla',
+        reinoB: 'leon',
+        estado: 'guerra',
+        intencion: 'conquista',
+      },
+    ])
   })
 
   it('empieza viendo alrededor de la propia capital, no ciega', () => {

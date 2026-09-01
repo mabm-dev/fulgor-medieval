@@ -1,4 +1,8 @@
 import type { EstadoPartida } from '../domain/gameState'
+import {
+  obtenerRelacion,
+  puedeIniciarHostilidades,
+} from '../domain/diplomacy'
 import type { Hueste } from '../domain/hueste'
 import {
   crearRegistroHuestes,
@@ -87,11 +91,11 @@ function mismaCoordenada(
 }
 
 /**
- * Decide el movimiento estratégico básico del reino rival. En esta primera
- * pieza la rival tiene un objetivo claro y reproducible: aproximarse a la
- * hueste activa del jugador. La hostilidad es provisional hasta que exista
- * el estado diplomático: nunca entra en su casilla y queda bloqueada a un
- * paso y puede generar un encuentro como atacante al contactar.
+ * Decide el movimiento estratégico básico del reino rival. La rival solo
+ * elige objetivo cuando su relación con el jugador permite iniciar
+ * hostilidades; en paz neutral, pacto o comercio permanece en su territorio.
+ * Cuando sí existe una razón ofensiva, el objetivo sigue siendo reproducible:
+ * la hueste propia más cercana.
  */
 export function resolverTurnoRival(
   estado: EstadoPartida,
@@ -102,6 +106,13 @@ export function resolverTurnoRival(
   const rival = huestes.filter(
     (hueste) =>
       hueste.reinoId !== estado.reinoJugador &&
+      puedeIniciarHostilidades(
+        obtenerRelacion(
+          estado.diplomacia,
+          hueste.reinoId,
+          estado.reinoJugador,
+        ),
+      ) &&
       tieneEfectivos(hueste, estado) &&
       !(
         hueste.bloqueadaHastaTurno !== undefined &&

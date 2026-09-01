@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { crearRegistroDiplomatico } from '../domain/diplomacy'
 import { crearEstadoPartida } from '../domain/gameState'
 import { obtenerFormacion } from '../domain/formationRegistry'
 import { crearRegistroHuestes } from '../domain/huesteRegistry'
@@ -24,7 +25,9 @@ function crearCasillas() {
   return casillas
 }
 
-function crearEstado() {
+function crearEstado(
+  diplomacia?: ReturnType<typeof crearRegistroDiplomatico>,
+) {
   return crearEstadoPartida({
     semillaMapa: 1,
     meta: {
@@ -34,6 +37,7 @@ function crearEstado() {
       fechaCreacion: '2026-09-01',
     },
     reinoJugador: 'castilla',
+    ...(diplomacia === undefined ? {} : { diplomacia }),
     huestes: [
       {
         id: 'propia',
@@ -126,6 +130,25 @@ describe('IA estratégica rival', () => {
       huesteDefensoraId: 'propia',
       casilla: { q: 0, r: 0 },
     }])
+  })
+
+  it('no persigue ni genera encuentros si la relación está en paz neutral', () => {
+    const estado = crearEstado(crearRegistroDiplomatico([
+      {
+        reinoA: 'castilla',
+        reinoB: 'leon',
+        estado: 'paz',
+        intencion: 'neutral',
+      },
+    ]))
+    const resultado = resolverTurnoRival(
+      estado,
+      crearCasillas(),
+    )
+
+    expect(resultado.movimientos).toEqual([])
+    expect(resultado.encuentros).toEqual([])
+    expect(resultado.huestes).toEqual(estado.huestes)
   })
 
   it('no mueve una hueste rival bloqueada tras una retirada', () => {
