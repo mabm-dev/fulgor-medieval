@@ -41,7 +41,9 @@
 
 ## v0.6 — Rival y diplomacia
 
-- Un reino controlado por IA.
+- Un reino controlado por IA, con personalidad y objetivos estratégicos.
+- La rival solo perseguirá o atacará cuando la relación y su intención lo
+  permitan; la paz y una personalidad pacífica bloquean la agresión por defecto.
 - Relaciones, pacto, comercio y guerra.
 - Rescate, intercambio o concesiones por héroes cautivos.
 - Condiciones para que un capitán ascienda a héroe.

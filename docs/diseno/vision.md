@@ -64,6 +64,19 @@ de lujo serán recursos estratégicos posteriores.
 6. Diplomacia e IA.
 7. Eventos, visibilidad y guardado automático.
 
+## Intención de las facciones
+
+La aproximación estratégica de una hueste rival no implica hostilidad por
+defecto. Antes de elegir un objetivo, la IA consultará la relación diplomática
+entre ambos reinos y la personalidad de la facción:
+
+- un reino en paz no perseguirá ni atacará al otro;
+- una facción pacífica necesitará una disputa, una provocación o una intención
+  estratégica explícita para iniciar una campaña;
+- las facciones agresivas podrán presionar fronteras y buscar encuentros;
+- una hueste solo cambiará de objetivo cuando exista una razón legible para el
+  jugador: guerra, disputa territorial, defensa, conquista o misión.
+
 ## Victorias
 
 - Dominio.

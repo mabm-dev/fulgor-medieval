@@ -82,8 +82,9 @@ function mismaCoordenada(
 /**
  * Decide el movimiento estratégico básico del reino rival. En esta primera
  * pieza la rival tiene un objetivo claro y reproducible: aproximarse a la
- * hueste activa del jugador. Nunca entra en su casilla; queda bloqueada a un
- * paso para que el encuentro lo inicie el jugador con las reglas actuales.
+ * hueste activa del jugador. La hostilidad es provisional hasta que exista
+ * el estado diplomático: nunca entra en su casilla y queda bloqueada a un
+ * paso para que el encuentro lo inicie el jugador.
  */
 export function resolverTurnoRival(
   estado: EstadoPartida,
