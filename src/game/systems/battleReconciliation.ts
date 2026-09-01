@@ -380,6 +380,16 @@ export function reconciliarResultadoBatalla(
     resultado.estado,
     resultado.formaciones,
   )
+  const huestesConRetirada = crearRegistroHuestes(
+    consecuenciasMilitares.huestes.map((hueste) => {
+      const perdio =
+        (victoria.ganador === "atacante" && hueste.id === resultado.estado.huesteDefensoraId) ||
+        (victoria.ganador === "defensor" && hueste.id === resultado.estado.huesteAtacanteId)
+      return perdio && hueste.formacionIds.length > 0
+        ? { ...hueste, bloqueadaHastaTurno: estado.turno }
+        : hueste
+    }),
+  )
   const consecuenciaAsentamiento = aplicarCapturaAsentamiento(
     estado,
     resultado.estado,
@@ -404,7 +414,7 @@ export function reconciliarResultadoBatalla(
     estado: Object.freeze({
       ...estado,
       formaciones,
-      huestes: consecuenciasMilitares.huestes,
+      huestes: huestesConRetirada,
       heroes: consecuenciasMilitares.heroes,
       asentamientos: consecuenciaAsentamiento.asentamientos,
     }),

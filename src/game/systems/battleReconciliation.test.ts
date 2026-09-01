@@ -308,6 +308,7 @@ describe('reconciliación estratégica de batalla', () => {
     ).toMatchObject({
       formacionIds: ['a', 'a2'],
     })
+    expect(reconciliado.estado.huestes.find((hueste) => hueste.id === "hueste-a")?.bloqueadaHastaTurno).toBe(1)
     expect(
       reconciliado.estado.heroes.find(
         (heroe) => heroe.id === 'heroe-a',

@@ -243,6 +243,7 @@ function resolverOrdenesMovimiento(
   asentamientosPropios: RegistroAsentamientos,
   reinoJugador: IdentificadorReino,
   formaciones: EstadoPartida["formaciones"],
+  turno: number,
   ordenes: readonly OrdenMarcha[],
   casillas: Readonly<
     Record<string, CasillaMapa>
@@ -357,6 +358,9 @@ function resolverOrdenesMovimiento(
       resultado.bloqueadaEn !== undefined
     ) {
       const casilla = resultado.bloqueadaEn
+      const bloqueoVigente =
+        hueste.bloqueadaHastaTurno !== undefined &&
+        hueste.bloqueadaHastaTurno >= turno
       const defensora =
         buscarHuesteEnemigaEnCasilla(
           huestes,
@@ -365,7 +369,7 @@ function resolverOrdenesMovimiento(
           formaciones,
         )
 
-      if (defensora !== undefined) {
+      if (defensora !== undefined && !bloqueoVigente) {
         encuentros.push({
           huesteAtacanteId: hueste.id,
           huesteDefensoraId: defensora.id,
@@ -554,6 +558,7 @@ export function finalizarTurno(
     asentamientosPropios,
     estado.reinoJugador,
     estado.formaciones,
+    estado.turno,
     movimientos,
     opciones.casillas,
     new Set(

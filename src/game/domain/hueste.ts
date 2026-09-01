@@ -21,6 +21,7 @@ export interface Hueste {
   readonly reinoId: string
   readonly posicion: CoordenadaHex
   readonly destinoMarcha?: CoordenadaHex
+  readonly bloqueadaHastaTurno?: number
   readonly heroeId?: string
   readonly formacionIds: readonly string[]
 }
@@ -31,6 +32,7 @@ export interface OpcionesHueste {
   readonly reinoId: string
   readonly posicion: CoordenadaHex
   readonly destinoMarcha?: CoordenadaHex
+  readonly bloqueadaHastaTurno?: number
   readonly heroeId?: string
   readonly formacionIds?: readonly string[]
 }
@@ -132,6 +134,14 @@ function validarHeroeId(
   )
 }
 
+function validarTurnoBloqueo(turno: number | undefined): number | undefined {
+  if (turno === undefined) return undefined
+  if (!Number.isSafeInteger(turno) || turno < 1) {
+    throw new RangeError("El turno de bloqueo debe ser un entero positivo")
+  }
+  return turno
+}
+
 export function crearHueste(
   opciones: OpcionesHueste,
 ): Hueste {
@@ -140,6 +150,7 @@ export function crearHueste(
       'El identificador',
       opciones.id,
     ),
+
     nombre: normalizarTexto(
       'El nombre',
       opciones.nombre,
@@ -156,24 +167,17 @@ export function crearHueste(
     ),
   }
 
-  const heroeId = validarHeroeId(
-    opciones.heroeId,
-  )
-  const destinoMarcha =
-    opciones.destinoMarcha === undefined
-      ? undefined
-      : validarCoordenada(
-          opciones.destinoMarcha,
-        )
+  const heroeId = validarHeroeId(opciones.heroeId)
+  const destinoMarcha = opciones.destinoMarcha === undefined
+    ? undefined
+    : validarCoordenada(opciones.destinoMarcha)
+  const bloqueadaHastaTurno = validarTurnoBloqueo(opciones.bloqueadaHastaTurno)
 
   const hueste: Hueste = {
     ...base,
-    ...(heroeId === undefined
-      ? {}
-      : { heroeId }),
-    ...(destinoMarcha === undefined
-      ? {}
-      : { destinoMarcha }),
+    ...(heroeId === undefined ? {} : { heroeId }),
+    ...(destinoMarcha === undefined ? {} : { destinoMarcha }),
+    ...(bloqueadaHastaTurno === undefined ? {} : { bloqueadaHastaTurno }),
   }
 
   return Object.freeze(hueste)

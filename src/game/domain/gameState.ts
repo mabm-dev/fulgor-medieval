@@ -475,6 +475,7 @@ function leerHueste(
       leerCoordenadaOpcional(
         datos.destinoMarcha,
       ),
+    bloqueadaHastaTurno: leerNumeroOpcional(datos.bloqueadaHastaTurno),
     heroeId: leerTextoOpcional(
       datos.heroeId,
     ),

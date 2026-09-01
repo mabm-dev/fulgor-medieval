@@ -111,10 +111,10 @@ function nombreEdificio(
     ? EDIFICIOS[edificioId].nombre
     : edificioId
 }
-function huesteTieneEfectivos(estado: EstadoPartida, huesteId: string): boolean {
-  const hueste = estado.huestes.find((candidata) => candidata.id === huesteId)
+function huesteTieneEfectivos(estado: EstadoPartida | null, huesteId: string): boolean {
+  const hueste = estado?.huestes.find((candidata) => candidata.id === huesteId)
   return hueste?.formacionIds.some((id) =>
-    (estado.formaciones.find((formacion) => formacion.id === id)?.cantidad ?? 0) > 0,
+    (estado?.formaciones.find((formacion) => formacion.id === id)?.cantidad ?? 0) > 0,
   ) ?? false
 }
 
