@@ -188,10 +188,12 @@ function buscarHuesteEnemigaEnCasilla(
   huestes: RegistroHuestes,
   reinoPropio: string,
   coordenada: CoordenadaHex,
+  formaciones?: EstadoPartida["formaciones"],
 ): Hueste | undefined {
   return huestes.find(
     (otra) =>
       otra.reinoId !== reinoPropio &&
+      (formaciones === undefined || huesteTieneEfectivos(otra, formaciones)) &&
       claveHex(otra.posicion) ===
         claveHex(coordenada),
   )
@@ -339,6 +341,7 @@ function resolverOrdenesMovimiento(
           huestes,
           hueste.reinoId,
           coordenada,
+          formaciones,
         ) !== undefined,
     )
 
@@ -359,6 +362,7 @@ function resolverOrdenesMovimiento(
           huestes,
           hueste.reinoId,
           casilla,
+          formaciones,
         )
 
       if (defensora !== undefined) {
