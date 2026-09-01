@@ -43,6 +43,7 @@
 
 - Un reino controlado por IA, con personalidad y objetivos estratégicos.
 - Movimiento rival provisional implementado: elige la hueste propia más cercana y puede iniciar un encuentro al contactar; la diplomacia regulará esa intención después.
+- Economía rival implementada: cada reino conserva su tesoro, produce, consume y elige construcciones válidas sin repetir edificios.
 - La rival solo perseguirá o atacará cuando la relación y su intención lo
   permitan; la paz y una personalidad pacífica bloquean la agresión por defecto.
 - Relaciones, pacto, comercio y guerra.

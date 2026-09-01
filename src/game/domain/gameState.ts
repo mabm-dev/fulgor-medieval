@@ -72,6 +72,13 @@ export interface EstadoPartida {
   readonly fase: FaseTurno
   readonly reinoJugador: IdentificadorReino
   readonly recursos: ReservaRecursos
+  /**
+   * Tesoro separado de cada reino no jugable. Es opcional para conservar
+   * compatibilidad con estados de prueba y partidas anteriores a la IA rival.
+   */
+  readonly recursosRivales?: Readonly<
+    Record<string, ReservaRecursos>
+  >
   readonly asentamientos:
     RegistroAsentamientos
   readonly huestes: RegistroHuestes
@@ -98,6 +105,9 @@ export interface OpcionesEstadoInicial {
   readonly meta: MetaPartida
   readonly reinoJugador: IdentificadorReino
   readonly recursos?: Partial<ReservaRecursos>
+  readonly recursosRivales?: Readonly<
+    Record<string, Partial<ReservaRecursos>>
+  >
   readonly asentamientos?:
     readonly OpcionesAsentamiento[]
   readonly huestes?:
@@ -192,6 +202,55 @@ function leerMeta(
       datos.fechaCreacion,
     ),
   })
+}
+
+function crearRecursosRivales(
+  valores: Readonly<
+    Record<string, Partial<ReservaRecursos>>
+  > | undefined,
+): Readonly<Record<string, ReservaRecursos>> | undefined {
+  if (valores === undefined) {
+    return undefined
+  }
+
+  const resultado: Record<string, ReservaRecursos> = {}
+
+  for (const [reinoId, recursos] of Object.entries(valores)) {
+    if (!esIdentificadorReino(reinoId)) {
+      throw new Error(ERROR_ESTADO_INVALIDO)
+    }
+    resultado[reinoId] = crearReservaRecursos(recursos)
+  }
+
+  return Object.freeze(resultado)
+}
+
+function leerRecursosRivales(
+  datos: unknown,
+): Readonly<Record<string, ReservaRecursos>> | undefined {
+  if (datos === undefined) {
+    return undefined
+  }
+  if (!esRegistro(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  const resultado: Record<string, ReservaRecursos> = {}
+
+  for (const [reinoId, valor] of Object.entries(datos)) {
+    if (!esIdentificadorReino(reinoId) || !esRegistro(valor)) {
+      throw new Error(ERROR_ESTADO_INVALIDO)
+    }
+    resultado[reinoId] = crearReservaRecursos({
+      grano: leerCantidad(valor, 'grano'),
+      madera: leerCantidad(valor, 'madera'),
+      piedra: leerCantidad(valor, 'piedra'),
+      manoDeObra: leerCantidad(valor, 'manoDeObra'),
+      oro: leerCantidad(valor, 'oro'),
+    })
+  }
+
+  return Object.freeze(resultado)
 }
 
 function leerCantidad(
@@ -744,6 +803,10 @@ export function crearEstadoPartida(
     formaciones,
     heroes,
   )
+  const recursosRivales =
+    crearRecursosRivales(
+      opciones.recursosRivales,
+    )
 
   const estado: EstadoPartida = {
     version: VERSION_ESTADO_PARTIDA,
@@ -759,6 +822,9 @@ export function crearEstadoPartida(
     recursos: crearReservaRecursos(
       opciones.recursos,
     ),
+    ...(recursosRivales === undefined
+      ? {}
+      : { recursosRivales }),
     asentamientos:
       crearRegistroAsentamientos(
         opciones.asentamientos,
@@ -827,6 +893,8 @@ export function restaurarEstadoPartida(
     heroes,
   )
 
+  const recursosRivales =
+    leerRecursosRivales(datos.recursosRivales)
   const estado: EstadoPartida = {
     version: VERSION_ESTADO_PARTIDA,
     semillaMapa: leerSemilla(
@@ -858,6 +926,9 @@ export function restaurarEstadoPartida(
         'oro',
       ),
     }),
+    ...(recursosRivales === undefined
+      ? {}
+      : { recursosRivales }),
     asentamientos:
       leerRegistroAsentamientos(
         datos.asentamientos,

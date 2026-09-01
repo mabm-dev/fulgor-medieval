@@ -330,6 +330,12 @@ describe('sesión de partida', () => {
       huesteAtacanteId: 'hueste-rival-1',
       huesteDefensoraId: 'hueste-1',
     })
+    expect(resultado.estado.recursosRivales?.leon).toBeDefined()
+    expect(
+      resultado.estado.asentamientos.find(
+        (asentamiento) => asentamiento.reinoId === 'leon',
+      )?.proyectoConstruccion?.edificioId,
+    ).toBe('granero')
     expect(cargarSesionPartida(almacenamiento)).toEqual({
       tipo: 'exito',
       estado,

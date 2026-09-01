@@ -57,6 +57,9 @@ import {
 import {
   resolverTurnoRival,
 } from './strategicAi'
+import {
+  resolverEconomiaRival,
+} from './rivalEconomy'
 
 export const DIVISOR_TECHO_MANO_DE_OBRA = 2000
 
@@ -501,10 +504,9 @@ export function finalizarTurno(
       estado.asentamientos,
     )
 
-  // Segunda facción (paso 6): el registro puede traer asentamientos de
-  // otro reino, presentes en el mapa pero sin economía simulada todavía.
-  // Solo los propios entran en la producción, el consumo y el techo de
-  // mano de obra.
+  // La economía del jugador sigue usando la reserva principal. La rival
+  // resuelve su propio tesoro después, en rivalEconomy.ts, para no mezclar
+  // recursos ni órdenes de construcción entre reinos.
   const asentamientosPropios =
     avanceConstruccion.asentamientos.filter(
       (asentamiento) =>
@@ -593,6 +595,12 @@ export function finalizarTurno(
       opciones.casillas,
       construcciones,
     )
+  const resolucionEconomiaRival =
+    resolverEconomiaRival(
+      estado,
+      inicioConstruccion.asentamientos,
+      opciones.casillas,
+    )
 
   const siguienteTurno = estado.turno + 1
 
@@ -623,8 +631,16 @@ export function finalizarTurno(
       fase: 'gestion',
       recursos: inicioConstruccion.recursos,
       asentamientos:
-        inicioConstruccion.asentamientos,
+        resolucionEconomiaRival.asentamientos,
       huestes: resolucionRival.huestes,
+      ...(Object.keys(
+        resolucionEconomiaRival.recursosRivales,
+      ).length === 0
+        ? {}
+        : {
+            recursosRivales:
+              resolucionEconomiaRival.recursosRivales,
+          }),
       casillasExploradas,
     })
 

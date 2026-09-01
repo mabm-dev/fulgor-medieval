@@ -219,6 +219,9 @@ export function crearSesionPartida(
   const perfil = obtenerPerfilEconomico(
     opciones.reinoJugador,
   )
+  const perfilRival = obtenerPerfilEconomico(
+    reinoRival,
+  )
 
   const meta: MetaPartida = {
     jugador: opciones.jugador,
@@ -240,6 +243,9 @@ export function crearSesionPartida(
     meta,
     reinoJugador: opciones.reinoJugador,
     recursos: perfil.recursosIniciales,
+    recursosRivales: {
+      [reinoRival]: perfilRival.recursosIniciales,
+    },
     asentamientos: [capital, capitalRival],
     huestes: [hueste, huesteRival],
     formaciones: [...formaciones],

@@ -77,6 +77,36 @@ describe('estado de partida', () => {
     })
   })
 
+  it('conserva los tesoros rivales al restaurar la partida', () => {
+    const estado = crearEstadoPartida({
+      semillaMapa: 7,
+      meta: META,
+      reinoJugador: 'castilla',
+      recursosRivales: {
+        leon: {
+          grano: 20,
+          madera: 8,
+          piedra: 4,
+          manoDeObra: 3,
+          oro: 6,
+        },
+      },
+    })
+    const restaurado = restaurarEstadoPartida(
+      JSON.parse(JSON.stringify(estado)),
+    )
+
+    expect(restaurado.recursosRivales).toEqual({
+      leon: {
+        grano: 20,
+        madera: 8,
+        piedra: 4,
+        manoDeObra: 3,
+        oro: 6,
+      },
+    })
+  })
+
   it('rechaza una semilla que no es entera', () => {
     expect(() =>
       crearEstadoPartida({
