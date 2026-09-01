@@ -45,9 +45,19 @@ interface BattleViewProps {
   ) => void
 }
 
-const NOMBRES_BANDO: Record<BandoBatalla, string> = {
-  atacante: 'Vanguardia propia',
-  defensor: 'Hueste rival',
+function obtenerNombreBando(
+  sesion: SesionBatalla,
+  bando: BandoBatalla,
+): string {
+  if (bando === sesion.bandoJugador) {
+    return bando === 'atacante'
+      ? 'Vanguardia propia'
+      : 'Defensa propia'
+  }
+
+  return bando === 'atacante'
+    ? 'Vanguardia rival'
+    : 'Hueste rival'
 }
 
 const RETARDO_SELECCION_RIVAL = 800
@@ -216,7 +226,7 @@ function PanelBando({
       <div className="flex items-end justify-between gap-3 border-b border-white/10 pb-3">
         <div>
           <p className="text-[9px] tracking-[0.22em] text-white/45 uppercase">
-            {NOMBRES_BANDO[bando]}
+            {obtenerNombreBando(sesion, bando)}
           </p>
           <h2 className="font-cinzel mt-1 text-lg text-pergamino-palido">
             {obtenerNombreReino(
@@ -304,18 +314,25 @@ export default function BattleView({
         sesion.formaciones,
         activa.formacionId,
       )
-  const turnoJugador = activa?.bando === 'atacante'
+  const turnoJugador = activa?.bando === sesion.bandoJugador
   const controlesBloqueados = animacion !== undefined
   const haEsperado = activa !== undefined &&
     sesion.estado.esperasRonda.includes(
       activa.formacionId,
     )
   const heroeJugador = sesion.heroes.find(
-    (heroe) => heroe.id === sesion.estado.heroeAtacanteId,
+    (heroe) => heroe.id === (
+      sesion.bandoJugador === 'atacante'
+        ? sesion.estado.heroeAtacanteId
+        : sesion.estado.heroeDefensorId
+    ),
   )
+  const puntosMandoJugador = sesion.bandoJugador === 'atacante'
+    ? sesion.estado.puntosMandoAtacante
+    : sesion.estado.puntosMandoDefensor
   const puedeOrdenHeroe = turnoJugador &&
     heroeJugador !== undefined &&
-    sesion.estado.puntosMandoAtacante > 0
+    puntosMandoJugador > 0
   const destinosMovimiento = useMemo(
     () => turnoJugador && !controlesBloqueados
       ? calcularDestinosMovimientoTactico(
@@ -501,7 +518,7 @@ export default function BattleView({
     if (
       animacion !== undefined ||
       sesion.estado.fase !== 'combate' ||
-      tacticaActiva?.bando !== 'defensor'
+      tacticaActiva?.bando === sesion.bandoJugador
     ) {
       return
     }
@@ -511,7 +528,7 @@ export default function BattleView({
         const orden = decidirOrdenConHeroe(
           sesion.estado,
           sesion.formaciones,
-          'defensor',
+          tacticaActiva?.bando ?? 'defensor',
           sesion.heroes,
         )
         prepararOrden(orden, true)
@@ -639,7 +656,7 @@ export default function BattleView({
                 }
               >
                 <p className="font-cinzel text-[9px] tracking-[0.24em] uppercase">
-                  {NOMBRES_BANDO[animacion.bando]}
+                  {obtenerNombreBando(sesion, animacion.bando)}
                 </p>
                 <p className="font-cinzel mt-1 text-xs tracking-[0.12em] uppercase">
                   {animacion.fase === 'preparando'
@@ -752,7 +769,7 @@ export default function BattleView({
                             sesion.estado,
                             sesion.formaciones,
                             heroeJugador,
-                            'atacante',
+                            sesion.bandoJugador,
                             obtenerOrdenesHeroe(heroeJugador.arquetipo)[0] ?? 'carga_frontal',
                           ))
                         } catch (causa) {
@@ -761,7 +778,7 @@ export default function BattleView({
                       }}
                       className="font-cinzel border border-oro/55 bg-[#33250b] px-4 py-2 text-[10px] tracking-[0.15em] text-oro-claro uppercase transition-all hover:border-oro hover:shadow-[0_0_18px_rgba(212,175,55,0.2)]"
                     >
-                      Orden del héroe · {sesion.estado.puntosMandoAtacante}
+                      Orden del héroe · {puntosMandoJugador}
                     </button>
                   )}
                 </>

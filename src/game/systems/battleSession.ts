@@ -40,6 +40,7 @@ import {
 
 export interface SesionBatalla {
   readonly encuentro: EventoEncuentroCombate
+  readonly bandoJugador: 'atacante' | 'defensor'
   readonly estado: EstadoBatalla
   readonly heroes: RegistroHeroes
   readonly formaciones: RegistroFormaciones
@@ -87,8 +88,9 @@ function obtenerHuestesEncuentro(
   if (
     atacante === undefined ||
     defensor === undefined ||
-    atacante.reinoId !== partida.reinoJugador ||
     atacante.reinoId === defensor.reinoId ||
+    (atacante.reinoId !== partida.reinoJugador &&
+      defensor.reinoId !== partida.reinoJugador) ||
     claveHex(defensor.posicion) !== claveHex(encuentro.casilla)
   ) {
     throw new Error(
@@ -160,6 +162,9 @@ export function crearSesionBatallaDesdeEncuentro(
         r: encuentro.casilla.r,
       }),
     }),
+    bandoJugador: atacante.reinoId === partida.reinoJugador
+      ? 'atacante'
+      : 'defensor',
     estado,
     heroes: partida.heroes,
     formaciones,

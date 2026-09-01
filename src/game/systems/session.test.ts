@@ -99,7 +99,7 @@ describe('sesión de partida', () => {
     expect(estado.meta.jugador).toBe(
       'Rodrigo',
     )
-    // La propia y la de la segunda facción inerte (paso 6).
+    // La propia y la de la segunda facción rival (paso 6).
     expect(
       estado.asentamientos,
     ).toHaveLength(2)
@@ -276,9 +276,15 @@ describe('sesión de partida', () => {
       semilla: OPCIONES.semillaMapa,
     })
 
+    const estadoSinRival = Object.freeze({
+      ...estado,
+      huestes: estado.huestes.filter(
+        (hueste) => hueste.reinoId === estado.reinoJugador,
+      ),
+    })
     const resultado = finalizarTurnoSesion(
       almacenamiento,
-      estado,
+      estadoSinRival,
       {
         casillas:
           construirDiccionarioCasillas(
@@ -289,11 +295,44 @@ describe('sesión de partida', () => {
 
     expect(resultado.estado.turno).toBe(2)
     expect(resultado.eventos).toHaveLength(3)
+    expect(resultado.eventos.some((evento) => evento.tipo === 'encuentro_combate')).toBe(false)
     expect(
       cargarSesionPartida(almacenamiento),
     ).toEqual({
       tipo: 'exito',
       estado: resultado.estado,
+    })
+  })
+
+  it('emite un encuentro iniciado por la rival sin guardar el turno incompleto', () => {
+    const almacenamiento = crearAlmacenamientoMemoria()
+    const estado = crearSesionPartida(
+      almacenamiento,
+      OPCIONES,
+    )
+    const mapa = generarMapa({
+      ...DIMENSIONES_MAPA_PREDETERMINADO,
+      semilla: OPCIONES.semillaMapa,
+    })
+
+    const resultado = finalizarTurnoSesion(
+      almacenamiento,
+      estado,
+      {
+        casillas: construirDiccionarioCasillas(mapa),
+      },
+    )
+    const encuentro = resultado.eventos.find(
+      (evento) => evento.tipo === 'encuentro_combate',
+    )
+
+    expect(encuentro).toMatchObject({
+      huesteAtacanteId: 'hueste-rival-1',
+      huesteDefensoraId: 'hueste-1',
+    })
+    expect(cargarSesionPartida(almacenamiento)).toEqual({
+      tipo: 'exito',
+      estado,
     })
   })
 
@@ -355,9 +394,15 @@ describe('sesión de partida', () => {
       semilla: OPCIONES.semillaMapa,
     })
 
+    const estadoSinRival = Object.freeze({
+      ...estado,
+      huestes: estado.huestes.filter(
+        (hueste) => hueste.reinoId === estado.reinoJugador,
+      ),
+    })
     const resultado = finalizarTurnoSesion(
       almacenamiento,
-      estado,
+      estadoSinRival,
       {
         casillas:
           construirDiccionarioCasillas(

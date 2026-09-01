@@ -93,6 +93,22 @@ describe('sesión de batalla', () => {
     ).toEqual(['a', 'd'])
   })
 
+  it('abre también un ataque rival y marca al jugador como defensor', () => {
+    const encuentroRival: EventoEncuentroCombate = Object.freeze({
+      ...crearEncuentro(),
+      huesteAtacanteId: 'hueste-d',
+      huesteDefensoraId: 'hueste-a',
+      casilla: Object.freeze({ q: 0, r: 0 }),
+    })
+    const sesion = crearSesionBatallaDesdeEncuentro(
+      crearPartida(),
+      encuentroRival,
+    )
+
+    expect(sesion.bandoJugador).toBe('defensor')
+    expect(sesion.estado.formaciones[0]?.bando).toBe('atacante')
+  })
+
   it('ejecuta una orden manual con el mismo desgaste que la IA', () => {
     let sesion = crearSesionBatallaDesdeEncuentro(
       crearPartida(),

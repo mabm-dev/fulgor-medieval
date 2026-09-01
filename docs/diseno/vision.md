@@ -66,9 +66,10 @@ de lujo serán recursos estratégicos posteriores.
 
 ## Intención de las facciones
 
-La aproximación estratégica de una hueste rival no implica hostilidad por
-defecto. Antes de elegir un objetivo, la IA consultará la relación diplomática
-entre ambos reinos y la personalidad de la facción:
+La aproximación estratégica de una hueste rival no implica hostilidad en el
+diseño final. En el prototipo v0.6 la rival usa una intención hostil provisional
+para poder probar encuentros iniciados por la IA; la diplomacia sustituirá esa
+decisión antes de cerrar la versión:
 
 - un reino en paz no perseguirá ni atacará al otro;
 - una facción pacífica necesitará una disputa, una provocación o una intención

@@ -21,9 +21,16 @@ export interface MovimientoRival {
   readonly destino: CoordenadaHex
 }
 
+export interface EncuentroRival {
+  readonly huesteAtacanteId: string
+  readonly huesteDefensoraId: string
+  readonly casilla: CoordenadaHex
+}
+
 export interface ResultadoTurnoRival {
   readonly huestes: RegistroHuestes
   readonly movimientos: readonly MovimientoRival[]
+  readonly encuentros: readonly EncuentroRival[]
 }
 
 function tieneEfectivos(
@@ -84,7 +91,7 @@ function mismaCoordenada(
  * pieza la rival tiene un objetivo claro y reproducible: aproximarse a la
  * hueste activa del jugador. La hostilidad es provisional hasta que exista
  * el estado diplomático: nunca entra en su casilla y queda bloqueada a un
- * paso para que el encuentro lo inicie el jugador.
+ * paso y puede generar un encuentro como atacante al contactar.
  */
 export function resolverTurnoRival(
   estado: EstadoPartida,
@@ -112,6 +119,7 @@ export function resolverTurnoRival(
   )
   const actualizaciones = new Map<string, Hueste>()
   const movimientos: MovimientoRival[] = []
+  const encuentros: EncuentroRival[] = []
 
   for (const hueste of rival) {
     const objetivo = elegirObjetivo(
@@ -133,6 +141,22 @@ export function resolverTurnoRival(
       (coordenada) => posicionesJugador.has(claveHex(coordenada)),
     )
 
+    const defensora = resultado.bloqueadaEn === undefined
+      ? undefined
+      : objetivos.find(
+          (objetivoCandidata) =>
+            claveHex(objetivoCandidata.posicion) ===
+            claveHex(resultado.bloqueadaEn as CoordenadaHex),
+        )
+
+    if (defensora !== undefined) {
+      encuentros.push(Object.freeze({
+        huesteAtacanteId: hueste.id,
+        huesteDefensoraId: defensora.id,
+        casilla: resultado.bloqueadaEn as CoordenadaHex,
+      }))
+    }
+
     if (mismaCoordenada(hueste.posicion, resultado.posicion)) {
       continue
     }
@@ -141,6 +165,7 @@ export function resolverTurnoRival(
       ...hueste,
       posicion: resultado.posicion,
       destinoMarcha: resultado.destinoAlcanzado
+        || defensora !== undefined
         ? undefined
         : objetivo.posicion,
     }
@@ -159,5 +184,6 @@ export function resolverTurnoRival(
       ),
     ),
     movimientos: Object.freeze(movimientos),
+    encuentros: Object.freeze(encuentros),
   })
 }

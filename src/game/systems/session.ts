@@ -83,8 +83,9 @@ export function crearSesionPartida(
     elegirEmplazamientoCapital(mapa),
   )
 
-  // Segunda facción (paso 6): capital rival en el mapa, sin economía
-  // simulada —eso sigue siendo v0.6—. Reino determinista (el siguiente
+  // Segunda facción (paso 6): capital rival en el mapa; su economía
+  // todavía no se simula, pero la hueste ya tiene IA estratégica
+  // provisional. Reino determinista (el siguiente
   // de la lista) y posición excluyendo la de la capital del jugador, para
   // no chocar con ella. Se reutiliza el mismo `reinoRival` para la
   // hueste y el héroe de más abajo: es el mismo reino, no hace falta
@@ -151,7 +152,7 @@ export function crearSesionPartida(
     heroeRival,
   ])
   // La rival ya toma decisiones estratégicas en v0.6: se aproxima a la
-  // hueste propia más cercana; el jugador inicia el encuentro al entrar.
+  // hueste propia más cercana y puede iniciar un encuentro al contactar.
   const hueste = crearHueste({
     id: 'hueste-1',
     nombre: 'Hueste exploradora',

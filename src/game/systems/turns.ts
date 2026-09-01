@@ -578,6 +578,10 @@ export function finalizarTurno(
       ),
     ),
   )
+  const encuentrosTotales = [
+    ...encuentros,
+    ...resolucionRival.encuentros,
+  ]
 
   // 2. Las obras nuevas del turno se validan y descuentan al final, sobre
   // lo que quede tras producir y consumir — construir es la última decisión
@@ -661,7 +665,7 @@ export function finalizarTurno(
               completado.edificioId,
           }),
       ),
-      ...encuentros.map(
+      ...encuentrosTotales.map(
         (encuentro) =>
           Object.freeze({
             tipo: 'encuentro_combate',

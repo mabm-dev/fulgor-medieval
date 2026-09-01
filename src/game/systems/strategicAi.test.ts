@@ -104,6 +104,30 @@ describe('IA estratégica rival', () => {
     }])
   })
 
+  it('genera un encuentro cuando alcanza el contacto con la hueste propia', () => {
+    const estado = crearEstado()
+    const huestes = crearRegistroHuestes(
+      estado.huestes.map((hueste) =>
+        hueste.id === 'rival'
+          ? { ...hueste, posicion: { q: 1, r: 0 } }
+          : hueste,
+      ),
+    )
+
+    const resultado = resolverTurnoRival(
+      estado,
+      crearCasillas(),
+      huestes,
+    )
+
+    expect(resultado.movimientos).toEqual([])
+    expect(resultado.encuentros).toEqual([{
+      huesteAtacanteId: 'rival',
+      huesteDefensoraId: 'propia',
+      casilla: { q: 0, r: 0 },
+    }])
+  })
+
   it('no mueve una hueste rival bloqueada tras una retirada', () => {
     const estado = crearEstado()
     const huestes = crearRegistroHuestes(
