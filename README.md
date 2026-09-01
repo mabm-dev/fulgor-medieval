@@ -50,7 +50,7 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 - Reconciliación estratégica de bajas, retirada y conquista.
 - Guardado automático y recuperación validada de la sesión.
 - HUD económico adaptable con registro de eventos del turno.
-- Suite automatizada de 537 pruebas, lint, TypeScript, build y CI.
+- Suite automatizada de 540 pruebas, lint, TypeScript, build y CI.
 
 ## Visión jugable
 

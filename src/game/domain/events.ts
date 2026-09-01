@@ -41,6 +41,14 @@ export interface EventoTurnoFinalizado
   readonly siguienteTurno: number
 }
 
+export interface EventoMovimientoRival
+  extends EventoBaseTurno {
+  readonly tipo: 'movimiento_rival'
+  readonly huesteId: string
+  readonly origen: CoordenadaHex
+  readonly destino: CoordenadaHex
+}
+
 /**
  * `v0.5`, bloque 2: una hueste intentó entrar en la casilla de una hueste
  * de otro reino. Solo IDs, como el resto de eventos —nunca la `Hueste`
@@ -112,5 +120,6 @@ export type EventoTurno =
   | EventoEdificioCompletado
   | EventoTurnoFinalizado
   | EventoGuardadoFallido
+  | EventoMovimientoRival
   | EventoEncuentroCombate
   | EventoBatallaResuelta

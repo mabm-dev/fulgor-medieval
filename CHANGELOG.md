@@ -7,6 +7,8 @@ y el proyecto utiliza versionado semántico mientras sea aplicable.
 
 ### Añadido
 
+- IA estratégica rival determinista: aproxima sus huestes a la fuerza propia
+  más cercana y registra sus avances en el parte del turno.
 - Marchas persistentes entre turnos con ruta estratégica, hitos numerados y
   estimación de llegada que tiene en cuenta el suministro.
 - Objetivo rival conocido y diferenciado en rojo para facilitar el acceso al

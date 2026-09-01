@@ -89,6 +89,12 @@ export function formatearEvento(
         )}: ${evento.huesteAtacanteId} ` +
         `contra ${evento.huesteDefensoraId}`
       )
+    case 'movimiento_rival':
+      return (
+        `La hueste rival avanzó de ${claveHex(
+          evento.origen,
+        )} a ${claveHex(evento.destino)}`
+      )
     case 'batalla_resuelta': {
       const bajas = evento.consecuencias.reduce(
         (total, consecuencia) => total + consecuencia.bajas,

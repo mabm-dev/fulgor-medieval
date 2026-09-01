@@ -54,6 +54,9 @@ import {
   actualizarCasillasExploradas,
   calcularVisibilidad,
 } from './vision'
+import {
+  resolverTurnoRival,
+} from './strategicAi'
 
 export const DIVISOR_TECHO_MANO_DE_OBRA = 2000
 
@@ -565,6 +568,16 @@ export function finalizarTurno(
       estado.casillasExploradas,
     ),
   )
+  const resolucionRival = resolverTurnoRival(
+    estado,
+    opciones.casillas,
+    huestesActualizadas,
+    new Set(
+      encuentros.map(
+        (encuentro) => encuentro.huesteDefensoraId,
+      ),
+    ),
+  )
 
   // 2. Las obras nuevas del turno se validan y descuentan al final, sobre
   // lo que quede tras producir y consumir — construir es la última decisión
@@ -607,7 +620,7 @@ export function finalizarTurno(
       recursos: inicioConstruccion.recursos,
       asentamientos:
         inicioConstruccion.asentamientos,
-      huestes: huestesActualizadas,
+      huestes: resolucionRival.huestes,
       casillasExploradas,
     })
 
@@ -658,6 +671,16 @@ export function finalizarTurno(
             huesteDefensoraId:
               encuentro.huesteDefensoraId,
             casilla: encuentro.casilla,
+          }),
+      ),
+      ...resolucionRival.movimientos.map(
+        (movimiento) =>
+          Object.freeze({
+            tipo: 'movimiento_rival',
+            turno: estado.turno,
+            huesteId: movimiento.huesteId,
+            origen: movimiento.origen,
+            destino: movimiento.destino,
           }),
       ),
       Object.freeze({

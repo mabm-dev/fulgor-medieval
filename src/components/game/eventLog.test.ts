@@ -107,6 +107,20 @@ describe('formatearEvento', () => {
     )
   })
 
+  it('describe el avance estratégico de la rival', () => {
+    expect(
+      formatearEvento({
+        tipo: 'movimiento_rival',
+        turno: 1,
+        huesteId: 'hueste-rival-1',
+        origen: { q: 4, r: 0 },
+        destino: { q: 1, r: 0 },
+      }),
+    ).toBe(
+      'La hueste rival avanzó de 4,0 a 1,0',
+    )
+  })
+
   it('resume el desenlace y las bajas de una batalla', () => {
     expect(
       formatearEvento({

@@ -150,10 +150,8 @@ export function crearSesionPartida(
     heroeJugador,
     heroeRival,
   ])
-
-  // Pieza 4 del paso 6 de `v0.4`, ahora con hueste y ejército completos.
-  // La rival no se mueve en `v0.5` —eso es IA estratégica, `v0.6`—: el
-  // jugador es quien busca el encuentro, no al revés.
+  // La rival ya toma decisiones estratégicas en v0.6: se aproxima a la
+  // hueste propia más cercana; el jugador inicia el encuentro al entrar.
   const hueste = crearHueste({
     id: 'hueste-1',
     nombre: 'Hueste exploradora',
