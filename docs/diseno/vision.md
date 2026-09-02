@@ -78,6 +78,14 @@ decisión antes de cerrar la versión:
 - una hueste solo cambiará de objetivo cuando exista una razón legible para el
   jugador: guerra, disputa territorial, defensa, conquista o misión.
 
+## Ascenso de capitanes
+
+El motor registra capitanes independientes de los héroes. La regla provisional
+de v0.6 exige tres victorias y supervivencia en la última batalla: al cumplirla,
+el capitán se convierte en héroe activo, conserva su nombre y arquetipo, y pasa
+a comandar la hueste. Las condiciones de hazañas especiales quedan abiertas
+para una iteración posterior de contenido.
+
 ## Victorias
 
 - Dominio.

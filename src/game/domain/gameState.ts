@@ -29,6 +29,11 @@ import {
   crearRegistroHuestes,
   type RegistroHuestes,
 } from './huesteRegistry'
+import type { OpcionesCapitan } from './captain'
+import {
+  crearRegistroCapitanes,
+  type RegistroCapitanes,
+} from './captainRegistry'
 import {
   esTipoFormacion,
   type OpcionesFormacion,
@@ -104,6 +109,8 @@ export interface EstadoPartida {
    */
   readonly formaciones: RegistroFormaciones
   readonly heroes: RegistroHeroes
+  /** Capitanes aún no ascendidos a héroe. */
+  readonly capitanes?: RegistroCapitanes
   /**
    * Niebla de guerra: acumula para siempre, nunca se recorta. "Visible"
    * —lo que se ve ahora mismo— no se guarda, se deriva cada turno con
@@ -132,6 +139,8 @@ export interface OpcionesEstadoInicial {
     readonly OpcionesFormacion[]
   readonly heroes?:
     readonly OpcionesHeroe[]
+  readonly capitanes?:
+    readonly OpcionesCapitan[]
   readonly casillasExploradas?:
     readonly string[]
 }
@@ -724,6 +733,9 @@ function leerHueste(
     heroeId: leerTextoOpcional(
       datos.heroeId,
     ),
+    capitanId: leerTextoOpcional(
+      datos.capitanId,
+    ),
     formacionIds: leerListaTextos(
       datos.formacionIds,
     ),
@@ -910,16 +922,65 @@ function leerRegistroHeroes(
   )
 }
 
+function leerCapitan(
+  datos: unknown,
+): OpcionesCapitan {
+  if (!esRegistro(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+  const id = datos.id
+  const nombre = datos.nombre
+  const reinoId = datos.reinoId
+  const arquetipo = datos.arquetipo
+  const batallas = datos.batallas
+  const victorias = datos.victorias
+  if (
+    typeof id !== 'string' ||
+    typeof nombre !== 'string' ||
+    typeof reinoId !== 'string' ||
+    (arquetipo !== undefined && !esArquetipoHeroe(arquetipo)) ||
+    (batallas !== undefined && typeof batallas !== 'number') ||
+    (victorias !== undefined && typeof victorias !== 'number')
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+  return {
+    id,
+    nombre,
+    reinoId,
+    ...(arquetipo === undefined ? {} : { arquetipo }),
+    ...(batallas === undefined ? {} : { batallas }),
+    ...(victorias === undefined ? {} : { victorias }),
+  }
+}
+
+function leerRegistroCapitanes(
+  datos: unknown,
+): RegistroCapitanes {
+  if (datos === undefined) {
+    return crearRegistroCapitanes()
+  }
+  if (!Array.isArray(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+  return crearRegistroCapitanes(datos.map((capitan) => leerCapitan(capitan)))
+}
+
 function validarReferenciasMilitares(
   huestes: RegistroHuestes,
   formaciones: RegistroFormaciones,
   heroes: RegistroHeroes,
+  capitanes: RegistroCapitanes = [],
 ): void {
   const formacionesAsignadas =
     new Set<string>()
   const heroesAsignados = new Set<string>()
+  const capitanesAsignados = new Set<string>()
   const heroesPorId = new Map(
     heroes.map((heroe) => [heroe.id, heroe]),
+  )
+  const capitanesPorId = new Map(
+    capitanes.map((capitan) => [capitan.id, capitan]),
   )
 
   for (const hueste of huestes) {
@@ -946,6 +1007,25 @@ function validarReferenciasMilitares(
       formacionesAsignadas.add(
         formacionId,
       )
+    }
+
+    if (
+      hueste.heroeId !== undefined &&
+      hueste.capitanId !== undefined
+    ) {
+      throw new Error(ERROR_ESTADO_INVALIDO)
+    }
+
+    if (hueste.capitanId !== undefined) {
+      const capitan = capitanesPorId.get(hueste.capitanId)
+      if (
+        capitan === undefined ||
+        capitan.reinoId !== hueste.reinoId ||
+        capitanesAsignados.has(hueste.capitanId)
+      ) {
+        throw new Error(ERROR_ESTADO_INVALIDO)
+      }
+      capitanesAsignados.add(hueste.capitanId)
     }
 
     if (hueste.heroeId === undefined) {
@@ -983,11 +1063,15 @@ export function crearEstadoPartida(
   const heroes = crearRegistroHeroes(
     opciones.heroes,
   )
+  const capitanes = crearRegistroCapitanes(
+    opciones.capitanes,
+  )
 
   validarReferenciasMilitares(
     huestes,
     formaciones,
     heroes,
+    capitanes,
   )
   const recursosRivales =
     crearRecursosRivales(
@@ -1033,6 +1117,9 @@ export function crearEstadoPartida(
     huestes,
     formaciones,
     heroes,
+    ...(opciones.capitanes === undefined
+      ? {}
+      : { capitanes }),
     casillasExploradas:
       normalizarCasillasExploradas(
         opciones.casillasExploradas ?? [],
@@ -1087,11 +1174,15 @@ export function restaurarEstadoPartida(
     datos.heroes,
     reinoJugador,
   )
+  const capitanes = leerRegistroCapitanes(
+    datos.capitanes,
+  )
 
   validarReferenciasMilitares(
     huestes,
     formaciones,
     heroes,
+    capitanes,
   )
 
   const recursosRivales =
@@ -1150,6 +1241,9 @@ export function restaurarEstadoPartida(
     huestes,
     formaciones,
     heroes,
+    ...(datos.capitanes === undefined
+      ? {}
+      : { capitanes }),
     casillasExploradas:
       normalizarCasillasExploradas(
         leerCasillasExploradas(

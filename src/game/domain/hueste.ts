@@ -23,6 +23,8 @@ export interface Hueste {
   readonly destinoMarcha?: CoordenadaHex
   readonly bloqueadaHastaTurno?: number
   readonly heroeId?: string
+  /** Capitán sin ascenso; desaparece al promocionar a héroe. */
+  readonly capitanId?: string
   readonly formacionIds: readonly string[]
 }
 
@@ -34,6 +36,7 @@ export interface OpcionesHueste {
   readonly destinoMarcha?: CoordenadaHex
   readonly bloqueadaHastaTurno?: number
   readonly heroeId?: string
+  readonly capitanId?: string
   readonly formacionIds?: readonly string[]
 }
 
@@ -168,6 +171,10 @@ export function crearHueste(
   }
 
   const heroeId = validarHeroeId(opciones.heroeId)
+  const capitanId = validarHeroeId(opciones.capitanId)
+  if (heroeId !== undefined && capitanId !== undefined) {
+    throw new Error('Una hueste no puede tener héroe y capitán a la vez')
+  }
   const destinoMarcha = opciones.destinoMarcha === undefined
     ? undefined
     : validarCoordenada(opciones.destinoMarcha)
@@ -176,6 +183,7 @@ export function crearHueste(
   const hueste: Hueste = {
     ...base,
     ...(heroeId === undefined ? {} : { heroeId }),
+    ...(capitanId === undefined ? {} : { capitanId }),
     ...(destinoMarcha === undefined ? {} : { destinoMarcha }),
     ...(bloqueadaHastaTurno === undefined ? {} : { bloqueadaHastaTurno }),
   }

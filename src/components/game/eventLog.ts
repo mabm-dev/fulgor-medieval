@@ -119,10 +119,16 @@ export function formatearEvento(
       const detalleHeroes = heroes.length === 0
         ? ''
         : '; ' + heroes.join(', ')
+      const ascensos = evento.ascensosCapitanes ?? []
+      const detalleAscensos = ascensos.length === 0
+        ? ''
+        : '; ascensos: ' + ascensos.map(
+            (ascenso) => ascenso.nombre + ' ahora es héroe',
+          ).join(', ')
 
       const asentamiento = evento.asentamientoCapturadoId === undefined ? "" : "; asentamiento conquistado: " + evento.asentamientoCapturadoId
       return 'Batalla resuelta: ' + desenlace + ', ' +
-        bajas + ' bajas' + detalleHeroes + asentamiento
+        bajas + ' bajas' + detalleHeroes + detalleAscensos + asentamiento
     }
     case 'diplomacia_resuelta':
       if (evento.resultado === 'contrapropuesta') {

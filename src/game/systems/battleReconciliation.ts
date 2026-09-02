@@ -33,6 +33,9 @@ import type {
 import {
   evaluarVictoria,
 } from './battleMorale'
+import {
+  registrarBatallaDeCapitanes,
+} from './captainPromotion'
 
 export interface ResultadoReconciliacionBatalla {
   readonly estado: EstadoPartida
@@ -381,8 +384,17 @@ export function reconciliarResultadoBatalla(
     resultado.estado,
     resultado.formaciones,
   )
+  const resultadoCapitanes = registrarBatallaDeCapitanes({
+    huestesAntes: estado.huestes,
+    huestesDespues: consecuenciasMilitares.huestes,
+    capitanes: estado.capitanes ?? [],
+    heroes: consecuenciasMilitares.heroes,
+    huesteAtacanteId: resultado.estado.huesteAtacanteId,
+    huesteDefensoraId: resultado.estado.huesteDefensoraId,
+    ganador: victoria.ganador,
+  })
   const huestesConRetirada = crearRegistroHuestes(
-    consecuenciasMilitares.huestes.map((hueste) => {
+    resultadoCapitanes.huestes.map((hueste) => {
       const perdio =
         (victoria.ganador === "atacante" && hueste.id === resultado.estado.huesteDefensoraId) ||
         (victoria.ganador === "defensor" && hueste.id === resultado.estado.huesteAtacanteId)
@@ -406,6 +418,9 @@ export function reconciliarResultadoBatalla(
     consecuencias,
     consecuenciasHeroes:
       consecuenciasMilitares.consecuenciasHeroes,
+    ...(resultadoCapitanes.ascensos.length === 0
+      ? {}
+      : { ascensosCapitanes: resultadoCapitanes.ascensos }),
     ...(consecuenciaAsentamiento.asentamientoCapturadoId === undefined
       ? {}
       : { asentamientoCapturadoId: consecuenciaAsentamiento.asentamientoCapturadoId }),
@@ -416,7 +431,11 @@ export function reconciliarResultadoBatalla(
       ...estado,
       formaciones,
       huestes: huestesConRetirada,
-      heroes: consecuenciasMilitares.heroes,
+      heroes: resultadoCapitanes.heroes,
+      ...(estado.capitanes === undefined &&
+        resultadoCapitanes.capitanes.length === 0
+        ? {}
+        : { capitanes: resultadoCapitanes.capitanes }),
       asentamientos: consecuenciaAsentamiento.asentamientos,
     }),
     evento,

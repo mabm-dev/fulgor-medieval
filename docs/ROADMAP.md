@@ -50,7 +50,9 @@
 - Interfaz y consecuencias avanzadas de relaciones, pacto, comercio y guerra.
 - Rescate, intercambio o concesiones por héroes cautivos implementados:
   rescate con recompensa y formularios de intercambio/concesión en Diplomacia.
-- Condiciones para que un capitán ascienda a héroe.
+- Ascenso de capitán a héroe implementado: tras tres victorias y
+  sobreviviendo a la última batalla, el capitán obtiene su ficha de héroe y
+  conserva su nombre y arquetipo.
 - Objetivo de victoria y derrota.
 
 ## v0.7 — Tutorial
