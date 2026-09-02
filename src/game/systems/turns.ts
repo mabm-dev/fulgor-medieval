@@ -63,6 +63,9 @@ import {
 import {
   resolverDiplomaciaTurno,
 } from './diplomacy'
+import {
+  evaluarResultadoPartida,
+} from './victory'
 
 export const DIVISOR_TECHO_MANO_DE_OBRA = 2000
 
@@ -498,6 +501,11 @@ export function finalizarTurno(
       'Solo se puede finalizar durante la gestión',
     )
   }
+  if (estado.resultadoPartida !== undefined) {
+    throw new Error(
+      'La partida ya ha terminado',
+    )
+  }
 
   // 1. Las obras que ya estaban en marcha avanzan un turno. Un edificio que
   // se complete aquí ya cuenta en el cálculo de economía del punto 2 —"al
@@ -633,7 +641,7 @@ export function finalizarTurno(
       visibilidad,
     )
 
-  const nuevoEstado: EstadoPartida =
+  const estadoSinResultado: EstadoPartida =
     Object.freeze({
       ...estado,
       turno: siguienteTurno,
@@ -663,6 +671,18 @@ export function finalizarTurno(
           }),
       casillasExploradas,
     })
+  const evaluacionPartida = evaluarResultadoPartida(
+    estadoSinResultado,
+  )
+  const nuevoEstado: EstadoPartida =
+    evaluacionPartida.resultado === undefined
+      ? estadoSinResultado
+      : Object.freeze({
+          ...estadoSinResultado,
+          resultadoPartida: evaluacionPartida.resultado,
+          motivoResultado:
+            evaluacionPartida.motivo ?? 'Partida finalizada',
+        })
 
   const eventos: readonly EventoTurno[] =
     Object.freeze([
@@ -766,6 +786,17 @@ export function finalizarTurno(
         turno: estado.turno,
         siguienteTurno,
       }),
+      ...(evaluacionPartida.resultado === undefined
+        ? []
+        : [
+            Object.freeze({
+              tipo: 'partida_finalizada' as const,
+              turno: estado.turno,
+              resultado: evaluacionPartida.resultado,
+              motivo:
+                evaluacionPartida.motivo ?? 'Partida finalizada',
+            }),
+          ]),
     ])
 
   return Object.freeze({

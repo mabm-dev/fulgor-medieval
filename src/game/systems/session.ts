@@ -49,6 +49,9 @@ import {
   type SesionBatalla,
 } from './battleSession'
 import {
+  evaluarResultadoPartida,
+} from './victory'
+import {
   finalizarTurno,
   type OpcionesFinalizarTurno,
   type ResultadoTurno,
@@ -342,13 +345,22 @@ export function cerrarBatallaSesion(
     estado,
     sesion,
   )
-  const guardado = guardarEstadoPartida(
-    almacenamiento,
+  const evaluacionPartida = evaluarResultadoPartida(
     cierre.estado,
   )
-  const eventos: EventoTurno[] = [
-    cierre.evento,
-  ]
+  const estadoFinal = evaluacionPartida.resultado === undefined
+    ? cierre.estado
+    : Object.freeze({
+        ...cierre.estado,
+        resultadoPartida: evaluacionPartida.resultado,
+        motivoResultado:
+          evaluacionPartida.motivo ?? 'Partida finalizada',
+      })
+  const guardado = guardarEstadoPartida(
+    almacenamiento,
+    estadoFinal,
+  )
+  const eventos: EventoTurno[] = [cierre.evento]
 
   if (guardado.tipo === 'error') {
     eventos.push({
@@ -359,7 +371,7 @@ export function cerrarBatallaSesion(
   }
 
   return Object.freeze({
-    estado: cierre.estado,
+    estado: estadoFinal,
     eventos: Object.freeze(eventos),
   })
 }

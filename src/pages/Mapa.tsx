@@ -126,6 +126,47 @@ function nombreEdificio(
     ? EDIFICIOS[edificioId].nombre
     : edificioId
 }
+function PantallaResultadoPartida({
+  resultado,
+  motivo,
+  onVolver,
+}: {
+  readonly resultado: 'victoria' | 'derrota'
+  readonly motivo?: string
+  readonly onVolver: () => void
+}) {
+  const victoria = resultado === 'victoria'
+  return (
+    <main className="flex h-screen w-screen items-center justify-center bg-noche-mapa px-6 text-white">
+      <section
+        aria-label={victoria ? 'Victoria' : 'Derrota'}
+        className="w-full max-w-lg border border-oro/45 bg-[#170b0a]/95 p-8 text-center shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+      >
+        <p className="font-cinzel text-[10px] tracking-[0.35em] text-oro uppercase">
+          Fin de la partida
+        </p>
+        <h1 className="font-cinzel mt-4 text-4xl text-pergamino-palido">
+          {victoria ? 'Victoria' : 'Derrota'}
+        </h1>
+        <p className="mt-4 text-sm leading-relaxed text-white/65">
+          {motivo ?? (
+            victoria
+              ? 'El reino rival ha caído.'
+              : 'Tu capital ha sido perdida.'
+          )}
+        </p>
+        <button
+          type="button"
+          onClick={onVolver}
+          className="font-cinzel mt-8 border border-oro/50 bg-brasa px-5 py-3 text-xs tracking-[0.16em] text-pergamino-palido uppercase transition-colors hover:border-oro hover:bg-brasa-hover"
+        >
+          Volver al menú
+        </button>
+      </section>
+    </main>
+  )
+}
+
 function huesteTieneEfectivos(estado: EstadoPartida | null, huesteId: string): boolean {
   const hueste = estado?.huestes.find((candidata) => candidata.id === huesteId)
   return hueste?.formacionIds.some((id) =>
@@ -590,6 +631,16 @@ export default function Mapa() {
       <Navigate
         to="/nueva-partida"
         replace
+      />
+    )
+  }
+
+  if (estadoJuego.resultadoPartida !== undefined) {
+    return (
+      <PantallaResultadoPartida
+        resultado={estadoJuego.resultadoPartida}
+        motivo={estadoJuego.motivoResultado}
+        onVolver={() => navigate('/')}
       />
     )
   }

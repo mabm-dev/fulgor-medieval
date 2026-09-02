@@ -139,6 +139,10 @@ export function formatearEvento(
         : 'Propuesta diplomática rechazada: ' + evento.propuestaId
     case 'turno_finalizado':
       return `Turno ${evento.turno} resuelto`
+    case 'partida_finalizada':
+      return evento.resultado === 'victoria'
+        ? 'Victoria: ' + evento.motivo
+        : 'Derrota: ' + evento.motivo
     case 'guardado_fallido':
       return `No se pudo guardar la partida: ${evento.mensaje}`
   }

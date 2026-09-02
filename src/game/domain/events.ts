@@ -122,6 +122,13 @@ export interface EventoBatallaResuelta
  * `guardarEstadoPartida` no puede escribir. Vive en el mismo canal de
  * eventos para que el HUD la comunique sin ninguna pieza nueva de interfaz.
  */
+export interface EventoPartidaFinalizada
+  extends EventoBaseTurno {
+  readonly tipo: 'partida_finalizada'
+  readonly resultado: 'victoria' | 'derrota'
+  readonly motivo: string
+}
+
 export interface EventoGuardadoFallido
   extends EventoBaseTurno {
   readonly tipo: 'guardado_fallido'
@@ -139,3 +146,4 @@ export type EventoTurno =
   | EventoMovimientoRival
   | EventoEncuentroCombate
   | EventoBatallaResuelta
+  | EventoPartidaFinalizada

@@ -67,6 +67,14 @@ export const FASES_TURNO = [
 export type FaseTurno =
   (typeof FASES_TURNO)[number]
 
+export const RESULTADOS_PARTIDA = [
+  'victoria',
+  'derrota',
+] as const
+
+export type ResultadoPartida =
+  (typeof RESULTADOS_PARTIDA)[number]
+
 export const ERROR_ESTADO_INVALIDO =
   'Estado de partida no válido'
 
@@ -86,6 +94,8 @@ export interface EstadoPartida {
   readonly meta: MetaPartida
   readonly turno: number
   readonly fase: FaseTurno
+  readonly resultadoPartida?: ResultadoPartida
+  readonly motivoResultado?: string
   readonly reinoJugador: IdentificadorReino
   readonly recursos: ReservaRecursos
   /** Relaciones explicitas entre reinos; ausente en partidas legadas. */
@@ -164,6 +174,27 @@ function esFaseTurno(
       (fase) => fase === valor,
     )
   )
+}
+
+function leerResultadoPartida(
+  valor: unknown,
+): ResultadoPartida | undefined {
+  if (valor === undefined) {
+    return undefined
+  }
+  if (
+    typeof valor !== 'string' ||
+    !RESULTADOS_PARTIDA.some((resultado) => resultado === valor)
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+  return valor as ResultadoPartida
+}
+
+function leerMotivoResultado(
+  valor: unknown,
+): string | undefined {
+  return leerTextoOpcional(valor)
 }
 
 function leerSemilla(valor: unknown): number {
@@ -1156,6 +1187,13 @@ export function restaurarEstadoPartida(
     throw new Error(ERROR_ESTADO_INVALIDO)
   }
 
+  const resultadoPartida = leerResultadoPartida(
+    datos.resultadoPartida,
+  )
+  const motivoResultado = leerMotivoResultado(
+    datos.motivoResultado,
+  )
+
   if (!esRegistro(datos.recursos)) {
     throw new Error(ERROR_ESTADO_INVALIDO)
   }
@@ -1202,6 +1240,12 @@ export function restaurarEstadoPartida(
     meta: leerMeta(datos.meta),
     turno: datos.turno,
     fase: datos.fase,
+    ...(resultadoPartida === undefined
+      ? {}
+      : { resultadoPartida }),
+    ...(motivoResultado === undefined
+      ? {}
+      : { motivoResultado }),
     reinoJugador,
     recursos: crearReservaRecursos({
       grano: leerCantidad(
