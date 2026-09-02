@@ -26,4 +26,29 @@ describe('DiplomacyPanel', () => {
     expect(html).toContain('Pacto')
     expect(html).toContain('Intención diplomática')
   })
+
+  it('muestra formularios de concesión e intercambio de cautivos', () => {
+    const html = renderToStaticMarkup(
+      <DiplomacyPanel
+        reinoNombre="León"
+        relacion={RELACION}
+        onCambiar={() => undefined}
+        propuestas={[]}
+        onProponer={() => undefined}
+        heroesRivalesCapturados={[
+          { id: 'hero-leon', nombre: 'Alfonso' },
+        ]}
+        heroesPropiosCapturados={[
+          { id: 'hero-castilla', nombre: 'Rodrigo' },
+        ]}
+        onProponerIntercambio={() => undefined}
+        onProponerConcesion={() => undefined}
+      />,
+    )
+
+    expect(html).toContain('Héroes rivales cautivos')
+    expect(html).toContain('Conceder liberación')
+    expect(html).toContain('Proponer intercambio')
+    expect(html).toContain('Héroe propio cautivo para intercambio')
+  })
 })

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type {
   EstadoRelacion,
   IntencionDiplomatica,
@@ -26,6 +27,11 @@ const TIPOS_PROPUESTA: readonly TipoPropuestaDiplomatica[] = [
   'pacto',
   'comercio',
 ]
+
+export interface HeroeCautivoResumen {
+  readonly id: string
+  readonly nombre: string
+}
 
 const NOMBRES_PROPUESTA: Record<TipoPropuestaDiplomatica, string> = {
   paz: 'Proponer paz',
@@ -57,6 +63,13 @@ export interface DiplomacyPanelProps {
   readonly onResponder?: (id: string, respuesta: 'aceptar' | 'rechazar') => void
   readonly heroeCapturadoId?: string
   readonly onProponerRescate?: (heroeId: string) => void
+  readonly heroesPropiosCapturados?: readonly HeroeCautivoResumen[]
+  readonly heroesRivalesCapturados?: readonly HeroeCautivoResumen[]
+  readonly onProponerIntercambio?: (
+    heroeRivalId: string,
+    heroePropioId: string,
+  ) => void
+  readonly onProponerConcesion?: (heroeRivalId: string) => void
 }
 
 export default function DiplomacyPanel({
@@ -69,7 +82,28 @@ export default function DiplomacyPanel({
   onResponder,
   heroeCapturadoId,
   onProponerRescate,
+  heroesPropiosCapturados = [],
+  heroesRivalesCapturados = [],
+  onProponerIntercambio,
+  onProponerConcesion,
 }: DiplomacyPanelProps) {
+  const [heroeRivalSeleccionado, setHeroeRivalSeleccionado] =
+    useState(heroesRivalesCapturados[0]?.id ?? '')
+  const [heroePropioSeleccionado, setHeroePropioSeleccionado] =
+    useState(heroesPropiosCapturados[0]?.id ?? '')
+  const heroeRivalActivo =
+    heroesRivalesCapturados.some(
+      (heroe) => heroe.id === heroeRivalSeleccionado,
+    )
+      ? heroeRivalSeleccionado
+      : heroesRivalesCapturados[0]?.id ?? ''
+  const heroePropioActivo =
+    heroesPropiosCapturados.some(
+      (heroe) => heroe.id === heroePropioSeleccionado,
+    )
+      ? heroePropioSeleccionado
+      : heroesPropiosCapturados[0]?.id ?? ''
+
   const cambiarEstado = (estado: EstadoRelacion) => {
     onCambiar(
       estado,
@@ -170,6 +204,90 @@ export default function DiplomacyPanel({
                   Solicitar rescate · 5 oro
                 </button>
               )}
+            {heroesRivalesCapturados.length > 0 && (
+              <div className="border border-[#efc56e]/25 bg-[#2b1e0d]/35 p-2">
+                <p className="text-[10px] tracking-[0.1em] text-[#f5d890]/75 uppercase">
+                  Héroes rivales cautivos
+                </p>
+                <select
+                  aria-label="Héroe rival cautivo"
+                  value={heroeRivalActivo}
+                  onChange={(evento) =>
+                    setHeroeRivalSeleccionado(evento.target.value)
+                  }
+                  className="mt-2 w-full border border-white/15 bg-[#170b0a] px-2 py-1 text-[11px] text-[#f4c8b9] outline-none focus:border-[#efc56e]"
+                >
+                  {heroesRivalesCapturados.map((heroe) => (
+                    <option key={heroe.id} value={heroe.id}>
+                      {heroe.nombre}
+                    </option>
+                  ))}
+                </select>
+                {onProponerConcesion && (
+                  <button
+                    type="button"
+                    disabled={
+                      heroeRivalActivo === '' ||
+                      propuestas.some(
+                        (propuesta) =>
+                          propuesta.tipo === 'concesion' &&
+                          propuesta.heroeId === heroeRivalActivo,
+                      )
+                    }
+                    onClick={() =>
+                      onProponerConcesion(heroeRivalActivo)
+                    }
+                    className="mt-2 w-full border border-[#86b88f]/45 px-2 py-1.5 text-left text-[10px] tracking-[0.1em] text-[#b9e7c0] uppercase transition-colors hover:border-[#86b88f] hover:bg-[#315f3b]/30 disabled:cursor-not-allowed disabled:opacity-35"
+                  >
+                    Conceder liberación
+                  </button>
+                )}
+                {heroesPropiosCapturados.length > 0 &&
+                  onProponerIntercambio && (
+                    <>
+                      <p className="mt-3 text-[10px] tracking-[0.1em] text-white/45 uppercase">
+                        A cambio de tu cautivo
+                      </p>
+                      <select
+                        aria-label="Héroe propio cautivo para intercambio"
+                        value={heroePropioActivo}
+                        onChange={(evento) =>
+                          setHeroePropioSeleccionado(evento.target.value)
+                        }
+                        className="mt-2 w-full border border-white/15 bg-[#170b0a] px-2 py-1 text-[11px] text-[#f4c8b9] outline-none focus:border-[#efc56e]"
+                      >
+                        {heroesPropiosCapturados.map((heroe) => (
+                          <option key={heroe.id} value={heroe.id}>
+                            {heroe.nombre}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        disabled={
+                          heroeRivalActivo === '' ||
+                          heroePropioActivo === '' ||
+                          propuestas.some(
+                            (propuesta) =>
+                              propuesta.tipo === 'intercambio' &&
+                              (propuesta.heroeId === heroeRivalActivo ||
+                                propuesta.heroeOfrecidoId === heroePropioActivo),
+                          )
+                        }
+                        onClick={() =>
+                          onProponerIntercambio(
+                            heroeRivalActivo,
+                            heroePropioActivo,
+                          )
+                        }
+                        className="mt-2 w-full border border-[#efc56e]/45 px-2 py-1.5 text-left text-[10px] tracking-[0.1em] text-[#f5d890] uppercase transition-colors hover:border-[#efc56e] hover:bg-[#73521f]/25 disabled:cursor-not-allowed disabled:opacity-35"
+                      >
+                        Proponer intercambio
+                      </button>
+                    </>
+                  )}
+              </div>
+            )}
             {TIPOS_PROPUESTA.map((tipo) => (
               <button
                 key={tipo}

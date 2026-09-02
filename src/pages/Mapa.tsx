@@ -4,7 +4,9 @@ import {
 } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 import BattleView from '../components/battle/BattleView'
-import DiplomacyPanel from '../components/game/DiplomacyPanel'
+import DiplomacyPanel, {
+  type HeroeCautivoResumen,
+} from '../components/game/DiplomacyPanel'
 import TurnHud from '../components/game/TurnHud'
 import HexMap from '../components/map/HexMap'
 import MapViewport from '../components/map/MapViewport'
@@ -627,13 +629,25 @@ export default function Mapa() {
           estadoJuego.reinoJugador,
           reinoRivalId,
         )
-  const heroeCapturadoPorRival =
-    estadoJuego.heroes.find(
+  const heroesPropiosCapturadosPorRival =
+    estadoJuego.heroes.filter(
       (heroe) =>
         heroe.reinoId === estadoJuego.reinoJugador &&
         heroe.estado === 'herido' &&
         heroe.capturadoPorReinoId === reinoRivalId,
     )
+  const heroesRivalesCapturadosPorJugador =
+    reinoRivalId === undefined
+      ? []
+      : estadoJuego.heroes.filter(
+          (heroe) =>
+            heroe.reinoId === reinoRivalId &&
+            heroe.estado === 'herido' &&
+            heroe.capturadoPorReinoId ===
+              estadoJuego.reinoJugador,
+        )
+  const heroeCapturadoPorRival =
+    heroesPropiosCapturadosPorRival[0]
 
   const costeMovimiento = casillaSeleccionada
     ? DEFINICIONES_TERRENO[
@@ -948,6 +962,114 @@ export default function Mapa() {
     )
   }
 
+  const proponerIntercambio = (
+    heroeRivalId: string,
+    heroePropioId: string,
+  ) => {
+    if (reinoRivalId === undefined) {
+      return
+    }
+    const heroeRival = heroesRivalesCapturadosPorJugador.find(
+      (heroe) => heroe.id === heroeRivalId,
+    )
+    const heroePropio = heroesPropiosCapturadosPorRival.find(
+      (heroe) => heroe.id === heroePropioId,
+    )
+    if (heroeRival === undefined || heroePropio === undefined) {
+      return
+    }
+    const pendientes =
+      estadoJuego.propuestasDiplomaticas ?? []
+    if (
+      pendientes.some(
+        (propuesta) =>
+          propuesta.tipo === 'intercambio' &&
+          (propuesta.heroeId === heroeRivalId ||
+            propuesta.heroeOfrecidoId === heroePropioId),
+      )
+    ) {
+      setMensajeTurno('Ya hay un intercambio pendiente para ese héroe')
+      return
+    }
+    const propuesta = crearPropuestaDiplomatica({
+      id: `propuesta-intercambio-` + estadoJuego.turno + `-` + heroeRivalId + `-` + heroePropioId,
+      emisor: estadoJuego.reinoJugador,
+      receptor: reinoRivalId,
+      tipo: 'intercambio',
+      heroeId: heroeRivalId,
+      heroeOfrecidoId: heroePropioId,
+    })
+    const nuevoEstado = Object.freeze({
+      ...estadoJuego,
+      propuestasDiplomaticas:
+        crearRegistroPropuestasDiplomaticas([
+          ...pendientes,
+          propuesta,
+        ]),
+    })
+    const guardado = guardarEstadoPartida(
+      almacenamientoNavegador,
+      nuevoEstado,
+    )
+    setEstadoJuego(nuevoEstado)
+    setMensajeTurno(
+      guardado.tipo === 'error'
+        ? 'Intercambio propuesto, pero no se pudo guardar'
+        : 'Intercambio propuesto; se resolverá al finalizar el turno',
+    )
+  }
+
+  const proponerConcesion = (
+    heroeRivalId: string,
+  ) => {
+    if (reinoRivalId === undefined) {
+      return
+    }
+    const heroeRival = heroesRivalesCapturadosPorJugador.find(
+      (heroe) => heroe.id === heroeRivalId,
+    )
+    if (heroeRival === undefined) {
+      return
+    }
+    const pendientes =
+      estadoJuego.propuestasDiplomaticas ?? []
+    if (
+      pendientes.some(
+        (propuesta) =>
+          propuesta.tipo === 'concesion' &&
+          propuesta.heroeId === heroeRivalId,
+      )
+    ) {
+      setMensajeTurno('Ya hay una concesión pendiente para ese héroe')
+      return
+    }
+    const propuesta = crearPropuestaDiplomatica({
+      id: `propuesta-concesion-` + estadoJuego.turno + `-` + heroeRivalId,
+      emisor: estadoJuego.reinoJugador,
+      receptor: reinoRivalId,
+      tipo: 'concesion',
+      heroeId: heroeRivalId,
+    })
+    const nuevoEstado = Object.freeze({
+      ...estadoJuego,
+      propuestasDiplomaticas:
+        crearRegistroPropuestasDiplomaticas([
+          ...pendientes,
+          propuesta,
+        ]),
+    })
+    const guardado = guardarEstadoPartida(
+      almacenamientoNavegador,
+      nuevoEstado,
+    )
+    setEstadoJuego(nuevoEstado)
+    setMensajeTurno(
+      guardado.tipo === 'error'
+        ? 'Concesión propuesta, pero no se pudo guardar'
+        : 'Concesión propuesta; se resolverá al finalizar el turno',
+    )
+  }
+
   const encolarConstruccion = (
     asentamientoId: string,
     edificioId: string,
@@ -1225,6 +1347,24 @@ export default function Mapa() {
               onResponder={responderPropuesta}
               heroeCapturadoId={heroeCapturadoPorRival?.id}
               onProponerRescate={proponerRescate}
+              heroesPropiosCapturados={
+                heroesPropiosCapturadosPorRival.map(
+                  (heroe): HeroeCautivoResumen => ({
+                    id: heroe.id,
+                    nombre: heroe.nombre,
+                  }),
+                )
+              }
+              heroesRivalesCapturados={
+                heroesRivalesCapturadosPorJugador.map(
+                  (heroe): HeroeCautivoResumen => ({
+                    id: heroe.id,
+                    nombre: heroe.nombre,
+                  }),
+                )
+              }
+              onProponerIntercambio={proponerIntercambio}
+              onProponerConcesion={proponerConcesion}
             />
           </aside>
         )}

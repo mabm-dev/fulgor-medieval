@@ -235,6 +235,100 @@ describe('resolución diplomática de turno', () => {
     })
   })
 
+  it('intercambia dos héroes cautivos y libera a ambos', () => {
+    const estado = crearEstado(
+      [
+        {
+          id: 'intercambio-1',
+          emisor: 'castilla',
+          receptor: 'leon',
+          tipo: 'intercambio',
+          heroeId: 'heroe-leon',
+          heroeOfrecidoId: 'heroe-castilla',
+        },
+      ],
+      undefined,
+      [
+        {
+          id: 'heroe-leon',
+          nombre: 'Alfonso',
+          reinoId: 'leon',
+          arquetipo: 'infanzon',
+          estado: 'herido',
+          capturadoPorReinoId: 'castilla',
+        },
+        {
+          id: 'heroe-castilla',
+          nombre: 'Rodrigo',
+          reinoId: 'castilla',
+          arquetipo: 'caballero_frontera',
+          esPrincipal: true,
+          estado: 'herido',
+          capturadoPorReinoId: 'leon',
+        },
+      ],
+    )
+    const resultado = resolverDiplomaciaTurno(
+      estado,
+      estado.recursos,
+      estado.recursosRivales ?? {},
+    )
+
+    expect(resultado.aceptadas).toHaveLength(1)
+    expect(resultado.heroes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'heroe-leon',
+          estado: 'activo',
+          capturadoPorReinoId: undefined,
+        }),
+        expect.objectContaining({
+          id: 'heroe-castilla',
+          estado: 'activo',
+          capturadoPorReinoId: undefined,
+        }),
+      ]),
+    )
+  })
+
+  it('libera al héroe rival cuando el jugador concede su cautiverio', () => {
+    const estado = crearEstado(
+      [
+        {
+          id: 'concesion-1',
+          emisor: 'castilla',
+          receptor: 'leon',
+          tipo: 'concesion',
+          heroeId: 'heroe-leon',
+        },
+      ],
+      undefined,
+      [
+        {
+          id: 'heroe-leon',
+          nombre: 'Alfonso',
+          reinoId: 'leon',
+          arquetipo: 'infanzon',
+          estado: 'herido',
+          capturadoPorReinoId: 'castilla',
+        },
+      ],
+    )
+    const resultado = resolverDiplomaciaTurno(
+      estado,
+      estado.recursos,
+      estado.recursosRivales ?? {},
+    )
+
+    expect(resultado.aceptadas).toHaveLength(1)
+    expect(resultado.heroes[0]).toMatchObject({
+      id: 'heroe-leon',
+      estado: 'activo',
+    })
+    expect(resultado.heroes[0].capturadoPorReinoId).toBeUndefined()
+  })
+
+
   it('libera al héroe cuando el jugador paga el rescate', () => {
     const estado = crearEstado(
       [
