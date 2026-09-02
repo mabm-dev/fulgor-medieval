@@ -60,6 +60,9 @@ import {
 import {
   resolverEconomiaRival,
 } from './rivalEconomy'
+import {
+  resolverDiplomaciaTurno,
+} from './diplomacy'
 
 export const DIVISOR_TECHO_MANO_DE_OBRA = 2000
 
@@ -601,6 +604,12 @@ export function finalizarTurno(
       inicioConstruccion.asentamientos,
       opciones.casillas,
     )
+  const resolucionDiplomacia =
+    resolverDiplomaciaTurno(
+      estado,
+      inicioConstruccion.recursos,
+      resolucionEconomiaRival.recursosRivales,
+    )
 
   const siguienteTurno = estado.turno + 1
 
@@ -629,7 +638,17 @@ export function finalizarTurno(
       ...estado,
       turno: siguienteTurno,
       fase: 'gestion',
-      recursos: inicioConstruccion.recursos,
+      recursos: resolucionDiplomacia.recursos,
+      ...(resolucionDiplomacia.diplomacia === undefined
+        ? {}
+        : { diplomacia: resolucionDiplomacia.diplomacia }),
+      ...(estado.propuestasDiplomaticas === undefined &&
+        resolucionDiplomacia.propuestasDiplomaticas.length === 0
+        ? {}
+        : {
+            propuestasDiplomaticas:
+              resolucionDiplomacia.propuestasDiplomaticas,
+          }),
       asentamientos:
         resolucionEconomiaRival.asentamientos,
       huestes: resolucionRival.huestes,
@@ -639,7 +658,7 @@ export function finalizarTurno(
         ? {}
         : {
             recursosRivales:
-              resolucionEconomiaRival.recursosRivales,
+              resolucionDiplomacia.recursosRivales,
           }),
       casillasExploradas,
     })
@@ -701,6 +720,29 @@ export function finalizarTurno(
             huesteId: movimiento.huesteId,
             origen: movimiento.origen,
             destino: movimiento.destino,
+          }),
+      ),
+      ...resolucionDiplomacia.aceptadas.map(
+        (propuesta) =>
+          Object.freeze({
+            tipo: 'diplomacia_resuelta',
+            turno: estado.turno,
+            propuestaId: propuesta.id,
+            emisor: propuesta.emisor,
+            receptor: propuesta.receptor,
+            resultado: 'aceptada',
+            acuerdo: propuesta.tipo,
+          }),
+      ),
+      ...resolucionDiplomacia.rechazadas.map(
+        (propuesta) =>
+          Object.freeze({
+            tipo: 'diplomacia_resuelta',
+            turno: estado.turno,
+            propuestaId: propuesta.id,
+            emisor: propuesta.emisor,
+            receptor: propuesta.receptor,
+            resultado: 'rechazada',
           }),
       ),
       Object.freeze({

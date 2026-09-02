@@ -41,6 +41,16 @@ export interface EventoTurnoFinalizado
   readonly siguienteTurno: number
 }
 
+export interface EventoDiplomaciaResuelta
+  extends EventoBaseTurno {
+  readonly tipo: 'diplomacia_resuelta'
+  readonly propuestaId: string
+  readonly emisor: string
+  readonly receptor: string
+  readonly resultado: 'aceptada' | 'rechazada'
+  readonly acuerdo?: 'paz' | 'pacto' | 'comercio'
+}
+
 export interface EventoMovimientoRival
   extends EventoBaseTurno {
   readonly tipo: 'movimiento_rival'
@@ -119,6 +129,7 @@ export type EventoTurno =
   | EventoCrecimientoAsentamientoAplicado
   | EventoEdificioCompletado
   | EventoTurnoFinalizado
+  | EventoDiplomaciaResuelta
   | EventoGuardadoFallido
   | EventoMovimientoRival
   | EventoEncuentroCombate

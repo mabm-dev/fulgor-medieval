@@ -2,6 +2,8 @@ import type {
   EstadoRelacion,
   IntencionDiplomatica,
   RelacionDiplomatica,
+  TipoPropuestaDiplomatica,
+  PropuestaDiplomatica,
 } from '../../game/domain/diplomacy'
 
 const NOMBRES_ESTADO: Record<EstadoRelacion, string> = {
@@ -19,6 +21,18 @@ const NOMBRES_INTENCION: Record<IntencionDiplomatica, string> = {
   mision: 'Misión',
 }
 
+const TIPOS_PROPUESTA: readonly TipoPropuestaDiplomatica[] = [
+  'paz',
+  'pacto',
+  'comercio',
+]
+
+const NOMBRES_PROPUESTA: Record<TipoPropuestaDiplomatica, string> = {
+  paz: 'Proponer paz',
+  pacto: 'Proponer pacto',
+  comercio: 'Proponer comercio',
+}
+
 const INTENCIONES: readonly IntencionDiplomatica[] = [
   'neutral',
   'defensa',
@@ -34,12 +48,16 @@ export interface DiplomacyPanelProps {
     estado: EstadoRelacion,
     intencion: IntencionDiplomatica,
   ) => void
+  readonly propuestas?: readonly PropuestaDiplomatica[]
+  readonly onProponer?: (tipo: TipoPropuestaDiplomatica) => void
 }
 
 export default function DiplomacyPanel({
   reinoNombre,
   relacion,
   onCambiar,
+  propuestas = [],
+  onProponer,
 }: DiplomacyPanelProps) {
   const cambiarEstado = (estado: EstadoRelacion) => {
     onCambiar(
@@ -85,6 +103,39 @@ export default function DiplomacyPanel({
           ),
         )}
       </div>
+
+      {onProponer && (
+        <div className="mt-4 border-t border-[#b95a49]/25 pt-3">
+          <p className="text-[10px] tracking-[0.12em] text-white/45 uppercase">
+            Propuestas pendientes
+          </p>
+          {propuestas.length > 0 && (
+            <ul className="mt-2 space-y-1 text-[11px] text-[#f4c8b9]/75">
+              {propuestas.map((propuesta) => (
+                <li key={propuesta.id}>
+                  {NOMBRES_PROPUESTA[propuesta.tipo]} · pendiente de respuesta
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="mt-2 grid grid-cols-1 gap-1.5">
+            {TIPOS_PROPUESTA.map((tipo) => (
+              <button
+                key={tipo}
+                type="button"
+                disabled={propuestas.some(
+                  (propuesta) => propuesta.tipo === tipo,
+                )}
+                onClick={() => onProponer(tipo)}
+                className="border border-[#ef9b87]/35 px-2 py-1.5 text-left text-[10px] tracking-[0.1em] text-[#f4c8b9] uppercase transition-colors hover:border-[#ef9b87] hover:bg-[#8f3e32]/30 disabled:cursor-not-allowed disabled:opacity-35"
+              >
+                {NOMBRES_PROPUESTA[tipo]}
+                {tipo === 'comercio' && ' · 2 oro por 2 madera'}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <label className="mt-3 flex items-center justify-between gap-3 text-[10px] tracking-[0.12em] text-white/45 uppercase">
         Intención

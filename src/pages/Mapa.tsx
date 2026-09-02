@@ -18,10 +18,13 @@ import {
   obtenerPerfilEconomico,
 } from '../game/content/kingdomEconomy'
 import {
+  crearPropuestaDiplomatica,
+  crearRegistroPropuestasDiplomaticas,
   establecerRelacion,
   obtenerRelacion,
   type EstadoRelacion,
   type IntencionDiplomatica,
+  type TipoPropuestaDiplomatica,
 } from '../game/domain/diplomacy'
 import type {
   EventoEncuentroCombate,
@@ -762,6 +765,9 @@ export default function Mapa() {
         reinoB: reinoRivalId,
         estado,
         intencion,
+        ...(estado === 'pacto' || estado === 'comercio'
+          ? { turnosRestantes: 5 }
+          : {}),
       },
     )
     const nuevoEstado = Object.freeze({
@@ -781,6 +787,62 @@ export default function Mapa() {
           (reinoRival?.nombre ?? reinoRivalId) +
           ': ' +
           estado,
+    )
+  }
+
+  const proponerDiplomacia = (
+    tipo: TipoPropuestaDiplomatica,
+  ) => {
+    if (reinoRivalId === undefined) {
+      return
+    }
+
+    const pendientes =
+      estadoJuego.propuestasDiplomaticas ?? []
+    if (
+      pendientes.some(
+        (propuesta) => propuesta.tipo === tipo,
+      )
+    ) {
+      setMensajeTurno('Ya hay una propuesta de ese tipo pendiente')
+      return
+    }
+
+    const propuesta = crearPropuestaDiplomatica({
+      id:
+        'propuesta-' +
+        estadoJuego.turno +
+        '-' +
+        tipo,
+      emisor: estadoJuego.reinoJugador,
+      receptor: reinoRivalId,
+      tipo,
+      ...(tipo === 'comercio'
+        ? {
+            oferta: { oro: 2 },
+            demanda: { madera: 2 },
+          }
+        : {}),
+    })
+    const propuestasDiplomaticas =
+      crearRegistroPropuestasDiplomaticas([
+        ...pendientes,
+        propuesta,
+      ])
+    const nuevoEstado = Object.freeze({
+      ...estadoJuego,
+      propuestasDiplomaticas,
+    })
+    const guardado = guardarEstadoPartida(
+      almacenamientoNavegador,
+      nuevoEstado,
+    )
+
+    setEstadoJuego(nuevoEstado)
+    setMensajeTurno(
+      guardado.tipo === 'error'
+        ? 'Propuesta creada, pero no se pudo guardar'
+        : 'Propuesta enviada; se resolverá al finalizar el turno',
     )
   }
 
@@ -1048,7 +1110,14 @@ export default function Mapa() {
             <DiplomacyPanel
               reinoNombre={reinoRival?.nombre ?? reinoRivalId}
               relacion={relacionRival}
+              propuestas={
+                (estadoJuego.propuestasDiplomaticas ?? []).filter(
+                  (propuesta) =>
+                    propuesta.receptor === reinoRivalId,
+                )
+              }
               onCambiar={cambiarDiplomacia}
+              onProponer={proponerDiplomacia}
             />
           </aside>
         )}

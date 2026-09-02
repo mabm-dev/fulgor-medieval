@@ -4,10 +4,14 @@ import {
 } from './kingdom'
 import {
   crearRegistroDiplomatico,
+  crearRegistroPropuestasDiplomaticas,
   esEstadoRelacion,
   esIntencionDiplomatica,
+  esTipoPropuestaDiplomatica,
+  type OpcionesPropuestaDiplomatica,
   type OpcionesRelacionDiplomatica,
   type RegistroDiplomatico,
+  type RegistroPropuestasDiplomaticas,
 } from './diplomacy'
 import {
   esTipoAsentamiento,
@@ -81,6 +85,7 @@ export interface EstadoPartida {
   readonly recursos: ReservaRecursos
   /** Relaciones explicitas entre reinos; ausente en partidas legadas. */
   readonly diplomacia?: RegistroDiplomatico
+  readonly propuestasDiplomaticas?: RegistroPropuestasDiplomaticas
   /**
    * Tesoro separado de cada reino no jugable. Es opcional para conservar
    * compatibilidad con estados de prueba y partidas anteriores a la IA rival.
@@ -118,6 +123,7 @@ export interface OpcionesEstadoInicial {
     Record<string, Partial<ReservaRecursos>>
   >
   readonly diplomacia?: readonly OpcionesRelacionDiplomatica[]
+  readonly propuestasDiplomaticas?: readonly OpcionesPropuestaDiplomatica[]
   readonly asentamientos?:
     readonly OpcionesAsentamiento[]
   readonly huestes?:
@@ -256,12 +262,17 @@ function leerRelacionDiplomatica(
   const reinoB = datos.reinoB
   const estado = datos.estado
   const intencion = datos.intencion
+  const turnosRestantes = datos.turnosRestantes
 
   if (
     typeof reinoA !== 'string' ||
     typeof reinoB !== 'string' ||
     !esEstadoRelacion(estado) ||
-    !esIntencionDiplomatica(intencion)
+    !esIntencionDiplomatica(intencion) ||
+    (turnosRestantes !== undefined &&
+      (typeof turnosRestantes !== 'number' ||
+        !Number.isSafeInteger(turnosRestantes) ||
+        turnosRestantes < 1))
   ) {
     throw new Error(ERROR_ESTADO_INVALIDO)
   }
@@ -271,7 +282,95 @@ function leerRelacionDiplomatica(
     reinoB,
     estado,
     intencion,
+    ...(turnosRestantes === undefined
+      ? {}
+      : { turnosRestantes }),
   }
+}
+
+function leerPropuestaDiplomatica(
+  datos: unknown,
+): OpcionesPropuestaDiplomatica {
+  if (!esRegistro(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  const id = datos.id
+  const emisor = datos.emisor
+  const receptor = datos.receptor
+  const tipo = datos.tipo
+  const oferta = datos.oferta
+  const demanda = datos.demanda
+  const turnosRestantes = datos.turnosRestantes
+
+  if (
+    typeof id !== 'string' ||
+    typeof emisor !== 'string' ||
+    typeof receptor !== 'string' ||
+    !esTipoPropuestaDiplomatica(tipo) ||
+    (oferta !== undefined && !esRegistro(oferta)) ||
+    (demanda !== undefined && !esRegistro(demanda)) ||
+    (turnosRestantes !== undefined &&
+      (typeof turnosRestantes !== 'number' ||
+        !Number.isSafeInteger(turnosRestantes) ||
+        turnosRestantes < 1))
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  const leerRecursosOpcionales = (
+    valor: Record<string, unknown> | undefined,
+  ): Partial<ReservaRecursos> | undefined => {
+    if (valor === undefined) {
+      return undefined
+    }
+
+    const resultado: Partial<Record<keyof ReservaRecursos, number>> = {}
+    for (const recurso of [
+      'grano',
+      'madera',
+      'piedra',
+      'manoDeObra',
+      'oro',
+    ] as const) {
+      if (valor[recurso] !== undefined) {
+        resultado[recurso] = leerCantidad(
+          valor,
+          recurso,
+        )
+      }
+    }
+    return resultado
+  }
+
+  return {
+    id,
+    emisor,
+    receptor,
+    tipo,
+    oferta: leerRecursosOpcionales(oferta),
+    demanda: leerRecursosOpcionales(demanda),
+    ...(turnosRestantes === undefined
+      ? {}
+      : { turnosRestantes }),
+  }
+}
+
+function leerPropuestasDiplomaticas(
+  datos: unknown,
+): RegistroPropuestasDiplomaticas | undefined {
+  if (datos === undefined) {
+    return undefined
+  }
+  if (!Array.isArray(datos)) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return crearRegistroPropuestasDiplomaticas(
+    datos.map((propuesta) =>
+      leerPropuestaDiplomatica(propuesta),
+    ),
+  )
 }
 
 function leerDiplomacia(
@@ -876,6 +975,12 @@ export function crearEstadoPartida(
   const diplomacia = crearDiplomacia(
     opciones.diplomacia,
   )
+  const propuestasDiplomaticas =
+    opciones.propuestasDiplomaticas === undefined
+      ? undefined
+      : crearRegistroPropuestasDiplomaticas(
+          opciones.propuestasDiplomaticas,
+        )
 
   const estado: EstadoPartida = {
     version: VERSION_ESTADO_PARTIDA,
@@ -894,6 +999,9 @@ export function crearEstadoPartida(
     ...(diplomacia === undefined
       ? {}
       : { diplomacia }),
+    ...(propuestasDiplomaticas === undefined
+      ? {}
+      : { propuestasDiplomaticas }),
     ...(recursosRivales === undefined
       ? {}
       : { recursosRivales }),
@@ -970,6 +1078,10 @@ export function restaurarEstadoPartida(
   const diplomacia = leerDiplomacia(
     datos.diplomacia,
   )
+  const propuestasDiplomaticas =
+    leerPropuestasDiplomaticas(
+      datos.propuestasDiplomaticas,
+    )
   const estado: EstadoPartida = {
     version: VERSION_ESTADO_PARTIDA,
     semillaMapa: leerSemilla(
@@ -1004,6 +1116,9 @@ export function restaurarEstadoPartida(
     ...(diplomacia === undefined
       ? {}
       : { diplomacia }),
+    ...(propuestasDiplomaticas === undefined
+      ? {}
+      : { propuestasDiplomaticas }),
     ...(recursosRivales === undefined
       ? {}
       : { recursosRivales }),

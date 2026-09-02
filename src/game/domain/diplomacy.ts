@@ -1,4 +1,8 @@
 import { esIdentificadorReino } from './kingdom'
+import {
+  crearReservaRecursos,
+  type ReservaRecursos,
+} from './resources'
 
 export const ESTADOS_RELACION = [
   'paz',
@@ -21,11 +25,21 @@ export const INTENCIONES_DIPLOMATICAS = [
 export type IntencionDiplomatica =
   (typeof INTENCIONES_DIPLOMATICAS)[number]
 
+export const TIPOS_PROPUESTA_DIPLOMATICA = [
+  'paz',
+  'pacto',
+  'comercio',
+] as const
+
+export type TipoPropuestaDiplomatica =
+  (typeof TIPOS_PROPUESTA_DIPLOMATICA)[number]
+
 export interface RelacionDiplomatica {
   readonly reinoA: string
   readonly reinoB: string
   readonly estado: EstadoRelacion
   readonly intencion: IntencionDiplomatica
+  readonly turnosRestantes?: number
 }
 
 export interface OpcionesRelacionDiplomatica {
@@ -33,10 +47,34 @@ export interface OpcionesRelacionDiplomatica {
   readonly reinoB: string
   readonly estado?: EstadoRelacion
   readonly intencion?: IntencionDiplomatica
+  readonly turnosRestantes?: number
+}
+
+export interface PropuestaDiplomatica {
+  readonly id: string
+  readonly emisor: string
+  readonly receptor: string
+  readonly tipo: TipoPropuestaDiplomatica
+  readonly oferta: ReservaRecursos
+  readonly demanda: ReservaRecursos
+  readonly turnosRestantes?: number
+}
+
+export interface OpcionesPropuestaDiplomatica {
+  readonly id: string
+  readonly emisor: string
+  readonly receptor: string
+  readonly tipo: TipoPropuestaDiplomatica
+  readonly oferta?: Partial<ReservaRecursos>
+  readonly demanda?: Partial<ReservaRecursos>
+  readonly turnosRestantes?: number
 }
 
 export type RegistroDiplomatico =
   readonly RelacionDiplomatica[]
+
+export type RegistroPropuestasDiplomaticas =
+  readonly PropuestaDiplomatica[]
 
 export function esEstadoRelacion(
   valor: unknown,
@@ -105,6 +143,7 @@ export function crearRelacionDiplomatica(
   )
   const estado = opciones.estado ?? 'paz'
   const intencion = opciones.intencion ?? 'neutral'
+  const turnosRestantes = opciones.turnosRestantes ?? (estado === 'pacto' || estado === 'comercio' ? 5 : undefined)
 
   if (!esEstadoRelacion(estado)) {
     throw new Error(
@@ -118,11 +157,24 @@ export function crearRelacionDiplomatica(
     )
   }
 
+  if (
+    turnosRestantes !== undefined &&
+    (!Number.isSafeInteger(turnosRestantes) ||
+      turnosRestantes < 1)
+  ) {
+    throw new Error(
+      'La duración diplomática no es válida',
+    )
+  }
+
   return Object.freeze({
     reinoA,
     reinoB,
     estado,
     intencion,
+    ...(turnosRestantes === undefined
+      ? {}
+      : { turnosRestantes }),
   })
 }
 
@@ -221,4 +273,134 @@ export function establecerRelacion(
     ...filtradas,
     nueva,
   ])
+}
+
+function normalizarIdentificador(
+  campo: string,
+  valor: string,
+): string {
+  const normalizado = valor.trim()
+
+  if (!normalizado) {
+    throw new Error(campo + ' es obligatorio')
+  }
+
+  return normalizado
+}
+
+export function esTipoPropuestaDiplomatica(
+  valor: unknown,
+): valor is TipoPropuestaDiplomatica {
+  return (
+    typeof valor === 'string' &&
+    TIPOS_PROPUESTA_DIPLOMATICA.some(
+      (tipo) => tipo === valor,
+    )
+  )
+}
+
+export function crearPropuestaDiplomatica(
+  opciones: OpcionesPropuestaDiplomatica,
+): PropuestaDiplomatica {
+  const id = normalizarIdentificador(
+    'El identificador de propuesta',
+    opciones.id,
+  )
+  const emisor = normalizarReino(opciones.emisor)
+  const receptor = normalizarReino(opciones.receptor)
+
+  if (emisor === receptor) {
+    throw new Error(
+      'Un reino no puede proponerse un acuerdo a sí mismo',
+    )
+  }
+
+  if (!esTipoPropuestaDiplomatica(opciones.tipo)) {
+    throw new Error(
+      'El tipo de propuesta no es válido',
+    )
+  }
+
+  const turnosRestantes =
+    opciones.turnosRestantes ??
+    (opciones.tipo === 'paz' ? undefined : 5)
+
+  if (
+    turnosRestantes !== undefined &&
+    (!Number.isSafeInteger(turnosRestantes) ||
+      turnosRestantes < 1)
+  ) {
+    throw new Error(
+      'La duración de la propuesta no es válida',
+    )
+  }
+
+  return Object.freeze({
+    id,
+    emisor,
+    receptor,
+    tipo: opciones.tipo,
+    oferta: crearReservaRecursos(
+      opciones.oferta,
+    ),
+    demanda: crearReservaRecursos(
+      opciones.demanda,
+    ),
+    ...(turnosRestantes === undefined
+      ? {}
+      : { turnosRestantes }),
+  })
+}
+
+export function crearRegistroPropuestasDiplomaticas(
+  opciones: readonly OpcionesPropuestaDiplomatica[] = [],
+): RegistroPropuestasDiplomaticas {
+  const ids = new Set<string>()
+  const propuestas = opciones.map((opcion) => {
+    const propuesta = crearPropuestaDiplomatica(
+      opcion,
+    )
+
+    if (ids.has(propuesta.id)) {
+      throw new Error(
+        'Propuesta diplomática duplicada: ' +
+          propuesta.id,
+      )
+    }
+
+    ids.add(propuesta.id)
+    return propuesta
+  })
+
+  return Object.freeze(propuestas)
+}
+
+export function avanzarRelacionesDiplomaticas(
+  registro: RegistroDiplomatico | undefined,
+): RegistroDiplomatico | undefined {
+  if (registro === undefined) {
+    return undefined
+  }
+
+  return crearRegistroDiplomatico(
+    registro.map((relacion) => {
+      if (relacion.turnosRestantes === undefined) {
+        return relacion
+      }
+
+      if (relacion.turnosRestantes > 1) {
+        return {
+          ...relacion,
+          turnosRestantes: relacion.turnosRestantes - 1,
+        }
+      }
+
+      return {
+        reinoA: relacion.reinoA,
+        reinoB: relacion.reinoB,
+        estado: 'paz',
+        intencion: 'neutral',
+      }
+    }),
+  )
 }

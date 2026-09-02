@@ -124,6 +124,10 @@ export function formatearEvento(
       return 'Batalla resuelta: ' + desenlace + ', ' +
         bajas + ' bajas' + detalleHeroes + asentamiento
     }
+    case 'diplomacia_resuelta':
+      return evento.resultado === 'aceptada'
+        ? 'Acuerdo diplomático aceptado: ' + (evento.acuerdo ?? 'relación')
+        : 'Propuesta diplomática rechazada: ' + evento.propuestaId
     case 'turno_finalizado':
       return `Turno ${evento.turno} resuelto`
     case 'guardado_fallido':
