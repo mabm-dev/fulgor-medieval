@@ -4,6 +4,7 @@ import {
 } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 import BattleView from '../components/battle/BattleView'
+import DiplomacyPanel from '../components/game/DiplomacyPanel'
 import TurnHud from '../components/game/TurnHud'
 import HexMap from '../components/map/HexMap'
 import MapViewport from '../components/map/MapViewport'
@@ -16,6 +17,12 @@ import {
 import {
   obtenerPerfilEconomico,
 } from '../game/content/kingdomEconomy'
+import {
+  establecerRelacion,
+  obtenerRelacion,
+  type EstadoRelacion,
+  type IntencionDiplomatica,
+} from '../game/domain/diplomacy'
 import type {
   EventoEncuentroCombate,
   EventoTurno,
@@ -45,6 +52,9 @@ import {
 import {
   almacenamientoNavegador,
 } from '../game/persistence/browserStorage'
+import {
+  guardarEstadoPartida,
+} from '../game/persistence/saveGame'
 import {
   cerrarBatallaSesion,
   finalizarTurnoSesion,
@@ -595,11 +605,25 @@ export default function Mapa() {
         hueste.reinoId !==
         estadoJuego.reinoJugador,
     )
+  const reinoRivalId =
+    huesteRival?.reinoId ??
+    estadoJuego.asentamientos.find(
+      (asentamiento) =>
+        asentamiento.reinoId !==
+        estadoJuego.reinoJugador,
+    )?.reinoId
   const reinoRival = REINOS.find(
     (candidato) =>
-      candidato.id ===
-      huesteRival?.reinoId,
+      candidato.id === reinoRivalId,
   )
+  const relacionRival =
+    reinoRivalId === undefined
+      ? null
+      : obtenerRelacion(
+          estadoJuego.diplomacia,
+          estadoJuego.reinoJugador,
+          reinoRivalId,
+        )
 
   const costeMovimiento = casillaSeleccionada
     ? DEFINICIONES_TERRENO[
@@ -717,6 +741,46 @@ export default function Mapa() {
     }))
     setMensajeTurno(
       'La marcha se cancelará al resolver el turno',
+    )
+  }
+
+  const cambiarDiplomacia = (
+    estado: EstadoRelacion,
+    intencion: IntencionDiplomatica,
+  ) => {
+    if (
+      reinoRivalId === undefined ||
+      relacionRival === null
+    ) {
+      return
+    }
+
+    const diplomacia = establecerRelacion(
+      estadoJuego.diplomacia ?? [],
+      {
+        reinoA: estadoJuego.reinoJugador,
+        reinoB: reinoRivalId,
+        estado,
+        intencion,
+      },
+    )
+    const nuevoEstado = Object.freeze({
+      ...estadoJuego,
+      diplomacia,
+    })
+    const guardado = guardarEstadoPartida(
+      almacenamientoNavegador,
+      nuevoEstado,
+    )
+
+    setEstadoJuego(nuevoEstado)
+    setMensajeTurno(
+      guardado.tipo === 'error'
+        ? 'Relación cambiada, pero no se pudo guardar'
+        : 'Relación con ' +
+          (reinoRival?.nombre ?? reinoRivalId) +
+          ': ' +
+          estado,
     )
   }
 
@@ -952,30 +1016,40 @@ export default function Mapa() {
             />
           </MapViewport>
         </div>
-        {huesteRival && (
+        {reinoRivalId && relacionRival && (
           <aside
-            aria-label="Objetivo rival"
-            className="absolute top-8 left-8 z-10 w-64 border border-[#b95a49]/60 bg-[#170b0a]/95 p-4 shadow-[0_0_30px_rgba(125,36,28,0.35)] backdrop-blur-md"
+            aria-label="Relación con el reino rival"
+            className="absolute top-8 left-8 z-10 w-80 border border-[#b95a49]/60 bg-[#170b0a]/95 p-4 shadow-[0_0_30px_rgba(125,36,28,0.35)] backdrop-blur-md"
           >
             <p className="font-cinzel text-[10px] tracking-[0.28em] text-[#ef9b87] uppercase">
-              Objetivo de combate
+              Reino rival
             </p>
             <h2 className="font-cinzel mt-2 text-lg text-pergamino-palido">
-              {reinoRival?.nombre ??
-                huesteRival.reinoId}
+              {reinoRival?.nombre ?? reinoRivalId}
             </h2>
-            <p className="mt-1 text-xs text-white/60">
-              Hueste rival en{' '}
-              <span className="font-mono text-[#ef9b87]">
-                {huesteRival.posicion.q},
-                {huesteRival.posicion.r}
-              </span>
-            </p>
-            <p className="mt-3 text-xs leading-relaxed text-white/50">
-              Busca el estandarte rojo y ordena una
-              marcha hasta su casilla para iniciar la
-              batalla táctica.
-            </p>
+            {huesteRival ? (
+              <>
+                <p className="mt-1 text-xs text-white/60">
+                  Hueste rival en{' '}
+                  <span className="font-mono text-[#ef9b87]">
+                    {huesteRival.posicion.q},
+                    {huesteRival.posicion.r}
+                  </span>
+                </p>
+                <p className="mt-3 text-xs leading-relaxed text-white/50">
+                  Su hueste busca el contacto cuando la relación lo permite.
+                </p>
+              </>
+            ) : (
+              <p className="mt-3 text-xs leading-relaxed text-white/50">
+                No hay una hueste rival activa en el mapa.
+              </p>
+            )}
+            <DiplomacyPanel
+              reinoNombre={reinoRival?.nombre ?? reinoRivalId}
+              relacion={relacionRival}
+              onCambiar={cambiarDiplomacia}
+            />
           </aside>
         )}
 
