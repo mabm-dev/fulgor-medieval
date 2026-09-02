@@ -185,4 +185,20 @@ describe('resolución diplomática de turno', () => {
     })
   })
 
+  it('permite que un reino defensivo inicie una propuesta de paz', () => {
+    const estado = crearEstado([])
+    const resultado = resolverDiplomaciaTurno(
+      estado,
+      estado.recursos,
+      estado.recursosRivales ?? {},
+    )
+
+    expect(resultado.propuestasRecibidas).toHaveLength(1)
+    expect(resultado.propuestasDiplomaticas[0]).toMatchObject({
+      emisor: 'leon',
+      receptor: 'castilla',
+      tipo: 'paz',
+    })
+  })
+
 })

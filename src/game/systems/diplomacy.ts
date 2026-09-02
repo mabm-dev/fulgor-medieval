@@ -9,6 +9,10 @@ import {
   type RegistroPropuestasDiplomaticas,
 } from '../domain/diplomacy'
 import type { EstadoPartida } from '../domain/gameState'
+import {
+  esIdentificadorReino,
+  type IdentificadorReino,
+} from '../domain/kingdom'
 import type {
   ReservaRecursos,
   TipoRecurso,
@@ -39,6 +43,7 @@ export interface ResultadoDiplomaciaTurno {
   readonly aceptadas: readonly PropuestaDiplomatica[]
   readonly rechazadas: readonly PropuestaDiplomatica[]
   readonly contrapropuestas: readonly PropuestaDiplomatica[]
+  readonly propuestasRecibidas: readonly PropuestaDiplomatica[]
 }
 
 function obtenerReserva(
@@ -168,6 +173,117 @@ function crearContrapropuesta(
   })
 }
 
+function obtenerReinoRival(
+  estado: EstadoPartida,
+  recursosRivales: Readonly<Record<string, ReservaRecursos>>,
+): IdentificadorReino | undefined {
+  const candidato =
+    Object.keys(recursosRivales).sort()[0] ??
+    estado.huestes.find(
+      (hueste) => hueste.reinoId !== estado.reinoJugador,
+    )?.reinoId ??
+    estado.asentamientos.find(
+      (asentamiento) => asentamiento.reinoId !== estado.reinoJugador,
+    )?.reinoId
+
+  return candidato !== undefined &&
+    esIdentificadorReino(candidato)
+    ? candidato
+    : undefined
+}
+
+function generarPropuestaRival(
+  estado: EstadoPartida,
+  recursos: ReservaRecursos,
+  recursosRivales: Readonly<Record<string, ReservaRecursos>>,
+  pendientes: readonly PropuestaDiplomatica[],
+): PropuestaDiplomatica | undefined {
+  const rival = obtenerReinoRival(
+    estado,
+    recursosRivales,
+  )
+  if (rival === undefined) {
+    return undefined
+  }
+
+  if (pendientes.some(
+    (propuesta) =>
+      propuesta.emisor === rival ||
+      propuesta.receptor === rival,
+  )) {
+    return undefined
+  }
+
+  const relacion = obtenerRelacion(
+    estado.diplomacia,
+    rival,
+    estado.reinoJugador,
+  )
+  const perfil = obtenerPerfilDiplomatico(rival)
+  let tipo: 'paz' | 'pacto' | 'comercio' | undefined
+
+  if (
+    relacion.estado === 'guerra' &&
+    (perfil.actitud === 'pacifica' ||
+      perfil.actitud === 'defensiva')
+  ) {
+    tipo = 'paz'
+  } else if (
+    relacion.estado === 'paz' &&
+    perfil.actitud === 'defensiva'
+  ) {
+    tipo = 'pacto'
+  } else if (
+    relacion.estado !== 'guerra' &&
+    perfil.actitud === 'mercantil'
+  ) {
+    tipo = 'comercio'
+  }
+
+  if (tipo === undefined) {
+    return undefined
+  }
+
+  const rivalReserva = recursosRivales[rival] ??
+    undefined
+  if (tipo === 'comercio' && rivalReserva !== undefined) {
+    if (
+      rivalReserva.madera >= 2 &&
+      recursos.oro >= 2
+    ) {
+      return crearPropuestaDiplomatica({
+        id: `rival-propuesta-${estado.turno}-comercio`,
+        emisor: rival,
+        receptor: estado.reinoJugador,
+        tipo,
+        oferta: { madera: 2 },
+        demanda: { oro: 2 },
+      })
+    }
+    if (
+      rivalReserva.grano >= 2 &&
+      recursos.madera >= 1
+    ) {
+      return crearPropuestaDiplomatica({
+        id: `rival-propuesta-${estado.turno}-grano`,
+        emisor: rival,
+        receptor: estado.reinoJugador,
+        tipo,
+        oferta: { grano: 2 },
+        demanda: { madera: 1 },
+      })
+    }
+    return undefined
+  }
+
+  return crearPropuestaDiplomatica({
+    id: `rival-propuesta-${estado.turno}-${tipo}`,
+    emisor: rival,
+    receptor: estado.reinoJugador,
+    tipo,
+  })
+}
+
 function aplicarIntercambio(
   propuesta: PropuestaDiplomatica,
   jugador: string,
@@ -237,6 +353,7 @@ export function resolverDiplomaciaTurno(
   const aceptadas: PropuestaDiplomatica[] = []
   const rechazadas: PropuestaDiplomatica[] = []
   const contrapropuestas: PropuestaDiplomatica[] = []
+  const propuestasRecibidas: PropuestaDiplomatica[] = []
   const pendientes: PropuestaDiplomatica[] = []
 
   for (const propuesta of estado.propuestasDiplomaticas ?? []) {
@@ -301,16 +418,31 @@ export function resolverDiplomaciaTurno(
     aceptadas.push(propuesta)
   }
 
+  const propuestaRival = generarPropuestaRival(
+    estado,
+    recursosActuales,
+    tesorosRivales,
+    [
+      ...pendientes,
+      ...contrapropuestas,
+    ],
+  )
+  if (propuestaRival !== undefined) {
+    propuestasRecibidas.push(propuestaRival)
+  }
+
   return Object.freeze({
     diplomacia,
     propuestasDiplomaticas: crearRegistroPropuestasDiplomaticas([
       ...pendientes,
       ...contrapropuestas,
+      ...propuestasRecibidas,
     ]),
     recursos: recursosActuales,
     recursosRivales: Object.freeze(tesorosRivales),
     aceptadas: Object.freeze(aceptadas),
     rechazadas: Object.freeze(rechazadas),
     contrapropuestas: Object.freeze(contrapropuestas),
+    propuestasRecibidas: Object.freeze(propuestasRecibidas),
   })
 }
