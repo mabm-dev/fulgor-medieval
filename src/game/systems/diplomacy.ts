@@ -237,20 +237,36 @@ export function resolverDiplomaciaTurno(
   const aceptadas: PropuestaDiplomatica[] = []
   const rechazadas: PropuestaDiplomatica[] = []
   const contrapropuestas: PropuestaDiplomatica[] = []
+  const pendientes: PropuestaDiplomatica[] = []
 
   for (const propuesta of estado.propuestasDiplomaticas ?? []) {
-    if (propuesta.receptor === estado.reinoJugador) {
-      contrapropuestas.push(propuesta)
+    const esRespuestaDelJugador =
+      propuesta.receptor === estado.reinoJugador
+    if (esRespuestaDelJugador && propuesta.respuesta === undefined) {
+      pendientes.push(propuesta)
       continue
     }
+    if (
+      esRespuestaDelJugador &&
+      propuesta.respuesta === 'rechazar'
+    ) {
+      rechazadas.push(propuesta)
+      continue
+    }
+
     const puedeIntercambiar = puedeAceptar(
       propuesta,
       estado.reinoJugador,
       recursosActuales,
       tesorosRivales,
     )
-    if (!puedeIntercambiar || !evaluarPropuesta(propuesta, estado)) {
-      const contrapropuesta = puedeIntercambiar
+    if (
+      !puedeIntercambiar ||
+      (!esRespuestaDelJugador &&
+        !evaluarPropuesta(propuesta, estado))
+    ) {
+      const contrapropuesta = puedeIntercambiar &&
+        !esRespuestaDelJugador
         ? crearContrapropuesta(propuesta, estado)
         : undefined
       if (contrapropuesta !== undefined) {
@@ -287,9 +303,10 @@ export function resolverDiplomaciaTurno(
 
   return Object.freeze({
     diplomacia,
-    propuestasDiplomaticas: crearRegistroPropuestasDiplomaticas(
-      contrapropuestas,
-    ),
+    propuestasDiplomaticas: crearRegistroPropuestasDiplomaticas([
+      ...pendientes,
+      ...contrapropuestas,
+    ]),
     recursos: recursosActuales,
     recursosRivales: Object.freeze(tesorosRivales),
     aceptadas: Object.freeze(aceptadas),

@@ -846,6 +846,47 @@ export default function Mapa() {
     )
   }
 
+  const responderPropuesta = (
+    id: string,
+    respuesta: 'aceptar' | 'rechazar',
+  ) => {
+    const propuesta = (
+      estadoJuego.propuestasDiplomaticas ?? []
+    ).find((candidata) => candidata.id === id)
+    if (
+      propuesta === undefined ||
+      propuesta.receptor !== estadoJuego.reinoJugador
+    ) {
+      return
+    }
+
+    const propuestasDiplomaticas =
+      crearRegistroPropuestasDiplomaticas(
+        (estadoJuego.propuestasDiplomaticas ?? []).map(
+          (candidata) =>
+            candidata.id === id
+              ? { ...candidata, respuesta }
+              : candidata,
+        ),
+      )
+    const nuevoEstado = Object.freeze({
+      ...estadoJuego,
+      propuestasDiplomaticas,
+    })
+    const guardado = guardarEstadoPartida(
+      almacenamientoNavegador,
+      nuevoEstado,
+    )
+    setEstadoJuego(nuevoEstado)
+    setMensajeTurno(
+      guardado.tipo === 'error'
+        ? 'Respuesta diplomática marcada, pero no se pudo guardar'
+        : respuesta === 'aceptar'
+          ? 'Contrapropuesta aceptada; se resolverá al finalizar el turno'
+          : 'Contrapropuesta rechazada',
+    )
+  }
+
   const encolarConstruccion = (
     asentamientoId: string,
     edificioId: string,
@@ -1113,11 +1154,14 @@ export default function Mapa() {
               propuestas={
                 (estadoJuego.propuestasDiplomaticas ?? []).filter(
                   (propuesta) =>
+                    propuesta.emisor === reinoRivalId ||
                     propuesta.receptor === reinoRivalId,
                 )
               }
               onCambiar={cambiarDiplomacia}
               onProponer={proponerDiplomacia}
+              reinoJugador={estadoJuego.reinoJugador}
+              onResponder={responderPropuesta}
             />
           </aside>
         )}

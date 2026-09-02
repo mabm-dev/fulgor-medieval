@@ -263,6 +263,7 @@ function leerRelacionDiplomatica(
   const estado = datos.estado
   const intencion = datos.intencion
   const turnosRestantes = datos.turnosRestantes
+  const respuesta = datos.respuesta
 
   if (
     typeof reinoA !== 'string' ||
@@ -272,7 +273,10 @@ function leerRelacionDiplomatica(
     (turnosRestantes !== undefined &&
       (typeof turnosRestantes !== 'number' ||
         !Number.isSafeInteger(turnosRestantes) ||
-        turnosRestantes < 1))
+        turnosRestantes < 1)) ||
+    (respuesta !== undefined &&
+      respuesta !== 'aceptar' &&
+      respuesta !== 'rechazar')
   ) {
     throw new Error(ERROR_ESTADO_INVALIDO)
   }
@@ -302,6 +306,7 @@ function leerPropuestaDiplomatica(
   const oferta = datos.oferta
   const demanda = datos.demanda
   const turnosRestantes = datos.turnosRestantes
+  const respuesta = datos.respuesta
 
   if (
     typeof id !== 'string' ||
@@ -313,7 +318,10 @@ function leerPropuestaDiplomatica(
     (turnosRestantes !== undefined &&
       (typeof turnosRestantes !== 'number' ||
         !Number.isSafeInteger(turnosRestantes) ||
-        turnosRestantes < 1))
+        turnosRestantes < 1)) ||
+    (respuesta !== undefined &&
+      respuesta !== 'aceptar' &&
+      respuesta !== 'rechazar')
   ) {
     throw new Error(ERROR_ESTADO_INVALIDO)
   }
@@ -353,6 +361,9 @@ function leerPropuestaDiplomatica(
     ...(turnosRestantes === undefined
       ? {}
       : { turnosRestantes }),
+    ...(respuesta === undefined
+      ? {}
+      : { respuesta }),
   }
 }
 

@@ -58,6 +58,7 @@ export interface PropuestaDiplomatica {
   readonly oferta: ReservaRecursos
   readonly demanda: ReservaRecursos
   readonly turnosRestantes?: number
+  readonly respuesta?: 'aceptar' | 'rechazar'
 }
 
 export interface OpcionesPropuestaDiplomatica {
@@ -68,6 +69,7 @@ export interface OpcionesPropuestaDiplomatica {
   readonly oferta?: Partial<ReservaRecursos>
   readonly demanda?: Partial<ReservaRecursos>
   readonly turnosRestantes?: number
+  readonly respuesta?: 'aceptar' | 'rechazar'
 }
 
 export type RegistroDiplomatico =
@@ -349,6 +351,9 @@ export function crearPropuestaDiplomatica(
     ...(turnosRestantes === undefined
       ? {}
       : { turnosRestantes }),
+    ...(opciones.respuesta === undefined
+      ? {}
+      : { respuesta: opciones.respuesta }),
   })
 }
 

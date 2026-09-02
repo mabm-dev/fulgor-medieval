@@ -50,6 +50,8 @@ export interface DiplomacyPanelProps {
   ) => void
   readonly propuestas?: readonly PropuestaDiplomatica[]
   readonly onProponer?: (tipo: TipoPropuestaDiplomatica) => void
+  readonly reinoJugador?: string
+  readonly onResponder?: (id: string, respuesta: 'aceptar' | 'rechazar') => void
 }
 
 export default function DiplomacyPanel({
@@ -58,6 +60,8 @@ export default function DiplomacyPanel({
   onCambiar,
   propuestas = [],
   onProponer,
+  reinoJugador,
+  onResponder,
 }: DiplomacyPanelProps) {
   const cambiarEstado = (estado: EstadoRelacion) => {
     onCambiar(
@@ -110,12 +114,38 @@ export default function DiplomacyPanel({
             Propuestas pendientes
           </p>
           {propuestas.length > 0 && (
-            <ul className="mt-2 space-y-1 text-[11px] text-[#f4c8b9]/75">
-              {propuestas.map((propuesta) => (
-                <li key={propuesta.id}>
-                  {NOMBRES_PROPUESTA[propuesta.tipo]} · pendiente de respuesta
-                </li>
-              ))}
+            <ul className="mt-2 space-y-2 text-[11px] text-[#f4c8b9]/75">
+              {propuestas.map((propuesta) => {
+                const recibida =
+                  reinoJugador !== undefined &&
+                  propuesta.receptor === reinoJugador
+                return (
+                  <li key={propuesta.id} className="flex flex-col gap-1">
+                    <span>
+                      {NOMBRES_PROPUESTA[propuesta.tipo]} ·{' '}
+                      {recibida ? 'respuesta de la rival' : 'pendiente de respuesta'}
+                    </span>
+                    {recibida && onResponder && (
+                      <span className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onResponder(propuesta.id, 'aceptar')}
+                          className="border border-[#86b88f]/50 px-2 py-1 text-[10px] text-[#b9e7c0] uppercase hover:bg-[#315f3b]/30"
+                        >
+                          Aceptar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onResponder(propuesta.id, 'rechazar')}
+                          className="border border-[#ef9b87]/45 px-2 py-1 text-[10px] text-[#efb0a0] uppercase hover:bg-[#8f3e32]/30"
+                        >
+                          Rechazar
+                        </button>
+                      </span>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           )}
           <div className="mt-2 grid grid-cols-1 gap-1.5">

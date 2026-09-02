@@ -134,4 +134,55 @@ describe('resolución diplomática de turno', () => {
     expect(resultado.recursos).toEqual(estado.recursos)
   })
 
+  it('mantiene una contrapropuesta entrante hasta que el jugador decide', () => {
+    const estado = crearEstado([
+      {
+        id: 'contra-pendiente',
+        emisor: 'leon',
+        receptor: 'castilla',
+        tipo: 'comercio',
+        oferta: { madera: 2 },
+        demanda: { oro: 2 },
+      },
+    ])
+    const resultado = resolverDiplomaciaTurno(
+      estado,
+      estado.recursos,
+      estado.recursosRivales ?? {},
+    )
+
+    expect(resultado.aceptadas).toHaveLength(0)
+    expect(resultado.rechazadas).toHaveLength(0)
+    expect(resultado.propuestasDiplomaticas).toHaveLength(1)
+  })
+
+  it('aplica la contrapropuesta cuando el jugador la acepta', () => {
+    const estado = crearEstado([
+      {
+        id: 'contra-aceptada',
+        emisor: 'leon',
+        receptor: 'castilla',
+        tipo: 'comercio',
+        oferta: { madera: 2 },
+        demanda: { oro: 2 },
+        respuesta: 'aceptar',
+      },
+    ])
+    const resultado = resolverDiplomaciaTurno(
+      estado,
+      estado.recursos,
+      estado.recursosRivales ?? {},
+    )
+
+    expect(resultado.aceptadas).toHaveLength(1)
+    expect(resultado.recursos).toMatchObject({
+      oro: 8,
+      madera: 4,
+    })
+    expect(resultado.recursosRivales.leon).toMatchObject({
+      oro: 6,
+      madera: 6,
+    })
+  })
+
 })
