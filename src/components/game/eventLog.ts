@@ -125,6 +125,9 @@ export function formatearEvento(
         bajas + ' bajas' + detalleHeroes + asentamiento
     }
     case 'diplomacia_resuelta':
+      if (evento.resultado === 'contrapropuesta') {
+        return 'La rival responde con una contrapropuesta: ' + evento.propuestaId
+      }
       return evento.resultado === 'aceptada'
         ? 'Acuerdo diplomático aceptado: ' + (evento.acuerdo ?? 'relación')
         : 'Propuesta diplomática rechazada: ' + evento.propuestaId

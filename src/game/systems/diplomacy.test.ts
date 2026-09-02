@@ -104,4 +104,34 @@ describe('resolución diplomática de turno', () => {
       intencion: 'neutral',
     })
   })
+  it('rechaza una oferta desfavorable y genera una contrapropuesta', () => {
+    const estado = crearEstado([
+      {
+        id: 'comercio-malo',
+        emisor: 'castilla',
+        receptor: 'leon',
+        tipo: 'comercio',
+        oferta: { madera: 1 },
+        demanda: { oro: 3 },
+      },
+    ])
+    const resultado = resolverDiplomaciaTurno(
+      estado,
+      estado.recursos,
+      estado.recursosRivales ?? {},
+    )
+
+    expect(resultado.rechazadas).toHaveLength(0)
+    expect(resultado.contrapropuestas).toHaveLength(1)
+    expect(resultado.propuestasDiplomaticas[0]).toMatchObject({
+      id: 'contra-comercio-malo-1',
+      emisor: 'leon',
+      receptor: 'castilla',
+      tipo: 'comercio',
+      oferta: { oro: 2 },
+      demanda: { madera: 2 },
+    })
+    expect(resultado.recursos).toEqual(estado.recursos)
+  })
+
 })

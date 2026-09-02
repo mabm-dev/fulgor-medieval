@@ -745,6 +745,21 @@ export function finalizarTurno(
             resultado: 'rechazada',
           }),
       ),
+      ...resolucionDiplomacia.contrapropuestas
+        .filter((propuesta) =>
+          propuesta.id.startsWith('contra-'),
+        )
+        .map(
+          (propuesta) =>
+            Object.freeze({
+              tipo: 'diplomacia_resuelta',
+              turno: estado.turno,
+              propuestaId: propuesta.id,
+              emisor: propuesta.emisor,
+              receptor: propuesta.receptor,
+              resultado: 'contrapropuesta',
+            }),
+        ),
       Object.freeze({
         tipo: 'turno_finalizado',
         turno: estado.turno,
