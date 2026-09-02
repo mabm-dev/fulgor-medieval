@@ -31,6 +31,9 @@ const NOMBRES_PROPUESTA: Record<TipoPropuestaDiplomatica, string> = {
   paz: 'Proponer paz',
   pacto: 'Proponer pacto',
   comercio: 'Proponer comercio',
+  rescate: 'Proponer rescate',
+  intercambio: 'Proponer intercambio',
+  concesion: 'Proponer concesión',
 }
 
 const INTENCIONES: readonly IntencionDiplomatica[] = [
@@ -52,6 +55,8 @@ export interface DiplomacyPanelProps {
   readonly onProponer?: (tipo: TipoPropuestaDiplomatica) => void
   readonly reinoJugador?: string
   readonly onResponder?: (id: string, respuesta: 'aceptar' | 'rechazar') => void
+  readonly heroeCapturadoId?: string
+  readonly onProponerRescate?: (heroeId: string) => void
 }
 
 export default function DiplomacyPanel({
@@ -62,6 +67,8 @@ export default function DiplomacyPanel({
   onProponer,
   reinoJugador,
   onResponder,
+  heroeCapturadoId,
+  onProponerRescate,
 }: DiplomacyPanelProps) {
   const cambiarEstado = (estado: EstadoRelacion) => {
     onCambiar(
@@ -149,6 +156,20 @@ export default function DiplomacyPanel({
             </ul>
           )}
           <div className="mt-2 grid grid-cols-1 gap-1.5">
+            {heroeCapturadoId !== undefined &&
+              onProponerRescate && (
+                <button
+                  type="button"
+                  disabled={propuestas.some(
+                    (propuesta) =>
+                      propuesta.heroeId === heroeCapturadoId,
+                  )}
+                  onClick={() => onProponerRescate(heroeCapturadoId)}
+                  className="border border-[#efc56e]/45 px-2 py-1.5 text-left text-[10px] tracking-[0.1em] text-[#f5d890] uppercase transition-colors hover:border-[#efc56e] hover:bg-[#73521f]/25 disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  Solicitar rescate · 5 oro
+                </button>
+              )}
             {TIPOS_PROPUESTA.map((tipo) => (
               <button
                 key={tipo}

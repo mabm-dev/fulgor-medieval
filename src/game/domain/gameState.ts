@@ -306,6 +306,8 @@ function leerPropuestaDiplomatica(
   const oferta = datos.oferta
   const demanda = datos.demanda
   const turnosRestantes = datos.turnosRestantes
+  const heroeId = datos.heroeId
+  const heroeOfrecidoId = datos.heroeOfrecidoId
   const respuesta = datos.respuesta
 
   if (
@@ -313,6 +315,8 @@ function leerPropuestaDiplomatica(
     typeof emisor !== 'string' ||
     typeof receptor !== 'string' ||
     !esTipoPropuestaDiplomatica(tipo) ||
+    (heroeId !== undefined && typeof heroeId !== 'string') ||
+    (heroeOfrecidoId !== undefined && typeof heroeOfrecidoId !== 'string') ||
     (oferta !== undefined && !esRegistro(oferta)) ||
     (demanda !== undefined && !esRegistro(demanda)) ||
     (turnosRestantes !== undefined &&
@@ -361,6 +365,12 @@ function leerPropuestaDiplomatica(
     ...(turnosRestantes === undefined
       ? {}
       : { turnosRestantes }),
+    ...(heroeId === undefined
+      ? {}
+      : { heroeId }),
+    ...(heroeOfrecidoId === undefined
+      ? {}
+      : { heroeOfrecidoId }),
     ...(respuesta === undefined
       ? {}
       : { respuesta }),

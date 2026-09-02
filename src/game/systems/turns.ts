@@ -652,6 +652,7 @@ export function finalizarTurno(
       asentamientos:
         resolucionEconomiaRival.asentamientos,
       huestes: resolucionRival.huestes,
+      heroes: resolucionDiplomacia.heroes,
       ...(Object.keys(
         resolucionEconomiaRival.recursosRivales,
       ).length === 0

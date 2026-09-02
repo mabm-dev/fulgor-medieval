@@ -15,6 +15,7 @@ const META = {
 function crearEstado(
   propuestasDiplomaticas: Parameters<typeof crearEstadoPartida>[0]['propuestasDiplomaticas'],
   turnosRestantes?: number,
+  heroes?: Parameters<typeof crearEstadoPartida>[0]['heroes'],
 ) {
   return crearEstadoPartida({
     semillaMapa: 1,
@@ -46,6 +47,7 @@ function crearEstado(
       },
     ],
     propuestasDiplomaticas,
+    heroes,
   })
 }
 
@@ -199,6 +201,79 @@ describe('resolución diplomática de turno', () => {
       receptor: 'castilla',
       tipo: 'paz',
     })
+  })
+
+  it('ofrece rescate por un héroe cautivo', () => {
+    const estado = crearEstado(
+      [],
+      undefined,
+      [
+        {
+          id: 'heroe-1',
+          nombre: 'Capitan',
+          reinoId: 'castilla',
+          arquetipo: 'caballero_frontera',
+          esPrincipal: true,
+          estado: 'herido',
+          capturadoPorReinoId: 'leon',
+        },
+      ],
+    )
+    const resultado = resolverDiplomaciaTurno(
+      estado,
+      estado.recursos,
+      estado.recursosRivales ?? {},
+    )
+
+    expect(resultado.propuestasRecibidas).toHaveLength(1)
+    expect(resultado.propuestasRecibidas[0]).toMatchObject({
+      tipo: 'rescate',
+      emisor: 'leon',
+      receptor: 'castilla',
+      heroeId: 'heroe-1',
+      demanda: { oro: 5 },
+    })
+  })
+
+  it('libera al héroe cuando el jugador paga el rescate', () => {
+    const estado = crearEstado(
+      [
+        {
+          id: 'rescate-1',
+          emisor: 'castilla',
+          receptor: 'leon',
+          tipo: 'rescate',
+          heroeId: 'heroe-1',
+          oferta: { oro: 5 },
+        },
+      ],
+      undefined,
+      [
+        {
+          id: 'heroe-1',
+          nombre: 'Capitan',
+          reinoId: 'castilla',
+          arquetipo: 'caballero_frontera',
+          esPrincipal: true,
+          estado: 'herido',
+          capturadoPorReinoId: 'leon',
+        },
+      ],
+    )
+    const resultado = resolverDiplomaciaTurno(
+      estado,
+      estado.recursos,
+      estado.recursosRivales ?? {},
+    )
+
+    expect(resultado.aceptadas).toHaveLength(1)
+    expect(resultado.heroes[0]).toMatchObject({
+      id: 'heroe-1',
+      estado: 'activo',
+    })
+    expect(resultado.heroes[0].capturadoPorReinoId).toBeUndefined()
+    expect(resultado.recursos.oro).toBe(5)
+    expect(resultado.recursosRivales.leon?.oro).toBe(9)
   })
 
 })

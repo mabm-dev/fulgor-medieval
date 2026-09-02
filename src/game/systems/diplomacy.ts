@@ -10,6 +10,10 @@ import {
 } from '../domain/diplomacy'
 import type { EstadoPartida } from '../domain/gameState'
 import {
+  crearRegistroHeroes,
+  type RegistroHeroes,
+} from '../domain/heroRegistry'
+import {
   esIdentificadorReino,
   type IdentificadorReino,
 } from '../domain/kingdom'
@@ -44,6 +48,7 @@ export interface ResultadoDiplomaciaTurno {
   readonly rechazadas: readonly PropuestaDiplomatica[]
   readonly contrapropuestas: readonly PropuestaDiplomatica[]
   readonly propuestasRecibidas: readonly PropuestaDiplomatica[]
+  readonly heroes: RegistroHeroes
 }
 
 function obtenerReserva(
@@ -112,14 +117,20 @@ function evaluarPropuesta(
     propuesta.tipo === 'paz'
       ? -2
       : 0
+  const preferencia =
+    propuesta.tipo === 'paz' ||
+    propuesta.tipo === 'rescate' ||
+    propuesta.tipo === 'concesion'
+      ? perfil.preferenciaPaz
+      : propuesta.tipo === 'pacto' ||
+          propuesta.tipo === 'intercambio'
+        ? perfil.preferenciaPacto
+        : perfil.preferenciaComercio
   const puntuacion =
     valorNeto +
-    (propuesta.tipo === 'paz'
-      ? perfil.preferenciaPaz
-      : propuesta.tipo === 'pacto'
-        ? perfil.preferenciaPacto
-        : perfil.preferenciaComercio) +
-    tension
+    preferencia +
+    tension +
+    (propuesta.tipo === 'rescate' ? 2 : 0)
 
   return puntuacion >= perfil.umbralAceptacion
 }
@@ -192,6 +203,80 @@ function obtenerReinoRival(
     : undefined
 }
 
+function esPropuestaHeroe(
+  propuesta: PropuestaDiplomatica,
+): boolean {
+  return (
+    propuesta.tipo === 'rescate' ||
+    propuesta.tipo === 'intercambio' ||
+    propuesta.tipo === 'concesion'
+  )
+}
+
+function validarPropuestaHeroe(
+  propuesta: PropuestaDiplomatica,
+  estado: EstadoPartida,
+): boolean {
+  const objetivo = propuesta.heroeId === undefined
+    ? undefined
+    : estado.heroes.find(
+        (heroe) => heroe.id === propuesta.heroeId,
+      )
+  if (
+    objetivo === undefined ||
+    objetivo.estado !== 'herido' ||
+    objetivo.capturadoPorReinoId === undefined ||
+    !(
+      (objetivo.reinoId === propuesta.emisor &&
+        objetivo.capturadoPorReinoId === propuesta.receptor) ||
+      (objetivo.reinoId === propuesta.receptor &&
+        objetivo.capturadoPorReinoId === propuesta.emisor)
+    )
+  ) {
+    return false
+  }
+
+  if (propuesta.tipo !== 'intercambio') {
+    return true
+  }
+
+  const ofrecido = propuesta.heroeOfrecidoId === undefined
+    ? undefined
+    : estado.heroes.find(
+        (heroe) => heroe.id === propuesta.heroeOfrecidoId,
+      )
+  return (
+    ofrecido !== undefined &&
+    ofrecido.estado === 'herido' &&
+    ofrecido.reinoId === objetivo.capturadoPorReinoId &&
+    ofrecido.capturadoPorReinoId === objetivo.reinoId
+  )
+}
+
+function liberarHeroes(
+  heroes: RegistroHeroes,
+  propuesta: PropuestaDiplomatica,
+): RegistroHeroes {
+  const ids = new Set([
+    propuesta.heroeId,
+    ...(propuesta.tipo === 'intercambio' &&
+    propuesta.heroeOfrecidoId !== undefined
+      ? [propuesta.heroeOfrecidoId]
+      : []),
+  ])
+  return crearRegistroHeroes(
+    heroes.map((heroe) =>
+      ids.has(heroe.id)
+        ? {
+            ...heroe,
+            estado: 'activo' as const,
+            capturadoPorReinoId: undefined,
+          }
+        : heroe,
+    ),
+  )
+}
+
 function generarPropuestaRival(
   estado: EstadoPartida,
   recursos: ReservaRecursos,
@@ -204,6 +289,31 @@ function generarPropuestaRival(
   )
   if (rival === undefined) {
     return undefined
+  }
+
+  const cautivo = estado.heroes.find(
+    (heroe) =>
+      heroe.reinoId === estado.reinoJugador &&
+      heroe.estado === 'herido' &&
+      heroe.capturadoPorReinoId === rival,
+  )
+  const perfil = obtenerPerfilDiplomatico(rival)
+  if (
+    cautivo !== undefined &&
+    (perfil.actitud === 'pacifica' ||
+      perfil.actitud === 'defensiva') &&
+    !pendientes.some(
+      (propuesta) => propuesta.heroeId === cautivo.id,
+    )
+  ) {
+    return crearPropuestaDiplomatica({
+      id: `rival-rescate-${estado.turno}-${cautivo.id}`,
+      emisor: rival,
+      receptor: estado.reinoJugador,
+      tipo: 'rescate',
+      heroeId: cautivo.id,
+      demanda: { oro: 5 },
+    })
   }
 
   if (pendientes.some(
@@ -219,7 +329,6 @@ function generarPropuestaRival(
     rival,
     estado.reinoJugador,
   )
-  const perfil = obtenerPerfilDiplomatico(rival)
   let tipo: 'paz' | 'pacto' | 'comercio' | undefined
 
   if (
@@ -350,6 +459,7 @@ export function resolverDiplomaciaTurno(
   )
   let recursosActuales = recursos
   let tesorosRivales = recursosRivales
+  let heroes = estado.heroes
   const aceptadas: PropuestaDiplomatica[] = []
   const rechazadas: PropuestaDiplomatica[] = []
   const contrapropuestas: PropuestaDiplomatica[] = []
@@ -371,6 +481,7 @@ export function resolverDiplomaciaTurno(
       continue
     }
 
+    const esHeroe = esPropuestaHeroe(propuesta)
     const puedeIntercambiar = puedeAceptar(
       propuesta,
       estado.reinoJugador,
@@ -378,6 +489,10 @@ export function resolverDiplomaciaTurno(
       tesorosRivales,
     )
     if (
+      (esHeroe && !validarPropuestaHeroe(
+        propuesta,
+        estado,
+      )) ||
       !puedeIntercambiar ||
       (!esRespuestaDelJugador &&
         !evaluarPropuesta(propuesta, estado))
@@ -403,12 +518,21 @@ export function resolverDiplomaciaTurno(
     recursosActuales = intercambio.recursos
     tesorosRivales = intercambio.recursosRivales
 
+    if (esHeroe) {
+      heroes = liberarHeroes(heroes, propuesta)
+    }
+
+    if (esHeroe) {
+      aceptadas.push(propuesta)
+      continue
+    }
+
     diplomacia = establecerRelacion(
       diplomacia ?? [],
       {
         reinoA: propuesta.emisor,
         reinoB: propuesta.receptor,
-        estado: propuesta.tipo,
+        estado: propuesta.tipo as 'paz' | 'pacto' | 'comercio',
         intencion: 'neutral',
         ...(propuesta.turnosRestantes === undefined
           ? {}
@@ -444,5 +568,6 @@ export function resolverDiplomaciaTurno(
     rechazadas: Object.freeze(rechazadas),
     contrapropuestas: Object.freeze(contrapropuestas),
     propuestasRecibidas: Object.freeze(propuestasRecibidas),
+    heroes,
   })
 }

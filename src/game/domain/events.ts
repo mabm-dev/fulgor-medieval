@@ -48,7 +48,7 @@ export interface EventoDiplomaciaResuelta
   readonly emisor: string
   readonly receptor: string
   readonly resultado: 'aceptada' | 'rechazada' | 'contrapropuesta'
-  readonly acuerdo?: 'paz' | 'pacto' | 'comercio'
+  readonly acuerdo?: 'paz' | 'pacto' | 'comercio' | 'rescate' | 'intercambio' | 'concesion'
 }
 
 export interface EventoMovimientoRival

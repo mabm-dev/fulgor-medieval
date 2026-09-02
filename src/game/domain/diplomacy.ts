@@ -29,6 +29,9 @@ export const TIPOS_PROPUESTA_DIPLOMATICA = [
   'paz',
   'pacto',
   'comercio',
+  'rescate',
+  'intercambio',
+  'concesion',
 ] as const
 
 export type TipoPropuestaDiplomatica =
@@ -58,6 +61,8 @@ export interface PropuestaDiplomatica {
   readonly oferta: ReservaRecursos
   readonly demanda: ReservaRecursos
   readonly turnosRestantes?: number
+  readonly heroeId?: string
+  readonly heroeOfrecidoId?: string
   readonly respuesta?: 'aceptar' | 'rechazar'
 }
 
@@ -69,6 +74,8 @@ export interface OpcionesPropuestaDiplomatica {
   readonly oferta?: Partial<ReservaRecursos>
   readonly demanda?: Partial<ReservaRecursos>
   readonly turnosRestantes?: number
+  readonly heroeId?: string
+  readonly heroeOfrecidoId?: string
   readonly respuesta?: 'aceptar' | 'rechazar'
 }
 
@@ -337,6 +344,39 @@ export function crearPropuestaDiplomatica(
     )
   }
 
+  const heroeId = opciones.heroeId === undefined
+    ? undefined
+    : normalizarIdentificador(
+        'El héroe de la propuesta',
+        opciones.heroeId,
+      )
+  const heroeOfrecidoId =
+    opciones.heroeOfrecidoId === undefined
+      ? undefined
+      : normalizarIdentificador(
+          'El héroe ofrecido',
+          opciones.heroeOfrecidoId,
+        )
+
+  if (
+    (opciones.tipo === 'rescate' ||
+      opciones.tipo === 'intercambio' ||
+      opciones.tipo === 'concesion') &&
+    heroeId === undefined
+  ) {
+    throw new Error(
+      'La propuesta necesita un héroe objetivo',
+    )
+  }
+  if (
+    opciones.tipo === 'intercambio' &&
+    heroeOfrecidoId === undefined
+  ) {
+    throw new Error(
+      'El intercambio necesita un héroe ofrecido',
+    )
+  }
+
   return Object.freeze({
     id,
     emisor,
@@ -351,6 +391,12 @@ export function crearPropuestaDiplomatica(
     ...(turnosRestantes === undefined
       ? {}
       : { turnosRestantes }),
+    ...(heroeId === undefined
+      ? {}
+      : { heroeId }),
+    ...(heroeOfrecidoId === undefined
+      ? {}
+      : { heroeOfrecidoId }),
     ...(opciones.respuesta === undefined
       ? {}
       : { respuesta: opciones.respuesta }),

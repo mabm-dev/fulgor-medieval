@@ -627,6 +627,13 @@ export default function Mapa() {
           estadoJuego.reinoJugador,
           reinoRivalId,
         )
+  const heroeCapturadoPorRival =
+    estadoJuego.heroes.find(
+      (heroe) =>
+        heroe.reinoId === estadoJuego.reinoJugador &&
+        heroe.estado === 'herido' &&
+        heroe.capturadoPorReinoId === reinoRivalId,
+    )
 
   const costeMovimiento = casillaSeleccionada
     ? DEFINICIONES_TERRENO[
@@ -884,6 +891,60 @@ export default function Mapa() {
         : respuesta === 'aceptar'
           ? 'Contrapropuesta aceptada; se resolverá al finalizar el turno'
           : 'Contrapropuesta rechazada',
+    )
+  }
+
+  const proponerRescate = (
+    heroeId: string,
+  ) => {
+    if (reinoRivalId === undefined) {
+      return
+    }
+    const heroe = estadoJuego.heroes.find(
+      (candidata) =>
+        candidata.id === heroeId &&
+        candidata.reinoId === estadoJuego.reinoJugador &&
+        candidata.estado === 'herido' &&
+        candidata.capturadoPorReinoId === reinoRivalId,
+    )
+    if (heroe === undefined) {
+      return
+    }
+    const pendientes =
+      estadoJuego.propuestasDiplomaticas ?? []
+    if (pendientes.some(
+      (propuesta) => propuesta.heroeId === heroeId,
+    )) {
+      setMensajeTurno('Ya hay una negociación pendiente para ese héroe')
+      return
+    }
+
+    const propuesta = crearPropuestaDiplomatica({
+      id: `propuesta-rescate-${estadoJuego.turno}-${heroeId}`,
+      emisor: estadoJuego.reinoJugador,
+      receptor: reinoRivalId,
+      tipo: 'rescate',
+      heroeId,
+      oferta: { oro: 5 },
+    })
+    const propuestasDiplomaticas =
+      crearRegistroPropuestasDiplomaticas([
+        ...pendientes,
+        propuesta,
+      ])
+    const nuevoEstado = Object.freeze({
+      ...estadoJuego,
+      propuestasDiplomaticas,
+    })
+    const guardado = guardarEstadoPartida(
+      almacenamientoNavegador,
+      nuevoEstado,
+    )
+    setEstadoJuego(nuevoEstado)
+    setMensajeTurno(
+      guardado.tipo === 'error'
+        ? 'Rescate propuesto, pero no se pudo guardar'
+        : 'Rescate propuesto; se resolverá al finalizar el turno',
     )
   }
 
@@ -1162,6 +1223,8 @@ export default function Mapa() {
               onProponer={proponerDiplomacia}
               reinoJugador={estadoJuego.reinoJugador}
               onResponder={responderPropuesta}
+              heroeCapturadoId={heroeCapturadoPorRival?.id}
+              onProponerRescate={proponerRescate}
             />
           </aside>
         )}
