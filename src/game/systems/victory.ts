@@ -14,6 +14,16 @@ export interface EvaluacionPartida {
 export function evaluarResultadoPartida(
   estado: EstadoPartida,
 ): EvaluacionPartida {
+  const asentamientosRivales = estado.asentamientos.filter(
+    (asentamiento) => asentamiento.reinoId !== estado.reinoJugador,
+  )
+  if (asentamientosRivales.length === 0 && estado.asentamientos.length > 1) {
+    return {
+      resultado: 'victoria',
+      motivo: 'Dominación: no quedan ciudades rivales',
+    }
+  }
+
   const capitalJugador = Object.entries(CAPITALES_REINO).find(
     ([reinoId]) => reinoId === estado.reinoJugador,
   )?.[1]

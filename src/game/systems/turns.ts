@@ -66,6 +66,9 @@ import {
 import {
   evaluarResultadoPartida,
 } from './victory'
+import {
+  resolverOcupacionAsentamientos,
+} from './settlementOccupation'
 
 export const DIVISOR_TECHO_MANO_DE_OBRA = 2000
 
@@ -595,13 +598,21 @@ export function finalizarTurno(
     ...encuentros,
     ...resolucionRival.encuentros,
   ]
+  const ocupacion = resolverOcupacionAsentamientos(
+    crecimiento.asentamientos,
+    resolucionRival.huestes,
+    {
+      ...estado,
+      huestes: resolucionRival.huestes,
+    },
+  )
 
   // 2. Las obras nuevas del turno se validan y descuentan al final, sobre
   // lo que quede tras producir y consumir — construir es la última decisión
   // de gasto del turno, igual que el consumo va después de la producción.
   const inicioConstruccion =
     iniciarProyectosConstruccion(
-      crecimiento.asentamientos,
+      ocupacion.asentamientos,
       reservaTrasConsumo,
       opciones.casillas,
       construcciones,
@@ -731,6 +742,15 @@ export function finalizarTurno(
             huesteDefensoraId:
               encuentro.huesteDefensoraId,
             casilla: encuentro.casilla,
+          }),
+      ),
+      ...ocupacion.asentamientosConquistados.map(
+        (asentamientoId) =>
+          Object.freeze({
+            tipo: 'asentamiento_conquistado' as const,
+            turno: estado.turno,
+            asentamientoId,
+            nuevoReinoId: estado.reinoJugador,
           }),
       ),
       ...resolucionRival.movimientos.map(

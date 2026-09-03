@@ -51,6 +51,13 @@ export interface EventoDiplomaciaResuelta
   readonly acuerdo?: 'paz' | 'pacto' | 'comercio' | 'rescate' | 'intercambio' | 'concesion'
 }
 
+export interface EventoAsentamientoConquistado
+  extends EventoBaseTurno {
+  readonly tipo: 'asentamiento_conquistado'
+  readonly asentamientoId: string
+  readonly nuevoReinoId: string
+}
+
 export interface EventoMovimientoRival
   extends EventoBaseTurno {
   readonly tipo: 'movimiento_rival'
@@ -144,6 +151,7 @@ export type EventoTurno =
   | EventoDiplomaciaResuelta
   | EventoGuardadoFallido
   | EventoMovimientoRival
+  | EventoAsentamientoConquistado
   | EventoEncuentroCombate
   | EventoBatallaResuelta
   | EventoPartidaFinalizada

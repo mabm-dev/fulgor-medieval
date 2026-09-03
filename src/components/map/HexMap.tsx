@@ -93,6 +93,59 @@ function encogerVertices(
   }))
 }
 
+function DecoracionTerreno({
+  terreno,
+  centro,
+  radio,
+}: {
+  readonly terreno: TipoTerreno
+  readonly centro: Punto
+  readonly radio: number
+}) {
+  const opacidad = 0.32
+
+  if (terreno === 'agua') {
+    return (
+      <g data-decoracion-terreno="agua" opacity={opacidad}>
+        <path d={`M ${centro.x - radio * 0.55} ${centro.y - radio * 0.12} q ${radio * 0.28} ${radio * 0.22} ${radio * 0.56} 0`} fill="none" stroke="#b7e1e6" strokeWidth={radio * 0.07} strokeLinecap="round" />
+        <path d={`M ${centro.x - radio * 0.45} ${centro.y + radio * 0.22} q ${radio * 0.24} ${radio * 0.18} ${radio * 0.48} 0`} fill="none" stroke="#b7e1e6" strokeWidth={radio * 0.05} strokeLinecap="round" />
+      </g>
+    )
+  }
+
+  if (terreno === 'bosque') {
+    return (
+      <g data-decoracion-terreno="bosque" opacity={opacidad} fill="#102b22">
+        {[-0.3, 0, 0.3].map((desplazamiento) => (
+          <path key={desplazamiento} d={`M ${centro.x + radio * desplazamiento} ${centro.y + radio * 0.34} l ${radio * 0.16} ${-radio * 0.36} l ${-radio * 0.16} ${radio * 0.08} l ${-radio * 0.16} ${-radio * 0.08} z`} />
+        ))}
+      </g>
+    )
+  }
+
+  if (terreno === 'colina') {
+    return (
+      <path data-decoracion-terreno="colina" d={`M ${centro.x - radio * 0.58} ${centro.y + radio * 0.28} q ${radio * 0.28} ${-radio * 0.58} ${radio * 0.56} 0`} fill="none" stroke="#4e3b2b" strokeWidth={radio * 0.1} strokeLinecap="round" opacity={opacidad} />
+    )
+  }
+
+  if (terreno === 'montana') {
+    return (
+      <g data-decoracion-terreno="montana" opacity={opacidad} fill="#27282a">
+        <path d={`M ${centro.x - radio * 0.52} ${centro.y + radio * 0.3} l ${radio * 0.28} ${-radio * 0.52} l ${radio * 0.16} ${radio * 0.22} l ${radio * 0.2} ${-radio * 0.34} l ${radio * 0.34} ${radio * 0.64} z`} />
+      </g>
+    )
+  }
+
+  return (
+    <g data-decoracion-terreno="llanura" opacity={opacidad} stroke="#d8c98b" strokeWidth={radio * 0.035} strokeLinecap="round">
+      <path d={`M ${centro.x - radio * 0.35} ${centro.y + radio * 0.25} l ${radio * 0.12} ${-radio * 0.24}`} />
+      <path d={`M ${centro.x - radio * 0.05} ${centro.y + radio * 0.28} l ${radio * 0.1} ${-radio * 0.3}`} />
+      <path d={`M ${centro.x + radio * 0.25} ${centro.y + radio * 0.24} l ${radio * 0.08} ${-radio * 0.2}`} />
+    </g>
+  )
+}
+
 function calcularViewBox(
   hexagonos: readonly HexagonoVisual[],
   radio: number,
@@ -324,6 +377,22 @@ export default function HexMap({
         })}
       </g>
 
+      <g aria-hidden="true" pointerEvents="none" data-capa-terreno="true">
+        {hexagonos.map((hexagono) => {
+          const niebla = hayNiebla
+            ? estadoNiebla(hexagono.clave, clavesVisibles, clavesExploradas)
+            : 'visible'
+          return niebla === 'oculta' ? null : (
+            <DecoracionTerreno
+              key={`decoracion-${hexagono.clave}`}
+              terreno={hexagono.terreno}
+              centro={centroHex(hexagono.casilla.coordenada, radio)}
+              radio={radio}
+            />
+          )
+        })}
+      </g>
+
       {clavesAlcanceMovimiento.size > 0 && (
         <g
           aria-hidden="true"
@@ -496,6 +565,19 @@ export default function HexMap({
                   }
                   strokeWidth={radio * 0.05}
                 />
+                <path
+                  d={`M ${centro.x - radio * 0.26} ${centro.y + radio * 0.2} v ${-radio * 0.3} h ${radio * 0.52} v ${radio * 0.3}`}
+                  fill="none"
+                  stroke={esRival ? '#f1a28f' : '#241907'}
+                  strokeWidth={radio * 0.06}
+                  data-icono-asentamiento="true"
+                />
+                <path
+                  d={`M ${centro.x - radio * 0.32} ${centro.y - radio * 0.08} l ${radio * 0.32} ${-radio * 0.24} l ${radio * 0.32} ${radio * 0.24}`}
+                  fill="none"
+                  stroke={esRival ? '#f1a28f' : '#241907'}
+                  strokeWidth={radio * 0.05}
+                />
                 <text
                   x={centro.x}
                   y={centro.y - radio * 0.7}
@@ -535,7 +617,7 @@ export default function HexMap({
             const mitad = radio * 0.28
 
             return (
-              <polygon
+              <g key={hueste.id}>\n                <polygon
                 key={hueste.id}
                 data-bando-mapa={
                   esRival ? 'rival' : 'propio'
@@ -579,6 +661,22 @@ export default function HexMap({
                       : hueste.nombre}
                 </title>
               </polygon>
+              <line
+                x1={centro.x + mitad * 0.7}
+                y1={centro.y - mitad * 1.7}
+                x2={centro.x + mitad * 0.7}
+                y2={centro.y + mitad * 1.05}
+                stroke="#e8d9ae"
+                strokeWidth={radio * 0.035}
+              />
+              <path
+                d={`M ${centro.x + mitad * 0.72} ${centro.y - mitad * 1.58} h ${radio * 0.22} l ${-radio * 0.08} ${radio * 0.16} l ${radio * 0.08} ${radio * 0.16} h ${-radio * 0.22} z`}
+                fill={esRival ? COLOR_HUESTE_RIVAL : '#8c2b2b'}
+                stroke="#e8d9ae"
+                strokeWidth={radio * 0.025}
+                data-icono-estandarte="true"
+              />
+              </g>
             )
           })}
         </g>

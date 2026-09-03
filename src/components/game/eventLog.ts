@@ -89,6 +89,8 @@ export function formatearEvento(
         )}: ${evento.huesteAtacanteId} ` +
         `contra ${evento.huesteDefensoraId}`
       )
+    case 'asentamiento_conquistado':
+      return 'Asentamiento conquistado: ' + evento.asentamientoId
     case 'movimiento_rival':
       return (
         `La hueste rival avanzó de ${claveHex(
