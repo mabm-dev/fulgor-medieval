@@ -1,0 +1,1 @@
+{"name":"Fulgor.Core.Tests","rootNamespace":"Fulgor.Core.Tests","references":["Fulgor.Core"],"includePlatforms":["Editor"],"optionalUnityReferences":["TestAssemblies"],"autoReferenced":false}
