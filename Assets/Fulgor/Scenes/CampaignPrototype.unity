@@ -412,9 +412,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a44dd0768485f947bec84fbc916a303, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignBoardPreview
-  radius: 3
-  outerRadius: 1
+  seed: 12345
   tileFill: 0.97
+  showGold: 1
+  useVerticalTerrainBlockout: 1
 --- !u!4 &661519025
 Transform:
   m_ObjectHideFlags: 0

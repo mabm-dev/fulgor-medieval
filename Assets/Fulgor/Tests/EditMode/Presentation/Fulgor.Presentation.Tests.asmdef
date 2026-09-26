@@ -1,0 +1,8 @@
+{
+  "name": "Fulgor.Presentation.Tests",
+  "rootNamespace": "Fulgor.Presentation.Tests",
+  "references": ["Fulgor.Core", "Fulgor.Presentation"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "autoReferenced": false
+}

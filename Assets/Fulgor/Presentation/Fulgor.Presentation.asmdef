@@ -1,1 +1,9 @@
-{"name":"Fulgor.Presentation","rootNamespace":"Fulgor.Presentation","references":["Fulgor.Core"]}
+{
+  "name": "Fulgor.Presentation",
+  "rootNamespace": "Fulgor.Presentation",
+  "references": [
+    "Fulgor.Core",
+    "Unity.InputSystem",
+    "Unity.UGUI"
+  ]
+}
