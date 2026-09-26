@@ -3,8 +3,8 @@
 Proyecto de migración a Unity 6000.6.0f1 con URP. El mapa de campaña actual
 es un prototipo técnico de 24×16 hexágonos con generación determinista,
 relieve provisional, costas, selección y cámara. Aún no hay bucle jugable de
-campaña ni arte de producción. El prototipo web anterior sigue disponible en
-la rama `legacy/web` como referencia para portar las reglas pendientes.
+campaña ni arte de producción. Unity es desde ahora la versión principal del
+repositorio.
 
 La documentación vigente está en
 [Docs/migracion-unity](Docs/migracion-unity/README.md). El
