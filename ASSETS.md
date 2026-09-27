@@ -8,7 +8,6 @@
 | `ArtSource/Blender/crear_plantilla_escala_fulgor.py` | Genera la plantilla de escala | Herramienta propia reproducible |
 | `Assets/Fulgor/Art/Validation/SM_VisualScaleValidation.fbx` | Validación del contrato Blender–Unity | Derivado de la plantilla; no es arte final |
 | `Assets/Settings/` | Configuración de URP y perfil de build de Windows | Configuración del proyecto |
-| `Assets/Scenes/SampleScene.unity` y `Assets/TutorialInfo/` | Contenido de la plantilla URP de Unity | Pendiente de retirar |
 
 ## Normas
 
