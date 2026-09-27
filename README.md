@@ -9,9 +9,9 @@ El proyecto se plantea como una antología de la Edad Media ibérica: las
 campañas históricas respetan su periodo, mientras que el modo Leyendas permite
 enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 
-> Estado: **pre-alpha, migración a Unity (v0.6 en curso)**. El núcleo y el
-> tablero de campaña ya funcionan en Unity; las reglas jugables se portan desde
-> el prototipo web siguiendo el [roadmap](Docs/ROADMAP.md).
+> Estado: **pre-alpha, migración a Unity (v0.6 cerrada, v0.7 en curso)**. El
+> núcleo y el tablero de campaña ya funcionan en Unity; las reglas jugables se
+> portan desde el prototipo web siguiendo el [roadmap](Docs/ROADMAP.md).
 
 **[▶ Jugar el prototipo web (v0.5) en el navegador](https://mabm-dev.github.io/fulgor-medieval/)**
 
@@ -25,10 +25,11 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 - Cámara de campaña, selección de casillas y panel de información.
 - Contrato visual Blender–Unity para escala, ejes y pivotes, con importador de
   modelos estáticos.
-- 94 pruebas Edit Mode de núcleo, presentación, importación y escena.
+- 94 pruebas Edit Mode de núcleo, presentación, importación y escena. La
+  integración continua las ejecuta cuando dispone de los secretos de Unity.
 
-Pendiente para cerrar v0.6: revisar la escena con gráficos, medir una build de
-Windows y activar la integración continua.
+Todavía no hay turnos, economía, asentamientos ni combate en Unity: existen en
+el prototipo web y se portan en las versiones 0.8 y 0.9.
 
 ## El prototipo web
 

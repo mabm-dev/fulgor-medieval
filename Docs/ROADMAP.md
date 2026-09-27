@@ -30,9 +30,9 @@ Hitos 0 y 1 del plan de migración.
 - [x] Tablero de 24 × 16 con cámara, selección y panel de casilla.
 - [x] Contrato visual Blender–Unity e importador de modelos estáticos.
 - [x] Pruebas Edit Mode de núcleo, presentación, importación y escena.
-- [ ] Integración continua de las pruebas.
-- [ ] Revisión de la escena en el editor con gráficos.
-- [ ] Medición de una build de Windows.
+- [x] Integración continua de las pruebas.
+- [x] Revisión de la escena en el editor con gráficos.
+- [x] Medición de una build de Windows.
 
 ## v0.7 — Mapa de campaña
 
@@ -43,6 +43,8 @@ Hitos 2 y 3.
 - Costa, ríos y caminos como datos lógicos, no solo decorativos.
 - Mapa peninsular diseñado, portado desde `legacy/web`.
 - Escenarios configurables sin duplicar recursos al regenerar el tablero.
+- Rendimiento del tablero completo, según la
+  [investigación de rendimiento](v0.7-rendimiento-tablero.md).
 
 ## v0.8 — Misión rápida jugable
 

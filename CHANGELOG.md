@@ -5,9 +5,9 @@ y el proyecto utiliza versionado semántico mientras sea aplicable. Las
 versiones `0.1.0` a `0.5.0` corresponden al prototipo web; desde `0.6.0` el
 juego se desarrolla en Unity.
 
-## [Sin publicar]
+## [0.6.0] - 2026-09-27
 
-Primera versión en Unity; se publicará como `0.6.0`.
+Primera versión en Unity.
 
 ### Añadido
 
@@ -30,10 +30,16 @@ Primera versión en Unity; se publicará como `0.6.0`.
 - El juego pasa de React y TypeScript a Unity y C#
   ([ADR-003](Docs/decisiones/ADR-003-migracion-unity.md)).
 
+### Corregido
+
+- La build de Windows ya no se ve vacía: el shader Lit de URP se incluye
+  siempre en la build.
+
 ### Eliminado
 
 - Código, recursos y despliegue del prototipo web en `main`; se conservan en
   la rama `legacy/web`.
+- Escena y recursos de la plantilla URP de Unity.
 
 ## Prototipo web posterior a 0.5.0 — sin publicar
 
