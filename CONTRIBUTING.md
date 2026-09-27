@@ -45,8 +45,8 @@ Necesita tres secretos del repositorio, en **Settings → Secrets and variables
 | `UNITY_EMAIL` | Correo de la cuenta de Unity |
 | `UNITY_PASSWORD` | Contraseña de la cuenta de Unity |
 
-Mientras falte `UNITY_LICENSE`, el flujo muestra un aviso y omite las pruebas
-en lugar de fallar.
+Mientras falte alguno de los tres, el flujo muestra un aviso con los que
+faltan y omite las pruebas en lugar de fallar.
 
 ## Commits
 

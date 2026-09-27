@@ -15,28 +15,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  licencia:
-    name: Comprobar la licencia de Unity
+  secretos:
+    name: Comprobar los secretos de Unity
     runs-on: ubuntu-latest
     outputs:
       disponible: ${{ steps.comprobar.outputs.disponible }}
     steps:
-      - name: Buscar el secreto UNITY_LICENSE
+      - name: Buscar UNITY_LICENSE, UNITY_EMAIL y UNITY_PASSWORD
         id: comprobar
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         run: |
-          if [ -n "$UNITY_LICENSE" ]; then
+          faltan=""
+          [ -n "$UNITY_LICENSE" ] || faltan="$faltan UNITY_LICENSE"
+          [ -n "$UNITY_EMAIL" ] || faltan="$faltan UNITY_EMAIL"
+          [ -n "$UNITY_PASSWORD" ] || faltan="$faltan UNITY_PASSWORD"
+          if [ -z "$faltan" ]; then
             echo "disponible=true" >> "$GITHUB_OUTPUT"
           else
             echo "disponible=false" >> "$GITHUB_OUTPUT"
-            echo "::warning title=Pruebas omitidas::Falta el secreto UNITY_LICENSE. Consulta CONTRIBUTING.md para activar las pruebas Edit Mode."
+            echo "::warning title=Pruebas omitidas::Faltan secretos de Unity:$faltan. Consulta CONTRIBUTING.md para activar las pruebas Edit Mode."
           fi
 
   pruebas:
     name: Pruebas Edit Mode
-    needs: licencia
-    if: needs.licencia.outputs.disponible == 'true'
+    needs: secretos
+    if: needs.secretos.outputs.disponible == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
