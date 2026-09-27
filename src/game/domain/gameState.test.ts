@@ -27,6 +27,44 @@ describe('estado de partida', () => {
     ])
   })
 
+  it('conserva el identificador del mapa diseñado', () => {
+    const estado = crearEstadoPartida({
+      semillaMapa: 12345,
+      mapaId: 'peninsula-v1',
+      meta: META,
+      reinoJugador: 'castilla',
+    })
+
+    expect(estado.mapaId).toBe('peninsula-v1')
+    expect(restaurarEstadoPartida(estado).mapaId).toBe('peninsula-v1')
+  })
+
+  it('mantiene compatibles los guardados sin identificador de mapa', () => {
+    const estado = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,
+      reinoJugador: 'castilla',
+    })
+
+    expect(estado.mapaId).toBeUndefined()
+    expect(restaurarEstadoPartida(estado).mapaId).toBeUndefined()
+  })
+
+  it('rechaza identificadores de mapa desconocidos al restaurar', () => {
+    const estado = crearEstadoPartida({
+      semillaMapa: 12345,
+      meta: META,
+      reinoJugador: 'castilla',
+    })
+
+    expect(() =>
+      restaurarEstadoPartida({
+        ...estado,
+        mapaId: 'otro',
+      }),
+    ).toThrow(ERROR_ESTADO_INVALIDO)
+  })
+
   it('crea el estado inicial del reino', () => {
     expect(
       crearEstadoPartida({

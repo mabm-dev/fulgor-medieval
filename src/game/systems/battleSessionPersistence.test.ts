@@ -3,10 +3,7 @@ import {
   expect,
   it,
 } from 'vitest'
-import {
-  DIMENSIONES_MAPA_PREDETERMINADO,
-  generarMapa,
-} from '../map/generateMap'
+import { generarMapaPeninsula } from '../map/iberianMap'
 import {
   claveHex,
   vecinosHex,
@@ -106,10 +103,7 @@ describe('persistencia del cierre táctico', () => {
         fechaCreacion: '2026-08-29',
       },
     )
-    const mapa = generarMapa({
-      ...DIMENSIONES_MAPA_PREDETERMINADO,
-      semilla: inicial.semillaMapa,
-    })
+    const mapa = generarMapaPeninsula(inicial.semillaMapa)
     const casillas = Object.fromEntries(
       mapa.casillas.map((casilla) => [
         claveHex(casilla.coordenada),

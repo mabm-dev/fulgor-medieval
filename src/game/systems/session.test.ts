@@ -3,11 +3,8 @@ import {
   expect,
   it,
 } from 'vitest'
-import {
-  DIMENSIONES_MAPA_PREDETERMINADO,
-  generarMapa,
-  type CasillaMapa,
-} from '../map/generateMap'
+import type { CasillaMapa } from '../map/generateMap'
+import { generarMapaPeninsula } from '../map/iberianMap'
 import { claveHex } from '../map/hex'
 import type {
   AlmacenamientoPartida,
@@ -61,7 +58,7 @@ function crearAlmacenamientoQueFallaTrasLaPrimeraEscritura():
 }
 
 function construirDiccionarioCasillas(
-  mapa: ReturnType<typeof generarMapa>,
+  mapa: ReturnType<typeof generarMapaPeninsula>,
 ): Record<string, CasillaMapa> {
   const diccionario: Record<
     string,
@@ -96,6 +93,7 @@ describe('sesión de partida', () => {
 
     expect(estado.turno).toBe(1)
     expect(estado.semillaMapa).toBe(42)
+    expect(estado.mapaId).toBe('peninsula-v1')
     expect(estado.meta.jugador).toBe(
       'Rodrigo',
     )
@@ -216,10 +214,7 @@ describe('sesión de partida', () => {
       OPCIONES,
     )
 
-    const mapa = generarMapa({
-      ...DIMENSIONES_MAPA_PREDETERMINADO,
-      semilla: OPCIONES.semillaMapa,
-    })
+    const mapa = generarMapaPeninsula(OPCIONES.semillaMapa)
 
     const casilla = mapa.casillas.find(
       (candidata) =>
@@ -279,10 +274,7 @@ describe('sesión de partida', () => {
       OPCIONES,
     )
 
-    const mapa = generarMapa({
-      ...DIMENSIONES_MAPA_PREDETERMINADO,
-      semilla: OPCIONES.semillaMapa,
-    })
+    const mapa = generarMapaPeninsula(OPCIONES.semillaMapa)
 
     const estadoSinRival = Object.freeze({
       ...estado,
@@ -318,10 +310,7 @@ describe('sesión de partida', () => {
       almacenamiento,
       OPCIONES,
     )
-    const mapa = generarMapa({
-      ...DIMENSIONES_MAPA_PREDETERMINADO,
-      semilla: OPCIONES.semillaMapa,
-    })
+    const mapa = generarMapaPeninsula(OPCIONES.semillaMapa)
 
     const resultado = finalizarTurnoSesion(
       almacenamiento,
@@ -363,10 +352,7 @@ describe('sesión de partida', () => {
     const guardadoAnterior =
       cargarSesionPartida(almacenamiento)
 
-    const mapa = generarMapa({
-      ...DIMENSIONES_MAPA_PREDETERMINADO,
-      semilla: OPCIONES.semillaMapa,
-    })
+    const mapa = generarMapaPeninsula(OPCIONES.semillaMapa)
 
     expect(() =>
       finalizarTurnoSesion(
@@ -403,10 +389,7 @@ describe('sesión de partida', () => {
       OPCIONES,
     )
 
-    const mapa = generarMapa({
-      ...DIMENSIONES_MAPA_PREDETERMINADO,
-      semilla: OPCIONES.semillaMapa,
-    })
+    const mapa = generarMapaPeninsula(OPCIONES.semillaMapa)
 
     const estadoSinRival = Object.freeze({
       ...estado,

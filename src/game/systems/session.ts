@@ -32,12 +32,9 @@ import {
   type IdentificadorReino,
 } from '../domain/kingdom'
 import {
-  elegirEmplazamientoCapital,
-} from '../map/capitalPlacement'
-import {
-  DIMENSIONES_MAPA_PREDETERMINADO,
-  generarMapa,
-} from '../map/generateMap'
+  ID_MAPA_PENINSULA,
+  obtenerPosicionCapital,
+} from '../map/iberianMap'
 import {
   cargarEstadoPartida,
   guardarEstadoPartida,
@@ -79,14 +76,9 @@ export function crearSesionPartida(
     opciones.fechaCreacion ??
     new Date().toISOString()
 
-  const mapa = generarMapa({
-    ...DIMENSIONES_MAPA_PREDETERMINADO,
-    semilla: semillaMapa,
-  })
-
   const capital = crearCapitalInicial(
     opciones.reinoJugador,
-    elegirEmplazamientoCapital(mapa),
+    obtenerPosicionCapital(opciones.reinoJugador),
   )
 
   // Segunda facción (paso 6): capital rival en el mapa; su economía
@@ -101,9 +93,7 @@ export function crearSesionPartida(
   )
   const capitalRival = crearCapitalInicial(
     reinoRival,
-    elegirEmplazamientoCapital(mapa, [
-      capital.posicion,
-    ]),
+    obtenerPosicionCapital(reinoRival),
   )
 
   // Bloque 2 de `v0.5`: cuatro formaciones por bando, tomadas tal cual
@@ -254,6 +244,7 @@ export function crearSesionPartida(
 
   const estado = crearEstadoPartida({
     semillaMapa,
+    mapaId: ID_MAPA_PENINSULA,
     meta,
     reinoJugador: opciones.reinoJugador,
     recursos: perfil.recursosIniciales,

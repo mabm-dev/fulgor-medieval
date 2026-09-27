@@ -75,6 +75,14 @@ export const RESULTADOS_PARTIDA = [
 export type ResultadoPartida =
   (typeof RESULTADOS_PARTIDA)[number]
 
+export const IDENTIFICADORES_MAPA = [
+  'procedural-v1',
+  'peninsula-v1',
+] as const
+
+export type IdentificadorMapa =
+  (typeof IDENTIFICADORES_MAPA)[number]
+
 export const ERROR_ESTADO_INVALIDO =
   'Estado de partida no válido'
 
@@ -91,6 +99,8 @@ export interface MetaPartida {
 export interface EstadoPartida {
   readonly version: typeof VERSION_ESTADO_PARTIDA
   readonly semillaMapa: number
+  /** Ausente en guardados anteriores, que conservan el mapa procedural. */
+  readonly mapaId?: IdentificadorMapa
   readonly meta: MetaPartida
   readonly turno: number
   readonly fase: FaseTurno
@@ -133,6 +143,7 @@ export interface EstadoPartida {
 
 export interface OpcionesEstadoInicial {
   readonly semillaMapa: number
+  readonly mapaId?: IdentificadorMapa
   readonly meta: MetaPartida
   readonly reinoJugador: IdentificadorReino
   readonly recursos?: Partial<ReservaRecursos>
@@ -207,6 +218,23 @@ function leerSemilla(valor: unknown): number {
   }
 
   return valor
+}
+
+function leerIdentificadorMapa(
+  valor: unknown,
+): IdentificadorMapa | undefined {
+  if (valor === undefined) {
+    return undefined
+  }
+
+  if (
+    typeof valor !== 'string' ||
+    !IDENTIFICADORES_MAPA.some((id) => id === valor)
+  ) {
+    throw new Error(ERROR_ESTADO_INVALIDO)
+  }
+
+  return valor as IdentificadorMapa
 }
 
 function leerReino(
@@ -1123,6 +1151,9 @@ export function crearEstadoPartida(
     semillaMapa: leerSemilla(
       opciones.semillaMapa,
     ),
+    ...(opciones.mapaId === undefined
+      ? {}
+      : { mapaId: leerIdentificadorMapa(opciones.mapaId) }),
     meta: leerMeta(opciones.meta),
     turno: 1,
     fase: 'gestion',
@@ -1232,11 +1263,17 @@ export function restaurarEstadoPartida(
     leerPropuestasDiplomaticas(
       datos.propuestasDiplomaticas,
     )
+  const mapaId = leerIdentificadorMapa(
+    datos.mapaId,
+  )
   const estado: EstadoPartida = {
     version: VERSION_ESTADO_PARTIDA,
     semillaMapa: leerSemilla(
       datos.semillaMapa,
     ),
+    ...(mapaId === undefined
+      ? {}
+      : { mapaId }),
     meta: leerMeta(datos.meta),
     turno: datos.turno,
     fase: datos.fase,

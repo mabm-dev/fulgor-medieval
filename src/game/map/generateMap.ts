@@ -15,11 +15,29 @@ export interface CasillaMapa {
   readonly tieneOro: boolean
 }
 
+export type TipoTrazadoMapa = 'rio' | 'camino'
+
+export interface TrazadoMapa {
+  readonly id: string
+  readonly nombre: string
+  readonly tipo: TipoTrazadoMapa
+  readonly puntos: readonly CoordenadaHex[]
+}
+
+export interface RegionMapa {
+  readonly id: string
+  readonly nombre: string
+  readonly posicionEtiqueta: CoordenadaHex
+}
+
 export interface Mapa {
   readonly ancho: number
   readonly alto: number
   readonly semilla: number
   readonly casillas: readonly CasillaMapa[]
+  /** Capas cartográficas opcionales de los mapas diseñados. */
+  readonly trazados?: readonly TrazadoMapa[]
+  readonly regiones?: readonly RegionMapa[]
 }
 
 export interface OpcionesMapa {

@@ -4,7 +4,7 @@ import type {
   EventoEncuentroCombate,
 } from '../domain/events'
 import { obtenerFormacion } from '../domain/formationRegistry'
-import { DIMENSIONES_MAPA_PREDETERMINADO, generarMapa } from '../map/generateMap'
+import { generarMapaPeninsula } from '../map/iberianMap'
 import { claveHex, vecinosHex } from '../map/hex'
 import type { AlmacenamientoPartida } from '../persistence/saveGame'
 import { guardarEstadoPartida } from '../persistence/saveGame'
@@ -39,10 +39,7 @@ describe('flujo completo del combate tactico', () => {
       semillaMapa: 42,
       fechaCreacion: '2026-08-30',
     })
-    const mapa = generarMapa({
-      ...DIMENSIONES_MAPA_PREDETERMINADO,
-      semilla: inicial.semillaMapa,
-    })
+    const mapa = generarMapaPeninsula(inicial.semillaMapa)
     const casillas = Object.fromEntries(
       mapa.casillas.map((casilla) => [claveHex(casilla.coordenada), casilla]),
     )
