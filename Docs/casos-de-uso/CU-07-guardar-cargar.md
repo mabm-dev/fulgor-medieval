@@ -4,14 +4,13 @@
 
 Continuar una campaña sin pérdida ni corrupción silenciosa.
 
-## Alcance implementado en v0.3
+## Alcance por versión
 
-La aplicación mantiene un único guardado automático de la sesión actual. La
-instantánea incluye la versión del esquema, el turno, la fase, el reino jugador
-y sus cinco recursos.
-
-Al entrar en el mapa, el guardado se valida antes de restaurarse. Una nueva
-partida elimina el estado anterior para evitar mezclar dos campañas.
+Desde v0.3, el prototipo web mantenía un único guardado automático de la
+sesión, validado antes de restaurarse, y una nueva partida eliminaba el estado
+anterior para no mezclar dos campañas. En Unity, el guardado local versionado
+llega en v0.8, según el [roadmap](../ROADMAP.md); su formato está por diseñar y
+no importará partidas del prototipo web.
 
 La selección entre varias campañas, las migraciones entre versiones y la
 confirmación visual de borrado pertenecen a versiones posteriores.

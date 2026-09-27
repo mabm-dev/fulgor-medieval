@@ -95,15 +95,15 @@ sesión bloquea cualquier orden posterior.
 ## Persistencia estratégica
 
 Las bajas, heridas, prisioneros, fatiga y suministros continúan después de la
-batalla. En v0.5, una hueste derrotada por retirada conserva las formaciones
-que aún tienen integrantes y vuelve a aparecer en el mapa estratégico. La
+batalla. Una hueste que se retira conserva las formaciones que aún tienen
+integrantes y vuelve a aparecer en el mapa estratégico. La
 retirada no mata ni captura a su héroe, aunque deja sus tropas reducidas y
 fuera del campo táctico.
 
 Solo se disuelve la hueste cuando todas sus formaciones quedan eliminadas.
 Entonces su capitán muere; el héroe principal queda herido y cautivo del
-vencedor. El reino captor se conserva para que v0.6 pueda resolver rescates,
-intercambios, pactos u otras concesiones.
+vencedor. El reino captor se conserva para que la diplomacia pueda resolver
+después rescates, intercambios, pactos u otras concesiones.
 
 ## Tipos de encuentro
 

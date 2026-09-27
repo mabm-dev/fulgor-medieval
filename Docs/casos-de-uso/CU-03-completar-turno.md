@@ -4,14 +4,13 @@
 
 Resolver todas las órdenes y avanzar el estado de forma determinista.
 
-## Alcance implementado en v0.3
+## Alcance por versión
 
-El primer corte jugable permite revisar los cinco recursos del reino y finalizar
-un turno económico. El motor aplica producción y consumo en un orden estable,
-genera eventos, incrementa el turno y guarda automáticamente el nuevo estado.
-
-Las órdenes de construcción y movimiento llegarán en v0.4, el combate en v0.5
-y las decisiones de otros reinos en v0.6.
+El prototipo web implementó este caso por partes: el turno económico en v0.3,
+la construcción y el movimiento en v0.4, el combate en v0.5 y las decisiones de
+otros reinos en la rama `legacy/web`. En Unity, el turno con economía,
+movimiento y combate llega en v0.8, y la construcción y las decisiones de otros
+reinos en v0.9, según el [roadmap](../ROADMAP.md).
 
 ## Flujo principal
 
