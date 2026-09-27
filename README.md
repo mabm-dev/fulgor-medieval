@@ -25,8 +25,8 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 - Cámara de campaña, selección de casillas y panel de información.
 - Contrato visual Blender–Unity para escala, ejes y pivotes, con importador de
   modelos estáticos.
-- 94 pruebas Edit Mode de núcleo, presentación, importación y escena,
-  ejecutadas en integración continua.
+- 94 pruebas Edit Mode de núcleo, presentación, importación y escena. La
+  integración continua las ejecuta cuando dispone de los secretos de Unity.
 
 Todavía no hay turnos, economía, asentamientos ni combate en Unity: existen en
 el prototipo web y se portan en las versiones 0.8 y 0.9.
