@@ -1,0 +1,127 @@
+# Combate táctico
+
+## Objetivo
+
+Ofrecer batallas por turnos sobre hexágonos donde importen composición,
+terreno, moral y decisiones del comandante. La referencia está en los
+clásicos de estrategia con ejércitos agrupados, pero reglas, nombres,
+interfaz, recursos y contenido serán propios.
+
+## Campo de batalla mínimo
+
+- Rejilla hexagonal inicial de 13 × 9.
+- Hasta seis formaciones por ejército.
+- Despliegue previo limitado.
+- Obstáculos, cobertura y casillas de altura.
+- Zona de control y ataques de oportunidad definidos.
+
+## Unidad
+
+Cada formación posee:
+
+```text
+ataque
+defensa
+daño mínimo y máximo
+salud por integrante
+cantidad
+movimiento
+iniciativa
+alcance
+moral
+disciplina
+rasgos
+```
+
+La cantidad modifica las bajas infligidas, pero no el tamaño físico de la
+formación en el tablero.
+
+## Héroe
+
+El héroe dirige desde fuera de la rejilla. Aporta atributos al ejército y
+puede emitir una orden por ronda, limitada por puntos de mando.
+
+Un capitán común puede convertirse en héroe. La regla provisional, probada
+en el prototipo web, exige tres victorias y sobrevivir a la última batalla: el
+capitán pasa a héroe activo, conserva su nombre y arquetipo, y sigue al mando
+de la hueste. Las hazañas especiales, las recompensas y los límites del ascenso
+quedan para una iteración posterior de contenido, como recoge la
+[visión del juego](vision.md).
+
+Órdenes iniciales:
+
+- reagrupar;
+- fortificar posición;
+- carga coordinada;
+- lluvia de proyectiles;
+- marcha forzada;
+- retirada fingida;
+- inspirar;
+- orden histórica exclusiva.
+
+## Resolución de ronda
+
+1. Actúa todo el bando atacante.
+2. Actúa todo el bando defensor, controlado automáticamente.
+3. Dentro de cada bando se agrupa por tipo: infantería, distancia y caballería.
+4. Dentro de cada tipo se sigue la posición visual: superior antes que
+   inferior y, a igual altura, izquierda antes que derecha.
+5. La formación activa puede mover, esperar o defender; si tiene un objetivo
+   válido también puede atacar.
+6. Esperar la aplaza hasta después de la última formación de su bando. Solo se
+   permite una vez por ronda y, al volver, puede mover, defender o atacar si
+   posición y alcance permiten un objetivo válido.
+7. Defender concede +2 a defensa hasta que esa formación vuelva a actuar.
+8. Las bajas reducen la moral, pero una quiebra nunca provoca una retirada
+   automática.
+9. La hueste completa solo se retira mediante la orden explícita
+   «Retirar hueste». La IA no utiliza esta orden.
+10. Tras la última formación defensora comienza una nueva ronda atacante.
+
+La interfaz presenta cada maniobra en tres momentos legibles: selección de la
+formación activa, preparación de la orden y resolución. El bando automático
+mantiene pausas deliberadas entre esos momentos. La ruta de movimiento se
+dibuja como una cadena punteada y solo su destino lleva el número `1`: el
+número representa una única orden, no los puntos de movimiento consumidos. El
+parte del campo reserva espacio para dos líneas, de forma que el tablero no se
+desplace verticalmente cuando cambia la longitud del mensaje.
+
+Una formación retirada o destruida queda fuera de la cola, deja libre su
+casilla visual y no puede atacar ni ser objetivo. Si no se ordena la retirada,
+la batalla continúa hasta que todas las formaciones de uno de los bandos han
+sido destruidas. En cuanto un bando se queda sin formaciones en liza, la
+sesión bloquea cualquier orden posterior.
+
+## Persistencia estratégica
+
+Las bajas, heridas, prisioneros, fatiga y suministros continúan después de la
+batalla. Una hueste que se retira conserva las formaciones que aún tienen
+integrantes y vuelve a aparecer en el mapa estratégico. La
+retirada no mata ni captura a su héroe, aunque deja sus tropas reducidas y
+fuera del campo táctico.
+
+Solo se disuelve la hueste cuando todas sus formaciones quedan eliminadas.
+Entonces su capitán muere; el héroe principal queda herido y cautivo del
+vencedor. El reino captor se conserva para que la diplomacia pueda resolver
+después rescates, intercambios, pactos u otras concesiones.
+
+## Tipos de encuentro
+
+- Batalla campal.
+- Emboscada.
+- Asedio.
+- Defensa de paso.
+- Ruptura de bloqueo.
+- Escolta o ataque a convoy.
+- Retirada.
+
+## Resolución automática
+
+La resolución automática utilizará el mismo motor determinista y las mismas
+reglas. Podrá acelerar decisiones, pero no inventará un resultado mediante
+una fórmula separada.
+
+## Alcance de la primera versión
+
+Cuatro unidades por bando, un héroe, tres terrenos, moral, ataque a distancia
+y una condición de victoria. Asedios y habilidades avanzadas quedan fuera.
