@@ -17,6 +17,7 @@ import {
 import type { TipoTerreno } from '../map/terrain'
 import {
   finalizarTurno,
+  moverHuesteDuranteGestion,
   type OrdenTurno,
 } from './turns'
 
@@ -737,75 +738,61 @@ describe('resolución del turno', () => {
     ).toEqual({ q: 2, r: 0 })
   })
 
-  it('recuerda el destino y continúa la marcha en turnos posteriores', () => {
-    const casillas =
-      construirCasillasEnRadio(
-        { q: 0, r: 0 },
-        10,
-      )
+  it('mueve durante la gestión, conserva la guía y no avanza al finalizar', () => {
+    const casillas = construirCasillasEnRadio(
+      { q: 0, r: 0 },
+      10,
+    )
     const estado = crearEstadoDePrueba({
       reinoJugador: 'castilla',
       asentamientos: [
         crearAsentamientoDePrueba(100),
       ],
       huestes: [
-        crearHuesteDePrueba({
-          q: 0,
-          r: 0,
-        }),
+        crearHuesteDePrueba({ q: 0, r: 0 }),
       ],
     })
 
-    const primero = finalizarTurno(
+    const movimiento = moverHuesteDuranteGestion(
       estado,
       {
         casillas,
-        ordenes: [
-          {
-            tipo: 'Movimiento',
-            huesteId: 'hueste-1',
-            destino: { q: 7, r: 0 },
-          },
-        ],
+        huesteId: 'hueste-1',
+        destino: { q: 7, r: 0 },
       },
     )
 
-    expect(
-      primero.estado.huestes[0]
-        .posicion,
-    ).toEqual({ q: 4, r: 0 })
-    expect(
-      primero.estado.huestes[0]
-        .destinoMarcha,
-    ).toEqual({ q: 7, r: 0 })
+    expect(movimiento.estado.turno).toBe(1)
+    expect(movimiento.estado.huestes[0].posicion).toEqual({ q: 4, r: 0 })
+    expect(movimiento.estado.huestes[0].destinoMarcha).toEqual({ q: 7, r: 0 })
+    expect(movimiento.estado.huestesMovidasTurno).toEqual(['hueste-1'])
+    expect(() =>
+      moverHuesteDuranteGestion(movimiento.estado, {
+        casillas,
+        huesteId: 'hueste-1',
+        destino: { q: 7, r: 0 },
+      }),
+    ).toThrow('Esta hueste no tiene puntos de movimiento restantes')
 
-    const segundo = finalizarTurno(
-      primero.estado,
+    const siguienteTurno = finalizarTurno(
+      movimiento.estado,
       { casillas },
     )
 
-    expect(
-      segundo.estado.huestes[0]
-        .posicion,
-    ).toEqual({ q: 6, r: 0 })
-    expect(
-      segundo.estado.huestes[0]
-        .destinoMarcha,
-    ).toEqual({ q: 7, r: 0 })
+    expect(siguienteTurno.estado.huestes[0].posicion).toEqual({ q: 4, r: 0 })
+    expect(siguienteTurno.estado.huestes[0].destinoMarcha).toEqual({ q: 7, r: 0 })
+    expect(siguienteTurno.estado.huestesMovidasTurno).toEqual([])
 
-    const tercero = finalizarTurno(
-      segundo.estado,
-      { casillas },
+    const continuacion = moverHuesteDuranteGestion(
+      siguienteTurno.estado,
+      {
+        casillas,
+        huesteId: 'hueste-1',
+        destino: { q: 7, r: 0 },
+      },
     )
 
-    expect(
-      tercero.estado.huestes[0]
-        .posicion,
-    ).toEqual({ q: 7, r: 0 })
-    expect(
-      tercero.estado.huestes[0]
-        .destinoMarcha,
-    ).toBeUndefined()
+    expect(continuacion.estado.huestes[0].posicion).toEqual({ q: 6, r: 0 })
   })
 
   it('cancela una marcha persistente sin mover la hueste', () => {

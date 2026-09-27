@@ -139,6 +139,10 @@ export interface EstadoPartida {
    */
   readonly casillasExploradas:
     readonly string[]
+  /** Marca heredada de movimiento; el saldo numérico tiene prioridad. */
+  readonly huestesMovidasTurno?: readonly string[]
+  /** Saldo de movimiento por hueste; tiene prioridad sobre la marca antigua. */
+  readonly puntosMovimientoRestantes?: Readonly<Record<string, number>>
 }
 
 export interface OpcionesEstadoInicial {
@@ -164,6 +168,19 @@ export interface OpcionesEstadoInicial {
     readonly OpcionesCapitan[]
   readonly casillasExploradas?:
     readonly string[]
+  readonly huestesMovidasTurno?: readonly string[]
+  readonly puntosMovimientoRestantes?: Readonly<Record<string, number>>
+}
+
+function leerPuntosMovimiento(valor: unknown): Readonly<Record<string, number>> {
+  if (!esRegistro(valor)) throw new Error(ERROR_ESTADO_INVALIDO)
+  const entradas = Object.entries(valor).map(([id, puntos]) => {
+    if (!id.trim() || typeof puntos !== 'number' || !Number.isSafeInteger(puntos) || puntos < 0) {
+      throw new Error(ERROR_ESTADO_INVALIDO)
+    }
+    return [id, puntos] as const
+  })
+  return Object.freeze(Object.fromEntries(entradas))
 }
 
 function esRegistro(
@@ -1186,6 +1203,16 @@ export function crearEstadoPartida(
       normalizarCasillasExploradas(
         opciones.casillasExploradas ?? [],
       ),
+    ...(opciones.puntosMovimientoRestantes === undefined
+      ? {}
+      : { puntosMovimientoRestantes: leerPuntosMovimiento(opciones.puntosMovimientoRestantes) }),
+    ...(opciones.huestesMovidasTurno === undefined
+      ? {}
+      : {
+          huestesMovidasTurno: Object.freeze(
+            [...new Set(opciones.huestesMovidasTurno)],
+          ),
+        }),
   }
 
   return Object.freeze(estado)
@@ -1331,6 +1358,16 @@ export function restaurarEstadoPartida(
           datos.casillasExploradas,
         ),
       ),
+    ...(datos.puntosMovimientoRestantes === undefined
+      ? {}
+      : { puntosMovimientoRestantes: leerPuntosMovimiento(datos.puntosMovimientoRestantes) }),
+    ...(datos.huestesMovidasTurno === undefined
+      ? {}
+      : {
+          huestesMovidasTurno: Object.freeze(
+            [...new Set(leerListaTextos(datos.huestesMovidasTurno))],
+          ),
+        }),
   }
 
   return Object.freeze(estado)

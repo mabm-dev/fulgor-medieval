@@ -48,6 +48,7 @@ import {
 } from './movement'
 import {
   calcularPuntosMovimientoTurno,
+  puntosMovimientoDisponibles,
   estaEnSuministro,
 } from './supply'
 import {
@@ -190,6 +191,7 @@ interface EncuentroCombate {
 
 interface ResultadoResolucionMovimientos {
   readonly huestes: RegistroHuestes
+  readonly puntosRestantes: Readonly<Record<string, number>>
   readonly encuentros: readonly EncuentroCombate[]
 }
 
@@ -264,6 +266,7 @@ function resolverOrdenesMovimiento(
     Record<string, CasillaMapa>
   >,
   exploradas: ReadonlySet<string>,
+  presupuestos: Readonly<Record<string, number>> = {},
 ): ResultadoResolucionMovimientos {
   const huestesPorId = new Map(
     huestes.map((hueste) => [
@@ -307,6 +310,7 @@ function resolverOrdenesMovimiento(
     }
   >()
   const encuentros: EncuentroCombate[] = []
+  const puntosRestantes: Record<string, number> = {}
 
   for (const hueste of huestes) {
     if (hueste.reinoId !== reinoJugador) {
@@ -332,13 +336,14 @@ function resolverOrdenesMovimiento(
     const destino =
       orden?.tipo === 'Movimiento'
         ? orden.destino
-        : hueste.destinoMarcha
+        : undefined
 
     if (destino === undefined) {
       continue
     }
 
     const puntos =
+      presupuestos[hueste.id] ??
       calcularPuntosMovimientoTurno(
         estaEnSuministro(
           hueste.posicion,
@@ -360,6 +365,9 @@ function resolverOrdenesMovimiento(
           formaciones,
         ) !== undefined,
     )
+
+    // Un encuentro compromete el resto de la marcha, aunque no se entre.
+    puntosRestantes[hueste.id] = resultado.bloqueadaEn ? 0 : resultado.puntosRestantes
 
     actualizaciones.set(hueste.id, {
       posicion: resultado.posicion,
@@ -395,6 +403,7 @@ function resolverOrdenesMovimiento(
   }
 
   return {
+    puntosRestantes: Object.freeze(puntosRestantes),
     huestes: crearRegistroHuestes(
       huestes.map((hueste) => {
         const actualizacion =
@@ -495,6 +504,149 @@ function aplicarTechoManoDeObra(
   })
 }
 
+export interface OpcionesMoverHuesteDuranteGestion {
+  readonly huesteId: string
+  readonly destino: CoordenadaHex
+  readonly casillas: Readonly<Record<string, CasillaMapa>>
+}
+
+/**
+ * Ejecuta una marcha en el acto, dentro de la fase de gestión. El destino
+ * restante se conserva como guía, pero nunca se recorre automáticamente al
+ * finalizar el turno.
+ */
+export function moverHuesteDuranteGestion(
+  estado: EstadoPartida,
+  opciones: OpcionesMoverHuesteDuranteGestion,
+): ResultadoTurno {
+  if (estado.fase !== 'gestion') {
+    throw new Error('Solo se puede mover durante la gestión')
+  }
+  if (estado.resultadoPartida !== undefined) {
+    throw new Error('La partida ya ha terminado')
+  }
+
+  const hueste = estado.huestes.find(
+    (candidata) =>
+      candidata.id === opciones.huesteId &&
+      candidata.reinoId === estado.reinoJugador,
+  )
+  if (hueste === undefined || !huesteTieneEfectivos(hueste, estado.formaciones)) {
+    throw new Error('Hueste no encontrada: ' + opciones.huesteId)
+  }
+  const puntos = puntosMovimientoDisponibles(estado, hueste)
+  if (puntos <= 0) throw new Error('Esta hueste no tiene puntos de movimiento restantes')
+  if (claveHex(hueste.posicion) === claveHex(opciones.destino)) {
+    throw new Error('La hueste ya está en esa casilla')
+  }
+
+  const asentamientosPropios = estado.asentamientos.filter(
+    (asentamiento) => asentamiento.reinoId === estado.reinoJugador,
+  )
+  const resolucion = resolverOrdenesMovimiento(
+    estado.huestes,
+    asentamientosPropios,
+    estado.reinoJugador,
+    estado.formaciones,
+    estado.turno,
+    [{
+      tipo: 'Movimiento',
+      huesteId: opciones.huesteId,
+      destino: opciones.destino,
+    }],
+    opciones.casillas,
+    new Set(estado.casillasExploradas),
+    { [hueste.id]: puntos },
+  )
+  const ocupacion = resolverOcupacionAsentamientos(
+    estado.asentamientos,
+    resolucion.huestes,
+    { ...estado, huestes: resolucion.huestes },
+  )
+  const visibilidad = calcularVisibilidad([
+    ...ocupacion.asentamientos.filter(
+      (asentamiento) => asentamiento.reinoId === estado.reinoJugador,
+    ),
+    ...resolucion.huestes.filter(
+      (candidata) => candidata.reinoId === estado.reinoJugador,
+    ),
+  ])
+  const estadoMovido: EstadoPartida = Object.freeze({
+    ...estado,
+    asentamientos: ocupacion.asentamientos,
+    huestes: resolucion.huestes,
+    puntosMovimientoRestantes: Object.freeze({
+      ...estado.puntosMovimientoRestantes,
+      ...resolucion.puntosRestantes,
+    }),
+    casillasExploradas: actualizarCasillasExploradas(
+      estado.casillasExploradas,
+      visibilidad,
+    ),
+    huestesMovidasTurno: Object.freeze([
+      ...new Set([
+        ...(estado.huestesMovidasTurno ?? []),
+        opciones.huesteId,
+      ]),
+    ]),
+  })
+  const evaluacion = evaluarResultadoPartida(estadoMovido)
+  const estadoFinal = evaluacion.resultado === undefined
+    ? estadoMovido
+    : Object.freeze({
+        ...estadoMovido,
+        resultadoPartida: evaluacion.resultado,
+        motivoResultado: evaluacion.motivo ?? 'Partida finalizada',
+      })
+
+  return Object.freeze({
+    estado: estadoFinal,
+    eventos: Object.freeze([
+      ...resolucion.encuentros.map((encuentro) => Object.freeze({
+        tipo: 'encuentro_combate' as const,
+        turno: estado.turno,
+        huesteAtacanteId: encuentro.huesteAtacanteId,
+        huesteDefensoraId: encuentro.huesteDefensoraId,
+        casilla: encuentro.casilla,
+      })),
+      ...ocupacion.asentamientosConquistados.map((asentamientoId) =>
+        Object.freeze({
+          tipo: 'asentamiento_conquistado' as const,
+          turno: estado.turno,
+          asentamientoId,
+          nuevoReinoId: estado.reinoJugador,
+        }),
+      ),
+    ]),
+  })
+}
+
+/** Borra un destino previsto sin gastar movimiento. */
+export function cancelarMarchaDuranteGestion(
+  estado: EstadoPartida,
+  huesteId: string,
+): EstadoPartida {
+  const hueste = estado.huestes.find(
+    (candidata) =>
+      candidata.id === huesteId &&
+      candidata.reinoId === estado.reinoJugador,
+  )
+  if (hueste === undefined) {
+    throw new Error('Hueste no encontrada: ' + huesteId)
+  }
+
+  return Object.freeze({
+    ...estado,
+    huestes: crearRegistroHuestes(
+      estado.huestes.map((candidata) =>
+        candidata.id === huesteId
+          ? { ...candidata, destinoMarcha: undefined }
+          : candidata,
+      ),
+    ),
+  })
+}
+
 export function finalizarTurno(
   estado: EstadoPartida,
   opciones: OpcionesFinalizarTurno,
@@ -583,6 +735,9 @@ export function finalizarTurno(
     new Set(
       estado.casillasExploradas,
     ),
+    Object.fromEntries(estado.huestes.map(hueste => [
+      hueste.id, puntosMovimientoDisponibles(estado, hueste),
+    ])),
   )
   const resolucionRival = resolverTurnoRival(
     estado,
@@ -681,6 +836,8 @@ export function finalizarTurno(
               resolucionDiplomacia.recursosRivales,
           }),
       casillasExploradas,
+      huestesMovidasTurno: Object.freeze([]),
+      puntosMovimientoRestantes: Object.freeze({}),
     })
   const evaluacionPartida = evaluarResultadoPartida(
     estadoSinResultado,

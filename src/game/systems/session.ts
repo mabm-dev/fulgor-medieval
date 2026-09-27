@@ -50,7 +50,9 @@ import {
 } from './victory'
 import {
   finalizarTurno,
+  moverHuesteDuranteGestion,
   type OpcionesFinalizarTurno,
+  type OpcionesMoverHuesteDuranteGestion,
   type ResultadoTurno,
 } from './turns'
 import {
@@ -277,6 +279,38 @@ export function cargarSesionPartida(
   almacenamiento: AlmacenamientoPartida,
 ): ResultadoCargaPartida {
   return cargarEstadoPartida(almacenamiento)
+}
+
+export function moverHuesteSesion(
+  almacenamiento: AlmacenamientoPartida,
+  estado: EstadoPartida,
+  opciones: OpcionesMoverHuesteDuranteGestion,
+): ResultadoTurno {
+  const resultado = moverHuesteDuranteGestion(estado, opciones)
+  const hayEncuentro = resultado.eventos.some(
+    (evento) => evento.tipo === 'encuentro_combate',
+  )
+
+  if (hayEncuentro) {
+    return resultado
+  }
+
+  const guardado = guardarEstadoPartida(almacenamiento, resultado.estado)
+  if (guardado.tipo === 'exito') {
+    return resultado
+  }
+
+  return {
+    estado: resultado.estado,
+    eventos: [
+      ...resultado.eventos,
+      {
+        tipo: 'guardado_fallido',
+        turno: estado.turno,
+        mensaje: guardado.error.mensaje,
+      },
+    ],
+  }
 }
 
 export function finalizarTurnoSesion(

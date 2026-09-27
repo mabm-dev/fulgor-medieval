@@ -13,6 +13,7 @@ import {
   cargarSesionPartida,
   crearSesionPartida,
   finalizarTurnoSesion,
+  moverHuesteSesion,
 } from './session'
 
 function crearAlmacenamientoMemoria():
@@ -239,6 +240,42 @@ describe('sesión de partida', () => {
     )
 
     expect(primera).toEqual(segunda)
+  })
+
+  it('guarda inmediatamente el movimiento y el gasto del turno', () => {
+    const almacenamiento = crearAlmacenamientoMemoria()
+    const estado = crearSesionPartida(almacenamiento, OPCIONES)
+    const mapa = generarMapaPeninsula(OPCIONES.semillaMapa)
+    const casillas = construirDiccionarioCasillas(mapa)
+    const origen = estado.huestes[0].posicion
+    const destino = mapa.casillas.find(
+      (casilla) =>
+        casilla.terreno !== 'agua' &&
+        claveHex(casilla.coordenada) !== claveHex(origen) &&
+        estado.casillasExploradas.includes(claveHex(casilla.coordenada)),
+    )
+
+    expect(destino).toBeDefined()
+    const resultado = moverHuesteSesion(
+      almacenamiento,
+      estado,
+      {
+        casillas,
+        huesteId: estado.huestes[0].id,
+        destino: destino!.coordenada,
+      },
+    )
+    const carga = cargarSesionPartida(almacenamiento)
+
+    expect(resultado.estado.turno).toBe(1)
+    expect(resultado.estado.huestesMovidasTurno).toContain(estado.huestes[0].id)
+    expect(carga.tipo).toBe('exito')
+    if (carga.tipo === 'exito') {
+      expect(carga.estado.huestesMovidasTurno).toContain(estado.huestes[0].id)
+      expect(carga.estado.huestes[0].posicion).toEqual(
+        resultado.estado.huestes[0].posicion,
+      )
+    }
   })
 
   it('guarda la partida recién creada', () => {

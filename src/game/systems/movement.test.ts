@@ -218,6 +218,7 @@ describe('avanzarPorRuta', () => {
 
     expect(resultado).toEqual({
       posicion: { q: 2, r: 0 },
+      puntosRestantes: 2,
       destinoAlcanzado: true,
     })
   })
@@ -247,6 +248,7 @@ describe('avanzarPorRuta', () => {
 
     expect(resultado).toEqual({
       posicion: { q: 1, r: 0 },
+      puntosRestantes: 0,
       destinoAlcanzado: false,
     })
   })
@@ -268,6 +270,7 @@ describe('avanzarPorRuta', () => {
 
     expect(resultado).toEqual({
       posicion: { q: 1, r: 0 },
+      puntosRestantes: 0,
       destinoAlcanzado: true,
     })
   })
@@ -289,6 +292,7 @@ describe('avanzarPorRuta', () => {
 
     expect(resultado).toEqual({
       posicion: { q: 0, r: 0 },
+      puntosRestantes: 0,
       destinoAlcanzado: false,
     })
   })
@@ -324,6 +328,7 @@ describe('avanzarPorRuta', () => {
 
     expect(resultado).toEqual({
       posicion: { q: 0, r: 0 },
+      puntosRestantes: 4,
       destinoAlcanzado: false,
       bloqueadaEn: { q: 1, r: 0 },
     })
@@ -377,6 +382,7 @@ describe('resolverMovimiento', () => {
 
     expect(resultado).toEqual({
       posicion: { q: 2, r: 0 },
+      puntosRestantes: 2,
       destinoAlcanzado: true,
     })
   })
@@ -396,6 +402,7 @@ describe('resolverMovimiento', () => {
 
     expect(resultado).toEqual({
       posicion: { q: 0, r: 0 },
+      puntosRestantes: 4,
       destinoAlcanzado: false,
     })
   })
@@ -422,6 +429,7 @@ describe('resolverMovimiento', () => {
 
     expect(resultado).toEqual({
       posicion: { q: 0, r: 0 },
+      puntosRestantes: 4,
       destinoAlcanzado: false,
       bloqueadaEn: { q: 1, r: 0 },
     })

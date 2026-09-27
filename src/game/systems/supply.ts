@@ -1,3 +1,5 @@
+import type { EstadoPartida } from '../domain/gameState'
+import type { Hueste } from '../domain/hueste'
 import {
   distanciaHex,
   type CoordenadaHex,
@@ -18,6 +20,18 @@ import { PUNTOS_MOVIMIENTO_MAXIMOS } from './movement'
  * ninguno de los dos consulta caminos transitables tampoco.
  */
 export const RADIO_SUMINISTRO = 2
+
+/** Saldo fijo tras la primera marcha: fraccionarla no regenera puntos. */
+export function puntosMovimientoDisponibles(estado: EstadoPartida, hueste: Hueste): number {
+  const saldo = estado.puntosMovimientoRestantes
+  if (saldo && Object.hasOwn(saldo, hueste.id)) return saldo[hueste.id]
+  // Compatibilidad: las partidas antiguas solo anotaban si ya había movido.
+  if (estado.huestesMovidasTurno?.includes(hueste.id)) return 0
+  return calcularPuntosMovimientoTurno(estaEnSuministro(
+    hueste.posicion,
+    estado.asentamientos.filter(a => a.reinoId === hueste.reinoId),
+  ))
+}
 
 /**
  * Una hueste está en suministro si cae dentro del radio de al menos un

@@ -40,6 +40,8 @@ export function crearEstadoDePrueba(
     huestes: opciones.huestes,
     formaciones: opciones.formaciones,
     heroes: opciones.heroes,
+    huestesMovidasTurno: opciones.huestesMovidasTurno,
+    puntosMovimientoRestantes: opciones.puntosMovimientoRestantes,
     casillasExploradas:
       opciones.casillasExploradas,
   })

@@ -8,8 +8,8 @@ import { DEFINICIONES_TERRENO } from '../map/terrain'
 
 /**
  * Presupuesto fijo de puntos de movimiento por turno, primer borrador.
- * No se guarda entre turnos: cada resolución de turno le da a cada hueste
- * el máximo de nuevo, no hay remanente que acumular. Con los costes ya
+ * El saldo se conserva entre órdenes de gestión y se reinicia al cambiar
+ * de turno; no se acumula entre turnos. Con los costes ya
  * definidos en `map/terrain.ts` (llanura 1, bosque/colina 2, montaña 3),
  * 4 puntos cubren varias llanuras o una montaña con margen.
  */
@@ -280,6 +280,7 @@ export function calcularAlcanceMovimiento(
 
 export interface ResultadoMovimiento {
   readonly posicion: CoordenadaHex
+  readonly puntosRestantes: number
   readonly destinoAlcanzado: boolean
   /**
    * Presente solo si `estaBloqueada` detuvo el avance —`v0.5`, regla de
@@ -326,6 +327,7 @@ export function avanzarPorRuta(
     if (estaBloqueada?.(siguiente)) {
       return {
         posicion,
+        puntosRestantes: Math.max(0, puntosRestantes),
         destinoAlcanzado: false,
         bloqueadaEn: siguiente,
       }
@@ -345,6 +347,7 @@ export function avanzarPorRuta(
 
   return {
     posicion,
+    puntosRestantes: Math.max(0, puntosRestantes),
     destinoAlcanzado:
       indice === ruta.length,
   }
@@ -377,6 +380,7 @@ export function resolverMovimiento(
   if (ruta === null) {
     return {
       posicion: origen,
+      puntosRestantes: puntosDisponibles,
       destinoAlcanzado: false,
     }
   }
@@ -415,6 +419,7 @@ export function proyectarMarcha(
   exploradas: ReadonlySet<string>,
   puntosPorTurno: PresupuestoMarcha =
     PUNTOS_MOVIMIENTO_MAXIMOS,
+  puntosPrimerTurno?: number,
 ): ProyeccionMarcha | null {
   const ruta = calcularRuta(
     origen,
@@ -457,9 +462,14 @@ export function proyectarMarcha(
     }
 
     const puntosDisponibles =
-      typeof puntosPorTurno === 'number'
+      turno === 0 && puntosPrimerTurno !== undefined ? puntosPrimerTurno
+      : typeof puntosPorTurno === 'number'
         ? puntosPorTurno
         : puntosPorTurno(posicion)
+    if (turno === 0 && puntosDisponibles === 0) {
+      finalesTurno.push(posicion)
+      continue
+    }
     const avance = avanzarPorRuta(
       tramo,
       casillas,
