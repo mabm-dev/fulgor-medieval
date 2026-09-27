@@ -41,10 +41,12 @@ formación en el tablero.
 El héroe dirige desde fuera de la rejilla. Aporta atributos al ejército y
 puede emitir una orden por ronda, limitada por puntos de mando.
 
-Un capitán común podrá convertirse en héroe al cumplir determinadas
-situaciones durante la campaña. Las condiciones, recompensas y límites de ese
-ascenso se escribirán más adelante; por ahora queda como regla de progresión
-reservada y no se asignan requisitos provisionales.
+Un capitán común puede convertirse en héroe. La regla provisional, probada
+en el prototipo web, exige tres victorias y sobrevivir a la última batalla: el
+capitán pasa a héroe activo, conserva su nombre y arquetipo, y sigue al mando
+de la hueste. Las hazañas especiales, las recompensas y los límites del ascenso
+quedan para una iteración posterior de contenido, como recoge la
+[visión del juego](vision.md).
 
 Órdenes iniciales:
 
