@@ -5,6 +5,9 @@
 | Ruta | Uso | Estado |
 |---|---|---|
 | `public/imagenes/` | Menú y selección de reinos | Recursos propios o generados para el prototipo |
+| `public/imagenes/mapa/ciudad-fortificada.webp` | Marcador de ciudades del mapa estratégico | Generado para el prototipo; derivado web 320×320 con transparencia |
+| `public/imagenes/mapa/hueste-medieval.webp` | Marcador de huestes del mapa estratégico | Generado para el prototipo; derivado web 320×320 con transparencia |
+| `public/imagenes/mapa/terrenos/*.webp` | Superficies pintadas de agua, llanura, bosque, colina y montaña | Generadas para el prototipo; derivados web 512×512 optimizados |
 | `public/fuentes/` | Tipografía Cinzel | Google Fonts, SIL Open Font License |
 | `tools/art/` | Utilidades de preparación de imágenes | Herramientas internas reproducibles |
 

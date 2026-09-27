@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { crearHueste } from '../../game/domain/hueste'
 import { crearAsentamiento } from '../../game/domain/settlement'
 import { generarMapa } from '../../game/map/generateMap'
+import { generarMapaPeninsula } from '../../game/map/iberianMap'
 import { claveHex } from '../../game/map/hex'
 import HexMap from './HexMap'
 
@@ -38,6 +39,34 @@ describe('HexMap', () => {
       html.match(/data-terreno=/g) ?? []
 
     expect(terrenos).toHaveLength(384)
+  })
+
+  it('pinta el terreno con texturas rasterizadas continuas', () => {
+    const html = renderizarMapa()
+    const rellenosTexturizados =
+      html.match(/fill="url\(#textura-/g) ?? []
+
+    expect(rellenosTexturizados).toHaveLength(384)
+    expect(html).toContain('agua-pintada.webp')
+    expect(html).toContain('llanura-pintada.webp')
+    expect(html).toContain('bosque-pintado.webp')
+    expect(html).toContain('colina-pintada.webp')
+    expect(html).toContain('montana-pintada.webp')
+  })
+
+  it('integra ríos sin caminos decorativos', () => {
+    const html = renderToStaticMarkup(
+      <HexMap mapa={generarMapaPeninsula(12345)} radio={28} />,
+    )
+
+    expect(html).toContain('data-tipo-trazado="rio"')
+    expect(html).not.toContain('data-tipo-trazado="camino"')
+    expect(html).toContain('data-acabado-trazado="base"')
+    expect(html).toContain('data-acabado-trazado="superficie"')
+    expect(html).toContain('data-acabado-trazado="brillo"')
+    expect(html).not.toContain('filter="url(#trazo-organico)"')
+    expect(html).toContain('opacity="0.36"')
+    expect(html).toContain('opacity="0.24"')
   })
 
   it('incluye una descripción accesible del mapa', () => {
@@ -100,6 +129,25 @@ describe('HexMap', () => {
       html.match(/<circle/g) ?? []
 
     expect(circulos).toHaveLength(1)
+  })
+
+  it('usa el sprite medieval para los asentamientos', () => {
+    const mapa = crearMapaPrueba()
+    const asentamiento = crearAsentamiento({
+      id: 'burgos',
+      nombre: 'Burgos',
+      reinoId: 'castilla',
+      tipo: 'ciudad',
+      posicion: mapa.casillas[0].coordenada,
+      poblacion: { habitantes: 100, capacidad: 200 },
+    })
+
+    const html = renderToStaticMarkup(
+      <HexMap mapa={mapa} asentamientos={[asentamiento]} />,
+    )
+
+    expect(html).toContain('data-sprite-asentamiento="true"')
+    expect(html).toContain('ciudad-fortificada.webp')
   })
 
   it('no dibuja marcadores sin asentamientos', () => {
@@ -240,6 +288,23 @@ describe('HexMap', () => {
     expect(marcadores).toHaveLength(1)
   })
 
+  it('usa el sprite medieval para las huestes', () => {
+    const mapa = crearMapaPrueba()
+    const hueste = crearHueste({
+      id: 'hueste-1',
+      nombre: 'Hueste exploradora',
+      reinoId: 'castilla',
+      posicion: mapa.casillas[0].coordenada,
+    })
+
+    const html = renderToStaticMarkup(
+      <HexMap mapa={mapa} huestes={[hueste]} />,
+    )
+
+    expect(html).toContain('data-sprite-hueste="true"')
+    expect(html).toContain('hueste-medieval.webp')
+  })
+
   it('resalta la hueste seleccionada con otro color', () => {
     const mapa = crearMapaPrueba()
     const hueste = crearHueste({
@@ -262,6 +327,30 @@ describe('HexMap', () => {
     expect(html).toContain(
       'fill="#8fd4f0"',
     )
+  })
+
+  it('permite seleccionar una hueste propia sobre el mapa y muestra su aro', () => {
+    const mapa = crearMapaPrueba()
+    const hueste = crearHueste({
+      id: 'hueste-1',
+      nombre: 'Hueste exploradora',
+      reinoId: 'castilla',
+      posicion: mapa.casillas[0].coordenada,
+    })
+    const html = renderToStaticMarkup(
+      <HexMap
+        mapa={mapa}
+        huestes={[hueste]}
+        reinoJugadorId="castilla"
+        huesteSeleccionadaId={hueste.id}
+        onSeleccionarHueste={() => undefined}
+      />,
+    )
+
+    expect(html).toContain('data-hueste-mapa="hueste-1"')
+    expect(html).toContain('data-area-seleccion-hueste="true"')
+    expect(html).toContain('data-seleccion-hueste="true"')
+    expect(html).toContain('aria-pressed="true"')
   })
 
   it('marca la hueste fuera de suministro con un trazo de aviso', () => {

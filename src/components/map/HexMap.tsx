@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { rutaPublica } from '../../rutaPublica'
 import type {
   RegistroAsentamientos,
 } from '../../game/domain/settlementRegistry'
@@ -40,13 +41,33 @@ const COLOR_HUESTE_RIVAL = '#c65b4a'
 const COLOR_ASENTAMIENTO_RIVAL = '#9f3f35'
 const COLOR_RUTA_MOVIMIENTO = '#f1c66d'
 const COLOR_FUERA_DE_SUMINISTRO = '#e0a458'
+const SPRITE_CIUDAD = rutaPublica(
+  'imagenes/mapa/ciudad-fortificada.webp',
+)
+const SPRITE_HUESTE = rutaPublica(
+  'imagenes/mapa/hueste-medieval.webp',
+)
+const TEXTURAS_TERRENO: Record<TipoTerreno, string> = {
+  agua: rutaPublica('imagenes/mapa/terrenos/agua-pintada.webp'),
+  llanura: rutaPublica('imagenes/mapa/terrenos/llanura-pintada.webp'),
+  bosque: rutaPublica('imagenes/mapa/terrenos/bosque-pintado.webp'),
+  colina: rutaPublica('imagenes/mapa/terrenos/colina-pintada.webp'),
+  montana: rutaPublica('imagenes/mapa/terrenos/montana-pintada.webp'),
+}
+const TAMANO_TEXTURA = 224
 
-interface HexMapProps {
+export interface HexMapProps {
   readonly mapa: Mapa
   readonly radio?: number
   readonly casillaSeleccionada?: CoordenadaHex | null
   readonly onSeleccionarCasilla?: (
     casilla: CasillaMapa,
+  ) => void
+  readonly onMoverACasilla?: (
+    casilla: CasillaMapa,
+  ) => void
+  readonly onSeleccionarHueste?: (
+    huesteId: string,
   ) => void
   readonly asentamientos?: RegistroAsentamientos
   readonly casillasTrabajadas?: readonly CoordenadaHex[]
@@ -93,57 +114,66 @@ function encogerVertices(
   }))
 }
 
-function DecoracionTerreno({
-  terreno,
-  centro,
-  radio,
-}: {
-  readonly terreno: TipoTerreno
-  readonly centro: Punto
-  readonly radio: number
-}) {
-  const opacidad = 0.32
+function segmentarTrazadoVisible(
+  puntos: readonly CoordenadaHex[],
+  esVisible: (punto: CoordenadaHex) => boolean,
+): readonly (readonly CoordenadaHex[])[] {
+  const segmentos: CoordenadaHex[][] = []
+  let actual: CoordenadaHex[] = []
 
-  if (terreno === 'agua') {
-    return (
-      <g data-decoracion-terreno="agua" opacity={opacidad}>
-        <path d={`M ${centro.x - radio * 0.55} ${centro.y - radio * 0.12} q ${radio * 0.28} ${radio * 0.22} ${radio * 0.56} 0`} fill="none" stroke="#b7e1e6" strokeWidth={radio * 0.07} strokeLinecap="round" />
-        <path d={`M ${centro.x - radio * 0.45} ${centro.y + radio * 0.22} q ${radio * 0.24} ${radio * 0.18} ${radio * 0.48} 0`} fill="none" stroke="#b7e1e6" strokeWidth={radio * 0.05} strokeLinecap="round" />
-      </g>
-    )
+  for (const punto of puntos) {
+    if (esVisible(punto)) {
+      actual.push(punto)
+      continue
+    }
+
+    if (actual.length > 1) {
+      segmentos.push(actual)
+    }
+    actual = []
   }
 
-  if (terreno === 'bosque') {
-    return (
-      <g data-decoracion-terreno="bosque" opacity={opacidad} fill="#102b22">
-        {[-0.3, 0, 0.3].map((desplazamiento) => (
-          <path key={desplazamiento} d={`M ${centro.x + radio * desplazamiento} ${centro.y + radio * 0.34} l ${radio * 0.16} ${-radio * 0.36} l ${-radio * 0.16} ${radio * 0.08} l ${-radio * 0.16} ${-radio * 0.08} z`} />
-        ))}
-      </g>
-    )
+  if (actual.length > 1) {
+    segmentos.push(actual)
   }
 
-  if (terreno === 'colina') {
-    return (
-      <path data-decoracion-terreno="colina" d={`M ${centro.x - radio * 0.58} ${centro.y + radio * 0.28} q ${radio * 0.28} ${-radio * 0.58} ${radio * 0.56} 0`} fill="none" stroke="#4e3b2b" strokeWidth={radio * 0.1} strokeLinecap="round" opacity={opacidad} />
-    )
-  }
+  return segmentos
+}
 
-  if (terreno === 'montana') {
-    return (
-      <g data-decoracion-terreno="montana" opacity={opacidad} fill="#27282a">
-        <path d={`M ${centro.x - radio * 0.52} ${centro.y + radio * 0.3} l ${radio * 0.28} ${-radio * 0.52} l ${radio * 0.16} ${radio * 0.22} l ${radio * 0.2} ${-radio * 0.34} l ${radio * 0.34} ${radio * 0.64} z`} />
-      </g>
-    )
-  }
-
-  return (
-    <g data-decoracion-terreno="llanura" opacity={opacidad} stroke="#d8c98b" strokeWidth={radio * 0.035} strokeLinecap="round">
-      <path d={`M ${centro.x - radio * 0.35} ${centro.y + radio * 0.25} l ${radio * 0.12} ${-radio * 0.24}`} />
-      <path d={`M ${centro.x - radio * 0.05} ${centro.y + radio * 0.28} l ${radio * 0.1} ${-radio * 0.3}`} />
-      <path d={`M ${centro.x + radio * 0.25} ${centro.y + radio * 0.24} l ${radio * 0.08} ${-radio * 0.2}`} />
-    </g>
+function construirTrazadoSuave(
+  puntos: readonly CoordenadaHex[],
+  radio: number,
+): string {
+  const centros = puntos.map((punto) =>
+    centroHex(punto, radio),
   )
+  const primero = centros[0]
+  const ultimo = centros.at(-1)
+
+  if (primero === undefined || ultimo === undefined) {
+    return ''
+  }
+
+  if (centros.length === 2) {
+    return `M ${primero.x} ${primero.y} L ${ultimo.x} ${ultimo.y}`
+  }
+
+  let trazado = `M ${primero.x} ${primero.y}`
+
+  for (let indice = 1; indice < centros.length - 1; indice += 1) {
+    const actual = centros[indice]
+    const siguiente = centros[indice + 1]
+
+    if (actual === undefined || siguiente === undefined) {
+      continue
+    }
+
+    const medioX = (actual.x + siguiente.x) / 2
+    const medioY = (actual.y + siguiente.y) / 2
+    trazado += ` Q ${actual.x} ${actual.y} ${medioX} ${medioY}`
+  }
+
+  return `${trazado} Q ${ultimo.x} ${ultimo.y} ${ultimo.x} ${ultimo.y}`
 }
 
 function calcularViewBox(
@@ -179,6 +209,8 @@ export default function HexMap({
   radio = 28,
   casillaSeleccionada = null,
   onSeleccionarCasilla,
+  onMoverACasilla,
+  onSeleccionarHueste,
   asentamientos = [],
   casillasTrabajadas = [],
   casillasVisibles = [],
@@ -249,7 +281,8 @@ export default function HexMap({
     : null
 
   const interactivo =
-    onSeleccionarCasilla !== undefined
+    onSeleccionarCasilla !== undefined ||
+    onMoverACasilla !== undefined
 
   const etiqueta =
     `Mapa hexagonal de ${mapa.ancho} por ` +
@@ -264,6 +297,31 @@ export default function HexMap({
       className="h-full w-full"
     >
       <title>{etiqueta}</title>
+
+      <defs>
+        {Object.entries(TEXTURAS_TERRENO).map(([terreno, ruta]) => (
+          <pattern
+            key={terreno}
+            id={`textura-${terreno}`}
+            width={TAMANO_TEXTURA}
+            height={TAMANO_TEXTURA}
+            patternUnits="userSpaceOnUse"
+          >
+            <rect
+              width={TAMANO_TEXTURA}
+              height={TAMANO_TEXTURA}
+              fill={COLORES_TERRENO[terreno as TipoTerreno]}
+            />
+            <image
+              href={ruta}
+              width={TAMANO_TEXTURA}
+              height={TAMANO_TEXTURA}
+              preserveAspectRatio="xMidYMid slice"
+              opacity={terreno === 'agua' ? 0.36 : 0.24}
+            />
+          </pattern>
+        ))}
+      </defs>
 
       <g>
         {hexagonos.map((hexagono) => {
@@ -291,9 +349,7 @@ export default function HexMap({
               fill={
                 oculta
                   ? COLOR_NIEBLA_OCULTA
-                  : COLORES_TERRENO[
-                      hexagono.terreno
-                    ]
+                  : `url(#textura-${hexagono.terreno})`
               }
               fillOpacity={
                 niebla === 'explorada'
@@ -303,9 +359,14 @@ export default function HexMap({
               stroke={
                 seleccionada
                   ? '#ffe6a3'
-                  : '#c8ad72'
+                  : oculta
+                    ? '#202a32'
+                    : hexagono.terreno === 'agua'
+                      ? '#496b78'
+                      : '#9a8050'
               }
-              strokeWidth={seleccionada ? 3 : 1}
+              strokeOpacity={seleccionada ? 1 : oculta ? 0.45 : 0.72}
+              strokeWidth={seleccionada ? 3 : 0.8}
               vectorEffect="non-scaling-stroke"
               data-terreno={
                 oculta
@@ -349,6 +410,16 @@ export default function HexMap({
                       )
                   : undefined
               }
+              onContextMenu={
+                onMoverACasilla
+                  ? (evento) => {
+                      evento.preventDefault()
+                      onMoverACasilla(
+                        hexagono.casilla,
+                      )
+                    }
+                  : undefined
+              }
               onKeyDown={
                 onSeleccionarCasilla
                   ? (evento) => {
@@ -377,21 +448,123 @@ export default function HexMap({
         })}
       </g>
 
-      <g aria-hidden="true" pointerEvents="none" data-capa-terreno="true">
-        {hexagonos.map((hexagono) => {
-          const niebla = hayNiebla
-            ? estadoNiebla(hexagono.clave, clavesVisibles, clavesExploradas)
-            : 'visible'
-          return niebla === 'oculta' ? null : (
-            <DecoracionTerreno
-              key={`decoracion-${hexagono.clave}`}
-              terreno={hexagono.terreno}
-              centro={centroHex(hexagono.casilla.coordenada, radio)}
-              radio={radio}
-            />
-          )
-        })}
-      </g>
+      {(mapa.trazados?.length ?? 0) > 0 && (
+        <g
+          aria-hidden="true"
+          pointerEvents="none"
+          data-capa-cartografica="true"
+        >
+          {mapa.trazados?.flatMap((trazado) => {
+            // Los caminos decorativos de guardados antiguos tampoco se muestran.
+            if (trazado.tipo === 'camino') return []
+            const segmentos = segmentarTrazadoVisible(
+              trazado.puntos,
+              (punto) =>
+                !hayNiebla ||
+                estadoNiebla(
+                  claveHex(punto),
+                  clavesVisibles,
+                  clavesExploradas,
+                ) !== 'oculta',
+            )
+            const esRio = trazado.tipo === 'rio'
+
+            return segmentos.map((segmento, indice) => {
+              const d = construirTrazadoSuave(segmento, radio)
+
+              return (
+                <g
+                  key={`${trazado.id}-${indice}`}
+                  data-trazado-mapa={trazado.id}
+                  data-tipo-trazado={trazado.tipo}
+                >
+                  <path
+                    d={d}
+                    fill="none"
+                    stroke={esRio ? '#173844' : '#382819'}
+                    strokeWidth={radio * (esRio ? 0.14 : 0.1)}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={esRio ? 0.42 : 0.48}
+                    vectorEffect="non-scaling-stroke"
+                    data-acabado-trazado="base"
+                  />
+                  <path
+                    d={d}
+                    fill="none"
+                    stroke={esRio ? '#76bbcd' : '#c09a60'}
+                    strokeWidth={radio * (esRio ? 0.06 : 0.04)}
+                    strokeDasharray={esRio ? undefined : '4 5'}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={esRio ? 0.82 : 0.76}
+                    vectorEffect="non-scaling-stroke"
+                    data-acabado-trazado="superficie"
+                  />
+                  {esRio && (
+                    <path
+                      d={d}
+                      fill="none"
+                      stroke="#c0e2e5"
+                      strokeWidth={radio * 0.012}
+                      strokeLinecap="round"
+                      opacity={0.24}
+                      vectorEffect="non-scaling-stroke"
+                      data-acabado-trazado="brillo"
+                    />
+                  )}
+                </g>
+              )
+            })
+          })}
+        </g>
+      )}
+
+      {(mapa.regiones?.length ?? 0) > 0 && (
+        <g
+          aria-hidden="true"
+          pointerEvents="none"
+          data-capa-regiones="true"
+        >
+          {mapa.regiones?.map((region) => {
+            const visible = !hayNiebla ||
+              estadoNiebla(
+                claveHex(region.posicionEtiqueta),
+                clavesVisibles,
+                clavesExploradas,
+              ) !== 'oculta'
+
+            if (!visible) {
+              return null
+            }
+
+            const centro = centroHex(
+              region.posicionEtiqueta,
+              radio,
+            )
+
+            return (
+              <text
+                key={region.id}
+                x={centro.x}
+                y={centro.y}
+                textAnchor="middle"
+                fontSize={radio * 0.3}
+                fontFamily="Cinzel, serif"
+                letterSpacing={radio * 0.07}
+                fill="#ead8a6"
+                stroke="#171006"
+                strokeWidth={radio * 0.05}
+                paintOrder="stroke"
+                opacity={0.5}
+                data-region-mapa={region.id}
+              >
+                {region.nombre}
+              </text>
+            )
+          })}
+        </g>
+      )}
 
       {clavesAlcanceMovimiento.size > 0 && (
         <g
@@ -565,18 +738,19 @@ export default function HexMap({
                   }
                   strokeWidth={radio * 0.05}
                 />
-                <path
-                  d={`M ${centro.x - radio * 0.26} ${centro.y + radio * 0.2} v ${-radio * 0.3} h ${radio * 0.52} v ${radio * 0.3}`}
-                  fill="none"
-                  stroke={esRival ? '#f1a28f' : '#241907'}
-                  strokeWidth={radio * 0.06}
-                  data-icono-asentamiento="true"
-                />
-                <path
-                  d={`M ${centro.x - radio * 0.32} ${centro.y - radio * 0.08} l ${radio * 0.32} ${-radio * 0.24} l ${radio * 0.32} ${radio * 0.24}`}
-                  fill="none"
-                  stroke={esRival ? '#f1a28f' : '#241907'}
-                  strokeWidth={radio * 0.05}
+                <image
+                  href={SPRITE_CIUDAD}
+                  x={centro.x - radio * 0.62}
+                  y={centro.y - radio * 0.64}
+                  width={radio * 1.24}
+                  height={radio * 1.24}
+                  preserveAspectRatio="xMidYMid meet"
+                  data-sprite-asentamiento="true"
+                  style={{
+                    filter: esRival
+                      ? 'drop-shadow(0 0 3px #9f3f35)'
+                      : 'drop-shadow(0 0 3px #ffe6a3)',
+                  }}
                 />
                 <text
                   x={centro.x}
@@ -597,7 +771,13 @@ export default function HexMap({
       )}
 
       {huestes.length > 0 && (
-        <g aria-hidden="true">
+        <g
+          aria-hidden={
+            onSeleccionarHueste === undefined
+              ? true
+              : undefined
+          }
+        >
           {huestes.map((hueste) => {
             const centro = centroHex(
               hueste.posicion,
@@ -615,10 +795,74 @@ export default function HexMap({
               hueste.reinoId !==
                 reinoJugadorId
             const mitad = radio * 0.28
+            const seleccionable =
+              !esRival &&
+              onSeleccionarHueste !== undefined
 
             return (
-              <g key={hueste.id}>\n                <polygon
+              <g
                 key={hueste.id}
+                role={
+                  seleccionable
+                    ? 'button'
+                    : undefined
+                }
+                tabIndex={seleccionable ? 0 : undefined}
+                aria-label={
+                  seleccionable
+                    ? `Seleccionar ${hueste.nombre}`
+                    : undefined
+                }
+                aria-pressed={
+                  seleccionable
+                    ? seleccionada
+                    : undefined
+                }
+                data-hueste-mapa={hueste.id}
+                onClick={
+                  seleccionable
+                    ? (evento) => {
+                        evento.stopPropagation()
+                        onSeleccionarHueste(hueste.id)
+                      }
+                    : undefined
+                }
+                onKeyDown={
+                  seleccionable
+                    ? (evento) => {
+                        if (
+                          evento.key === 'Enter' ||
+                          evento.key === ' '
+                        ) {
+                          evento.preventDefault()
+                          evento.stopPropagation()
+                          onSeleccionarHueste(hueste.id)
+                        }
+                      }
+                    : undefined
+                }
+                style={{
+                  cursor: seleccionable
+                    ? 'pointer'
+                    : 'default',
+                }}
+              >
+                {seleccionada && (
+                  <circle
+                    cx={centro.x}
+                    cy={centro.y}
+                    r={radio * 0.68}
+                    fill="none"
+                    stroke={COLOR_HUESTE_SELECCIONADA}
+                    strokeWidth={radio * 0.075}
+                    vectorEffect="non-scaling-stroke"
+                    data-seleccion-hueste="true"
+                    style={{
+                      filter: 'drop-shadow(0 0 5px #8fd4f0)',
+                    }}
+                  />
+                )}
+                <polygon
                 data-bando-mapa={
                   esRival ? 'rival' : 'propio'
                 }
@@ -661,21 +905,31 @@ export default function HexMap({
                       : hueste.nombre}
                 </title>
               </polygon>
-              <line
-                x1={centro.x + mitad * 0.7}
-                y1={centro.y - mitad * 1.7}
-                x2={centro.x + mitad * 0.7}
-                y2={centro.y + mitad * 1.05}
-                stroke="#e8d9ae"
-                strokeWidth={radio * 0.035}
-              />
-              <path
-                d={`M ${centro.x + mitad * 0.72} ${centro.y - mitad * 1.58} h ${radio * 0.22} l ${-radio * 0.08} ${radio * 0.16} l ${radio * 0.08} ${radio * 0.16} h ${-radio * 0.22} z`}
-                fill={esRival ? COLOR_HUESTE_RIVAL : '#8c2b2b'}
-                stroke="#e8d9ae"
-                strokeWidth={radio * 0.025}
-                data-icono-estandarte="true"
-              />
+                <image
+                  href={SPRITE_HUESTE}
+                  x={centro.x - radio * 0.57}
+                  y={centro.y - radio * 0.66}
+                  width={radio * 1.14}
+                  height={radio * 1.14}
+                  preserveAspectRatio="xMidYMid meet"
+                  pointerEvents="none"
+                  data-sprite-hueste="true"
+                />
+                <circle
+                  cx={centro.x}
+                  cy={centro.y}
+                  r={radio * 0.66}
+                  fill="transparent"
+                  stroke="none"
+                  pointerEvents={
+                    seleccionable
+                      ? 'all'
+                      : 'none'
+                  }
+                  data-area-seleccion-hueste={
+                    seleccionable || undefined
+                  }
+                />
               </g>
             )
           })}

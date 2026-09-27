@@ -8,8 +8,8 @@ import DiplomacyPanel, {
   type HeroeCautivoResumen,
 } from '../components/game/DiplomacyPanel'
 import TurnHud from '../components/game/TurnHud'
-import HexMap from '../components/map/HexMap'
-import MapViewport from '../components/map/MapViewport'
+import CampaignMap from '../components/map/CampaignMap'
+import MapLegend from '../components/map/MapLegend'
 import { REINOS } from '../data/reinos'
 import {
   EDIFICIOS,
@@ -47,6 +47,9 @@ import {
   type CasillaMapa,
 } from '../game/map/generateMap'
 import {
+  generarMapaPeninsula,
+} from '../game/map/iberianMap'
+import {
   claveHex,
   type CoordenadaHex,
 } from '../game/map/hex'
@@ -63,6 +66,7 @@ import {
 import {
   cerrarBatallaSesion,
   finalizarTurnoSesion,
+  moverHuesteSesion,
   cargarSesionPartida,
 } from '../game/systems/session'
 import {
@@ -81,8 +85,12 @@ import {
 } from '../game/systems/movement'
 import {
   calcularPuntosMovimientoTurno,
+  puntosMovimientoDisponibles,
   estaEnSuministro,
 } from '../game/systems/supply'
+import {
+  cancelarMarchaDuranteGestion,
+} from '../game/systems/turns'
 import {
   calcularVisibilidad,
   estadoNiebla,
@@ -184,7 +192,6 @@ function SeccionHuestesEnCasilla({
   huestes,
   destinosMarcha,
   huestesFueraDeSuministro,
-  onMover,
   onCancelar,
 }: {
   readonly huestes: RegistroHuestes
@@ -195,9 +202,6 @@ function SeccionHuestesEnCasilla({
     >
   >
   readonly huestesFueraDeSuministro: ReadonlySet<string>
-  readonly onMover: (
-    huesteId: string,
-  ) => void
   readonly onCancelar: (
     huesteId: string,
   ) => void
@@ -233,43 +237,22 @@ function SeccionHuestesEnCasilla({
                   </span>
                 )}
               </span>
-              {destino ? (
+              {destino && (
                 <span className="flex flex-col items-end gap-1 text-xs text-white/50">
                   <span>
-                    En marcha · {destino.q},{' '}
+                    Ruta prevista · {destino.q},{' '}
                     {destino.r}
                   </span>
-                  <span className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onMover(hueste.id)
-                      }
-                      className="text-acero-claro underline decoration-dotted transition-colors hover:text-white"
-                    >
-                      Cambiar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onCancelar(hueste.id)
-                      }
-                      className="text-oro/70 underline decoration-dotted transition-colors hover:text-oro-brillante"
-                    >
-                      Cancelar
-                    </button>
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onCancelar(hueste.id)
+                    }
+                    className="text-oro/70 underline decoration-dotted transition-colors hover:text-oro-brillante"
+                  >
+                    Cancelar marcha
+                  </button>
                 </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() =>
-                    onMover(hueste.id)
-                  }
-                  className="font-cinzel border border-acero/40 px-3 py-1 text-[10px] tracking-[0.15em] text-acero-claro uppercase transition-colors hover:border-acero hover:text-white"
-                >
-                  Mover
-                </button>
               )}
             </li>
           )
@@ -337,11 +320,13 @@ export default function Mapa() {
     () =>
       semillaMapa === undefined
         ? null
-        : generarMapa({
-            ...DIMENSIONES_MAPA_PREDETERMINADO,
-            semilla: semillaMapa,
-          }),
-    [semillaMapa],
+        : estadoJuego?.mapaId === 'peninsula-v1'
+          ? generarMapaPeninsula(semillaMapa)
+          : generarMapa({
+              ...DIMENSIONES_MAPA_PREDETERMINADO,
+              semilla: semillaMapa,
+            }),
+    [semillaMapa, estadoJuego?.mapaId],
   )
 
   const casillas = useMemo(() => {
@@ -521,6 +506,7 @@ export default function Mapa() {
         hueste.posicion,
         casillas,
         casillasExploradasSet,
+        puntosMovimientoDisponibles(estadoJuego, hueste),
       ),
     ]
   }, [
@@ -618,6 +604,7 @@ export default function Mapa() {
             asentamientosPropios,
           ),
         ),
+      puntosMovimientoDisponibles(estadoJuego, marchaActiva.hueste),
     )
   }, [
     estadoJuego,
@@ -748,6 +735,25 @@ export default function Mapa() {
   // orden; en cualquier otro momento, un clic solo selecciona la casilla
   // —elegir una hueste para mover es una acción explícita desde su panel,
   // no un efecto secundario de hacer clic en su casilla—.
+  const seleccionarHuesteEnMapa = (
+    huesteId: string,
+  ) => {
+    const hueste = estadoJuego.huestes.find(
+      (candidata) =>
+        candidata.id === huesteId &&
+        candidata.reinoId === estadoJuego.reinoJugador,
+    )
+
+    if (hueste === undefined) {
+      return
+    }
+
+    setHuesteSeleccionadaId(hueste.id)
+    setMensajeTurno(
+      'Hueste seleccionada. Clic izquierdo para trazar; clic derecho para mover.',
+    )
+  }
+
   const manejarClicCasilla = (
     casilla: CasillaMapa,
   ) => {
@@ -785,6 +791,7 @@ export default function Mapa() {
             asentamientosPropios,
           ),
         ),
+      puntosMovimientoDisponibles(estadoJuego, hueste),
     )
 
     if (proyeccion === null) {
@@ -799,23 +806,89 @@ export default function Mapa() {
       [huesteSeleccionadaId]:
         casilla.coordenada,
     }))
-    setHuesteSeleccionadaId(null)
     setMensajeTurno(
       proyeccion.turnos === 0
         ? 'La hueste ya está en esa casilla'
-        : `Ruta trazada: ${proyeccion.turnos} ${proyeccion.turnos === 1 ? 'turno estimado' : 'turnos estimados'}`,
+        : `Ruta trazada: ${proyeccion.turnos} ${proyeccion.turnos === 1 ? 'turno estimado' : 'turnos estimados'}. Clic derecho para mover ahora.`,
     )
+  }
+
+  const manejarClicDerechoCasilla = (
+    casilla: CasillaMapa,
+  ) => {
+    setCasillaSeleccionada(casilla)
+
+    if (huesteSeleccionadaId === null) {
+      setMensajeTurno('Elige primero una hueste para mover')
+      return
+    }
+
+    try {
+      const resultado = moverHuesteSesion(
+        almacenamientoNavegador,
+        estadoJuego,
+        {
+          huesteId: huesteSeleccionadaId,
+          destino: casilla.coordenada,
+          casillas,
+        },
+      )
+      const encuentro = resultado.eventos.find(
+        (evento): evento is EventoEncuentroCombate =>
+          evento.tipo === 'encuentro_combate',
+      )
+
+      setEstadoJuego(resultado.estado)
+      setOrdenesMovimiento((actual) =>
+        Object.fromEntries(
+          Object.entries(actual).filter(
+            ([id]) => id !== huesteSeleccionadaId,
+          ),
+        ),
+      )
+      setEventosTurno(resultado.eventos)
+
+      if (encuentro !== undefined) {
+        setSesionBatalla(
+          crearSesionBatallaDesdeEncuentro(resultado.estado, encuentro),
+        )
+        setMensajeTurno('La marcha ha iniciado una batalla')
+      } else {
+        const restante = resultado.estado.puntosMovimientoRestantes?.[huesteSeleccionadaId] ?? 0
+        setMensajeTurno(`Marcha realizada. Movimiento restante: ${restante} puntos.`)
+      }
+    } catch (error) {
+      setMensajeTurno(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo mover la hueste',
+      )
+    }
   }
 
   const cancelarMovimiento = (
     huesteId: string,
   ) => {
-    setOrdenesMovimiento((actual) => ({
-      ...actual,
-      [huesteId]: null,
-    }))
+    setOrdenesMovimiento((actual) =>
+      Object.fromEntries(
+        Object.entries(actual).filter(
+          ([id]) => id !== huesteId,
+        ),
+      ),
+    )
+    const nuevoEstado = cancelarMarchaDuranteGestion(
+      estadoJuego,
+      huesteId,
+    )
+    const guardado = guardarEstadoPartida(
+      almacenamientoNavegador,
+      nuevoEstado,
+    )
+    setEstadoJuego(nuevoEstado)
     setMensajeTurno(
-      'La marcha se cancelará al resolver el turno',
+      guardado.tipo === 'error'
+        ? 'Marcha cancelada, pero no se pudo guardar'
+        : 'Marcha cancelada',
     )
   }
 
@@ -1168,32 +1241,12 @@ export default function Mapa() {
         }),
       )
 
-    const ordenesMovimientoArray =
-      Object.entries(
-        ordenesMovimiento,
-      ).map(([huesteId, destino]) =>
-        destino === null
-          ? {
-              tipo:
-                'CancelarMovimiento' as const,
-              huesteId,
-            }
-          : {
-              tipo: 'Movimiento' as const,
-              huesteId,
-              destino,
-            },
-      )
-
     const resultado = finalizarTurnoSesion(
       almacenamientoNavegador,
       estadoJuego,
       {
         casillas,
-        ordenes: [
-          ...ordenesConstruccionArray,
-          ...ordenesMovimientoArray,
-        ],
+        ordenes: ordenesConstruccionArray,
       },
     )
 
@@ -1307,8 +1360,7 @@ export default function Mapa() {
         className="relative min-h-0 flex-1 p-4 md:p-6"
       >
         <div className="h-full w-full overflow-hidden rounded-lg border border-oro/25 bg-noche-tablero shadow-[0_0_40px_rgba(0,0,0,0.7)]">
-          <MapViewport>
-            <HexMap
+            <CampaignMap
               mapa={mapa}
               radio={28}
               casillaSeleccionada={
@@ -1317,6 +1369,12 @@ export default function Mapa() {
               }
               onSeleccionarCasilla={
                 manejarClicCasilla
+              }
+              onMoverACasilla={
+                manejarClicDerechoCasilla
+              }
+              onSeleccionarHueste={
+                seleccionarHuesteEnMapa
               }
               asentamientos={
                 asentamientosVisibles
@@ -1351,8 +1409,8 @@ export default function Mapa() {
                   ?.finalesTurno ?? []
               }
             />
-          </MapViewport>
         </div>
+        {estadoJuego.mapaId === 'peninsula-v1' && <MapLegend />}
         {reinoRivalId && relacionRival && (
           <aside
             aria-label="Relación con el reino rival"
@@ -1450,9 +1508,9 @@ export default function Mapa() {
               </p>
             </div>
             <p className="mt-3 text-xs leading-relaxed text-white/50">
-              La ruta dorada continuará automáticamente
-              al resolver cada turno. Las cifras pueden
-              variar al descubrir terreno.
+              Clic izquierdo para cambiar el plan. Clic
+              derecho para gastar ahora el movimiento del
+              turno. El resto de la ruta queda como guía.
             </p>
             <button
               type="button"
@@ -1490,6 +1548,10 @@ export default function Mapa() {
             <h2 className="font-cinzel mt-2 text-2xl text-pergamino-palido">
               {huesteSeleccionada.nombre}
             </h2>
+
+            <p className="mt-3 font-cinzel text-sm text-[#91d9eb]" role="status">
+              Movimiento restante: {puntosMovimientoDisponibles(estadoJuego, huesteSeleccionada)} puntos
+            </p>
 
             {huestesFueraDeSuministro.has(
               huesteSeleccionada.id,
@@ -1692,9 +1754,6 @@ export default function Mapa() {
               huestesFueraDeSuministro={
                 huestesFueraDeSuministro
               }
-              onMover={
-                setHuesteSeleccionadaId
-              }
               onCancelar={
                 cancelarMovimiento
               }
@@ -1770,9 +1829,6 @@ export default function Mapa() {
                 }
                 huestesFueraDeSuministro={
                   huestesFueraDeSuministro
-                }
-                onMover={
-                  setHuesteSeleccionadaId
                 }
                 onCancelar={
                   cancelarMovimiento
