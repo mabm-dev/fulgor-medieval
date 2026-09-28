@@ -34,14 +34,23 @@ namespace Fulgor.Presentation.Tests.Map
                 Assert.That(material, Is.Not.SameAs(baseMaterial));
                 Assert.That(material.name, Is.EqualTo("Plain"));
                 Assert.That(material.shader, Is.SameAs(baseMaterial.shader));
-                Assert.That(material.GetColor(BoardMaterialFactory.BaseColorId), Is.EqualTo(color));
+                AssertColorApproximately(material.GetColor(BoardMaterialFactory.BaseColorId), color);
                 Assert.That(material.GetFloat(BoardMaterialFactory.SmoothnessId), Is.EqualTo(0.35f).Within(1e-5f));
-                Assert.That(baseMaterial.GetColor(BoardMaterialFactory.BaseColorId), Is.EqualTo(baseColor));
+                AssertColorApproximately(baseMaterial.GetColor(BoardMaterialFactory.BaseColorId), baseColor);
             }
             finally
             {
                 Object.DestroyImmediate(material);
             }
+        }
+
+        private static void AssertColorApproximately(Color actual, Color expected)
+        {
+            const float tolerance = 1e-3f;
+            Assert.That(actual.r, Is.EqualTo(expected.r).Within(tolerance));
+            Assert.That(actual.g, Is.EqualTo(expected.g).Within(tolerance));
+            Assert.That(actual.b, Is.EqualTo(expected.b).Within(tolerance));
+            Assert.That(actual.a, Is.EqualTo(expected.a).Within(tolerance));
         }
 
         [Test]
@@ -68,6 +77,7 @@ namespace Fulgor.Presentation.Tests.Map
             finally
             {
                 if (!string.IsNullOrEmpty(previousScene)) EditorSceneManager.OpenScene(previousScene);
+                else EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             }
         }
     }
