@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [legacy/web]
   pull_request:
-    branches: [main]
+    branches: [legacy/web]
 
 permissions:
   contents: read
@@ -42,10 +42,10 @@ jobs:
 
   deploy:
     name: Deploy to GitHub Pages
-    # Solo la rama principal se publica, y solo si la verificacion pasa: un
-    # enlace roto en el escaparate es peor que no tener enlace.
+    # Solo se publica la rama del prototipo web, y solo si la verificacion
+    # pasa: un enlace roto en el escaparate es peor que no tener enlace.
     needs: quality
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/legacy/web'
     runs-on: ubuntu-latest
 
     permissions:
