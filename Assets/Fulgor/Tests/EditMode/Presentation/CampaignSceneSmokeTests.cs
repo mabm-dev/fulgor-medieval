@@ -27,7 +27,7 @@ namespace Fulgor.Presentation.Tests.Map
             yield return new EnterPlayMode();
             yield return null;
 
-            var board = Object.FindFirstObjectByType<CampaignBoardPreview>();
+            var board = Object.FindAnyObjectByType<CampaignBoardPreview>();
             var report = board.GetComponent<CampaignBoardDiagnostics>();
             var panel = board.GetComponent<CampaignSelectionPanel>();
             Assert.That(report.Completed, Is.True);

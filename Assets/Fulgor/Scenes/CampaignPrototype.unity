@@ -416,6 +416,7 @@ MonoBehaviour:
   tileFill: 0.97
   showGold: 1
   useVerticalTerrainBlockout: 1
+  boardBaseMaterial: {fileID: 2100000, guid: b4734f8a1aad4bd4b20875cab0a16051, type: 2}
 --- !u!4 &661519025
 Transform:
   m_ObjectHideFlags: 0
