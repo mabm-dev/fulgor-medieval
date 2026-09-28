@@ -41,10 +41,11 @@ Primera versión en Unity.
   la rama `legacy/web`.
 - Escena y recursos de la plantilla URP de Unity.
 
-## Prototipo web posterior a 0.5.0 — sin publicar
+## Prototipo web posterior a 0.5.0 — sin versión etiquetada
 
-Trabajo desarrollado en la web después de `0.5.0` que no llegó a publicarse.
-Se conserva en la rama `legacy/web` como referencia para el portado.
+Trabajo desarrollado en la web después de `0.5.0` que no tiene versión propia.
+Se conserva en la rama `legacy/web`, que es la que se publica en el navegador,
+como referencia para el portado.
 
 - IA estratégica rival con movimiento, ofensiva, economía y construcciones
   propias.
