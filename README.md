@@ -13,7 +13,8 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 > núcleo y el tablero de campaña ya funcionan en Unity; las reglas jugables se
 > portan desde el prototipo web siguiendo el [roadmap](Docs/ROADMAP.md).
 
-**[▶ Jugar el prototipo web (v0.5) en el navegador](https://mabm-dev.github.io/fulgor-medieval/)**
+**[▶ Jugar el prototipo web en el navegador](https://mabm-dev.github.io/fulgor-medieval/)**
+— la última versión web, con IA rival, diplomacia y mapa 3D.
 
 ## Lo que ya funciona en Unity
 

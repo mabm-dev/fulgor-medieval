@@ -49,14 +49,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Caché de Library
-        uses: actions/cache@v6
-        with:
-          path: Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-
-
       - name: Ejecutar las pruebas
         uses: game-ci/unity-test-runner@v4
         env:

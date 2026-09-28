@@ -16,8 +16,9 @@ hitos del [plan de migración](migracion-unity/04-plan.md).
 | v0.5 | Combate táctico: campo de 13 × 9, formaciones, héroes y resolución automática | tag `v0.5.0` |
 
 La IA rival, la diplomacia, el mapa peninsular y la vista 3D se desarrollaron
-después en la web sin llegar a publicarse. Están en la rama `legacy/web` y son
-la referencia de reglas para las versiones Unity.
+después en la web sin versión etiquetada. Están en la rama `legacy/web`, que es
+la que se juega en el navegador, y son la referencia de reglas para las
+versiones Unity.
 
 ## v0.6 — Base Unity
 
