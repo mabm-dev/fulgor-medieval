@@ -48,6 +48,15 @@ namespace Fulgor.Presentation.Tests.Map
             Assert.That(panel.PanelRectTransform.anchorMin, Is.EqualTo(new Vector2(0f, 1f)));
             Assert.That(panel.PanelRectTransform.anchorMax, Is.EqualTo(new Vector2(0f, 1f)));
             Assert.That(panel.PanelRectTransform.sizeDelta.x, Is.GreaterThanOrEqualTo(320f));
+            var turnController = board.GetComponent<CampaignTurnController>();
+            Assert.That(turnController.State.Turn, Is.EqualTo(1));
+            Assert.That(panel.EndTurnButton, Is.Not.Null);
+            panel.EndTurnButton.onClick.Invoke();
+            Assert.That(turnController.State.Turn, Is.EqualTo(2));
+            Assert.That(turnController.State.Resources.Grain, Is.EqualTo(2));
+            Assert.That(turnController.State.Resources.Gold, Is.EqualTo(1));
+            Assert.That(panel.GetComponentsInChildren<Text>()
+                .Any(text => text.text.Contains("Turno 2")), Is.True);
             var tile = board.GetComponentInChildren<HexTileView>();
             board.GetComponent<CampaignBoardSelection>().Select(tile);
             Assert.That(panel.GetComponentsInChildren<Text>()

@@ -12,6 +12,12 @@ otros reinos en la rama `legacy/web`. En Unity, el turno con economía,
 movimiento y combate llega en v0.8, y la construcción y las decisiones de otros
 reinos en v0.9, según el [roadmap](../ROADMAP.md).
 
+El primer corte Unity ya permite finalizar un turno desde el HUD y muestra
+los cinco recursos. Aplica un ingreso fijo provisional de +2 grano y +1 oro
+por turno; todavía no hay territorio propio, producción, consumo, órdenes,
+resumen de eventos ni guardado automático. Esta regla temporal no representa
+la economía final del caso de uso.
+
 ## Flujo principal
 
 1. El jugador revisa recursos, alertas y órdenes pendientes.
