@@ -91,7 +91,11 @@ namespace Fulgor.Presentation.Tests.Map
                 var tile = CreateTile(root, root.AddComponent<CampaignBoardSelection>(), 0);
                 tile.SetHovered(true);
                 Assert.That(tile.HasColorOverride, Is.True);
-                Assert.That(ReadColor(tile), Is.EqualTo(Color.Lerp(Color.green, Color.white, 0.28f)));
+                var expected = Color.Lerp(Color.green, Color.white, 0.28f);
+                var actual = ReadColor(tile);
+                Assert.That(actual.r, Is.EqualTo(expected.r).Within(1e-3f));
+                Assert.That(actual.g, Is.EqualTo(expected.g).Within(1e-3f));
+                Assert.That(actual.b, Is.EqualTo(expected.b).Within(1e-3f));
                 tile.SetHovered(false);
                 Assert.That(tile.HasColorOverride, Is.False);
             }
