@@ -46,14 +46,16 @@ namespace Fulgor.Presentation.Tests.Map
                 var owner = root.AddComponent<CampaignBoardSelection>();
                 var first = CreateTile(root, owner, 0);
                 var second = CreateTile(root, owner, 1);
+                Assert.That(first.HasColorOverride, Is.False);
                 owner.Select(first);
+                Assert.That(first.HasColorOverride, Is.True);
                 Assert.That(ReadColor(first), Is.Not.EqualTo(Color.green));
                 owner.Select(second);
-                Assert.That(ReadColor(first), Is.EqualTo(Color.green));
+                Assert.That(first.HasColorOverride, Is.False);
                 Assert.That(owner.SelectedCell.Value.Coordinates.Q, Is.EqualTo(1));
                 owner.ClearSelection();
                 Assert.That(owner.SelectedCell.HasValue, Is.False);
-                Assert.That(ReadColor(second), Is.EqualTo(Color.green));
+                Assert.That(second.HasColorOverride, Is.False);
             }
             finally { Object.DestroyImmediate(root); }
         }
@@ -74,10 +76,26 @@ namespace Fulgor.Presentation.Tests.Map
                 owner.Select(tile);
                 owner.enabled = false;
                 Assert.That(owner.SelectedCell.HasValue, Is.False);
-                Assert.That(ReadColor(tile), Is.EqualTo(Color.green));
+                Assert.That(tile.HasColorOverride, Is.False);
             }
             finally { Object.DestroyImmediate(root); Object.DestroyImmediate(otherRoot); }
             yield return new ExitPlayMode();
+        }
+
+        [Test]
+        public void HoverTintsTheTileOnlyWhileHovered()
+        {
+            var root = new GameObject("Hover test");
+            try
+            {
+                var tile = CreateTile(root, root.AddComponent<CampaignBoardSelection>(), 0);
+                tile.SetHovered(true);
+                Assert.That(tile.HasColorOverride, Is.True);
+                Assert.That(ReadColor(tile), Is.EqualTo(Color.Lerp(Color.green, Color.white, 0.28f)));
+                tile.SetHovered(false);
+                Assert.That(tile.HasColorOverride, Is.False);
+            }
+            finally { Object.DestroyImmediate(root); }
         }
 
         private static HexTileView CreateTile(GameObject root, CampaignBoardSelection owner, int q)
