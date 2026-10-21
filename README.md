@@ -11,10 +11,7 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 
 > Estado: **pre-alpha, migración a Unity (v0.6 cerrada, v0.7 en curso)**. El
 > núcleo y el tablero de campaña ya funcionan en Unity; las reglas jugables se
-> portan desde el prototipo web siguiendo el [roadmap](Docs/ROADMAP.md).
-
-**[▶ Jugar el prototipo web en el navegador](https://mabm-dev.github.io/fulgor-medieval/)**
-— la última versión web, con IA rival, diplomacia y mapa 3D.
+> implementan en C# siguiendo el [roadmap](Docs/ROADMAP.md).
 
 ## Lo que ya funciona en Unity
 
@@ -29,10 +26,10 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 - 94 pruebas Edit Mode de núcleo, presentación, importación y escena. La
   integración continua las ejecuta cuando dispone de los secretos de Unity.
 
-Todavía no hay turnos, economía, asentamientos ni combate en Unity: existen en
-el prototipo web y se portan en las versiones 0.8 y 0.9.
+Todavía no hay turnos, economía, asentamientos ni combate en Unity; esos
+sistemas están previstos para las versiones 0.8 y 0.9.
 
-## El prototipo web
+## Archivo histórico del prototipo web
 
 Entre julio y septiembre de 2026 el juego se construyó para navegador con React
 y TypeScript, hasta el combate táctico: economía, asentamientos, suministro,
@@ -41,7 +38,8 @@ automático sobre el mismo motor. Esas versiones están etiquetadas, de `v0.2.0`
 a `v0.5.0`, y el prototipo completo, con la IA rival y la diplomacia
 posteriores, se conserva en la rama
 [`legacy/web`](https://github.com/mabm-dev/fulgor-medieval/tree/legacy/web).
-Es la referencia de reglas para el portado.
+No se desarrolla ni se usa como versión activa. Las decisiones vigentes están
+en la documentación de diseño y se verifican en el proyecto Unity.
 
 ## Visión jugable
 

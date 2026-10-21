@@ -4,8 +4,8 @@
 
 Aceptada para la pre-alpha en Unity
 ([ADR-003](Docs/decisiones/ADR-003-migracion-unity.md)). Sustituye a la
-arquitectura React y TypeScript del prototipo web, que se conserva en la rama
-`legacy/web`.
+arquitectura React y TypeScript del prototipo web. Unity es la única
+arquitectura activa; la rama `legacy/web` permanece como archivo histórico.
 
 ## Principios
 
@@ -42,7 +42,7 @@ Fulgor.Core                -> ninguna
 
 ## Áreas previstas del núcleo
 
-Las reglas del prototipo web se portan por áreas, en el orden del
+Las reglas se implementan en C# por áreas, en el orden del
 [roadmap](Docs/ROADMAP.md):
 
 ```text

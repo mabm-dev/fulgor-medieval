@@ -17,8 +17,8 @@ hitos del [plan de migración](migracion-unity/04-plan.md).
 
 La IA rival, la diplomacia, el mapa peninsular y la vista 3D se desarrollaron
 después en la web sin versión etiquetada. Están en la rama `legacy/web`, que es
-la que se juega en el navegador, y son la referencia de reglas para las
-versiones Unity.
+un archivo histórico. Unity es la única línea activa; los requisitos actuales
+viven en este roadmap y en los documentos de diseño.
 
 ## v0.6 — Base Unity
 
@@ -42,14 +42,14 @@ Hitos 2 y 3.
 - Primera casilla con arte de producción, validada de cerca y de lejos.
 - Kit de terreno completo, con variantes reales de agua y llanura.
 - Costa, ríos y caminos como datos lógicos, no solo decorativos.
-- Mapa peninsular diseñado, portado desde `legacy/web`.
+- Mapa peninsular diseñado para Unity, con el mapa anterior como antecedente.
 - Escenarios configurables sin duplicar recursos al regenerar el tablero.
 - Rendimiento del tablero completo, según la
   [investigación de rendimiento](v0.7-rendimiento-tablero.md).
 
 ## v0.8 — Misión rápida jugable
 
-Hitos 4 y 5. Porta las reglas de las versiones web `0.3` a `0.5`.
+Hitos 4 y 5. Implementa las reglas de misión definidas para Unity.
 
 - Nueva partida y selección de reino.
 - Turno con recursos, producción, consumo y registro de eventos.
@@ -61,8 +61,7 @@ Hitos 4 y 5. Porta las reglas de las versiones web `0.3` a `0.5`.
 
 ## v0.9 — Campaña regional
 
-Hitos 6 y 7. Porta los asentamientos de la versión web `0.4` y la IA rival y la
-diplomacia de `legacy/web`.
+Hitos 6 y 7. Implementa asentamientos, IA rival y diplomacia en Unity.
 
 - Huestes y héroes con modelo, identidad y animación.
 - Asentamientos, población, construcción y fueros.
