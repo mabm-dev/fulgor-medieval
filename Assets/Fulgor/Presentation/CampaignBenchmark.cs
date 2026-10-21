@@ -19,6 +19,10 @@ namespace Fulgor.Presentation.Map
         private BenchmarkOptions options;
         private float elapsed;
         private bool finished;
+        private int focusLosses;
+
+        /// <summary>Fotogramas por encima de este tiempo se cuentan como tirones en el informe.</summary>
+        public const double SlowFrameMilliseconds = 50d;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void StartFromCommandLine()
@@ -32,6 +36,9 @@ namespace Fulgor.Presentation.Map
         private void Start()
         {
             QualitySettings.vSyncCount = 0;
+            // Sin esto, perder el foco pausa el juego y el primer fotograma al volver
+            // acumula toda la pausa (se midió un fotograma de 16 s al cambiar de ventana).
+            Application.runInBackground = true;
             Application.targetFrameRate = -1;
             var cameraController = FindAnyObjectByType<CampaignCameraController>();
             if (cameraController != null) cameraController.enabled = false;
@@ -39,6 +46,11 @@ namespace Fulgor.Presentation.Map
             if (selection != null) selection.enabled = false;
             Debug.Log($"Fulgor benchmark: {options.WarmupSeconds:F0} s de calentamiento, " +
                 $"{options.Seconds:F0} s de medición.");
+        }
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            if (!hasFocus && !finished) focusLosses++;
         }
 
         private void Update()
@@ -100,6 +112,8 @@ namespace Fulgor.Presentation.Map
                 worstMilliseconds = frames.WorstMilliseconds,
                 cpuSamples = cpu.Frames,
                 gpuSamples = gpu.Frames,
+                slowFrames = FrameTimeStatistics.CountAbove(frameMilliseconds, SlowFrameMilliseconds),
+                focusLosses = focusLosses,
                 cpuAverageMilliseconds = cpu.AverageMilliseconds,
                 cpuP95Milliseconds = cpu.P95Milliseconds,
                 gpuAverageMilliseconds = gpu.AverageMilliseconds,
@@ -112,7 +126,8 @@ namespace Fulgor.Presentation.Map
             File.WriteAllText(path, JsonUtility.ToJson(report, true));
             Debug.Log($"Fulgor benchmark: {frames.AverageFps:F1} FPS, media {frames.AverageMilliseconds:F2} ms, " +
                 $"p95 {frames.P95Milliseconds:F2} ms, CPU {cpu.AverageMilliseconds:F2} ms, " +
-                $"GPU {gpu.AverageMilliseconds:F2} ms. Informe: {path}");
+                $"GPU {gpu.AverageMilliseconds:F2} ms, {report.slowFrames} tirones, " +
+                $"{focusLosses} pérdidas de foco. Informe: {path}");
         }
 
         private string ResolveOutputPath()
@@ -147,6 +162,8 @@ namespace Fulgor.Presentation.Map
             public double worstMilliseconds;
             public int cpuSamples;
             public int gpuSamples;
+            public int slowFrames;
+            public int focusLosses;
             public double cpuAverageMilliseconds;
             public double cpuP95Milliseconds;
             public double gpuAverageMilliseconds;
