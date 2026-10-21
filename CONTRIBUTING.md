@@ -32,6 +32,21 @@ Sin interfaz gráfica, desde la raíz del proyecto y con el editor cerrado:
 
 El resultado queda en `Logs/EditMode.xml`, que Git ignora.
 
+En Linux (el contenedor `fulgor-ci` del servidor), `Tools/ci/run-editmode-tests.sh`
+hace lo mismo de forma repetible: actualiza el clon, se coloca en la rama o
+commit indicado (por defecto `origin/main`), conserva `Library/` entre
+ejecuciones, deshace los archivos que Unity reescribe al abrir el proyecto y
+devuelve 0 solo si todas las pruebas pasan:
+
+```bash
+Tools/ci/run-editmode-tests.sh                           # origin/main
+Tools/ci/run-editmode-tests.sh feat/modo-benchmark-v0.7  # otra rama
+```
+
+Se niega a empezar si el clon tiene cambios sin confirmar. Las rutas de Unity,
+del proyecto y de los resultados se cambian con `UNITY_EDITOR`, `PROJECT_DIR` y
+`RESULTS_DIR`; los informes y logs quedan en `~/test-results/`.
+
 ## Integración continua
 
 `.github/workflows/ci.yml` ejecuta las pruebas Edit Mode con
