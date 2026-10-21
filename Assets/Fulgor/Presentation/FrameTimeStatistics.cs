@@ -38,6 +38,16 @@ namespace Fulgor.Presentation.Map
                 Percentile(sorted, 0.95), Percentile(sorted, 0.99), sorted[sorted.Count - 1]);
         }
 
+        /// <summary>Cuenta los fotogramas que superan un umbral, para detectar tirones.</summary>
+        public static int CountAbove(IEnumerable<double> milliseconds, double threshold)
+        {
+            if (milliseconds == null) throw new ArgumentNullException(nameof(milliseconds));
+            var count = 0;
+            foreach (var value in milliseconds)
+                if (value > threshold) count++;
+            return count;
+        }
+
         /// <summary>Percentil por rango más cercano sobre una lista ya ordenada.</summary>
         private static double Percentile(IReadOnlyList<double> sorted, double fraction)
         {

@@ -76,6 +76,14 @@ namespace Fulgor.Presentation.Tests.Map
         }
 
         [Test]
+        public void CountsOnlyFramesAboveTheThreshold()
+        {
+            var samples = new[] { 1.4d, 2.0d, 50d, 50.1d, 16278.9d };
+            Assert.That(FrameTimeStatistics.CountAbove(samples, 50d), Is.EqualTo(2));
+            Assert.That(FrameTimeStatistics.CountAbove(new double[0], 50d), Is.Zero);
+        }
+
+        [Test]
         public void ReturnsEmptySummaryWithoutSamples()
         {
             var statistics = FrameTimeStatistics.From(new double[0]);
