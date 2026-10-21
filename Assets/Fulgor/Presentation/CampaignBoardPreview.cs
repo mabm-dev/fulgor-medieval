@@ -145,7 +145,7 @@ namespace Fulgor.Presentation.Map
             selectionPanel.SetDiagnostics(metrics);
             var turnController = GetComponent<CampaignTurnController>();
             if (turnController == null) turnController = gameObject.AddComponent<CampaignTurnController>();
-            turnController.Initialize(selectionPanel);
+            turnController.Initialize(selectionPanel, map);
         }
 
         private int CreateTransitions(Transform tile, MapCell cell,

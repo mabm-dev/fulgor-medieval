@@ -1,11 +1,25 @@
 using System;
 using Fulgor.Core.Campaign;
+using Fulgor.Core.Map;
 using NUnit.Framework;
 
 namespace Fulgor.Core.Tests.Campaign
 {
     public sealed class CampaignTurnStateTests
     {
+        [Test]
+        public void MapTerrainProducesDeterministicResourceIncome()
+        {
+            var map = new GeneratedMap(2, 1, 7, new[]
+            {
+                new MapCell(new HexCoordinates(0, 0), TerrainType.Plain, false),
+                new MapCell(new HexCoordinates(1, 0), TerrainType.Mountain, true),
+            });
+
+            Assert.That(CampaignIncomeCalculator.FromMap(map),
+                Is.EqualTo(new CampaignResources(1, 0, 2, 1, 2)));
+        }
+
         [Test]
         public void CompletingTurnAddsAllIncomeAndDoesNotMutatePreviousState()
         {

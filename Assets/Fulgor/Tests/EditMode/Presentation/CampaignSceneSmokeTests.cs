@@ -53,8 +53,9 @@ namespace Fulgor.Presentation.Tests.Map
             Assert.That(panel.EndTurnButton, Is.Not.Null);
             panel.EndTurnButton.onClick.Invoke();
             Assert.That(turnController.State.Turn, Is.EqualTo(2));
-            Assert.That(turnController.State.Resources.Grain, Is.EqualTo(2));
-            Assert.That(turnController.State.Resources.Gold, Is.EqualTo(1));
+            Assert.That(turnController.State.Resources, Is.EqualTo(turnController.State.IncomePerTurn));
+            Assert.That(turnController.State.IncomePerTurn.Grain, Is.GreaterThan(0));
+            Assert.That(turnController.State.IncomePerTurn.Gold, Is.GreaterThan(0));
             Assert.That(panel.GetComponentsInChildren<Text>()
                 .Any(text => text.text.Contains("Turno 2")), Is.True);
             Assert.That(board.GetComponentsInChildren<HexTileView>().Count(view => view.HasColorOverride),

@@ -5,18 +5,16 @@ namespace Fulgor.Presentation.Map
 {
     public sealed class CampaignTurnController : MonoBehaviour
     {
-        // Ingreso temporal hasta que existan asentamientos y territorio propio.
-        private static readonly CampaignResources PrototypeIncome = new(2, 0, 0, 1, 0);
-
         private CampaignSelectionPanel panel;
         public CampaignTurnState State { get; private set; }
 
-        public void Initialize(CampaignSelectionPanel turnPanel)
+        public void Initialize(CampaignSelectionPanel turnPanel, GeneratedMap map)
         {
             if (turnPanel == null) throw new System.ArgumentNullException(nameof(turnPanel));
+            if (map == null) throw new System.ArgumentNullException(nameof(map));
             if (panel != null) panel.EndTurnButton.onClick.RemoveListener(CompleteTurn);
             panel = turnPanel;
-            State = new CampaignTurnState(1, default, PrototypeIncome);
+            State = new CampaignTurnState(1, default, CampaignIncomeCalculator.FromMap(map));
             panel.EndTurnButton.onClick.AddListener(CompleteTurn);
             panel.SetTurnState(State);
         }
