@@ -57,8 +57,16 @@ namespace Fulgor.Presentation.Map
 
             if (elapsed < options.WarmupSeconds + options.Seconds) return;
             finished = true;
-            WriteReport();
-            Application.Quit();
+            try
+            {
+                WriteReport();
+                Application.Quit();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"Fulgor benchmark: no se pudo guardar el informe: {exception}");
+                Application.Quit(1);
+            }
         }
 
         private void WriteReport()
@@ -90,6 +98,8 @@ namespace Fulgor.Presentation.Map
                 p95Milliseconds = frames.P95Milliseconds,
                 p99Milliseconds = frames.P99Milliseconds,
                 worstMilliseconds = frames.WorstMilliseconds,
+                cpuSamples = cpu.Frames,
+                gpuSamples = gpu.Frames,
                 cpuAverageMilliseconds = cpu.AverageMilliseconds,
                 cpuP95Milliseconds = cpu.P95Milliseconds,
                 gpuAverageMilliseconds = gpu.AverageMilliseconds,
@@ -97,6 +107,8 @@ namespace Fulgor.Presentation.Map
             };
 
             var path = ResolveOutputPath();
+            var directory = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
             File.WriteAllText(path, JsonUtility.ToJson(report, true));
             Debug.Log($"Fulgor benchmark: {frames.AverageFps:F1} FPS, media {frames.AverageMilliseconds:F2} ms, " +
                 $"p95 {frames.P95Milliseconds:F2} ms, CPU {cpu.AverageMilliseconds:F2} ms, " +
@@ -133,6 +145,8 @@ namespace Fulgor.Presentation.Map
             public double p95Milliseconds;
             public double p99Milliseconds;
             public double worstMilliseconds;
+            public int cpuSamples;
+            public int gpuSamples;
             public double cpuAverageMilliseconds;
             public double cpuP95Milliseconds;
             public double gpuAverageMilliseconds;

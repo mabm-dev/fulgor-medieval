@@ -48,6 +48,17 @@ namespace Fulgor.Presentation.Tests.Map
         }
 
         [Test]
+        public void RejectsNonFiniteDurations()
+        {
+            var options = BenchmarkOptions.Parse(new[]
+            {
+                "-benchmark", "-benchmarkSeconds", "Infinity",
+                "-benchmarkWarmup", "NaN",
+            });
+            Assert.That(options.Seconds, Is.EqualTo(BenchmarkOptions.DefaultSeconds));
+            Assert.That(options.WarmupSeconds, Is.EqualTo(BenchmarkOptions.DefaultWarmupSeconds));
+        }
+        [Test]
         public void SummarizesFrameTimesWithNearestRankPercentiles()
         {
             var samples = new double[100];

@@ -67,9 +67,11 @@ namespace Fulgor.Presentation.Map
         }
 
         private static bool TryReadPositive(string text, out float value) =>
-            float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value) && value > 0f;
+            float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value) &&
+            !float.IsNaN(value) && !float.IsInfinity(value) && value > 0f;
 
         private static bool TryReadNonNegative(string text, out float value) =>
-            float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value) && value >= 0f;
+            float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value) &&
+            !float.IsNaN(value) && !float.IsInfinity(value) && value >= 0f;
     }
 }

@@ -1,6 +1,6 @@
 # Plan de migración y criterios de cierre
 
-Los estados describen el repositorio a 27 de septiembre de 2026. Cada hito
+Los estados describen el repositorio revisado el 21 de octubre de 2026. Cada hito
 necesita su propia prueba jugable, visual o de rendimiento además de Edit Mode.
 
 | Orden | Objetivo | Estado | Criterio de cierre pendiente |
@@ -18,8 +18,9 @@ necesita su propia prueba jugable, visual o de rendimiento además de Edit Mode.
 
 ## Próximo trabajo
 
-1. Reducir el coste del tablero de 384 casillas (1746 renderers, ~63,9 ms por
-   fotograma en build) siguiendo la
+1. Medir FPS, CPU y GPU del tablero de 384 casillas con el modo benchmark,
+   antes de cambiar los 1746 renderers. Los ~61–64 ms previos son tiempo de
+   construcción, no de fotograma. Seguir la
    [investigación de rendimiento](../v0.7-rendimiento-tablero.md).
 2. Medir CPU, GPU, draw calls, memoria y colliders en un mapa mayor. Elegir
    instancing, LOD o carga regional según esos datos.
