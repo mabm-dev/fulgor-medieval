@@ -6,6 +6,7 @@
 |---|---|---|
 | `ArtSource/Blender/Fulgor_VisualScale_Template.blend` | Plantilla de escala, ejes y pivotes | Fuente propia |
 | `ArtSource/Blender/crear_plantilla_escala_fulgor.py` | Genera la plantilla de escala | Herramienta propia reproducible |
+| `ArtSource/Portraits/Heroes/*.png` | 12 caracterizaciones de héroes para el proyecto Unity; colección de referencia vigente, aún no optimizada ni importada al runtime | Aportadas por el propietario del proyecto; derechos pendientes de auditoría comercial |
 | `Assets/Fulgor/Art/Validation/SM_VisualScaleValidation.fbx` | Validación del contrato Blender–Unity | Derivado de la plantilla; no es arte final |
 | `Assets/Settings/` | Configuración de URP y perfil de build de Windows | Configuración del proyecto |
 
@@ -27,3 +28,9 @@
 
 El tráiler final y los proyectos audiovisuales se conservan en el archivo
 privado del proyecto y no forman parte del repositorio.
+
+Los retratos de `ArtSource/Portraits/Heroes/` sustituyen como referencia visual
+vigente a los retratos genéricos del prototipo web. El héroe de Zaragoza sigue
+marcado como provisional en el nombre del archivo; no debe tratarse como canon
+histórico cerrado. Antes de usarlos en escenas o interfaz, preparar derivados
+optimizados en `Assets/Fulgor/Art/` y revisar los derechos de cada imagen.
