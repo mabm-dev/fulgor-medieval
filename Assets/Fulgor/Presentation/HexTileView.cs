@@ -18,6 +18,12 @@ namespace Fulgor.Presentation.Map
 
         public MapCell Cell { get; private set; }
 
+        /// <summary>
+        /// Indica si la casilla lleva un color propio (hover o selección). En reposo no lo lleva:
+        /// un MaterialPropertyBlock saca al renderer del SRP Batcher y del GPU Resident Drawer.
+        /// </summary>
+        public bool HasColorOverride => meshRenderer != null && meshRenderer.HasPropertyBlock();
+
         public void Initialize(MapCell cell, CampaignBoardSelection selectionOwner, Color color)
         {
             Cell = cell;
@@ -42,10 +48,15 @@ namespace Fulgor.Presentation.Map
         private void ApplyColor()
         {
             if (meshRenderer == null) return;
+            if (!selected && !hovered)
+            {
+                // En reposo el color sale del material compartido del terreno.
+                meshRenderer.SetPropertyBlock(null);
+                return;
+            }
+
             if (properties == null) properties = new MaterialPropertyBlock();
-            var color = selected
-                ? SelectionColor
-                : hovered ? Color.Lerp(baseColor, Color.white, 0.28f) : baseColor;
+            var color = selected ? SelectionColor : Color.Lerp(baseColor, Color.white, 0.28f);
             properties.Clear();
             properties.SetColor(BaseColorId, color);
             properties.SetColor(ColorId, color);
