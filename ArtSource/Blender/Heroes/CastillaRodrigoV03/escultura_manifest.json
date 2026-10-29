@@ -1,0 +1,3002 @@
+{
+  "status": "anatomical_revision_not_game_ready",
+  "objects": {
+    "Bota_puntera": {
+      "type": "MESH",
+      "evaluated_triangles": 1216
+    },
+    "Suela_cosida": {
+      "type": "MESH",
+      "evaluated_triangles": 1216
+    },
+    "Costura_suela": {
+      "type": "CURVE",
+      "evaluated_triangles": 1536
+    },
+    "Bota_cana": {
+      "type": "MESH",
+      "evaluated_triangles": 2496
+    },
+    "Bota_vuelta_superior": {
+      "type": "MESH",
+      "evaluated_triangles": 1344
+    },
+    "Pantalon": {
+      "type": "MESH",
+      "evaluated_triangles": 2880
+    },
+    "Arruga_bota": {
+      "type": "CURVE",
+      "evaluated_triangles": 512
+    },
+    "Arruga_bota.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 512
+    },
+    "Arruga_bota.002": {
+      "type": "CURVE",
+      "evaluated_triangles": 512
+    },
+    "Bota_puntera.001": {
+      "type": "MESH",
+      "evaluated_triangles": 1216
+    },
+    "Suela_cosida.001": {
+      "type": "MESH",
+      "evaluated_triangles": 1216
+    },
+    "Costura_suela.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 1536
+    },
+    "Bota_cana.001": {
+      "type": "MESH",
+      "evaluated_triangles": 2496
+    },
+    "Bota_vuelta_superior.001": {
+      "type": "MESH",
+      "evaluated_triangles": 1344
+    },
+    "Pantalon.001": {
+      "type": "MESH",
+      "evaluated_triangles": 2880
+    },
+    "Arruga_bota.003": {
+      "type": "CURVE",
+      "evaluated_triangles": 512
+    },
+    "Arruga_bota.004": {
+      "type": "CURVE",
+      "evaluated_triangles": 512
+    },
+    "Arruga_bota.005": {
+      "type": "CURVE",
+      "evaluated_triangles": 512
+    },
+    "Cota_faldon_base": {
+      "type": "MESH",
+      "evaluated_triangles": 1344
+    },
+    "Cuero_torax_base": {
+      "type": "MESH",
+      "evaluated_triangles": 11520
+    },
+    "Gorguera_cota": {
+      "type": "MESH",
+      "evaluated_triangles": 3840
+    },
+    "Lamina_cuero_torso_00": {
+      "type": "MESH",
+      "evaluated_triangles": 1344
+    },
+    "Remache_torso": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.001": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.002": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.003": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.004": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Costura_lamina": {
+      "type": "CURVE",
+      "evaluated_triangles": 800
+    },
+    "Lamina_cuero_torso_01": {
+      "type": "MESH",
+      "evaluated_triangles": 1344
+    },
+    "Remache_torso.005": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.006": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.007": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.008": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.009": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Costura_lamina.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 800
+    },
+    "Lamina_cuero_torso_02": {
+      "type": "MESH",
+      "evaluated_triangles": 1344
+    },
+    "Remache_torso.010": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.011": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.012": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.013": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.014": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Costura_lamina.002": {
+      "type": "CURVE",
+      "evaluated_triangles": 800
+    },
+    "Lamina_cuero_torso_03": {
+      "type": "MESH",
+      "evaluated_triangles": 1344
+    },
+    "Remache_torso.015": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.016": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.017": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.018": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.019": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Costura_lamina.003": {
+      "type": "CURVE",
+      "evaluated_triangles": 800
+    },
+    "Lamina_cuero_torso_04": {
+      "type": "MESH",
+      "evaluated_triangles": 1344
+    },
+    "Remache_torso.020": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.021": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.022": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.023": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.024": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Costura_lamina.004": {
+      "type": "CURVE",
+      "evaluated_triangles": 800
+    },
+    "Lamina_cuero_torso_05": {
+      "type": "MESH",
+      "evaluated_triangles": 1344
+    },
+    "Remache_torso.025": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.026": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.027": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.028": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_torso.029": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Costura_lamina.005": {
+      "type": "CURVE",
+      "evaluated_triangles": 800
+    },
+    "Faldon_cuero_segmentado": {
+      "type": "MESH",
+      "evaluated_triangles": 1288
+    },
+    "Remache_faldon": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.001": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.002": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.003": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Faldon_cuero_segmentado.001": {
+      "type": "MESH",
+      "evaluated_triangles": 1288
+    },
+    "Remache_faldon.004": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.005": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.006": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.007": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Faldon_cuero_segmentado.002": {
+      "type": "MESH",
+      "evaluated_triangles": 1288
+    },
+    "Remache_faldon.008": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.009": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.010": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.011": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Faldon_cuero_segmentado.003": {
+      "type": "MESH",
+      "evaluated_triangles": 1288
+    },
+    "Remache_faldon.012": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.013": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.014": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.015": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Faldon_cuero_segmentado.004": {
+      "type": "MESH",
+      "evaluated_triangles": 1288
+    },
+    "Remache_faldon.016": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.017": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.018": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.019": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Faldon_cuero_segmentado.005": {
+      "type": "MESH",
+      "evaluated_triangles": 1288
+    },
+    "Remache_faldon.020": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.021": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.022": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.023": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Faldon_cuero_segmentado.006": {
+      "type": "MESH",
+      "evaluated_triangles": 1288
+    },
+    "Remache_faldon.024": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.025": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.026": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.027": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Faldon_cuero_segmentado.007": {
+      "type": "MESH",
+      "evaluated_triangles": 1288
+    },
+    "Remache_faldon.028": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.029": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.030": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Remache_faldon.031": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Manga_cota": {
+      "type": "MESH",
+      "evaluated_triangles": 864
+    },
+    "Brazo_bajo": {
+      "type": "MESH",
+      "evaluated_triangles": 448
+    },
+    "Brazal_cuero": {
+      "type": "MESH",
+      "evaluated_triangles": 672
+    },
+    "Correa_brazal": {
+      "type": "MESH",
+      "evaluated_triangles": 288
+    },
+    "Remache_brazal": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Correa_brazal.001": {
+      "type": "MESH",
+      "evaluated_triangles": 288
+    },
+    "Remache_brazal.001": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Correa_brazal.002": {
+      "type": "MESH",
+      "evaluated_triangles": 288
+    },
+    "Remache_brazal.002": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Mano_anatomica_continua": {
+      "type": "MESH",
+      "evaluated_triangles": 34956
+    },
+    "Una_mano": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Una_mano.001": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Una_mano.002": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Una_mano.003": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Manga_cota.001": {
+      "type": "MESH",
+      "evaluated_triangles": 864
+    },
+    "Brazo_bajo.001": {
+      "type": "MESH",
+      "evaluated_triangles": 448
+    },
+    "Brazal_cuero.001": {
+      "type": "MESH",
+      "evaluated_triangles": 672
+    },
+    "Correa_brazal.003": {
+      "type": "MESH",
+      "evaluated_triangles": 288
+    },
+    "Remache_brazal.003": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Correa_brazal.004": {
+      "type": "MESH",
+      "evaluated_triangles": 288
+    },
+    "Remache_brazal.004": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Correa_brazal.005": {
+      "type": "MESH",
+      "evaluated_triangles": 288
+    },
+    "Remache_brazal.005": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Mano_anatomica_continua.001": {
+      "type": "MESH",
+      "evaluated_triangles": 34932
+    },
+    "Una_mano.004": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Una_mano.005": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Una_mano.006": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Una_mano.007": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Cota_anillas_geometria": {
+      "type": "MESH",
+      "evaluated_triangles": 281760
+    },
+    "Gorguera_anillas": {
+      "type": "MESH",
+      "evaluated_triangles": 69120
+    },
+    "Cinturon": {
+      "type": "MESH",
+      "evaluated_triangles": 1344
+    },
+    "Tacha_cinturon": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.001": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.002": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.003": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.004": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.005": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.006": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.007": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.008": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.009": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.010": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.011": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.012": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.013": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.014": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.015": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.016": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.017": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.018": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.019": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.020": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.021": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.022": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.023": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.024": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.025": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.026": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.027": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.028": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Tacha_cinturon.029": {
+      "type": "MESH",
+      "evaluated_triangles": 168
+    },
+    "Hebilla_cinturon": {
+      "type": "CURVE",
+      "evaluated_triangles": 64
+    },
+    "Hebilla_lengua": {
+      "type": "CURVE",
+      "evaluated_triangles": 16
+    },
+    "Bandolera_cuero": {
+      "type": "MESH",
+      "evaluated_triangles": 584
+    },
+    "Hebilla_bandolera": {
+      "type": "CURVE",
+      "evaluated_triangles": 64
+    },
+    "Hebilla_bandolera.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 64
+    },
+    "Vaina_espada": {
+      "type": "MESH",
+      "evaluated_triangles": 448
+    },
+    "Abrazadera_vaina": {
+      "type": "MESH",
+      "evaluated_triangles": 192
+    },
+    "Abrazadera_vaina.001": {
+      "type": "MESH",
+      "evaluated_triangles": 192
+    },
+    "Abrazadera_vaina.002": {
+      "type": "MESH",
+      "evaluated_triangles": 192
+    },
+    "Empunadura": {
+      "type": "MESH",
+      "evaluated_triangles": 192
+    },
+    "Trenzado_empunadura": {
+      "type": "CURVE",
+      "evaluated_triangles": 384
+    },
+    "Trenzado_empunadura.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 384
+    },
+    "Trenzado_empunadura.002": {
+      "type": "CURVE",
+      "evaluated_triangles": 384
+    },
+    "Trenzado_empunadura.003": {
+      "type": "CURVE",
+      "evaluated_triangles": 384
+    },
+    "Trenzado_empunadura.004": {
+      "type": "CURVE",
+      "evaluated_triangles": 384
+    },
+    "Trenzado_empunadura.005": {
+      "type": "CURVE",
+      "evaluated_triangles": 384
+    },
+    "Trenzado_empunadura.006": {
+      "type": "CURVE",
+      "evaluated_triangles": 384
+    },
+    "Trenzado_empunadura.007": {
+      "type": "CURVE",
+      "evaluated_triangles": 384
+    },
+    "Trenzado_empunadura.008": {
+      "type": "CURVE",
+      "evaluated_triangles": 384
+    },
+    "Trenzado_empunadura.009": {
+      "type": "CURVE",
+      "evaluated_triangles": 384
+    },
+    "Guarda_espada": {
+      "type": "MESH",
+      "evaluated_triangles": 448
+    },
+    "Pomo_espada": {
+      "type": "MESH",
+      "evaluated_triangles": 1216
+    },
+    "Cabeza_anatomica_CC0_adaptada": {
+      "type": "MESH",
+      "evaluated_triangles": 140096
+    },
+    "Globo_ocular_anatomico": {
+      "type": "MESH",
+      "evaluated_triangles": 4992
+    },
+    "Iris_curvado_con_pupila": {
+      "type": "MESH",
+      "evaluated_triangles": 4032
+    },
+    "Globo_ocular_anatomico.001": {
+      "type": "MESH",
+      "evaluated_triangles": 4992
+    },
+    "Iris_curvado_con_pupila.001": {
+      "type": "MESH",
+      "evaluated_triangles": 4032
+    },
+    "Cabello_masa_anatomica": {
+      "type": "MESH",
+      "evaluated_triangles": 36736
+    },
+    "Cabello_fibras": {
+      "type": "CURVE",
+      "evaluated_triangles": 1715364
+    },
+    "Cabello_fibras.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 1213056
+    },
+    "Cabello_fibras.002": {
+      "type": "CURVE",
+      "evaluated_triangles": 569496
+    },
+    "Cabello_fibras.003": {
+      "type": "CURVE",
+      "evaluated_triangles": 92964
+    },
+    "Barba_anatomica": {
+      "type": "CURVE",
+      "evaluated_triangles": 90144
+    },
+    "Barba_anatomica.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 89160
+    },
+    "Barba_anatomica.002": {
+      "type": "CURVE",
+      "evaluated_triangles": 86040
+    },
+    "Ceja_anatomica": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.002": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.003": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.004": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.005": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.006": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.007": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.008": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.009": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.010": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.011": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.012": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.013": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.014": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.015": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.016": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.017": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.018": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.019": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.020": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.021": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.022": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.023": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.024": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.025": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.026": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.027": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.028": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.029": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.030": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.031": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.032": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.033": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.034": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.035": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.036": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.037": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.038": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.039": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.040": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.041": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.042": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.043": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.044": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.045": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.046": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.047": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.048": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.049": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.050": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.051": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.052": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.053": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.054": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.055": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.056": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.057": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.058": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.059": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.060": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.061": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.062": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.063": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.064": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.065": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.066": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.067": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.068": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.069": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.070": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.071": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.072": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.073": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.074": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.075": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.076": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.077": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.078": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.079": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.080": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.081": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.082": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.083": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.084": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.085": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.086": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.087": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.088": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.089": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.090": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.091": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.092": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.093": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.094": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.095": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.096": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.097": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.098": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.099": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.100": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.101": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.102": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.103": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.104": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.105": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.106": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.107": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.108": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.109": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.110": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.111": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.112": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.113": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.114": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.115": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.116": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.117": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.118": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.119": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.120": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.121": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.122": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.123": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.124": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.125": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.126": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.127": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.128": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.129": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.130": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.131": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.132": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.133": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.134": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.135": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.136": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.137": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.138": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.139": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.140": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.141": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.142": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.143": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.144": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.145": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.146": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.147": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.148": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.149": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.150": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.151": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.152": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.153": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.154": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.155": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.156": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.157": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.158": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.159": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.160": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.161": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.162": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.163": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.164": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.165": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.166": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.167": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.168": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.169": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.170": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.171": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.172": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.173": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.174": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.175": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.176": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.177": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.178": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.179": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.180": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.181": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.182": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.183": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.184": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.185": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.186": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.187": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.188": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.189": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.190": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.191": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.192": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.193": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.194": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.195": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.196": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.197": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.198": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.199": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.200": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.201": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.202": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.203": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.204": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.205": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.206": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.207": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.208": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.209": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.210": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.211": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.212": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.213": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.214": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.215": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.216": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.217": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.218": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.219": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.220": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.221": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.222": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.223": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.224": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.225": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.226": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.227": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.228": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.229": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.230": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.231": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.232": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.233": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.234": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.235": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.236": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.237": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.238": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.239": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.240": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.241": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.242": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.243": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.244": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.245": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.246": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.247": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.248": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.249": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.250": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.251": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.252": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.253": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.254": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.255": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.256": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.257": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.258": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.259": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.260": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.261": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.262": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.263": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.264": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.265": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.266": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.267": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.268": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.269": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.270": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.271": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.272": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.273": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.274": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.275": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.276": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.277": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.278": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.279": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.280": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.281": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.282": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.283": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.284": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.285": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.286": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.287": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.288": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.289": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.290": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.291": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.292": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.293": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.294": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.295": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.296": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.297": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.298": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.299": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.300": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.301": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.302": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.303": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.304": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.305": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.306": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.307": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.308": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.309": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.310": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.311": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.312": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.313": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.314": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.315": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.316": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.317": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.318": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.319": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.320": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.321": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.322": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.323": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.324": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.325": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.326": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.327": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.328": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.329": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.330": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.331": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.332": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.333": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.334": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.335": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.336": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.337": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.338": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.339": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.340": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.341": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.342": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.343": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.344": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.345": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.346": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.347": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.348": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.349": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.350": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.351": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.352": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.353": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.354": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.355": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.356": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.357": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.358": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.359": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.360": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.361": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.362": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.363": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.364": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.365": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.366": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.367": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.368": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.369": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.370": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.371": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.372": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.373": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.374": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.375": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.376": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.377": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.378": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.379": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.380": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.381": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.382": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.383": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.384": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.385": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.386": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.387": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.388": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.389": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.390": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.391": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.392": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.393": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.394": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.395": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.396": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.397": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.398": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Ceja_anatomica.399": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Capa_lana_pliegues_peso": {
+      "type": "MESH",
+      "evaluated_triangles": 179392
+    },
+    "Ribete_capa": {
+      "type": "CURVE",
+      "evaluated_triangles": 1920
+    },
+    "Ribete_capa.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 1920
+    },
+    "Bordado_capa": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.002": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.003": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.004": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.005": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.006": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.007": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.008": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.009": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.010": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.011": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.012": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.013": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.014": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.015": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.016": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.017": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.018": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.019": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.020": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.021": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.022": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.023": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.024": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.025": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.026": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.027": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.028": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.029": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.030": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.031": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.032": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.033": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.034": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.035": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.036": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.037": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.038": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.039": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.040": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.041": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.042": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.043": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.044": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.045": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.046": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.047": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.048": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.049": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.050": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.051": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.052": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.053": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.054": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.055": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.056": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.057": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.058": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.059": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Ribete_capa.002": {
+      "type": "CURVE",
+      "evaluated_triangles": 1920
+    },
+    "Ribete_capa.003": {
+      "type": "CURVE",
+      "evaluated_triangles": 1920
+    },
+    "Bordado_capa.060": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.061": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.062": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.063": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.064": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.065": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.066": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.067": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.068": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.069": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.070": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.071": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.072": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.073": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.074": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.075": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.076": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.077": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.078": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.079": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.080": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.081": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.082": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.083": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.084": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.085": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.086": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.087": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.088": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.089": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.090": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.091": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.092": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.093": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.094": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.095": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.096": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.097": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.098": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.099": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.100": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.101": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.102": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.103": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.104": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.105": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.106": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.107": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.108": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.109": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.110": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.111": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.112": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.113": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.114": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.115": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.116": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.117": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.118": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Bordado_capa.119": {
+      "type": "CURVE",
+      "evaluated_triangles": 160
+    },
+    "Ribete_inferior": {
+      "type": "CURVE",
+      "evaluated_triangles": 3040
+    },
+    "Ribete_inferior.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 3040
+    },
+    "Capa_hombros_recogida": {
+      "type": "MESH",
+      "evaluated_triangles": 53920
+    },
+    "Ribete_hombro": {
+      "type": "CURVE",
+      "evaluated_triangles": 1760
+    },
+    "Broche_laton": {
+      "type": "MESH",
+      "evaluated_triangles": 1216
+    },
+    "Broche_grabado": {
+      "type": "CURVE",
+      "evaluated_triangles": 1024
+    },
+    "Broche_grabado.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 1024
+    },
+    "Broche_flor": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Broche_flor.001": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Broche_flor.002": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Broche_flor.003": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Broche_flor.004": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Broche_flor.005": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Broche_flor.006": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    },
+    "Broche_flor.007": {
+      "type": "CURVE",
+      "evaluated_triangles": 32
+    }
+  },
+  "warnings": [
+    "Facial likeness requires visual approval",
+    "Back/lower body inferred",
+    "Original head UV retained; costume atlas, rig, LOD, bake and export pending",
+    "Dense geometric mail and hair require retopology/baking"
+  ],
+  "evaluated_triangles": 4852904,
+  "character_object_count": 739,
+  "bounds_min": [
+    -0.346420019865036,
+    -0.20599991083145142,
+    0.0
+  ],
+  "bounds_max": [
+    0.3473221957683563,
+    0.24765972793102264,
+    1.818002700805664
+  ],
+  "contains_reference_planes": false,
+  "uses_portrait_as_render_surface": false,
+  "anatomy": {
+    "upstream_commit": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+    "asset_license": "CC0-1.0",
+    "target_weights": {
+      "caucasian-male-young.target": 0.72,
+      "caucasian-male-old.target": 0.28,
+      "head-rectangular.target": 0.35,
+      "chin-bones-incr.target": 0.27,
+      "nose-curve-convex.target": 0.2,
+      "eyebrows-trans-down.target": 0.08,
+      "eyebrows-trans-forward.target": 0.15
+    },
+    "original_head_uv_retained": true
+  },
+  "revision": "V03: alert gaze, curved iris, grouped wavy hair, shortened feathered beard",
+  "skin": {
+    "albedo": "CC0 MargaretToigo Bronze",
+    "normal_specular": "CC0 Mindfront Aksel",
+    "texture_sources": "ArtSource/ThirdParty/*/provenance.json",
+    "original_portrait_as_texture": false
+  }
+}

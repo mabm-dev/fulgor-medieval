@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b8cf6b2f0ac4dc6a9f119d8b9d7e3a1, type: 3}
+  m_Name: MarchReview
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignScenarioDefinition
+  width: 24
+  height: 16
+  seed: 12345
+  tileFill: 0.97
+  showGold: 1
+  useVerticalTerrainBlockout: 1
+  routes: []
+  useExplicitDestination: 0
+  destination: {x: 0, y: 0}
+  useArmyDeployments: 1
+  playerFactionId: castilla
+  armies:
+  - id: Castilla-1
+    factionId: castilla
+    position: {x: 13, y: 8}
+    movementPerTurn: 2
+    formations:
+    - id: Castilla-1-tropas-0
+      profile: 0
+      quantity: 50
+    - id: Castilla-1-tropas-1
+      profile: 2
+      quantity: 30
+  - id: Castilla-2
+    factionId: castilla
+    position: {x: 14, y: 7}
+    movementPerTurn: 2
+    formations:
+    - id: Castilla-2-tropas-0
+      profile: 3
+      quantity: 20
+  - id: Guarnicion-rival
+    factionId: rival
+    position: {x: 14, y: 8}
+    movementPerTurn: 6
+    formations:
+    - id: Guarnicion-rival-tropas-0
+      profile: 0
+      quantity: 2

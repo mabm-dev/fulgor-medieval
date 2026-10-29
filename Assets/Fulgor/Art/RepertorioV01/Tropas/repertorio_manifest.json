@@ -1,0 +1,162 @@
+[
+  {
+    "name": "SM_Lancero_A_LOD0",
+    "triangles": 2208,
+    "vertices": 1214,
+    "materials": 1,
+    "uv_channels": 1,
+    "bounds": [
+      [
+        -0.12160184979438782,
+        0.09000000357627869
+      ],
+      [
+        -0.07609999924898148,
+        0.035190001130104065
+      ],
+      [
+        0.0010000000474974513,
+        0.5550000071525574
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_resolution": 1024,
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness",
+      "Metallic"
+    ],
+    "pose": "static",
+    "rigged": false
+  },
+  {
+    "name": "SM_Espadachin_A_LOD0",
+    "triangles": 2224,
+    "vertices": 1224,
+    "materials": 1,
+    "uv_channels": 1,
+    "bounds": [
+      [
+        -0.12160184979438782,
+        0.0989999994635582
+      ],
+      [
+        -0.07609999924898148,
+        0.035190001130104065
+      ],
+      [
+        0.0010000000474974513,
+        0.41200000047683716
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_resolution": 1024,
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness",
+      "Metallic"
+    ],
+    "pose": "static",
+    "rigged": false
+  },
+  {
+    "name": "SM_Ballestero_A_LOD0",
+    "triangles": 2148,
+    "vertices": 1180,
+    "materials": 1,
+    "uv_channels": 1,
+    "bounds": [
+      [
+        -0.0860000029206276,
+        0.08846162259578705
+      ],
+      [
+        -0.1379999965429306,
+        0.04699999839067459
+      ],
+      [
+        0.0010000000474974513,
+        0.41200000047683716
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_resolution": 1024,
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness",
+      "Metallic"
+    ],
+    "pose": "static",
+    "rigged": false
+  },
+  {
+    "name": "SM_CaballeroMontado_A_LOD0",
+    "triangles": 4512,
+    "vertices": 2450,
+    "materials": 1,
+    "uv_channels": 1,
+    "bounds": [
+      [
+        -0.0756400004029274,
+        0.09610000252723694
+      ],
+      [
+        -0.253629595041275,
+        0.18094469606876373
+      ],
+      [
+        0.0,
+        0.5511999726295471
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_resolution": 1024,
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness",
+      "Metallic"
+    ],
+    "pose": "static",
+    "rigged": false
+  }
+]

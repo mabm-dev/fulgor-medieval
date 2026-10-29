@@ -1,0 +1,43 @@
+[
+  {
+    "name": "SM_FortalezaCastellanaNatural_A_LOD0",
+    "triangles": 104256,
+    "vertices": 55486,
+    "materials": 1,
+    "uv_channels": 1,
+    "bounds": [
+      [
+        -0.5657520294189453,
+        0.5657972097396851
+      ],
+      [
+        -0.5287461876869202,
+        0.5290615558624268
+      ],
+      [
+        0.00027691497234627604,
+        0.7953885793685913
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_resolution": 2048,
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness",
+      "Metallic"
+    ],
+    "pose": "static",
+    "rigged": false,
+    "revision": "Natural V02"
+  }
+]

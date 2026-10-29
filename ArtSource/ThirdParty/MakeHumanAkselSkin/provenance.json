@@ -1,0 +1,43 @@
+{
+  "asset": "mindfront_aksel_skin",
+  "metadata": {
+    "author": "Mindfront",
+    "category": "",
+    "changed": "2018-11-04",
+    "created": "2017-06-11",
+    "description": "This skin is made by a friend from an original MakeHuman skin and then I did the normal and specular map from one I have done erlier. The specular map and normal map have body hair but the skin texture have non but it gives the skin suitable ruffness and you can maybe use the specular map to extract the hair and add on the skin. In MakeHuman viewport the normal map looks bad. Edit 2018-11-04 Removed obsolete links",
+    "license": "CC0",
+    "original_author": "",
+    "original_source": "",
+    "source": "http://www.makehumancommunity.org/node/850",
+    "thumbnail": "mindfront_aksel_skin.png",
+    "type": "skin"
+  },
+  "catalog_url": "https://static.makehumancommunity.org/assets/assetpacks/skins02.html",
+  "archive_url": "https://files.makehumancommunity.org/asset_packs/skins02/skins02_cc0.zip",
+  "archive_sha256": "1613f1ef3afca53094511d26620ed7cf1d2dedc29ed3d384d60bdebe250698ae",
+  "files": [
+    {
+      "file": "Aksel_Skin_NRM.png",
+      "sha256": "2bf3632a4bfb1631d9ae15568c7de5c7254c780e5168f1546827f32d50f5212d"
+    },
+    {
+      "file": "Aksel_Skin_SPEC.png",
+      "sha256": "d34638826d48d6fdb632f3a18296999630edf2879e7301356dfa60e6d61808f7"
+    },
+    {
+      "file": "CC0-1.0.md",
+      "sha256": "f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c"
+    },
+    {
+      "file": "mindfront_aksel_skin.mhmat",
+      "sha256": "ed79cb17edbb5929dd83474a46f045df7d5f31d0b9c1156c87f563bd2bbbfab6"
+    }
+  ],
+  "discarded_color_map": [
+    {
+      "file": "Aksel_Skin_diffuse.png",
+      "sha256": "268ee6d1ea9665f8050d040c7b47971884428628021418ae52f68912859f5e60"
+    }
+  ]
+}

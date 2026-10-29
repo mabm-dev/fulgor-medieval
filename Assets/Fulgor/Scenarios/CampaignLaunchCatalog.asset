@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2205ce5b0cd042f48afc5292d6c2a326, type: 3}
+  m_Name: CampaignLaunchCatalog
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignLaunchCatalog
+  entries:
+  - id: castilla-conquest
+    title: Conquista de Castilla
+    description: Gobierna tus ciudades, recluta huestes y disputa el territorio a un rival. Retiradas, victoria y derrota.
+    sceneName: FulgorConquest
+    scenario: {fileID: 11400000, guid: 60f7b31379b6fb046a66d6db8715df8a, type: 2}
+    settlements:
+    - {fileID: 11400000, guid: 60abe8404f7726241be80de423aa4cfd, type: 2}
+    - {fileID: 11400000, guid: 39dc9c6c16761b34bb9f8c20e71fed43, type: 2}
+  - id: castilla-mission
+    title: "Misi\xF3n de exploraci\xF3n"
+    description: "Conduce una hueste hasta el objetivo del mapa. Conserva las reglas de la misi\xF3n anterior."
+    sceneName: FulgorMission
+    scenario: {fileID: 11400000, guid: 6d9e4a91c4d44fa2b67f8e9b0d5c31aa, type: 2}
+    settlements:
+    - {fileID: 11400000, guid: 60abe8404f7726241be80de423aa4cfd, type: 2}
+  menuSceneName: FulgorStart

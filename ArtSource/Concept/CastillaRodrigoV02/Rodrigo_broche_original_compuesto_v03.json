@@ -1,0 +1,49 @@
+{
+  "method": "Deterministic affine transfer of original brooch face, no generative AI",
+  "source": "D:\\Proyectos\\fulgor-medieval\\ArtSource\\Portraits\\Heroes\\heroe_rodrigo_diaz_castilla.png",
+  "base": "D:\\Proyectos\\fulgor-medieval\\ArtSource\\Concept\\CastillaRodrigoV02\\Rodrigo_retoque_cuello_v01.png",
+  "source_sha256": "55bd3d90da911c6005f809c43c093206163434c558bcf92b22667146dcf9fe25",
+  "base_sha256": "64107346ce9457a7f4902974f7a6f87e4f1e717548b536075abc8d94b7fc45b2",
+  "source_ellipse": [
+    [
+      725.8042602539062,
+      410.3551025390625
+    ],
+    [
+      28.579898834228516,
+      69.53337097167969
+    ],
+    27.50556182861328
+  ],
+  "target_ellipse": [
+    [
+      657.0,
+      1238.5
+    ],
+    [
+      116.0,
+      157.0
+    ],
+    137.98
+  ],
+  "affine_transform": [
+    [
+      1.9764643907546997,
+      2.733161449432373,
+      -1899.093017578125
+    ],
+    [
+      -3.184507131576538,
+      0.2330525517463684,
+      3454.194580078125
+    ]
+  ],
+  "exposure_multiplier": 0.86,
+  "edge_feather_px": 0.7,
+  "pixels_outside_composite_mask_identical": true,
+  "dimensions": [
+    1122,
+    1402
+  ],
+  "limitation": "Original clasp occupies only about 40 x 65 source pixels; enlargement cannot recover absent relief detail."
+}

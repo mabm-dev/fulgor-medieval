@@ -5,11 +5,79 @@ y el proyecto utiliza versionado semántico mientras sea aplicable. Las
 versiones `0.1.0` a `0.5.0` corresponden al prototipo web; desde `0.6.0` el
 juego se desarrolla en Unity.
 
+## [Sin publicar]
+
+### Añadido
+
+- Consejo diplomático de campaña: relaciones e intenciones del legacy, paz,
+  pactos y comercio, propuestas al cierre de turno, respuestas y contrapropuestas,
+  pagos entre tesoros y duración de tratados. Ataques, ocupación e IA respetan
+  las relaciones. Persistencia compatible con partidas anteriores. Los acuerdos
+  sobre héroes cautivos quedan pendientes del sistema de héroes.
+
+- Niebla de guerra opcional y activa en conquista: visión por facción, memoria
+  de terreno y ciudades, órdenes y rutas según conocimiento, descubrimiento
+  por pasos e IA sin consultar tropas ocultas. Guardado v11 y continuación de
+  mapas v9/v10 sin perder su conocimiento anterior.
+
+- Logística militar opcional y activa en conquista: grano/oro de huestes y
+  guarniciones, suministro por rutas, reposo, recuperación sin reponer bajas y
+  penalización por falta de apoyo. Previsión económica, rival con las mismas
+  reglas y guardado v10 con continuación de partidas v9 compatibles.
+
+- Campo de batalla gráfico de campaña inspirado en la versión web: diorama 3D,
+  formaciones diferenciadas, paneles de fuerzas y moral, selección sobre el terreno,
+  rutas reales animadas, zoom limitado, retirada confirmada y resumen del resultado.
+
+- Inicio común para conquista y misión, continuación validada antes de cambiar
+  de escena y pausa con guardar/volver o descartar la sesión. Conserva la ranura
+  y el formato v9; nueva partida no sobrescribe el guardado anterior.
+
+- Objetivo de conquista con retiradas vecinas, evacuación de guarniciones y
+  rendición sin salida. Victoria/derrota por presencia, bloqueo de órdenes al
+  terminar, restauración del resultado y guardado v9 con identidad de reglas.
+
+- Rival estratégico opcional con reservas propias, levas pagadas, movimiento,
+  ataques y conquista. Control humano del defensor y continuidad de la fase
+  rival después de las batallas. Guardado v8 con identidad de activación de IA.
+
+- Marchas de varios turnos por hueste, avance parcial, rutas recalculadas y
+  espera ante bloqueos. Cancelación individual y guardado v7 compatible con
+  los formatos anteriores. Las marchas no inician combates automáticamente.
+
+- Reclutamiento urbano con coste y plazo, guarniciones, traslados de formaciones
+  heridas y creación de nuevas huestes. Defensa conjunta de plaza y hueste,
+  cancelación de levas al conquistar y guardado v6 con validación global de tropas.
+
+- Conquista de fortalezas vacías y ocupación tras vencer a una guarnición destruida.
+  Propiedad dinámica, permisos, edificios conservados, distritos económicos y
+  guardado v5 con lectura de formatos anteriores.
+- Combates desde el mapa entre huestes reales: ataque adyacente, control manual
+  del atacante, defensor automático, parte final y aplicación única de bajas,
+  heridas y moral. Se puede volver al mapa y reanudar una batalla pendiente.
+- Escena de revisión con un rival adyacente y comprobación del resultado en campaña.
+- Guardado y carga multihueste v4 con tropas supervivientes, heridas, moral,
+  movimiento, selección, victoria, ciudades y economía. Conserva el historial
+  de combates resueltos y rechaza datos incompatibles antes de sustituir la partida.
+- Escena de revisión con dos huestes propias y una rival, usando los recursos existentes.
+
+### Limitaciones
+
+- Guardar y cargar requiere resolver los encuentros tácticos abiertos. El escritor
+  actual es v9; conserva lectura simple v1/v2/v3/v5/v6/v7/v8 y multihueste v4/v5/v6/v7/v8.
+- Los costes militares son provisionales; no hay mantenimiento militar todavía; la IA básica de levas es opcional por escenario.
+
 ## [0.6.0] - 2026-09-27
 
 Primera versión en Unity.
 
 ### Añadido
+
+- Consejo diplomático de campaña: relaciones e intenciones del legacy, paz,
+  pactos y comercio, propuestas al cierre de turno, respuestas y contrapropuestas,
+  pagos entre tesoros y duración de tratados. Ataques, ocupación e IA respetan
+  las relaciones. Persistencia compatible con partidas anteriores. Los acuerdos
+  sobre héroes cautivos quedan pendientes del sistema de héroes.
 
 - Proyecto Unity 6000.6 con URP y perfil de build para Windows.
 - Núcleo C# independiente del motor, con coordenadas axiales, generador
@@ -65,6 +133,12 @@ como referencia para el portado.
 
 ### Añadido
 
+- Consejo diplomático de campaña: relaciones e intenciones del legacy, paz,
+  pactos y comercio, propuestas al cierre de turno, respuestas y contrapropuestas,
+  pagos entre tesoros y duración de tratados. Ataques, ocupación e IA respetan
+  las relaciones. Persistencia compatible con partidas anteriores. Los acuerdos
+  sobre héroes cautivos quedan pendientes del sistema de héroes.
+
 - Formaciones persistentes de infantería, distancia y caballería, con cuatro
   perfiles iniciales por hueste.
 - Héroes por arquetipo y órdenes tácticas limitadas por puntos de mando.
@@ -92,6 +166,12 @@ como referencia para el portado.
 ## [0.4.0] - 2026-08-22
 
 ### Añadido
+
+- Consejo diplomático de campaña: relaciones e intenciones del legacy, paz,
+  pactos y comercio, propuestas al cierre de turno, respuestas y contrapropuestas,
+  pagos entre tesoros y duración de tratados. Ataques, ocupación e IA respetan
+  las relaciones. Persistencia compatible con partidas anteriores. Los acuerdos
+  sobre héroes cautivos quedan pendientes del sistema de héroes.
 
 - Emplazamiento determinista de la capital, con vecindario mínimo para no
   fundarla pegada al borde del mapa.
@@ -129,6 +209,12 @@ como referencia para el portado.
 
 ### Añadido
 
+- Consejo diplomático de campaña: relaciones e intenciones del legacy, paz,
+  pactos y comercio, propuestas al cierre de turno, respuestas y contrapropuestas,
+  pagos entre tesoros y duración de tratados. Ataques, ocupación e IA respetan
+  las relaciones. Persistencia compatible con partidas anteriores. Los acuerdos
+  sobre héroes cautivos quedan pendientes del sistema de héroes.
+
 - Estado de dominio versionado con turno, fase, reino jugador y cinco recursos.
 - Validación e inmutabilidad de alimentos, madera, piedra, hierro y oro.
 - Perfiles económicos diferenciados para los cinco reinos del prototipo.
@@ -149,6 +235,12 @@ como referencia para el portado.
 ## [0.2.0] - 2026-08-03
 
 ### Añadido
+
+- Consejo diplomático de campaña: relaciones e intenciones del legacy, paz,
+  pactos y comercio, propuestas al cierre de turno, respuestas y contrapropuestas,
+  pagos entre tesoros y duración de tratados. Ataques, ocupación e IA respetan
+  las relaciones. Persistencia compatible con partidas anteriores. Los acuerdos
+  sobre héroes cautivos quedan pendientes del sistema de héroes.
 
 - Documentación de visión 4X, combate táctico, tutorial y facciones históricas.
 - Casos de uso redactados como interacciones de videojuego.
@@ -177,6 +269,12 @@ como referencia para el portado.
 ## [0.1.0] - 2026-07-27
 
 ### Añadido
+
+- Consejo diplomático de campaña: relaciones e intenciones del legacy, paz,
+  pactos y comercio, propuestas al cierre de turno, respuestas y contrapropuestas,
+  pagos entre tesoros y duración de tratados. Ataques, ocupación e IA respetan
+  las relaciones. Persistencia compatible con partidas anteriores. Los acuerdos
+  sobre héroes cautivos quedan pendientes del sistema de héroes.
 
 - Menú principal.
 - Selección visual de cinco reinos del prototipo.

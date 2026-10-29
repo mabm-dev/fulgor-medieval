@@ -1,0 +1,12 @@
+{
+  "source_sha256": "5bd0b9d9ac59a3009477d9f66b407f9302cfd13f758436f2b7c18726b6a515bf",
+  "source_preserved": true,
+  "uv_preserved": true,
+  "face_above_local_z_1_635_preserved": true,
+  "boundary_preserved": true,
+  "vertex_count": 70157,
+  "changed_vertices": 11039,
+  "max_displacement_mm": 3.9379796981811523,
+  "status": "anatomical study, not approved; not textured in Painter",
+  "operation": "40 weighted Laplacian iterations, 0.48; restricted to neck transition; reversible shape key"
+}

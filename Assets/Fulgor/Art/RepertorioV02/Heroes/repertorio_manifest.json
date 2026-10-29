@@ -1,0 +1,84 @@
+[
+  {
+    "name": "SM_HeroeCapitanNatural_A_LOD0",
+    "triangles": 11484,
+    "vertices": 5998,
+    "materials": 1,
+    "uv_channels": 1,
+    "bounds": [
+      [
+        -0.10097048431634903,
+        0.13899999856948853
+      ],
+      [
+        -0.0645499974489212,
+        0.059448327869176865
+      ],
+      [
+        0.0,
+        0.5519999861717224
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_resolution": 1024,
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness",
+      "Metallic"
+    ],
+    "pose": "static",
+    "rigged": false,
+    "revision": "Natural V02"
+  },
+  {
+    "name": "SM_HeroinaSoberanaNatural_A_LOD0",
+    "triangles": 10366,
+    "vertices": 5423,
+    "materials": 1,
+    "uv_channels": 1,
+    "bounds": [
+      [
+        -0.10097048431634903,
+        0.08710569888353348
+      ],
+      [
+        -0.0645499974489212,
+        0.059448327869176865
+      ],
+      [
+        0.0,
+        0.4316995441913605
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_resolution": 1024,
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness",
+      "Metallic"
+    ],
+    "pose": "static",
+    "rigged": false,
+    "revision": "Natural V02"
+  }
+]

@@ -1,0 +1,142 @@
+[
+  {
+    "name": "SM_BosqueNatural_A_Detalle_LOD0",
+    "triangles": 17182,
+    "vertices": 20731,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8400446176528931,
+        0.8400446176528931
+      ],
+      [
+        -0.9700000286102295,
+        0.9700000286102295
+      ],
+      [
+        0.0,
+        0.8906592130661011
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_BosqueNatural_A_LOD0",
+    "source_blend": "Bosque_colina_natural_v02.blend",
+    "kind": "forest",
+    "additions": {
+      "plants": 45,
+      "stones": 0,
+      "flowers": 0
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1,
+    "separated_backface_vertices": 7800
+  },
+  {
+    "name": "SM_ColinaNatural_A_Detalle_LOD0",
+    "triangles": 27424,
+    "vertices": 15506,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8400447368621826,
+        0.8400447368621826
+      ],
+      [
+        -0.970000147819519,
+        0.970000147819519
+      ],
+      [
+        0.0,
+        0.6295744180679321
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_ColinaNatural_A_LOD0",
+    "source_blend": "Bosque_colina_natural_v02.blend",
+    "kind": "hill",
+    "additions": {
+      "plants": 135,
+      "stones": 0,
+      "flowers": 18
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_LlanuraNatural_A_Detalle_LOD0",
+    "triangles": 9918,
+    "vertices": 8057,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8400446176528931,
+        0.8400446176528931
+      ],
+      [
+        -0.9700000286102295,
+        0.9700000286102295
+      ],
+      [
+        0.0,
+        0.21068784594535828
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_LlanuraNatural_A_LOD0",
+    "source_blend": "Bosque_colina_natural_v02.blend",
+    "kind": "plain",
+    "additions": {
+      "plants": 135,
+      "stones": 8,
+      "flowers": 25
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1,
+    "separated_backface_vertices": 780
+  }
+]

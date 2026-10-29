@@ -1,0 +1,33 @@
+{
+  "asset": "toigo_light_skin_male_bronze",
+  "metadata": {
+    "author": "MargaretToigo",
+    "category": "",
+    "changed": "2019-02-12",
+    "created": "2017-11-13",
+    "description": "This is a bronze variation on the young light skinned male.",
+    "license": "CC0",
+    "original_author": "",
+    "original_source": "",
+    "source": "http://www.makehumancommunity.org/node/1136",
+    "thumbnail": "toigo_light_skin_male_bronze.png",
+    "type": "skin"
+  },
+  "catalog_url": "https://static.makehumancommunity.org/assets/assetpacks/skins02.html",
+  "archive_url": "https://files.makehumancommunity.org/asset_packs/skins02/skins02_cc0.zip",
+  "archive_sha256": "1613f1ef3afca53094511d26620ed7cf1d2dedc29ed3d384d60bdebe250698ae",
+  "files": [
+    {
+      "file": "CC0-1.0.md",
+      "sha256": "f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c"
+    },
+    {
+      "file": "toigo_light_skin_male_bronze.mhmat",
+      "sha256": "4dbc8cd5a4c37b415556e76b6b7c5802e4d1432fffa3b0669646c5a92fb584b7"
+    },
+    {
+      "file": "young_lightskinned_male_diffuse_Bronze.png",
+      "sha256": "5a53213f061bfa97ee0afd6b40650ffbc089a479c144e63f3c39acceca5853c0"
+    }
+  ]
+}

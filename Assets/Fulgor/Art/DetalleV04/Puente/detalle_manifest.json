@@ -1,0 +1,90 @@
+[
+  {
+    "name": "SM_PuentePiedra_A_Detalle_LOD0",
+    "triangles": 32396,
+    "vertices": 17528,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8660253882408142,
+        0.8660253882408142
+      ],
+      [
+        -0.18400000035762787,
+        0.18400000035762787
+      ],
+      [
+        0.03999999910593033,
+        0.5709999799728394
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_PuentePiedra_A_LOD0",
+    "source_blend": "Puente_piedra_v01.blend",
+    "kind": "bridge",
+    "additions": {},
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_CaminoPuente_Recto_Detalle_LOD0",
+    "triangles": 8058,
+    "vertices": 5001,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8660253882408142,
+        0.8660253882408142
+      ],
+      [
+        -1.0,
+        1.0
+      ],
+      [
+        0.0,
+        0.20794956386089325
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_CaminoPuente_Recto_LOD0",
+    "source_blend": "Puente_piedra_v01.blend",
+    "kind": "road",
+    "additions": {
+      "plants": 70,
+      "stones": 37,
+      "flowers": 10
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  }
+]

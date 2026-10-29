@@ -1,0 +1,24 @@
+# MakeHuman Material definition
+
+name lightskinmaleMaterial
+
+// Color shading attributes
+diffuseColor  1 1 1
+specularColor  0.02745 0.02745 0.02745
+shininess 1
+opacity 0
+
+// Textures and properties
+diffuseTexture young_lightskinned_male_diffuse_Bronze.png
+shaderParam litsphereTexture data/litspheres/lit_standard_skin.png
+
+// Shader programme
+shader data/shaders/glsl/phong
+
+// Configure built-in shader defines
+shaderConfig diffuse true
+shaderConfig bump false
+shaderConfig normal  false
+shaderConfig displacement  false
+shaderConfig spec  false
+shaderConfig vertexColors false

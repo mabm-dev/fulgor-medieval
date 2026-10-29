@@ -1,0 +1,21 @@
+{
+  "saved_blend_reopened": true,
+  "base_v06_unchanged": true,
+  "protected_objects_verified": 745,
+  "native_hair_objects": [
+    "Pelo_fibras_V07_0_nativo",
+    "Pelo_fibras_V07_1_nativo",
+    "Pelo_fibras_V07_2_nativo"
+  ],
+  "strands": 43869,
+  "points": 1068815,
+  "coordinates_and_radii_finite": true,
+  "head_beard_eyes_costume_cameras_lights_preserved": true,
+  "renders_checked": [
+    "D:\\Proyectos\\fulgor-medieval\\Builds\\ArtPreview\\RodrigoCastillaV07\\Rostro_v07.png",
+    "D:\\Proyectos\\fulgor-medieval\\Builds\\ArtPreview\\RodrigoCastillaV07\\Perfil_cuello_v07.png",
+    "D:\\Proyectos\\fulgor-medieval\\Builds\\ArtPreview\\RodrigoCastillaV07\\Espalda_v07.png"
+  ],
+  "game_ready": false,
+  "artistic_acceptance": "pending"
+}

@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Suelo
+  m_Shader: {fileID: 4800000, guid: c4e561bb9b8b7e6449e6c2570ff5f114, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _GrassMap:
+        m_Texture: {fileID: 2800000, guid: fcdaa69bbf2b633478afe92135045623, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SoilMap:
+        m_Texture: {fileID: 2800000, guid: c909fc325bab893459ed8ff117feb7f5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SoilNormal:
+        m_Texture: {fileID: 2800000, guid: 10d1235e8aad63d4b8decd93d05619be, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SoilRoughness:
+        m_Texture: {fileID: 2800000, guid: 30e3cbf97cabea44399ffab5278e2488, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _GroundScale: 100
+    m_Colors:
+    - _BaseColor: {r: 0.86, g: 0.9, b: 0.86, a: 1}
+    - _SoilColor: {r: 0.94, g: 0.9, b: 0.81, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

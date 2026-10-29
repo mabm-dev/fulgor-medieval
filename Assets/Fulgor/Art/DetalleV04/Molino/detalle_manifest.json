@@ -1,0 +1,86 @@
+[
+  {
+    "name": "SM_MolinoAgua_Edificio_Detalle_LOD0",
+    "triangles": 9736,
+    "vertices": 5466,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.5187000036239624,
+        0.4171898066997528
+      ],
+      [
+        -0.27149999141693115,
+        0.25
+      ],
+      [
+        0.0,
+        0.7285000085830688
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_MolinoAgua_Edificio_LOD0",
+    "source_blend": "Molino_agua_v01.blend",
+    "kind": "building",
+    "additions": {},
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_MolinoAgua_Rueda_Detalle_LOD0",
+    "triangles": 3004,
+    "vertices": 1760,
+    "materials": 1,
+    "texture_resolution": 1024,
+    "bounds": [
+      [
+        -0.2409999966621399,
+        0.2409999966621399
+      ],
+      [
+        -0.1899999976158142,
+        0.1899999976158142
+      ],
+      [
+        -0.2409999966621399,
+        0.2409999966621399
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_MolinoAgua_Rueda_LOD0",
+    "source_blend": "Molino_agua_v01.blend",
+    "kind": "wheel",
+    "additions": {},
+    "source_uv_removed": true,
+    "uv_channels": 1
+  }
+]

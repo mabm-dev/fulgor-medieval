@@ -7,6 +7,11 @@ La documentación se organiza por la pregunta que responde.
 | `diseno/` | ¿Qué experiencia y reglas tendrá el videojuego? |
 | `casos-de-uso/` | ¿Qué hace el jugador y qué resultado observa? |
 | `decisiones/` | ¿Por qué se eligió una solución duradera? |
+| `BATALLA_GRAFICA.md` | ¿Cómo se muestran y dirigen los encuentros tácticos? |
+| `LOGISTICA_MILITAR.md` | ¿Cómo se pagan, abastecen y recuperan las tropas? |
+| `NIEBLA_Y_EXPLORACION.md` | ¿Qué conoce cada reino y cómo se explora el mapa? |
+| `INICIO_Y_SESIONES.md` | ¿Cómo inicio, guardo, continúo o cambio de campaña? |
+| `CIUDAD_CONSTRUCCION.md` | ¿Cómo crece la ciudad al construir y cómo se guardan sus obras? |
 | `ROADMAP.md` | ¿Qué se implementa primero y cuándo se considera terminado? |
 | `migracion-unity/` | ¿En qué estado está el portado a Unity y qué falta? |
 | `CONTRATO_VISUAL_BLENDER_UNITY.md` | ¿Qué escala, ejes y pivotes deben respetar los recursos? |

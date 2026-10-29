@@ -30,6 +30,19 @@ namespace Fulgor.Core.Campaign
             checked(Stone + other.Stone), checked(Gold + other.Gold),
             checked(Labor + other.Labor));
 
+        public bool TrySpend(CampaignResources cost,out CampaignResources remaining)
+        {
+            remaining=this;
+            if(Grain<cost.Grain||Wood<cost.Wood||Stone<cost.Stone||Gold<cost.Gold||Labor<cost.Labor)return false;
+            remaining=new CampaignResources(Grain-cost.Grain,Wood-cost.Wood,Stone-cost.Stone,Gold-cost.Gold,Labor-cost.Labor);return true;
+        }
+
+        public CampaignResources SubtractClamped(CampaignResources cost)=>new CampaignResources(
+            Math.Max(0,Grain-cost.Grain),Math.Max(0,Wood-cost.Wood),Math.Max(0,Stone-cost.Stone),
+            Math.Max(0,Gold-cost.Gold),Math.Max(0,Labor-cost.Labor));
+
+        public CampaignResources MissingFor(CampaignResources cost)=>cost.SubtractClamped(this);
+
         public bool Equals(CampaignResources other) => Grain == other.Grain &&
             Wood == other.Wood && Stone == other.Stone && Gold == other.Gold && Labor == other.Labor;
 
@@ -39,19 +52,24 @@ namespace Fulgor.Core.Campaign
 
     public sealed class CampaignTurnState
     {
-        public CampaignTurnState(int turn, CampaignResources resources, CampaignResources incomePerTurn)
+        public CampaignTurnState(int turn, CampaignResources resources, CampaignResources incomePerTurn,
+            CampaignResources expensesPerTurn=default)
         {
             if (turn < 1) throw new ArgumentOutOfRangeException(nameof(turn));
             Turn = turn;
             Resources = resources;
             IncomePerTurn = incomePerTurn;
+            ExpensesPerTurn = expensesPerTurn;
         }
 
         public int Turn { get; }
         public CampaignResources Resources { get; }
         public CampaignResources IncomePerTurn { get; }
+        public CampaignResources ExpensesPerTurn { get; }
+        public CampaignResources ProjectedResources=>Resources.Add(IncomePerTurn).SubtractClamped(ExpensesPerTurn);
+        public CampaignResources MaintenanceShortfall=>Resources.Add(IncomePerTurn).MissingFor(ExpensesPerTurn);
 
         public CampaignTurnState CompleteTurn() => new CampaignTurnState(
-            checked(Turn + 1), Resources.Add(IncomePerTurn), IncomePerTurn);
+            checked(Turn + 1), ProjectedResources, IncomePerTurn, ExpensesPerTurn);
     }
 }

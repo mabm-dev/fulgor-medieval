@@ -1,0 +1,21 @@
+{
+  "source_portrait": "ArtSource\\Portraits\\Heroes\\heroe_rodrigo_diaz_castilla.png",
+  "reference_sheet": "ArtSource\\Concept\\CastillaRodrigoV01\\Rodrigo_castilla_vistas_v01.png",
+  "reference_type": "generated 2D, not calibrated orthographic scans",
+  "authoring_height_m_provisional": 1.8,
+  "contains_character_mesh": false,
+  "views": {
+    "Frente": [
+      0,
+      0.3555
+    ],
+    "Perfil": [
+      0.3555,
+      0.6445
+    ],
+    "Espalda": [
+      0.6445,
+      1
+    ]
+  }
+}

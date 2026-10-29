@@ -1,0 +1,48 @@
+[
+  {
+    "name": "SM_MontanaNatural_A_Detalle_LOD0",
+    "triangles": 36416,
+    "vertices": 19130,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8400447368621826,
+        0.8400447368621826
+      ],
+      [
+        -0.970000147819519,
+        0.970000147819519
+      ],
+      [
+        0.0,
+        1.4257044792175293
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_MontanaNatural_A_LOD0",
+    "source_blend": "Montana_natural_v02.blend",
+    "kind": "mountain",
+    "additions": {
+      "plants": 70,
+      "stones": 24,
+      "flowers": 7
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  }
+]

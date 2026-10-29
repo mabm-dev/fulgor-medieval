@@ -14,6 +14,15 @@ namespace Fulgor.Presentation.Tests.Map
         }
 
         [Test]
+        public void OffscreenRenderingRequiresItsOwnFlagAndDoesNotEnableBenchmarkByItself()
+        {
+            Assert.That(BenchmarkOptions.Parse(new[]{"-benchmark"}).Offscreen,Is.False);
+            var options=BenchmarkOptions.Parse(new[]{"-benchmark","-benchmarkOffscreen"});
+            Assert.That(options.Enabled,Is.True);Assert.That(options.Offscreen,Is.True);
+            Assert.That(BenchmarkOptions.Parse(new[]{"-benchmarkOffscreen"}).Enabled,Is.False);
+        }
+
+        [Test]
         public void UsesDefaultsWhenOnlyFlagIsPresent()
         {
             var options = BenchmarkOptions.Parse(new[] { "Fulgor.exe", "-benchmark" });

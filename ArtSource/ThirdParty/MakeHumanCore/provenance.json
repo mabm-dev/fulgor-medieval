@@ -1,0 +1,64 @@
+{
+  "repository": "https://github.com/makehumancommunity/makehuman",
+  "commit": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+  "asset_license": "CC0-1.0",
+  "files": [
+    {
+      "file": "base.obj",
+      "sha256": "8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c"
+    },
+    {
+      "file": "caucasian-male-old.target",
+      "sha256": "b0d2b1d58cba0358af59833740e70229265f7da1c20a11240f4123b7192cfd6d"
+    },
+    {
+      "file": "caucasian-male-young.target",
+      "sha256": "70e228ba7164737dae664454394536fc5935fa48d333c1a97d77e2dc6eacc5f5"
+    },
+    {
+      "file": "chin-bones-incr.target",
+      "sha256": "245b7a9506a10d5828531922ab2ec6da0e813f71bd995dae48c9a4dfad171a49"
+    },
+    {
+      "file": "commit.txt",
+      "sha256": "82c043c0ce6be2cd4e9a739ad61c218293ca87d5161d0ded2a6f0ddbd6c353a6"
+    },
+    {
+      "file": "eyebrows-trans-down.target",
+      "sha256": "38f7de378d535d51f2e50dc2568121a8769445f9a62423bd0a5e688c47ea3225"
+    },
+    {
+      "file": "eyebrows-trans-forward.target",
+      "sha256": "b02d5416bf663e3b77d3ccb44348f735a3a046f5c7df7dd4160b88485a02e7bd"
+    },
+    {
+      "file": "head-rectangular.target",
+      "sha256": "bbfcbd4d6334df18515e73abb707b8a948adb74e0aba88a728c8e146dd5f4e4b"
+    },
+    {
+      "file": "LICENSE.ASSETS.md",
+      "sha256": "f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c"
+    },
+    {
+      "file": "LICENSE.md",
+      "sha256": "edd99571ca62698f78c943fd4fffb159a413c315fa0d4819d3cec5cadaf8b4f1"
+    },
+    {
+      "file": "nose-curve-convex.target",
+      "sha256": "3426e9a53c65962bc75b25aae04759a03e818d708bc5445ffc4dfb812497a7ca"
+    }
+  ],
+  "origin_paths": {
+    "head-rectangular.target": "makehuman/data/targets/head/head-rectangular.target",
+    "caucasian-male-young.target": "makehuman/data/targets/macrodetails/caucasian-male-young.target",
+    "LICENSE.ASSETS.md": "LICENSE.ASSETS.md",
+    "eyebrows-trans-forward.target": "makehuman/data/targets/eyebrows/eyebrows-trans-forward.target",
+    "commit.txt": "Local metadata: pinned upstream commit",
+    "base.obj": "makehuman/data/3dobjs/base.obj",
+    "nose-curve-convex.target": "makehuman/data/targets/nose/nose-curve-convex.target",
+    "chin-bones-incr.target": "makehuman/data/targets/chin/chin-bones-incr.target",
+    "eyebrows-trans-down.target": "makehuman/data/targets/eyebrows/eyebrows-trans-down.target",
+    "LICENSE.md": "LICENSE.md",
+    "caucasian-male-old.target": "makehuman/data/targets/macrodetails/caucasian-male-old.target"
+  }
+}

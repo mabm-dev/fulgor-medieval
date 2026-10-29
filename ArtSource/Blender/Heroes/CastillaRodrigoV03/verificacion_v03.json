@@ -1,0 +1,20 @@
+{
+  "saved_blend_reopened": true,
+  "head_original_uv": true,
+  "source_hashes_match": 18,
+  "original_portraits_unchanged": 12,
+  "renders_checked": 3,
+  "allowed_uv_texture_files": [
+    "Aksel_Skin_NRM.png",
+    "Aksel_Skin_SPEC.png",
+    "young_lightskinned_male_diffuse_Bronze.png"
+  ],
+  "hair_fibers": 20440,
+  "curved_irises": 2,
+  "active_cloth_modifiers": 0,
+  "evaluated_triangles": 4852904,
+  "portrait_used_as_surface": false,
+  "predecessor_v02_preserved": true,
+  "game_ready": false,
+  "visual_review": "V03 eye/groom/skin revision inspected; likeness and naturalism still require refinement."
+}

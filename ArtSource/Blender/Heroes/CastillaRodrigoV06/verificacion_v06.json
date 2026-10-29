@@ -1,0 +1,12 @@
+{
+  "base_v05_sha256": "6f528ddc35a89845f73ceee0ec9e01bfe5eed73a5185a4f7599fcff8bef53094",
+  "back_edge_world_y": -0.015,
+  "edge_feather_m": 0.0015,
+  "removed_strands": 2203,
+  "tapered_points": 959,
+  "color_corners_updated": 37830,
+  "head_geometry_unchanged": true,
+  "upper_treatment_unchanged_above_z": 1.638,
+  "rear_neck_beard_roots_remaining": 0,
+  "game_ready": false
+}

@@ -1,0 +1,370 @@
+[
+  {
+    "name": "SM_MarNatural_A_Detalle_LOD0",
+    "triangles": 8878,
+    "vertices": 4441,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8400446176528931,
+        0.8400446176528931
+      ],
+      [
+        -0.9700000286102295,
+        0.9700000286102295
+      ],
+      [
+        0.0,
+        0.042480289936065674
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_MarNatural_A_LOD0",
+    "source_blend": "Agua_cereal_caminos_natural_v02.blend",
+    "kind": "water",
+    "additions": {
+      "plants": 0,
+      "stones": 0,
+      "flowers": 0
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_CostaNatural_A_Detalle_LOD0",
+    "triangles": 12944,
+    "vertices": 7637,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8400446176528931,
+        0.8400446176528931
+      ],
+      [
+        -0.9700000286102295,
+        0.9700000286102295
+      ],
+      [
+        0.0,
+        0.20188716053962708
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_CostaNatural_A_LOD0",
+    "source_blend": "Agua_cereal_caminos_natural_v02.blend",
+    "kind": "water",
+    "additions": {
+      "plants": 71,
+      "stones": 10,
+      "flowers": 0
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_LagoNatural_A_Detalle_LOD0",
+    "triangles": 13734,
+    "vertices": 8087,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8400446176528931,
+        0.8400446176528931
+      ],
+      [
+        -0.9700000286102295,
+        0.9700000286102295
+      ],
+      [
+        0.0,
+        0.2488929182291031
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_LagoNatural_A_LOD0",
+    "source_blend": "Agua_cereal_caminos_natural_v02.blend",
+    "kind": "water",
+    "additions": {
+      "plants": 81,
+      "stones": 42,
+      "flowers": 0
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_RioNatural_A_Detalle_LOD0",
+    "triangles": 13770,
+    "vertices": 8121,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8400446176528931,
+        0.8400446176528931
+      ],
+      [
+        -0.9700000286102295,
+        0.9700000286102295
+      ],
+      [
+        0.0,
+        0.24654653668403625
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_RioNatural_A_LOD0",
+    "source_blend": "Agua_cereal_caminos_natural_v02.blend",
+    "kind": "water",
+    "additions": {
+      "plants": 81,
+      "stones": 39,
+      "flowers": 0
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_CaminoNatural_Recto_Detalle_LOD0",
+    "triangles": 10542,
+    "vertices": 6327,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8400446176528931,
+        0.8400446176528931
+      ],
+      [
+        -0.9700000286102295,
+        0.9700000286102295
+      ],
+      [
+        0.0,
+        0.2021370679140091
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_CaminoNatural_Recto_LOD0",
+    "source_blend": "Agua_cereal_caminos_natural_v02.blend",
+    "kind": "road",
+    "additions": {
+      "plants": 70,
+      "stones": 40,
+      "flowers": 12
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_CaminoNatural_Curva_Detalle_LOD0",
+    "triangles": 10254,
+    "vertices": 6131,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8400446176528931,
+        0.8400446176528931
+      ],
+      [
+        -0.9700000286102295,
+        0.9700000286102295
+      ],
+      [
+        0.0,
+        0.200595885515213
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_CaminoNatural_Curva_LOD0",
+    "source_blend": "Agua_cereal_caminos_natural_v02.blend",
+    "kind": "road",
+    "additions": {
+      "plants": 70,
+      "stones": 32,
+      "flowers": 10
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_CaminoNatural_Cruce_Detalle_LOD0",
+    "triangles": 10570,
+    "vertices": 6335,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8400446176528931,
+        0.8400446176528931
+      ],
+      [
+        -0.9700000286102295,
+        0.9700000286102295
+      ],
+      [
+        0.0,
+        0.20913876593112946
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_CaminoNatural_Cruce_LOD0",
+    "source_blend": "Agua_cereal_caminos_natural_v02.blend",
+    "kind": "road",
+    "additions": {
+      "plants": 70,
+      "stones": 50,
+      "flowers": 11
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_CerealNatural_A_Detalle_LOD0",
+    "triangles": 21358,
+    "vertices": 14579,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8400446176528931,
+        0.8400446176528931
+      ],
+      [
+        -0.9700000286102295,
+        0.9700000286102295
+      ],
+      [
+        0.0,
+        0.34394529461860657
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_CerealNatural_A_LOD0",
+    "source_blend": "Agua_cereal_caminos_natural_v02.blend",
+    "kind": "cereal",
+    "additions": {
+      "plants": 70,
+      "stones": 50,
+      "flowers": 15
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  }
+]

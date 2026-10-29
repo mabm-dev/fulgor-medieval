@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Fulgor.Core.Map;
+using Fulgor.Core.Campaign;
 using UnityEngine;
 
 namespace Fulgor.Presentation.Map
@@ -7,10 +8,12 @@ namespace Fulgor.Presentation.Map
     /// <summary>Vista temporal del mapa procedural; no contiene reglas de juego.</summary>
     public sealed class CampaignBoardPreview : MonoBehaviour
     {
+        [SerializeField] private CampaignScenarioDefinition scenario;
         [SerializeField] private int seed = 12345;
         [SerializeField, Range(0.7f, 1f)] private float tileFill = 0.97f;
         [SerializeField] private bool showGold = true;
         [SerializeField] private bool useVerticalTerrainBlockout = true;
+        private Transform generatedBoardRoot;
         [Tooltip("Material URP/Lit del que se derivan los colores de terreno, orilla, oro y transición.")]
         [SerializeField] private Material boardBaseMaterial;
 
@@ -26,6 +29,7 @@ namespace Fulgor.Presentation.Map
         private Material heightTransitionMaterial;
 
         public Material BoardBaseMaterial => boardBaseMaterial;
+        public CampaignArmyRegistry InitialArmyRegistry { get; private set; }
 
         private void Awake()
         {
@@ -36,49 +40,122 @@ namespace Fulgor.Presentation.Map
                 return;
             }
 
-            var map = ProceduralMapGenerator.Generate(
-                ProceduralMapGenerator.DefaultWidth,
-                ProceduralMapGenerator.DefaultHeight,
-                seed);
-            BuildBoard(map);
-            ConfigureCamera(map);
-            ConfigureLight();
+            RegenerateBoard();
         }
+
+        // Regeneration restarts the prototype campaign, including turn and resources.
+        [ContextMenu("Regenerate board (Play Mode)")]
+        public void RegenerateBoard()
+        {
+            if (!Application.isPlaying || !isActiveAndEnabled || boardBaseMaterial == null) return;
+
+            var width = scenario != null ? scenario.Width : ProceduralMapGenerator.DefaultWidth;
+            var height = scenario != null ? scenario.Height : ProceduralMapGenerator.DefaultHeight;
+            var scenarioSeed = scenario != null ? scenario.Seed : seed;
+            // Generate first: invalid input must not erase the existing board.
+            var map = ProceduralMapGenerator.Generate(width, height, scenarioSeed);
+            // Validate routes before retiring the current board as well.
+            var routes = scenario != null ? scenario.CreateRouteGraph(map) : new MapRouteGraph(map);
+            if (scenario != null)
+            {
+                tileFill = scenario.TileFill;
+                showGold = scenario.ShowGold;
+                useVerticalTerrainBlockout = scenario.UseVerticalTerrainBlockout;
+            }
+
+            // Validate the objective before replacing a playable board.
+            var armyRegistry = scenario != null ? scenario.CreateArmyRegistry(routes) : null;
+            var mission = scenario != null ? scenario.CreateMission(map, routes, armyRegistry) :
+                ReachDestinationMission.Create(map, routes);
+            ClearGeneratedBoard();
+            try
+            {
+                BuildBoard(map, routes, mission, armyRegistry);
+                InitialArmyRegistry = armyRegistry;
+                ConfigureCamera(map);
+                ConfigureLight();
+                GetComponent<CampaignMapAppearance>()?.ApplyTo(generatedBoardRoot);
+            }
+            catch
+            {
+                ClearGeneratedBoard();
+                throw;
+            }
+        }
+
+        [ContextMenu("Regenerate board (Play Mode)", true)]
+        private bool CanRegenerateBoard() =>
+            Application.isPlaying && isActiveAndEnabled && boardBaseMaterial != null;
 
         private void OnDestroy()
         {
+            ClearGeneratedBoard();
+        }
+
+        private void ClearGeneratedBoard()
+        {
+            GetComponent<CampaignMapAppearance>()?.ReleaseGeneration();
+            InitialArmyRegistry = null;
+            var selection = GetComponent<CampaignBoardSelection>();
+            if (selection != null) selection.ResetBoard();
+            if (generatedBoardRoot != null)
+            {
+                // Destroy is deferred in Play Mode. Disable and detach first so old
+                // colliders and renderers cannot participate in the new board.
+                var oldRoot = generatedBoardRoot;
+                generatedBoardRoot = null;
+                oldRoot.gameObject.SetActive(false);
+                oldRoot.SetParent(null, false);
+                ReleaseGeneratedObject(oldRoot.gameObject);
+            }
+
             foreach (var mesh in terrainMeshes.Values)
             {
-                if (mesh != null) Destroy(mesh);
+                if (mesh != null) ReleaseGeneratedObject(mesh);
             }
 
             foreach (var mesh in blockoutMeshes.Values)
             {
-                if (mesh != null) Destroy(mesh);
+                if (mesh != null) ReleaseGeneratedObject(mesh);
             }
 
             foreach (var mesh in transitionMeshes.Values)
             {
-                if (mesh != null) Destroy(mesh);
+                if (mesh != null) ReleaseGeneratedObject(mesh);
             }
 
             foreach (var mesh in junctionMeshes.Values)
             {
-                if (mesh != null) Destroy(mesh);
+                if (mesh != null) ReleaseGeneratedObject(mesh);
             }
 
             foreach (var material in terrainMaterials.Values)
             {
-                if (material != null) Destroy(material);
+                if (material != null) ReleaseGeneratedObject(material);
             }
 
-            if (goldMaterial != null) Destroy(goldMaterial);
+            if (goldMaterial != null) ReleaseGeneratedObject(goldMaterial);
             foreach (var material in waterEdgeMaterials.Values)
-                if (material != null) Destroy(material);
-            if (heightTransitionMaterial != null) Destroy(heightTransitionMaterial);
+                if (material != null) ReleaseGeneratedObject(material);
+            if (heightTransitionMaterial != null) ReleaseGeneratedObject(heightTransitionMaterial);
+            terrainMeshes.Clear();
+            blockoutMeshes.Clear();
+            transitionMeshes.Clear();
+            junctionMeshes.Clear();
+            terrainMaterials.Clear();
+            waterEdgeMaterials.Clear();
+            goldMaterial = null;
+            heightTransitionMaterial = null;
         }
 
-        private void BuildBoard(GeneratedMap map)
+        private static void ReleaseGeneratedObject(Object item)
+        {
+            if (item == null) return;
+            if (Application.isPlaying) Destroy(item);
+            else DestroyImmediate(item);
+        }
+
+        private void BuildBoard(GeneratedMap map, MapRouteGraph routes, ReachDestinationMission mission, CampaignArmyRegistry armyRegistry)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             var memoryBefore = System.GC.GetTotalMemory(false);
@@ -100,7 +177,13 @@ namespace Fulgor.Presentation.Map
             if (boardSelection == null) boardSelection = gameObject.AddComponent<CampaignBoardSelection>();
             var selectionPanel = GetComponent<CampaignSelectionPanel>();
             if (selectionPanel == null) selectionPanel = gameObject.AddComponent<CampaignSelectionPanel>();
-            boardSelection.Initialize(selectionPanel);
+            boardSelection.InitializeWithRoutes(selectionPanel, routes);
+            if (generatedBoardRoot == null)
+            {
+                var root = new GameObject("Generated Board");
+                root.transform.SetParent(transform, false);
+                generatedBoardRoot = root.transform;
+            }
             var cellsByCoordinates = new Dictionary<HexCoordinates, MapCell>(map.Cells.Count);
             foreach (var cell in map.Cells) cellsByCoordinates.Add(cell.Coordinates, cell);
             var waterKinds = WaterVisualClassifier.Classify(map);
@@ -109,7 +192,7 @@ namespace Fulgor.Presentation.Map
             {
                 var style = TerrainVisualStyle.For(cell.Terrain);
                 var tile = new GameObject($"Hex {cell.Coordinates.Key} {cell.Terrain}");
-                tile.transform.SetParent(transform, false);
+                tile.transform.SetParent(generatedBoardRoot, false);
                 tile.transform.localPosition = HexWorldLayout.ToWorld(cell.Coordinates, OuterRadius);
 
                 var tileMesh = useVerticalTerrainBlockout
@@ -145,7 +228,7 @@ namespace Fulgor.Presentation.Map
             selectionPanel.SetDiagnostics(metrics);
             var turnController = GetComponent<CampaignTurnController>();
             if (turnController == null) turnController = gameObject.AddComponent<CampaignTurnController>();
-            turnController.Initialize(selectionPanel, map);
+            turnController.Initialize(selectionPanel, map, mission, armyRegistry, scenario != null ? scenario.PlayerFactionId : null,scenario!=null&&scenario.EnableStrategicRivals,scenario!=null?scenario.ObjectiveKind:CampaignObjectiveKind.ReachDestination,scenario!=null&&scenario.EnableMilitaryLogistics,scenario!=null&&scenario.EnableFogOfWar);
         }
 
         private int CreateTransitions(Transform tile, MapCell cell,
@@ -251,7 +334,11 @@ namespace Fulgor.Presentation.Map
             marker.transform.localScale = new Vector3(0.16f, 0.04f, 0.16f);
             marker.GetComponent<MeshRenderer>().sharedMaterial = goldMaterial;
             var collider = marker.GetComponent<Collider>();
-            if (collider != null) Destroy(collider);
+            if (collider != null)
+            {
+                collider.enabled = false;
+                ReleaseGeneratedObject(collider);
+            }
         }
 
         private Material CreateMaterial(string materialName, Color color, float smoothness) =>

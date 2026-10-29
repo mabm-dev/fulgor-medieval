@@ -32,14 +32,18 @@ namespace Fulgor.Presentation.Tests.Map
             var panel = board.GetComponent<CampaignSelectionPanel>();
             Assert.That(report.Completed, Is.True);
             Assert.That(report.Metrics.Tiles, Is.EqualTo(384));
-            Assert.That(report.Metrics.TransitionInstances, Is.GreaterThan(0));
-            Assert.That(report.Metrics.JunctionInstances, Is.GreaterThan(0));
+            Assert.That(board.GetComponent<CampaignMapAppearance>().Ready,Is.True);
+            Assert.That(report.Metrics.TransitionInstances, Is.Zero);
+            Assert.That(report.Metrics.JunctionInstances, Is.Zero);
             Assert.That(report.Metrics.Milliseconds, Is.GreaterThan(0d));
-            Assert.That(board.GetComponentsInChildren<MeshCollider>().Length,
+            // Build metrics cover generated terrain, excluding campaign army markers.
+            var generatedBoard = board.transform.Find("Generated Board");
+            Assert.That(generatedBoard, Is.Not.Null);
+            Assert.That(generatedBoard.GetComponentsInChildren<MeshCollider>().Length,
                 Is.EqualTo(report.Metrics.Colliders));
-            Assert.That(board.GetComponentsInChildren<MeshRenderer>().Length,
+            Assert.That(generatedBoard.GetComponentsInChildren<MeshRenderer>().Length,
                 Is.EqualTo(report.Metrics.Renderers));
-            Assert.That(board.GetComponentsInChildren<MeshFilter>()
+            Assert.That(generatedBoard.GetComponentsInChildren<MeshFilter>()
                     .Select(item => item.sharedMesh).Distinct().Count(),
                 Is.EqualTo(report.Metrics.UniqueMeshes));
 

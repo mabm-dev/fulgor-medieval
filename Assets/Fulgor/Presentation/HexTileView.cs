@@ -15,6 +15,10 @@ namespace Fulgor.Presentation.Map
         private Color baseColor;
         private bool hovered;
         private bool selected;
+        private bool selectionOutline;
+        private Fulgor.Core.Campaign.CampaignVisibility visibility=Fulgor.Core.Campaign.CampaignVisibility.Visible;
+        public void SetFogVisibility(Fulgor.Core.Campaign.CampaignVisibility value){if(visibility==value)return;visibility=value;ApplyColor();}
+        public void UseSelectionOutline(bool value){selectionOutline=value;ApplyColor();}
 
         public MapCell Cell { get; private set; }
 
@@ -48,7 +52,7 @@ namespace Fulgor.Presentation.Map
         private void ApplyColor()
         {
             if (meshRenderer == null) return;
-            if (!selected && !hovered)
+            if (visibility==Fulgor.Core.Campaign.CampaignVisibility.Visible&&((!selected && !hovered) || selected && selectionOutline))
             {
                 // En reposo el color sale del material compartido del terreno.
                 meshRenderer.SetPropertyBlock(null);
@@ -56,7 +60,8 @@ namespace Fulgor.Presentation.Map
             }
 
             if (properties == null) properties = new MaterialPropertyBlock();
-            var color = selected ? SelectionColor : Color.Lerp(baseColor, Color.white, 0.28f);
+            var color = selected ? SelectionColor : hovered?Color.Lerp(baseColor, Color.white, 0.28f):baseColor;
+            if(visibility!=Fulgor.Core.Campaign.CampaignVisibility.Visible)color*=.42f;
             properties.Clear();
             properties.SetColor(BaseColorId, color);
             properties.SetColor(ColorId, color);

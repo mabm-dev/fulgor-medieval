@@ -393,6 +393,8 @@ GameObject:
   m_Component:
   - component: {fileID: 661519025}
   - component: {fileID: 661519024}
+  - component: {fileID: 661519026}
+  - component: {fileID: 661519027}
   m_Layer: 0
   m_Name: Campaign Board
   m_TagString: Untagged
@@ -412,6 +414,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a44dd0768485f947bec84fbc916a303, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignBoardPreview
+  scenario: {fileID: 11400000, guid: 6d9e4a91c4d44fa2b67f8e9b0d5c31aa, type: 2}
   seed: 12345
   tileFill: 0.97
   showGold: 1
@@ -432,6 +435,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &661519026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 661519023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5111acf5c6546488e76e31aac67282, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignSettlementController
+  settlements:
+  - {fileID: 11400000, guid: 60abe8404f7726241be80de423aa4cfd, type: 2}
+  playerFactionId: castilla
+  reuseArtReviewFortress: 0
+--- !u!114 &661519027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 661519023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2eeb943b302ad549a61b19fa1c39b58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignMapAppearance
+  settings: {fileID: 11400000, guid: fdedda560899d2d448b4078c982531d5, type: 2}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0

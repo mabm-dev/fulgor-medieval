@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 736029ff436d3554fb259d48b711ded3, type: 3}
+  m_Name: CastillaFinish
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CityFinishMaterials
+  Limestone: {fileID: 2100000, guid: f6dc7d8d29f07cc4fb8866404d264ecb, type: 2}
+  Plaster: {fileID: 2100000, guid: 91faebfd54589c944a9265bd5d03abe2, type: 2}
+  Oak: {fileID: 2100000, guid: c0e3d4ed5cdfd3045b68ad7d40bd5785, type: 2}
+  Terracotta: {fileID: 2100000, guid: e592fb02f3e3e894ca16462264c7aaa2, type: 2}
+  Ground: {fileID: 2100000, guid: cd0c9c0f46ee24a46b65de1942dfefaf, type: 2}
+  HouseLimeOcclusion: {fileID: 2800000, guid: a3bf57625dd30c94fa1be76306a86391, type: 3}
+  HouseTallOcclusion: {fileID: 2800000, guid: 7ec4927e9437da446a840ee555455099, type: 3}
+  MarketOcclusion: {fileID: 2800000, guid: 960e809b3221d874ea1cdf25c3b9c475, type: 3}

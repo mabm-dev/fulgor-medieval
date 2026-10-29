@@ -59,5 +59,29 @@ namespace Fulgor.Core.Tests.Campaign
                 new CampaignResources(1, 0, 0, 0, 0));
             Assert.Throws<OverflowException>(() => state.CompleteTurn());
         }
+
+        [Test]
+        public void ForecastPaysMaintenanceFromStockAndIncomeAndMatchesActualTurn()
+        {
+            var expenses=new CampaignResources(3,0,1,2,1);
+            var state=new CampaignTurnState(4,new CampaignResources(5,4,3,2,1),
+                new CampaignResources(2,1,0,3,4),expenses);
+            Assert.That(state.ProjectedResources,Is.EqualTo(new CampaignResources(4,5,2,3,4)));
+            Assert.That(state.MaintenanceShortfall,Is.EqualTo(default(CampaignResources)));
+            var next=state.CompleteTurn();
+            Assert.That(next.Resources,Is.EqualTo(state.ProjectedResources));
+            Assert.That(next.ExpensesPerTurn,Is.EqualTo(expenses));
+            Assert.That(state.Resources,Is.EqualTo(new CampaignResources(5,4,3,2,1)));
+        }
+
+        [Test]
+        public void UncoveredMaintenanceIsReportedWithoutNegativeStockOrHiddenDebt()
+        {
+            var state=new CampaignTurnState(1,new CampaignResources(1,2,0,1,0),
+                new CampaignResources(1,0,0,1,0),new CampaignResources(5,1,0,4,0));
+            Assert.That(state.MaintenanceShortfall,Is.EqualTo(new CampaignResources(3,0,0,2,0)));
+            Assert.That(state.CompleteTurn().Resources,Is.EqualTo(new CampaignResources(0,1,0,0,0)));
+            Assert.That(state.CompleteTurn().MaintenanceShortfall,Is.EqualTo(new CampaignResources(4,0,0,3,0)));
+        }
     }
 }

@@ -1,0 +1,15 @@
+{
+  "saved_blend_reopened": true,
+  "head_vertices": 70129,
+  "head_original_uv": true,
+  "upstream_assets_hashes_match": 11,
+  "original_portraits_unchanged": 12,
+  "renders_checked": 3,
+  "evaluated_triangles": 3653900,
+  "character_objects": 824,
+  "cloth_applied_to_geometry": true,
+  "active_cloth_modifiers": 0,
+  "uses_portrait_surface": false,
+  "game_ready": false,
+  "visual_review": "Anatomy improved over V01; likeness, groom and costume still require refinement."
+}

@@ -1,0 +1,123 @@
+{
+  "source": "public/imagenes de la versión web conservada",
+  "verified_git_reference": "origin/legacy/web",
+  "legacy_commit": "884ec5517e246cfaa918131f0c768cd08000d34b",
+  "image_count": 23,
+  "files": [
+    {
+      "path": "imagenes/aside.webp",
+      "sha256": "89030422d301d6ad00aee0e0fd1a05fe304de1af4ea490bf7b273d6f813791ef",
+      "bytes": 18094
+    },
+    {
+      "path": "imagenes/heroe-aragon.webp",
+      "sha256": "6d0a00b088fdda858603ea0a4bf8c8e0ad36668a0590b3968b85725b4e8158dc",
+      "bytes": 60880
+    },
+    {
+      "path": "imagenes/heroe-castilla.webp",
+      "sha256": "f97ec2854fb4d1b433dfddb741014d113aab4e5015d9d1763a93b7c3999fb40c",
+      "bytes": 55440
+    },
+    {
+      "path": "imagenes/heroe-granada.webp",
+      "sha256": "5f4ce2eef9634a01ad349dc12dcff9efaaead45af7d05e7feea5c9e42b9f01d6",
+      "bytes": 73694
+    },
+    {
+      "path": "imagenes/heroe-leon.webp",
+      "sha256": "3ca961714bfb29101ac8df678efacdf9ee35877c4373029d0c009452094e68a8",
+      "bytes": 56146
+    },
+    {
+      "path": "imagenes/heroe-navarra.webp",
+      "sha256": "e14ff4e4a40cbb0eb7efad67137b27e5ab5936b65fe085a1adfba3bba87b8460",
+      "bytes": 57824
+    },
+    {
+      "path": "imagenes/heroe-silueta-aragon.webp",
+      "sha256": "cdf4b73f7d846ba27db3685c0d2960f1d77e873f97a9114789b5da63564220bd",
+      "bytes": 1106
+    },
+    {
+      "path": "imagenes/heroe-silueta-castilla.webp",
+      "sha256": "1878e8016f71ef5d027d314d9b5e71d2d799989aaa48d4e6a713c340f4eeb306",
+      "bytes": 1094
+    },
+    {
+      "path": "imagenes/heroe-silueta-granada.webp",
+      "sha256": "fb6e5cdf44e7208b138a9c9cc7b6b6a8606dcd54a67f1ca5fe530fbb893118f1",
+      "bytes": 1224
+    },
+    {
+      "path": "imagenes/heroe-silueta-leon.webp",
+      "sha256": "a7ac53370e39822f6ab7fdbe11c377a21872f829caf57701b8c1b3fa6c5ae47f",
+      "bytes": 1180
+    },
+    {
+      "path": "imagenes/heroe-silueta-navarra.webp",
+      "sha256": "930d004383b1377e1cf2eebb353cd3c1c109c1a9769d28f6cf7c6c064f40894f",
+      "bytes": 1260
+    },
+    {
+      "path": "imagenes/logo-fulgor.png",
+      "sha256": "17c7eac710b43d50018f4863b1e2a9f256a059a8d7cc6cb674b964e80924ca31",
+      "bytes": 37181
+    },
+    {
+      "path": "imagenes/marco-hover.webp",
+      "sha256": "9ec8b88596a070fd34e9e1c05ae05fd5a8582b8603271d2873abe17bfddf98db",
+      "bytes": 63904
+    },
+    {
+      "path": "imagenes/menu-inicio-limpio.webp",
+      "sha256": "109c8bfaf9345cd544e68c1337fffab79d0224f4d69ba94fe6c01c89628e5ee5",
+      "bytes": 239216
+    },
+    {
+      "path": "imagenes/registro-fondo.webp",
+      "sha256": "436fd0531fca33a606c0f1d439121d1ff60dfe0dda1a6a39068ffea522d9c4fb",
+      "bytes": 278498
+    },
+    {
+      "path": "imagenes/separador-menu.webp",
+      "sha256": "691f197c5058311d1e9db070392031c1b7fb400f2ab4c961898ce4e44e5471c0",
+      "bytes": 1090
+    },
+    {
+      "path": "imagenes/mapa/ciudad-fortificada.webp",
+      "sha256": "14abd733d893be2ce9a13402590ffd406636a85edc5ee7daab336617c1dce4ab",
+      "bytes": 123736
+    },
+    {
+      "path": "imagenes/mapa/hueste-medieval.webp",
+      "sha256": "fd1beb16f53f5d2c953afbf1c21798692b028c1666a5aae2321e86fc05a66ea1",
+      "bytes": 84578
+    },
+    {
+      "path": "imagenes/mapa/terrenos/agua-pintada.webp",
+      "sha256": "3f2503ce8ef4ab083f6023cc71c7c87c035760ba99060c65d983af9322577b8a",
+      "bytes": 52122
+    },
+    {
+      "path": "imagenes/mapa/terrenos/bosque-pintado.webp",
+      "sha256": "e336725a77bddac1eaeae8748d324ee4c92f2fd989d49a31a3c32959947aa5dc",
+      "bytes": 79372
+    },
+    {
+      "path": "imagenes/mapa/terrenos/colina-pintada.webp",
+      "sha256": "6dec8bb3e1d87c4ad346473966cd56c47d179e7bab96cfc323736dcdb2c439d0",
+      "bytes": 94028
+    },
+    {
+      "path": "imagenes/mapa/terrenos/llanura-pintada.webp",
+      "sha256": "c6f722f55744585a64a6129164541af1ada3b6c505137751da6efdc4f8495fb5",
+      "bytes": 71348
+    },
+    {
+      "path": "imagenes/mapa/terrenos/montana-pintada.webp",
+      "sha256": "500db81f14312d0c262af9b6c35f9b9d40eeebd1d5994dd4aa0fe576ab218c2d",
+      "bytes": 100476
+    }
+  ]
+}

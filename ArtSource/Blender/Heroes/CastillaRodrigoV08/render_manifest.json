@@ -1,0 +1,47 @@
+{
+  "base_v07_sha256": "1ef6b7830b70e04ea116114a35acb3cd6f989aafe4bd9049b646537ec5da7475",
+  "base_preserved": true,
+  "geometry_and_materials_edited": false,
+  "size": [
+    1600,
+    1920
+  ],
+  "samples_max": 256,
+  "noise_threshold": 0.005,
+  "gpu": [
+    "NVIDIA GeForce RTX 5080"
+  ],
+  "lights": [
+    [
+      "Principal_calida",
+      420,
+      2.2,
+      [
+        1,
+        0.94,
+        0.86
+      ]
+    ],
+    [
+      "Relleno_neutro",
+      95,
+      2.5,
+      [
+        0.83,
+        0.9,
+        1
+      ]
+    ],
+    [
+      "Contraluz",
+      230,
+      2.0,
+      [
+        1,
+        0.92,
+        0.82
+      ]
+    ]
+  ],
+  "artistic_acceptance": "pending"
+}

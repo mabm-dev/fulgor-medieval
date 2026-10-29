@@ -1,0 +1,324 @@
+[
+  {
+    "name": "SM_Agua_Mar_Detalle_LOD0",
+    "triangles": 7918,
+    "vertices": 3961,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8660253882408142,
+        0.8660253882408142
+      ],
+      [
+        -1.0,
+        1.0
+      ],
+      [
+        0.0,
+        0.04182104393839836
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_Agua_Mar_LOD0",
+    "source_blend": "Conexiones_agua_v03.blend",
+    "kind": "water",
+    "additions": {
+      "plants": 0,
+      "stones": 0,
+      "flowers": 0
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_Agua_RioRecto_Detalle_LOD0",
+    "triangles": 11570,
+    "vertices": 6655,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8660253882408142,
+        0.8660253882408142
+      ],
+      [
+        -1.0,
+        1.0
+      ],
+      [
+        0.0,
+        0.25308895111083984
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_Agua_RioRecto_LOD0",
+    "source_blend": "Conexiones_agua_v03.blend",
+    "kind": "water",
+    "additions": {
+      "plants": 76,
+      "stones": 21,
+      "flowers": 0
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_Agua_RioCurva_Detalle_LOD0",
+    "triangles": 11518,
+    "vertices": 6615,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8660253882408142,
+        0.8660253882408142
+      ],
+      [
+        -1.0,
+        1.0
+      ],
+      [
+        0.0,
+        0.23936888575553894
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_Agua_RioCurva_LOD0",
+    "source_blend": "Conexiones_agua_v03.blend",
+    "kind": "water",
+    "additions": {
+      "plants": 76,
+      "stones": 22,
+      "flowers": 0
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_Agua_Desembocadura_Detalle_LOD0",
+    "triangles": 11554,
+    "vertices": 6639,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8660253882408142,
+        0.8660253882408142
+      ],
+      [
+        -1.0,
+        1.0
+      ],
+      [
+        0.0,
+        0.2506408095359802
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_Agua_Desembocadura_LOD0",
+    "source_blend": "Conexiones_agua_v03.blend",
+    "kind": "water",
+    "additions": {
+      "plants": 77,
+      "stones": 25,
+      "flowers": 0
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_Agua_CostaRecta_Detalle_LOD0",
+    "triangles": 11170,
+    "vertices": 6363,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8660253882408142,
+        0.8660253882408142
+      ],
+      [
+        -1.0,
+        1.0
+      ],
+      [
+        0.0,
+        0.235460102558136
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_Agua_CostaRecta_LOD0",
+    "source_blend": "Conexiones_agua_v03.blend",
+    "kind": "water",
+    "additions": {
+      "plants": 71,
+      "stones": 13,
+      "flowers": 0
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_Agua_Cabo_Detalle_LOD0",
+    "triangles": 11518,
+    "vertices": 6623,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8660253882408142,
+        0.8660253882408142
+      ],
+      [
+        -1.0,
+        1.0
+      ],
+      [
+        0.0,
+        0.24308981001377106
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_Agua_Cabo_LOD0",
+    "source_blend": "Conexiones_agua_v03.blend",
+    "kind": "water",
+    "additions": {
+      "plants": 73,
+      "stones": 14,
+      "flowers": 0
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  },
+  {
+    "name": "SM_Agua_Bahia_Detalle_LOD0",
+    "triangles": 11690,
+    "vertices": 6749,
+    "materials": 1,
+    "texture_resolution": 2048,
+    "bounds": [
+      [
+        -0.8660253882408142,
+        0.8660253882408142
+      ],
+      [
+        -1.0,
+        1.0
+      ],
+      [
+        0.0,
+        0.24738150835037231
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness"
+    ],
+    "source_model": "SM_Agua_Bahia_LOD0",
+    "source_blend": "Conexiones_agua_v03.blend",
+    "kind": "water",
+    "additions": {
+      "plants": 74,
+      "stones": 17,
+      "flowers": 0
+    },
+    "source_uv_removed": true,
+    "uv_channels": 1
+  }
+]

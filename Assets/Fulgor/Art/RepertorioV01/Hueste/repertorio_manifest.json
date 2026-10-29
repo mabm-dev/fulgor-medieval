@@ -1,0 +1,42 @@
+[
+  {
+    "name": "SM_HuesteEstandarte_A_LOD0",
+    "triangles": 5052,
+    "vertices": 2762,
+    "materials": 1,
+    "uv_channels": 1,
+    "bounds": [
+      [
+        -0.18698537349700928,
+        0.1702600121498108
+      ],
+      [
+        -0.056313998997211456,
+        0.05069819465279579
+      ],
+      [
+        0.0007400000467896461,
+        0.5600000023841858
+      ]
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "texture_resolution": 1024,
+    "texture_maps": [
+      "BaseColor",
+      "Normal",
+      "Roughness",
+      "Metallic"
+    ],
+    "pose": "static",
+    "rigged": false
+  }
+]

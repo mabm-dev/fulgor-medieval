@@ -11,6 +11,8 @@ namespace Fulgor.Presentation.Map
         [SerializeField, Range(0f, 64f)] private float edgeSize = 14f;
 
         private Camera sceneCamera;
+        private Vector3 initialFocus;private float initialZoom;
+        private bool dragging,dragMoved;private Vector2 dragStart,previousPointer;
         private CameraNavigationState navigation;
         private Vector3 cameraOffset;
         private CampaignBoardSelection boardSelection;
@@ -25,6 +27,7 @@ namespace Fulgor.Presentation.Map
             Vector3 offset,
             CampaignBoardSelection selectionOwner = null)
         {
+            this.initialFocus=initialFocus;this.initialZoom=initialZoom;
             sceneCamera = GetComponent<Camera>();
             cameraOffset = offset;
             boardSelection = selectionOwner;
@@ -41,16 +44,35 @@ namespace Fulgor.Presentation.Map
             ApplyState();
         }
 
+        public void FocusOnWorld(Vector3 position)
+        {
+            if (navigation == null) return;
+            navigation.SetAspect(sceneCamera.aspect);
+            navigation.ChangeZoom(Mathf.Min(navigation.Zoom, 6f) - navigation.Zoom);
+            navigation.Pan(new Vector2(position.x - navigation.Focus.x, position.z - navigation.Focus.z));
+            ApplyState();
+        }
+
         private void Update()
         {
-            if (navigation == null || !Application.isFocused) return;
+            if (!CanNavigate){dragging=false;return;}
             navigation.SetAspect(sceneCamera.aspect);
 
             var mouse = Mouse.current;
             var pointer = mouse == null ? Vector2.zero : mouse.position.ReadValue();
             bool allowPointer = mouse != null && sceneCamera.pixelRect.Contains(pointer) &&
                 (boardSelection == null || !boardSelection.BlocksPointer(pointer));
-            var direction = ReadKeyboardDirection() + (allowPointer
+            if(mouse!=null)
+            {
+                if(allowPointer&&(mouse.leftButton.wasPressedThisFrame||mouse.middleButton.wasPressedThisFrame)){dragging=true;dragMoved=false;dragStart=previousPointer=pointer;}
+                if(dragging&&(mouse.leftButton.isPressed||mouse.middleButton.isPressed))
+                {
+                    if(!dragMoved&&(pointer-dragStart).sqrMagnitude>=64){dragMoved=true;previousPointer=dragStart;}
+                    if(dragMoved)DragView(pointer-previousPointer);previousPointer=pointer;
+                }
+                else dragging=false;
+            }
+            var direction = MapCameraControls.KeyboardDirection() + (allowPointer&&!dragging
                 ? MapPointerPolicy.EdgeDirection(pointer, sceneCamera.pixelRect, edgeSize) : Vector2.zero);
             if (direction.sqrMagnitude > 1f) direction.Normalize();
             var scaledSpeed = panSpeed * (navigation.Zoom / 10f) * Time.unscaledDeltaTime;
@@ -63,17 +85,15 @@ namespace Fulgor.Presentation.Map
             ApplyState();
         }
 
-        private static Vector2 ReadKeyboardDirection()
+        public bool CanNavigate=>navigation!=null&&Application.isFocused&&(boardSelection==null||!boardSelection.IsInteractionSuspended);
+        public void PanView(Vector2 delta){if(!CanNavigate)return;navigation.Pan(delta*panSpeed*(navigation.Zoom/10f));ApplyState();}
+        public void ZoomView(float delta){if(!CanNavigate)return;navigation.ChangeZoom(delta*zoomSpeed);ApplyState();}
+        public void ResetView(){if(!CanNavigate)return;navigation.ChangeZoom(initialZoom-navigation.Zoom);navigation.Pan(new Vector2(initialFocus.x-navigation.Focus.x,initialFocus.z-navigation.Focus.z));ApplyState();}
+        public void DragView(Vector2 pixels)
         {
-            var keyboard = Keyboard.current;
-            if (keyboard == null) return Vector2.zero;
-            var horizontal = 0f;
-            var vertical = 0f;
-            if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) horizontal -= 1f;
-            if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) horizontal += 1f;
-            if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed) vertical -= 1f;
-            if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) vertical += 1f;
-            return new Vector2(horizontal, vertical);
+            if(!CanNavigate)return;
+            float units=2*navigation.Zoom/Mathf.Max(1,sceneCamera.pixelHeight);
+            navigation.Pan(new Vector2(-pixels.x*units,-pixels.y*units/Mathf.Max(.1f,Mathf.Abs(transform.forward.y))));ApplyState();
         }
 
         private void ApplyState()

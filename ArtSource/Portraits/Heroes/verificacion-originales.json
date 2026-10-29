@@ -1,0 +1,67 @@
+{
+  "reference_commit": "6f302d6",
+  "count": 12,
+  "originals_match_main": true,
+  "portraits": [
+    {
+      "file": "heroe_abu_yahya_ibn_abi_hafs_califato_almohade.png",
+      "git_blob": "5d8f0d1f4f9b5bd964303f0c463e410b34257d91",
+      "sha256": "8d5e0011b7e7e966a3525547af67de954833c9d83ae233c0e61950d98c8084d2"
+    },
+    {
+      "file": "heroe_aznar_de_roncal_navarra.png",
+      "git_blob": "628d70a75091fdc0bfeeb74b8131616c1c56f4ec",
+      "sha256": "6c275cc61d568f970b98ba4a22c147b95658fa11d45f2daddbc86f38eca53fc8"
+    },
+    {
+      "file": "heroe_blasco_de_alagon_corona_de_aragon.png",
+      "git_blob": "64ba868b6e260d35e41d96db002add5b40e77f48",
+      "sha256": "c3ab2a0bd81b5ae94949bce8f32f40b5bac3d25f18aa1f6831d21cb0ec8c227b"
+    },
+    {
+      "file": "heroe_conde_gaton_del_bierzo_asturias.png",
+      "git_blob": "c8f43c1012e1c605b4b64e95b257b97a55356b8e",
+      "sha256": "d34d3109b1549b94ff4129a375947ad184a7d186488fa2ef5842c179e52c7e78"
+    },
+    {
+      "file": "heroe_general_ghalib_califato_cordoba.png",
+      "git_blob": "d600a5b19eaccc39f59ead322cec99ba4bf66165",
+      "sha256": "7ae2d4a294d780d839ff8e22ae769d979310a8348026f18ebdaf1c2c24ff5670"
+    },
+    {
+      "file": "heroe_geraldo_sem_pavor_portugal.png",
+      "git_blob": "5172dd0bf7a298918eb342753bdd9909fad0b6bf",
+      "sha256": "da2ee3d1cfc184543d8def7a6fc1b6cad44af85c3254be83180aa007f47ffe8f"
+    },
+    {
+      "file": "heroe_ibn_ammar_taifa_sevilla.png",
+      "git_blob": "0e2f73ceda7a8ced1ceb2b9ca6c308b18cbadcf2",
+      "sha256": "b47237efc94a8edd95887d1b2674513ce9da6355abfc5854afa471710c76b67e"
+    },
+    {
+      "file": "heroe_pedro_ansurez_reino_leon.png",
+      "git_blob": "a816fccd0cd1358b68e702a07ac77e505af55524",
+      "sha256": "19adf99fa14e7c175441cb5e4444081cd7b06dcdfe23889a616d0963f8c60963"
+    },
+    {
+      "file": "heroe_provisional_taifa_zaragoza.png",
+      "git_blob": "c5e6c7706946f6f06ca0dc06ff3bfbc12c4b0a7b",
+      "sha256": "6b1282304595a0c2d9341cb9f84f79ce581bd6af80eb07bd62b9efc3ef6e28e8"
+    },
+    {
+      "file": "heroe_rodrigo_diaz_castilla.png",
+      "git_blob": "1dd842f52c995fda33fb757d8ef46d5c06c0cbac",
+      "sha256": "55bd3d90da911c6005f809c43c093206163434c558bcf92b22667146dcf9fe25"
+    },
+    {
+      "file": "heroe_sir_ibn_abi_bakr_almoravide.png",
+      "git_blob": "363b9554c6968dd32b023bd028bc3f8dc16b0e49",
+      "sha256": "8d9fe5a18e5443fd817d64f842414b40d093c0b4102f347f75a78993059828ef"
+    },
+    {
+      "file": "heroe_zahir_granada.png",
+      "git_blob": "700d8611fa899937f1248da75454d993c836e7b0",
+      "sha256": "c836d057ed7c73ff3b83c5a14450d24c6e4b648950ada536e73a866b8c26c90a"
+    }
+  ]
+}

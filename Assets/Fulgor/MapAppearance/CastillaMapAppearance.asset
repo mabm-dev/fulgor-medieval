@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71b7ccac44666564f8e152a25b6a08fe, type: 3}
+  m_Name: CastillaMapAppearance
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignMapAppearanceSettings
+  fullMeshes:
+  - {fileID: 4300000, guid: 9b8732b8ac6fdc843a72ea53171f6b41, type: 2}
+  - {fileID: 4300000, guid: f21001c8bfbd17142865c683294c9471, type: 2}
+  - {fileID: 4300000, guid: ec725ec1d25319d45bbf76c6d4f7d9ce, type: 2}
+  - {fileID: 4300000, guid: 59b84eb2779882c4e8a4945db609ccb1, type: 2}
+  - {fileID: 4300000, guid: 201a76b23356e3343ae40713cbe02176, type: 2}
+  - {fileID: 4300000, guid: 537cd07ccea9aa44593d5b030f1e09f4, type: 2}
+  mediumMeshes:
+  - {fileID: 4300000, guid: 97f702d91c70e4249a8c008744f8624e, type: 2}
+  - {fileID: 4300000, guid: ce51d2405bc1a7348b8f4c75957bd417, type: 2}
+  - {fileID: 4300000, guid: ae5da327eb8071c488d9bc017be41638, type: 2}
+  - {fileID: 4300000, guid: 1b50a641e4607e14a9beac2572455442, type: 2}
+  - {fileID: 4300000, guid: d8c7ead1d02d7474ab8e8cc5d90489c5, type: 2}
+  distantMeshes:
+  - {fileID: 4300000, guid: f4891c1f0a20eb740bac5822d42b20c8, type: 2}
+  - {fileID: 4300000, guid: a6e210bf0d1245c4185c11e9071f1492, type: 2}
+  - {fileID: 4300000, guid: a13300fb20ddc734da612723b21b643a, type: 2}
+  - {fileID: 4300000, guid: 8c8b87f528d385c498080102be4fbbf4, type: 2}
+  - {fileID: 4300000, guid: 113dc239c77a2534384f69e50dcba2ff, type: 2}
+  terrainMaterials:
+  - {fileID: 2100000, guid: f233ba83a81071b44b03125cde3d4aac, type: 2}
+  - {fileID: 2100000, guid: 05094b6adbcd01f4884a2c6cf3f2dadc, type: 2}
+  - {fileID: 2100000, guid: e54eb7c47a130594f9b3d512464657eb, type: 2}
+  - {fileID: 2100000, guid: a25003d303913a348ac3777e6d2535cc, type: 2}
+  - {fileID: 2100000, guid: 865f8d8ded55c594b82138bb706519db, type: 2}
+  waterMaterial: {fileID: 2100000, guid: ae81926a3ff1c87439ba433594b4cffa, type: 2}
+  selectionShader: {fileID: 4800000, guid: 650dd9526735d5b46b79224bc6e94025, type: 3}

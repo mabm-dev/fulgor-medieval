@@ -8,7 +8,8 @@ namespace Fulgor.Presentation.Map
     /// <summary>
     /// Mide los tiempos de fotograma del tablero cuando el build se lanza con <c>-benchmark</c>:
     /// fija la cámara en la vista general, descarta el calentamiento, guarda un JSON junto al
-    /// ejecutable y cierra el juego.
+    /// ejecutable y cierra el juego. Con -benchmarkOffscreen solicita render explícito a textura
+    /// y guarda un PNG; esa medición diagnóstica no equivale a la presentación en pantalla.
     /// </summary>
     public sealed class CampaignBenchmark : MonoBehaviour
     {
@@ -19,6 +20,10 @@ namespace Fulgor.Presentation.Map
         private BenchmarkOptions options;
         private float elapsed;
         private bool finished;
+        private Camera benchmarkCamera;
+        private bool previousCameraEnabled;
+        private UnityEngine.Rendering.RenderPipeline.StandardRequest renderRequest;
+        private RenderTexture benchmarkTarget,previousTarget;
         private int focusLosses;
 
         /// <summary>Fotogramas por encima de este tiempo se cuentan como tirones en el informe.</summary>
@@ -42,6 +47,13 @@ namespace Fulgor.Presentation.Map
             Application.targetFrameRate = -1;
             var cameraController = FindAnyObjectByType<CampaignCameraController>();
             if (cameraController != null) cameraController.enabled = false;
+            benchmarkCamera=Camera.main;
+            if(options.Offscreen&&benchmarkCamera!=null) {
+                previousTarget=benchmarkCamera.targetTexture;previousCameraEnabled=benchmarkCamera.enabled;
+                benchmarkTarget=new RenderTexture(Mathf.Max(64,Screen.width),Mathf.Max(64,Screen.height),24,RenderTextureFormat.ARGB32){name="Benchmark render target"};
+                benchmarkTarget.Create();benchmarkCamera.targetTexture=benchmarkTarget;benchmarkCamera.enabled=false;
+                renderRequest=new UnityEngine.Rendering.RenderPipeline.StandardRequest{destination=benchmarkTarget};
+            }
             var selection = FindAnyObjectByType<CampaignBoardSelection>();
             if (selection != null) selection.enabled = false;
             Debug.Log($"Fulgor benchmark: {options.WarmupSeconds:F0} s de calentamiento, " +
@@ -56,6 +68,8 @@ namespace Fulgor.Presentation.Map
         private void Update()
         {
             if (finished) return;
+            if(benchmarkCamera!=null&&renderRequest!=null)
+                UnityEngine.Rendering.RenderPipeline.SubmitRenderRequest(benchmarkCamera,renderRequest);
             FrameTimingManager.CaptureFrameTimings();
             elapsed += Time.unscaledDeltaTime;
             if (elapsed <= options.WarmupSeconds) return;
@@ -91,6 +105,7 @@ namespace Fulgor.Presentation.Map
 
             var report = new BenchmarkReport
             {
+                offscreenRender = benchmarkTarget != null,
                 label = options.Label,
                 date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                 unityVersion = Application.unityVersion,
@@ -124,10 +139,21 @@ namespace Fulgor.Presentation.Map
             var directory = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
             File.WriteAllText(path, JsonUtility.ToJson(report, true));
+            if(benchmarkTarget!=null) {
+                var previous=RenderTexture.active;var image=new Texture2D(benchmarkTarget.width,benchmarkTarget.height,TextureFormat.RGBA32,false);
+                try {RenderTexture.active=benchmarkTarget;image.ReadPixels(new Rect(0,0,image.width,image.height),0,0);image.Apply();File.WriteAllBytes(Path.ChangeExtension(path,"png"),image.EncodeToPNG());}
+                finally {RenderTexture.active=previous;Destroy(image);}
+            }
             Debug.Log($"Fulgor benchmark: {frames.AverageFps:F1} FPS, media {frames.AverageMilliseconds:F2} ms, " +
                 $"p95 {frames.P95Milliseconds:F2} ms, CPU {cpu.AverageMilliseconds:F2} ms, " +
                 $"GPU {gpu.AverageMilliseconds:F2} ms, {report.slowFrames} tirones, " +
                 $"{focusLosses} pérdidas de foco. Informe: {path}");
+        }
+
+        private void OnDestroy()
+        {
+            if(benchmarkTarget!=null&&benchmarkCamera!=null){benchmarkCamera.targetTexture=previousTarget;benchmarkCamera.enabled=previousCameraEnabled;}
+            if(benchmarkTarget!=null){benchmarkTarget.Release();Destroy(benchmarkTarget);}
         }
 
         private string ResolveOutputPath()
@@ -141,6 +167,7 @@ namespace Fulgor.Presentation.Map
         [Serializable]
         private sealed class BenchmarkReport
         {
+            public bool offscreenRender;
             public string label;
             public string date;
             public string unityVersion;

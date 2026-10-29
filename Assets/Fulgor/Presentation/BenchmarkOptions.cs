@@ -8,9 +8,10 @@ namespace Fulgor.Presentation.Map
         public const float DefaultSeconds = 20f;
         public const float DefaultWarmupSeconds = 3f;
 
-        public BenchmarkOptions(bool enabled, float seconds, float warmupSeconds, string label, string outputPath)
+        public BenchmarkOptions(bool enabled, float seconds, float warmupSeconds, string label, string outputPath, bool offscreen = false)
         {
             Enabled = enabled;
+            Offscreen = offscreen;
             Seconds = seconds;
             WarmupSeconds = warmupSeconds;
             Label = label;
@@ -18,6 +19,7 @@ namespace Fulgor.Presentation.Map
         }
 
         public bool Enabled { get; }
+        public bool Offscreen { get; }
         public float Seconds { get; }
         public float WarmupSeconds { get; }
         public string Label { get; }
@@ -30,6 +32,7 @@ namespace Fulgor.Presentation.Map
         public static BenchmarkOptions Parse(string[] args)
         {
             var enabled = false;
+            var offscreen = false;
             var seconds = DefaultSeconds;
             var warmup = DefaultWarmupSeconds;
             var label = string.Empty;
@@ -41,6 +44,9 @@ namespace Fulgor.Presentation.Map
                 var next = i + 1 < args.Length ? args[i + 1] : null;
                 switch (args[i])
                 {
+                    case "-benchmarkOffscreen":
+                        offscreen = true;
+                        break;
                     case "-benchmark":
                         enabled = true;
                         break;
@@ -63,7 +69,7 @@ namespace Fulgor.Presentation.Map
                 }
             }
 
-            return new BenchmarkOptions(enabled, seconds, warmup, label, output);
+            return new BenchmarkOptions(enabled, seconds, warmup, label, output, offscreen);
         }
 
         private static bool TryReadPositive(string text, out float value) =>

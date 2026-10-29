@@ -1,0 +1,26 @@
+{
+  "saved_blend_reopened": true,
+  "head_original_uv": true,
+  "source_hashes_match": 18,
+  "original_portraits_unchanged": 12,
+  "renders_checked": 4,
+  "allowed_uv_texture_files": [
+    "Aksel_Skin_NRM.png",
+    "Aksel_Skin_SPEC.png",
+    "young_lightskinned_male_diffuse_Bronze.png"
+  ],
+  "hair_fibers": 20425,
+  "curved_irises": 2,
+  "active_cloth_modifiers": 0,
+  "evaluated_triangles": 5961308,
+  "portrait_used_as_surface": false,
+  "head_drop_m": 0.02,
+  "nape_min_world_z": 1.5900003910064697,
+  "beard_control_points": 150350,
+  "beard_skin_distance_max_m": 0.0009251160663552582,
+  "beard_samples_checked": 703,
+  "neck_normal_strength_max": 0.0,
+  "predecessor_v03_preserved": true,
+  "game_ready": false,
+  "visual_review": "V04 responds to rejected V03 neck/beard; front/profile/nape inspected, artistic acceptance pending."
+}
