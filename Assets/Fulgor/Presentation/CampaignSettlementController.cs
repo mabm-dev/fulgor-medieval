@@ -206,21 +206,21 @@ namespace Fulgor.Presentation.Map
             var root=new GameObject("Settlement HUD",typeof(RectTransform),typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));root.transform.SetParent(transform,false);
             canvas=root.GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=21;
             var scaler=root.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1920,1080);scaler.screenMatchMode=CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;scaler.matchWidthOrHeight=.5f;
-            panel=Rect("Settlement information",root.transform,new Vector2(360,306),new Vector2(24,-438));
-            var background=panel.gameObject.AddComponent<Image>();background.color=new Color(.055f,.06f,.052f,.94f);background.raycastTarget=false;
-            Label("Title",panel,new Vector2(18,-14),new Vector2(324,26),"ASENTAMIENTO",18,new Color(.93f,.68f,.16f));
-            details=Label("Details",panel,new Vector2(18,-48),new Vector2(324,96),"",15,new Color(.94f,.88f,.72f));
-            LocateButton=Button("Locate","LOCALIZAR",new Vector2(18,-154));LocateButton.onClick.AddListener(()=>LocateFirst());
-            MarchButton=Button("March","MARCHAR AQUÍ",new Vector2(186,-154));MarchButton.onClick.AddListener(()=>MarchToSelection());
-            status=Label("Presence",panel,new Vector2(18,-200),new Vector2(324,40),"",13,new Color(.93f,.78f,.42f));
-            VisitButton=Button("Open city","ENTRAR EN LA CIUDAD",new Vector2(18,-252));VisitButton.GetComponent<RectTransform>().sizeDelta=new Vector2(324,34);
-            VisitButton.GetComponentInChildren<Text>().rectTransform.sizeDelta=new Vector2(324,34);
+            panel=Rect("Settlement information",root.transform,new Vector2(324,288),new Vector2(20,-370));
+            var background=panel.gameObject.AddComponent<Image>();background.color=LegacyUI.Ink;background.raycastTarget=true;
+            Label("Title",panel,new Vector2(18,-16),new Vector2(288,26),"ASENTAMIENTO",18,LegacyUI.Gold);
+            details=Label("Details",panel,new Vector2(18,-54),new Vector2(288,76),"",16,LegacyUI.Paper);
+            status=Label("Presence",panel,new Vector2(18,-136),new Vector2(288,42),"",14,new Color(.68f,.73f,.72f));
+            LocateButton=Button("Locate","TU FORTALEZA",new Vector2(18,-188));LocateButton.onClick.AddListener(()=>LocateFirst());
+            MarchButton=Button("March","MARCHAR AQUÍ",new Vector2(168,-188));MarchButton.onClick.AddListener(()=>MarchToSelection());
+            VisitButton=Button("Open city","GESTIONAR CIUDAD",new Vector2(18,-236));VisitButton.GetComponent<RectTransform>().sizeDelta=new Vector2(288,36);
+            VisitButton.GetComponentInChildren<Text>().rectTransform.sizeDelta=new Vector2(288,36);
             LegacyUI.Skin(panel);
             VisitButton.onClick.AddListener(()=>{if(selection.SelectedCell.HasValue)OpenCityAt(selection.SelectedCell.Value.Coordinates);});
         }
         private Button Button(string name,string caption,Vector2 position)
         {
-            var rect=Rect(name,panel,new Vector2(156,34),position);var image=rect.gameObject.AddComponent<Image>();image.color=new Color(.25f,.36f,.18f);
+            var rect=Rect(name,panel,new Vector2(138,36),position);var image=rect.gameObject.AddComponent<Image>();image.color=new Color(.25f,.36f,.18f);
             var button=rect.gameObject.AddComponent<Button>();button.targetGraphic=image;
             var text=Label("Label",rect,Vector2.zero,rect.sizeDelta,caption,13,Color.white);text.alignment=TextAnchor.MiddleCenter;return button;
         }

@@ -1,0 +1,100 @@
+{
+  "entries": [
+    {
+      "id": "asturias",
+      "name": "Reino de Asturias",
+      "ruler": "Alfonso III el Magno",
+      "hero": "Conde Gatón del Bierzo",
+      "lore": "Entre montañas, valles y caminos del norte, Asturias afirma su autoridad desde una tierra de fronteras. Sus fortalezas y monasterios custodian la memoria de un reino que mira hacia nuevos horizontes.",
+      "color": "3C6282"
+    },
+    {
+      "id": "leon",
+      "name": "Reino de León",
+      "ruler": "Urraca I",
+      "hero": "Pedro Ansúrez",
+      "lore": "León reúne tradición regia, ciudades y señoríos bajo una corona disputada. Gobernar exige negociar lealtades, proteger sus tierras y sostener la autoridad entre nobles y comunidades.",
+      "color": "714889"
+    },
+    {
+      "id": "castilla",
+      "name": "Reino de Castilla",
+      "ruler": "Alfonso VIII",
+      "hero": "Rodrigo Díaz",
+      "lore": "Castilla se extiende por campos abiertos, villas y fortalezas de piedra. La vida de frontera forja sus huestes y concejos; la corona busca unir voluntades y asegurar los caminos de su reino.",
+      "color": "8C2B2B"
+    },
+    {
+      "id": "aragon",
+      "name": "Corona de Aragón",
+      "ruler": "Jaime I el Conquistador",
+      "hero": "Blasco de Alagón",
+      "lore": "Desde las tierras pirenaicas hasta el Mediterráneo, la Corona de Aragón reúne territorios con leyes y tradiciones propias. Pactos, comercio y ambición de expansión orientan su porvenir.",
+      "color": "B18A32"
+    },
+    {
+      "id": "navarra",
+      "name": "Reino de Navarra",
+      "ruler": "Sancho VII el Fuerte",
+      "hero": "Aznar de Roncal",
+      "lore": "Navarra guarda pasos de montaña y rutas entre la península y el otro lado de los Pirineos. Un reino de dimensiones contenidas que defiende su independencia mediante fortalezas, alianzas y determinación.",
+      "color": "A12B36"
+    },
+    {
+      "id": "portugal",
+      "name": "Reino de Portugal",
+      "ruler": "Afonso I Henriques",
+      "hero": "Geraldo Sem Pavor",
+      "lore": "Entre el Atlántico y la frontera interior, Portugal construye su autonomía. Castillos, poblaciones y caminos sostienen una corona que busca consolidar su territorio y afirmar su lugar en la península.",
+      "color": "315B85"
+    },
+    {
+      "id": "cordoba",
+      "name": "Califato de Córdoba",
+      "ruler": "Abd al-Rahman III",
+      "hero": "General Ghalib",
+      "lore": "Córdoba proyecta autoridad desde sus ciudades, jardines y centros de conocimiento. La corte y la administración articulan un poder que aspira a conciliar prosperidad, prestigio y fuerza militar.",
+      "color": "D4C5A0"
+    },
+    {
+      "id": "sevilla",
+      "name": "Taifa de Sevilla",
+      "ruler": "Al-Mu‘tamid",
+      "hero": "Ibn Ammar",
+      "lore": "Sevilla prospera junto al Guadalquivir, entre huertas, mercados y palacios. Poesía y política comparten la corte, mientras la diplomacia y las rivalidades deciden el destino de la taifa.",
+      "color": "397B65"
+    },
+    {
+      "id": "zaragoza",
+      "name": "Taifa de Zaragoza",
+      "ruler": "Al-Muqtadir",
+      "hero": "Héroe de Zaragoza · provisional",
+      "lore": "En el valle del Ebro, Zaragoza conecta rutas, campos de cultivo y ciudades de frontera. Su corte cultiva el saber y las artes mientras busca sostener su posición entre potencias vecinas.",
+      "color": "B48B52"
+    },
+    {
+      "id": "almoravides",
+      "name": "Imperio almorávide",
+      "ruler": "Yusuf ibn Tashfin",
+      "hero": "Sir ibn Abi Bakr",
+      "lore": "Las redes de poder almorávides enlazan el Magreb y al-Ándalus. Desde las rutas del sur llegan nuevas huestes y una autoridad que pretende reunir territorios diversos bajo un mismo gobierno.",
+      "color": "354667"
+    },
+    {
+      "id": "almohades",
+      "name": "Califato almohade",
+      "ruler": "Yaqub al-Mansur",
+      "hero": "Abu Yahya ibn Abi Hafs",
+      "lore": "El poder almohade enlaza ambas orillas del Estrecho. Grandes ciudades, fortalezas y una ambiciosa organización política sostienen un califato obligado a mantener la cohesión de extensos territorios.",
+      "color": "A99371"
+    },
+    {
+      "id": "granada",
+      "name": "Emirato de Granada",
+      "ruler": "Muhammad I ibn al-Ahmar",
+      "hero": "Zahir",
+      "lore": "Al pie de Sierra Nevada, Granada busca asegurar su continuidad entre montañas, vegas y ciudades amuralladas. La diplomacia, el aprovechamiento del territorio y sus defensas son claves de su supervivencia.",
+      "color": "287754"
+    }
+  ]
+}

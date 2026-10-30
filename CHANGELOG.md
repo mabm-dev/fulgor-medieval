@@ -9,6 +9,10 @@ juego se desarrolla en Unity.
 
 ### Añadido
 
+- Pantalla Elige tu reino con doce retratos nuevos de gobernantes, héroes
+  vigentes, lore, estandartes ilustrativos y navegación vertical. Castilla
+  conserva su campaña jugable; las otras once campañas siguen pendientes.
+
 - Consejo diplomático de campaña: relaciones e intenciones del legacy, paz,
   pactos y comercio, propuestas al cierre de turno, respuestas y contrapropuestas,
   pagos entre tesoros y duración de tratados. Ataques, ocupación e IA respetan
@@ -279,3 +283,9 @@ como referencia para el portado.
 - Menú principal.
 - Selección visual de cinco reinos del prototipo.
 - Guardado local mínimo de la selección.
+
+### Interfaz del mapa de campaña
+
+- Tesoro con cinco recursos y previsión individual, información de territorio y asentamiento, órdenes de hueste con movimiento, y cierre de turno destacado.
+- Guardado y navegación separados de las órdenes; ajustes de diplomacia y pausa para evitar solapamientos.
+- Validación: 14 pruebas dirigidas aprobadas y revisión del jugador con capturas en tres resoluciones, controles y ranura de guardado conservada.

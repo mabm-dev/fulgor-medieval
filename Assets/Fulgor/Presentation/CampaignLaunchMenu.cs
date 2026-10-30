@@ -30,7 +30,7 @@ namespace Fulgor.Presentation.Map
             var rect=(RectTransform)art.transform;rect.anchorMin=Vector2.zero;rect.anchorMax=Vector2.one;rect.offsetMin=rect.offsetMax=Vector2.zero;
             var image=art.GetComponent<RawImage>();image.texture=Resources.Load<Texture2D>("LegacyUI/Cover");image.raycastTarget=false;
             var nav=CampaignMenuUI.Rect("Main navigation",stage,new Vector2(.5f,.5f),new Vector2(-720,0),new Vector2(370,900));navigation=nav.gameObject.AddComponent<CanvasGroup>();
-            newGame=CampaignMenuUI.Button("New game",nav,new Vector2(.5f,.5f),new Vector2(0,140),new Vector2(350,66),"EMPEZAR PARTIDA",ShowCampaigns);
+            newGame=CampaignMenuUI.Button("New game",nav,new Vector2(.5f,.5f),new Vector2(0,140),new Vector2(350,66),"EMPEZAR PARTIDA",ShowKingdoms);
             ContinueButton=CampaignMenuUI.Button("Continue",nav,new Vector2(.5f,.5f),new Vector2(0,35),new Vector2(350,66),"CONTINUAR",()=>ContinueCampaign());
             CampaignMenuUI.Button("Settings",nav,new Vector2(.5f,.5f),new Vector2(0,-70),new Vector2(350,66),"CONFIGURACIÓN",ShowSettings);
             CampaignMenuUI.Button("Credits",nav,new Vector2(.5f,.5f),new Vector2(0,-175),new Vector2(350,66),"CRÉDITOS",()=>{var body=OpenModal("FULGOR MEDIEVAL");CampaignMenuUI.Text("Credits",body,new Vector2(.5f,.5f),Vector2.zero,new Vector2(820,180),"Cinco reinos · Una penumbra · Un Fulgor\n\nDiseño, lore y desarrollo — MABM-DEV\nCastilla · León · Aragón · Navarra · Granada",24,LegacyUI.Paper);});
@@ -51,6 +51,7 @@ namespace Fulgor.Presentation.Map
             var back=CampaignMenuUI.Button("Back",body,new Vector2(.5f,.5f),new Vector2(0,-250),new Vector2(350,58),"VOLVER",CloseModal);
             UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(back.gameObject);return body;
         }
+        private void ShowKingdoms(){var view=GetComponent<KingdomSelectionView>()??gameObject.AddComponent<KingdomSelectionView>();view.Open(this);}
         private void ShowCampaigns()
         {
             if(catalog==null)return;

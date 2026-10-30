@@ -25,7 +25,8 @@ namespace Fulgor.Presentation.Map
         private IEnumerator Start()
         {
             campaign=GetComponent<CampaignTurnController>();var ui=CampaignMenuUI.Canvas("Campaign session UI",transform,150);
-            MenuButton=CampaignMenuUI.Button("Session menu",ui.transform,new Vector2(1,1),new Vector2(-24,-22),new Vector2(230,42),"INICIO / PAUSA",()=>Open());
+            MenuButton=CampaignMenuUI.Button("Session menu",ui.transform,new Vector2(1,1),new Vector2(-20,-30),new Vector2(158,44),"MENÚ / PAUSA",()=>Open());
+            MenuButton.GetComponentInChildren<Text>().fontSize=14;
             yield return null;yield return null;
             string json=CampaignNavigation.ConsumeSnapshot(SceneManager.GetActiveScene().name);
             if(json!=null&&!campaign.TryLoadCampaignSnapshot(json))CampaignNavigation.ReturnToMenu(catalog.MenuSceneName);

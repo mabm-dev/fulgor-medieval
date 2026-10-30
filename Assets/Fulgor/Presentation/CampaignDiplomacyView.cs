@@ -16,7 +16,8 @@ namespace Fulgor.Presentation.Map
         {
             campaign=GetComponent<CampaignTurnController>();
             var canvas=CampaignMenuUI.Canvas("Diplomacy launcher",transform,145);
-            launcher=CampaignMenuUI.Button("Diplomacy",canvas.transform,new Vector2(1,1),new Vector2(-270,-22),new Vector2(230,42),"DIPLOMACIA",Open);
+            launcher=CampaignMenuUI.Button("Diplomacy",canvas.transform,new Vector2(1,1),new Vector2(-190,-30),new Vector2(164,44),"DIPLOMACIA",Open);
+            launcher.GetComponentInChildren<Text>().fontSize=14;
         }
         private void Update()
         {
