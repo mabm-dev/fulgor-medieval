@@ -43,7 +43,7 @@ namespace Fulgor.Presentation.Map
             }
             if(militaryNav!=null)militaryNav.gameObject.SetActive(visible);
             if(scroll!=null)scroll.viewport.offsetMax=new Vector2(-24,visible?-215:-115);
-            for(int i=0;i<militaryTabs.Count;i++)militaryTabs[i].GetComponent<Image>().color=i==(int)MilitaryMode?new Color(.47f,.37f,.18f):new Color(.26f,.27f,.20f);
+            for(int i=0;i<militaryTabs.Count;i++)LegacyUI.SetSelected(militaryTabs[i],i==(int)MilitaryMode);
         }
         private int Choice(int count)
         {if(count==0){militaryItem=0;return 0;}militaryItem=((militaryItem%count)+count)%count;return militaryItem;}

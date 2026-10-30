@@ -46,7 +46,7 @@ namespace Fulgor.Presentation.Map
         {
             CloseModal();navigation.interactable=false;navigation.blocksRaycasts=false;
             var dim=CampaignMenuUI.Full("Menu modal",stage,new Color(0,0,0,.7f));modal=dim.gameObject;
-            var body=CampaignMenuUI.Rect("Modal body",dim,new Vector2(.5f,.5f),new Vector2(150,0),new Vector2(1000,650));CampaignMenuUI.Background(body,LegacyUI.Ink);LegacyUI.Panel(body);
+            var body=CampaignMenuUI.Rect("Modal body",dim,new Vector2(.5f,.5f),new Vector2(150,0),new Vector2(1000,650));CampaignMenuUI.Background(body,LegacyUI.Ink);LegacyUI.Parchment(body);
             CampaignMenuUI.Text("Title",body,new Vector2(.5f,.5f),new Vector2(0,240),new Vector2(900,70),title,32,LegacyUI.Gold);
             var back=CampaignMenuUI.Button("Back",body,new Vector2(.5f,.5f),new Vector2(0,-250),new Vector2(350,58),"VOLVER",CloseModal);
             UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(back.gameObject);return body;

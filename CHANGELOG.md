@@ -9,6 +9,13 @@ juego se desarrolla en Unity.
 
 ### Añadido
 
+- Piel de menús «madera y pergamino»: paneles de información y opciones en
+  pergamino con herrajes y tinta oscura, barras y navegación en madera con
+  filo de latón, botones de madera con estados al pasar, pulsar y desactivar,
+  cabecera de la ciudad en estandarte azul, vista de la ciudad enmarcada en
+  piedra y medallones tras los iconos de recursos. Texturas generadas por
+  `ArtSource/UI/generar_estilo_madera_pergamino.py`; el mapa y sus recursos no
+  cambian.
 - Iconos dorados de grano, madera, piedra, oro, mano de obra, población y
   turno en la barra de recursos del mapa y en el pie de la vista de ciudad. La
   barra suma una casilla de población, con guion hasta que exista el censo.
