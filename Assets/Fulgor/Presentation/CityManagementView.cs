@@ -134,7 +134,7 @@ namespace Fulgor.Presentation.Map
         public void SelectPanel(CityPanelKind panel)
         {
             if(!IsOpen)return;Panel=panel;
-            for(int i=0;i<tabs.Count;i++)tabs[i].targetGraphic.color=i==(int)panel?new Color(.42f,.32f,.16f):new Color(.11f,.15f,.16f);
+            for(int i=0;i<tabs.Count;i++)LegacyUI.SetSelected(tabs[i],i==(int)panel);
             Refresh();
             if(scroll!=null)scroll.verticalNormalizedPosition=1;
         }
@@ -277,16 +277,16 @@ namespace Fulgor.Presentation.Map
             ui=new GameObject("City Management UI",typeof(RectTransform),typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));ui.transform.SetParent(transform,false);
             var canvas=ui.GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=100;
             var scaler=ui.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1920,1080);scaler.screenMatchMode=CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;scaler.matchWidthOrHeight=.5f;
-            var backdrop=Stretch("Background",ui.transform,new Vector2(0,0),new Vector2(1,1),Vector2.zero,Vector2.zero);Image(backdrop,new Color(.035f,.052f,.06f));
+            var backdrop=Stretch("Background",ui.transform,new Vector2(0,0),new Vector2(1,1),Vector2.zero,Vector2.zero);Image(backdrop,new Color(.035f,.052f,.06f));LegacyUI.WoodBackground(backdrop);
             var imageRegion=Stretch("City viewport region",ui.transform,Vector2.zero,Vector2.one,new Vector2(238,146),new Vector2(-370,-116));
             var imageRect=Stretch("City viewport",imageRegion,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero);viewport=imageRect.gameObject.AddComponent<RawImage>();viewport.texture=target;
-            var fit=imageRect.gameObject.AddComponent<AspectRatioFitter>();fit.aspectMode=AspectRatioFitter.AspectMode.FitInParent;fit.aspectRatio=1.44f;
-            var header=Stretch("Header",ui.transform,new Vector2(0,1),new Vector2(1,1),new Vector2(0,-108),Vector2.zero);Image(header,new Color(.07f,.095f,.105f));
+            var fit=imageRect.gameObject.AddComponent<AspectRatioFitter>();fit.aspectMode=AspectRatioFitter.AspectMode.FitInParent;fit.aspectRatio=1.44f;LegacyUI.StoneFrame(imageRect,18);
+            var header=Stretch("Header",ui.transform,new Vector2(0,1),new Vector2(1,1),new Vector2(0,-108),Vector2.zero);Image(header,new Color(.07f,.095f,.105f));LegacyUI.Banner(header);
             Text("Realm",header,new Vector2(28,-13),new Vector2(850,22),"CASTILLA  /  VISTA DE CIUDAD",14,new Color(.83f,.65f,.34f));
             var title=Text("City name",header,new Vector2(28,-39),new Vector2(1000,42),settlement.Name.ToUpperInvariant(),30,new Color(.95f,.9f,.79f));title.rectTransform.anchorMin=new Vector2(0,1);title.rectTransform.anchorMax=Vector2.one;title.rectTransform.offsetMin=new Vector2(28,-81);title.rectTransform.offsetMax=new Vector2(-340,-39);
             citySubtitle=Text("Owner",header,new Vector2(28,-82),new Vector2(920,20),"",14,new Color(.74f,.78f,.73f));
             var exit=Stretch("Return",header,Vector2.one,Vector2.one,new Vector2(-308,-77),new Vector2(-28,-31));CreateButton(exit,"VOLVER AL MAPA  ·  Esc",Close);
-            var nav=Stretch("Navigation",ui.transform,new Vector2(0,0),new Vector2(0,1),new Vector2(20,100),new Vector2(216,-116));Image(nav,new Color(.075f,.10f,.11f));
+            var nav=Stretch("Navigation",ui.transform,new Vector2(0,0),new Vector2(0,1),new Vector2(20,100),new Vector2(216,-116));Image(nav,new Color(.075f,.10f,.11f));LegacyUI.Panel(nav);
             Text("Heading",nav,new Vector2(18,-22),new Vector2(168,30),"GESTIÓN",19,new Color(.83f,.65f,.34f));
             string[] labels={"Ciudad","Edificios","Hacienda","Huestes","Órdenes"};
             for(int i=0;i<labels.Length;i++){int index=i;var row=Fixed("Tab "+labels[i],nav,new Vector2(12,-78-i*66),new Vector2(172,52));tabs.Add(CreateButton(row,labels[i].ToUpperInvariant(),()=>SelectPanel((CityPanelKind)index)));}
@@ -294,20 +294,21 @@ namespace Fulgor.Presentation.Map
             heading=Text("Section",content,new Vector2(24,-26),new Vector2(282,70),"",24,new Color(.93f,.82f,.57f));
             var textRect=Stretch("Details scroll",content,new Vector2(0,0),new Vector2(1,1),new Vector2(24,160),new Vector2(-24,-115));Image(textRect,new Color(0,0,0,0));textRect.gameObject.AddComponent<RectMask2D>();scroll=textRect.gameObject.AddComponent<ScrollRect>();scroll.viewport=textRect;scroll.horizontal=false;scroll.movementType=ScrollRect.MovementType.Clamped;
             var bodyRect=Stretch("Details",textRect,new Vector2(0,1),new Vector2(1,1),Vector2.zero,Vector2.zero);bodyRect.pivot=new Vector2(.5f,1);bodyRect.sizeDelta=new Vector2(-16,0);body=bodyRect.gameObject.AddComponent<Text>();Style(body,18,new Color(.88f,.88f,.80f));scroll.content=bodyRect;
-            var scrollbarRect=Stretch("Details scrollbar",textRect,new Vector2(1,0),Vector2.one,new Vector2(-7,0),Vector2.zero);Image(scrollbarRect,new Color(.12f,.15f,.15f));
-            var scrollbar=scrollbarRect.gameObject.AddComponent<Scrollbar>();var handle=Stretch("Handle",scrollbarRect,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero);Image(handle,new Color(.65f,.54f,.32f));
+            var scrollbarRect=Stretch("Details scrollbar",textRect,new Vector2(1,0),Vector2.one,new Vector2(-7,0),Vector2.zero);Image(scrollbarRect,new Color(.36f,.26f,.15f,.35f));
+            var scrollbar=scrollbarRect.gameObject.AddComponent<Scrollbar>();var handle=Stretch("Handle",scrollbarRect,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero);Image(handle,new Color(.55f,.40f,.18f));
             scrollbar.handleRect=handle;scrollbar.targetGraphic=handle.GetComponent<Image>();scrollbar.direction=Scrollbar.Direction.BottomToTop;scroll.verticalScrollbar=scrollbar;scroll.verticalScrollbarVisibility=ScrollRect.ScrollbarVisibility.AutoHide;
             var primaryRect=Stretch("Primary action",content,new Vector2(0,0),new Vector2(1,0),new Vector2(24,88),new Vector2(-24,136));primary=CreateButton(primaryRect,"",()=>{});
             var secondaryRect=Stretch("Secondary action",content,new Vector2(0,0),new Vector2(1,0),new Vector2(24,26),new Vector2(-24,74));secondary=CreateButton(secondaryRect,"",()=>{});
-            var footer=Stretch("Resources",ui.transform,new Vector2(0,0),new Vector2(1,0),Vector2.zero,new Vector2(0,88));Image(footer,new Color(.07f,.095f,.105f));
+            var footer=Stretch("Resources",ui.transform,new Vector2(0,0),new Vector2(1,0),Vector2.zero,new Vector2(0,88));Image(footer,new Color(.07f,.095f,.105f));LegacyUI.Panel(footer);
             realmSummary=Text("Resources",footer,new Vector2(28,-12),new Vector2(1860,30),"",19,new Color(.93f,.82f,.57f));
             string[] names={"Grano","Madera","Piedra","Oro","Mano de obra"};
             for(int i=0;i<names.Length;i++)
             {
                 var x=200+i*190;
-                FulgorIcons.Create("Icon "+names[i],footer,FulgorIcons.Resources5[i],new Vector2(x,-6),40);
-                realmStock[i]=Text("Stock "+names[i],footer,new Vector2(x+48,-6),new Vector2(136,24),"",20,new Color(.95f,.9f,.79f));
-                Text("Name "+names[i],footer,new Vector2(x+48,-30),new Vector2(136,18),names[i].ToUpperInvariant(),12,new Color(.74f,.78f,.73f));
+                LegacyUI.Medallion(footer,new Vector2(x-6,-2),52);
+                FulgorIcons.Create("Icon "+names[i],footer,FulgorIcons.Resources5[i],new Vector2(x,-8),40);
+                realmStock[i]=Text("Stock "+names[i],footer,new Vector2(x+54,-8),new Vector2(130,24),"",20,new Color(.95f,.9f,.79f));
+                Text("Name "+names[i],footer,new Vector2(x+54,-32),new Vector2(130,18),names[i].ToUpperInvariant(),12,new Color(.74f,.78f,.73f));
             }
             cityNotice=Text("City activity",footer,new Vector2(28,-49),new Vector2(1860,28),"",16,new Color(.80f,.84f,.76f));
             var controls=Stretch("View controls",ui.transform,Vector2.zero,new Vector2(1,0),new Vector2(238,100),new Vector2(-370,138));viewControls=controls;
@@ -318,6 +319,7 @@ namespace Fulgor.Presentation.Map
             CreateButton(Fixed("Rotate right",controls,new Vector2(326,0),new Vector2(140,38)),"› GIRAR",()=>Rotate(15));
             CreateButton(Fixed("Reset view",controls,new Vector2(482,0),new Vector2(210,38)),"VISTA GENERAL",ResetView);
             float[] weights={2,1,1,2,3};for(int i=0;i<controls.childCount;i++){var element=controls.GetChild(i).gameObject.AddComponent<LayoutElement>();element.minWidth=0;element.preferredWidth=0;element.flexibleWidth=weights[i];}
+            LegacyUI.Parchment(content);
             foreach(var item in ui.GetComponentsInChildren<Transform>(true))item.gameObject.layer=5;
             Canvas.ForceUpdateCanvases();
         }
@@ -326,7 +328,7 @@ namespace Fulgor.Presentation.Map
         private static void Image(RectTransform rect,Color color){var image=rect.gameObject.AddComponent<Image>();image.color=color;}
         private static void Style(Text text,int size,Color color){text.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");text.fontSize=size;text.color=color;text.raycastTarget=false;text.horizontalOverflow=HorizontalWrapMode.Wrap;text.verticalOverflow=VerticalWrapMode.Truncate;}
         private static Text Text(string name,Transform parent,Vector2 position,Vector2 size,string value,int fontSize,Color color){var rect=Fixed(name,parent,position,size);var text=rect.gameObject.AddComponent<Text>();Style(text,fontSize,color);text.text=value;return text;}
-        private static Button CreateButton(RectTransform rect,string label,UnityEngine.Events.UnityAction action){Image(rect,new Color(.26f,.27f,.20f));var button=rect.gameObject.AddComponent<Button>();button.targetGraphic=rect.GetComponent<Image>();var colors=button.colors;colors.highlightedColor=new Color(1.15f,1.1f,.9f);colors.disabledColor=new Color(.38f,.38f,.38f);button.colors=colors;var caption=Text("Label",rect,Vector2.zero,rect.rect.size,label,16,new Color(.97f,.94f,.85f));caption.rectTransform.anchorMin=Vector2.zero;caption.rectTransform.anchorMax=Vector2.one;caption.rectTransform.offsetMin=caption.rectTransform.offsetMax=Vector2.zero;caption.alignment=TextAnchor.MiddleCenter;button.onClick.AddListener(action);return button;}
+        private static Button CreateButton(RectTransform rect,string label,UnityEngine.Events.UnityAction action){Image(rect,new Color(.26f,.27f,.20f));var button=rect.gameObject.AddComponent<Button>();button.targetGraphic=rect.GetComponent<Image>();var colors=button.colors;colors.highlightedColor=new Color(1.15f,1.1f,.9f);colors.disabledColor=new Color(.38f,.38f,.38f);button.colors=colors;var caption=Text("Label",rect,Vector2.zero,rect.rect.size,label,16,new Color(.97f,.94f,.85f));caption.rectTransform.anchorMin=Vector2.zero;caption.rectTransform.anchorMax=Vector2.one;caption.rectTransform.offsetMin=caption.rectTransform.offsetMax=Vector2.zero;caption.alignment=TextAnchor.MiddleCenter;button.onClick.AddListener(action);LegacyUI.Button(button);return button;}
         private static void Action(Button button,string label,UnityEngine.Events.UnityAction action){button.GetComponentInChildren<Text>().text=label;button.onClick.AddListener(action);}
         private static void Release(UnityEngine.Object item){if(item==null)return;if(Application.isPlaying)Destroy(item);else DestroyImmediate(item);}
         private void OnDisable()=>Close();

@@ -48,7 +48,7 @@ namespace Fulgor.Presentation.Map
             resourceBar = CreateRect("Campaign resource bar", canvasObject.transform,
                 new Vector2(0, 104), Vector2.zero);
             resourceBar.anchorMax = Vector2.one;
-            Surface(resourceBar);
+            Surface(resourceBar, false);
             CreateText("Title", resourceBar, new Vector2(24, -18), new Vector2(250, 32),
                 "FULGOR MEDIEVAL", 23, LegacyUI.Gold, FontStyle.Bold);
             CreateText("Campaign label", resourceBar, new Vector2(24, -57), new Vector2(250, 24),
@@ -133,10 +133,12 @@ namespace Fulgor.Presentation.Map
         private static readonly Color Positive = new(.57f, .80f, .64f);
         private static readonly Color Negative = new(.98f, .59f, .46f);
 
-        private static void Surface(RectTransform rect)
+        private static void Surface(RectTransform rect, bool parchment = true)
         {
             rect.gameObject.AddComponent<Image>().raycastTarget = true;
-            LegacyUI.Panel(rect);
+            // Barra de recursos en madera; paneles de información en pergamino con tinta.
+            if (parchment) LegacyUI.Parchment(rect);
+            else LegacyUI.Panel(rect);
             Divider(rect, 0, rect.sizeDelta.x > 0 ? rect.sizeDelta.x - 36 : 0);
         }
 
@@ -299,7 +301,7 @@ namespace Fulgor.Presentation.Map
                 if(conclusion==CampaignConclusion.Victory)missionSummary.text=objective==CampaignObjectiveKind.Conquest?"VICTORIA · Has vencido a las facciones rivales.":"VICTORIA · Destino alcanzado";
                 else if(conclusion==CampaignConclusion.Defeat)missionSummary.text="DERROTA · No quedan ciudades ni huestes propias.";
                 else if(objective==CampaignObjectiveKind.Conquest)missionSummary.text="Objetivo: conquistar las ciudades y vencer las huestes rivales.";
-                missionSummary.color=conclusion==CampaignConclusion.Victory?new Color(.45f,.9f,.6f):conclusion==CampaignConclusion.Defeat?new Color(1,.4f,.35f):new Color(.93f,.82f,.57f);
+                missionSummary.color=conclusion==CampaignConclusion.Victory?new Color(.10f,.40f,.16f):conclusion==CampaignConclusion.Defeat?new Color(.55f,.10f,.06f):LegacyUI.InkText;
             }
             if(EndTurnButton!=null&&conclusion!=CampaignConclusion.InProgress)EndTurnButton.interactable=false;
         }

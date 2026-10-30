@@ -10,6 +10,8 @@
 | `Assets/Fulgor/Art/Validation/SM_VisualScaleValidation.fbx` | Validación del contrato Blender–Unity | Derivado de la plantilla; no es arte final |
 | `ArtSource/UI/generar_interfaz_fulgor.py` | Genera los iconos de recursos, población y turno y los marcos 9-slice del HUD | Herramienta propia reproducible |
 | `Assets/Fulgor/Resources/LegacyUI/Icons/*.png` | Iconos y marcos del HUD en estilo oro épico, derivados del script anterior | Fuente propia; provisional hasta el arte final de interfaz |
+| `ArtSource/UI/generar_estilo_madera_pergamino.py` | Genera las texturas de interfaz: madera, pergamino, botones, estandarte, marco de piedra y medallón | Herramienta propia reproducible |
+| `Assets/Fulgor/Resources/LegacyUI/Estilo/*.png` | Texturas de menús y paneles, derivadas del script anterior; se pueden repintar con el mismo nombre y tamaño | Fuente propia; provisional hasta el arte final de interfaz |
 | `Assets/Settings/` | Configuración de URP y perfil de build de Windows | Configuración del proyecto |
 | `ArtSource/Blender/Terrain/Llanura_v01.blend` | Estudio editable de pastizal, cereal y senda | Geometría y materiales propios generados con bpy; propuesta v01 |
 | `ArtSource/Blender/Terrain/crear_llanura_v01.py` | Reconstruye modelos, FBX y lámina de revisión | Herramienta propia reproducible, sin recursos externos |
