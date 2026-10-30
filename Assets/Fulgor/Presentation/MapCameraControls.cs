@@ -28,7 +28,9 @@ namespace Fulgor.Presentation.Map
         }
         public static Vector2 KeyboardDirection()
         {
-            if(EventSystem.current?.currentSelectedGameObject?.GetComponent<InputField>()!=null)return Vector2.zero;
+            // Comparación de Unity, no '?.': tras cambiar de escena el objeto seleccionado puede estar destruido.
+            var events=EventSystem.current;var selected=events!=null?events.currentSelectedGameObject:null;
+            if(selected!=null&&selected.GetComponent<InputField>()!=null)return Vector2.zero;
             var k=Keyboard.current;if(k==null)return Vector2.zero;
             return Vector2.ClampMagnitude(new Vector2((k.dKey.isPressed||k.rightArrowKey.isPressed?1:0)-(k.aKey.isPressed||k.leftArrowKey.isPressed?1:0),(k.wKey.isPressed||k.upArrowKey.isPressed?1:0)-(k.sKey.isPressed||k.downArrowKey.isPressed?1:0)),1);
         }
