@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using Fulgor.Core.Campaign;
 namespace Fulgor.Presentation.Map
 {
     [Serializable]public sealed class KingdomChoice {public string id,name,ruler,hero,lore,color;}
@@ -58,7 +59,9 @@ namespace Fulgor.Presentation.Map
         {
             var e=entries[index];kingdom.text=e.name;rulerName.text=e.ruler;heroName.text=e.hero;lore.text=e.lore;counter.text=$"{index+1:00} / {entries.Length:00}";notice.text="";
             ruler.texture=Resources.Load<Texture2D>("KingdomSelection/ruler-"+e.id+"-v2")??Resources.Load<Texture2D>("KingdomSelection/ruler-"+e.id);backdrop.texture=Resources.Load<Texture2D>("KingdomSelection/background-"+e.id)??ruler.texture;Fit(backdrop);hero.texture=Resources.Load<Texture2D>("KingdomSelection/hero-"+e.id);
-            if(ColorUtility.TryParseHtmlString("#"+e.color,out var color))heraldry.color=color;
+            var design=KingdomDesignCatalog.Find(e.id);
+            var colorCode=design?.PrimaryColor??e.color;
+            if(ColorUtility.TryParseHtmlString("#"+colorCode,out var color))heraldry.color=color;
             heraldry.SetKingdom(e.id);
             Fit(ruler);Fit(hero);
         }
