@@ -10,6 +10,9 @@ namespace Fulgor.Presentation.Map
         {
             var image=root.GetComponent<Image>();if(image!=null)image.color=Ink;
             var border=root.GetComponent<Outline>()??root.gameObject.AddComponent<Outline>();border.effectColor=new Color(.67f,.51f,.23f,.7f);border.effectDistance=new Vector2(1,-1);
+            // Marco dorado en 9-slice con filo y esquinas; sustituye al contorno plano cuando existe.
+            var frame=FulgorIcons.PanelFrame;
+            if(image!=null&&frame!=null&&image.sprite==null){image.sprite=frame;image.type=Image.Type.Sliced;image.color=new Color(1,1,1,.96f);border.enabled=false;}
         }
         internal static void Button(Button button)
         {

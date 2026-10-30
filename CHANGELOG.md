@@ -9,6 +9,14 @@ juego se desarrolla en Unity.
 
 ### Añadido
 
+- Iconos dorados de grano, madera, piedra, oro, mano de obra, población y
+  turno en la barra de recursos del mapa y en el pie de la vista de ciudad. La
+  barra suma una casilla de población, con guion hasta que exista el censo.
+- Marco dorado en 9-slice para los paneles de `LegacyUI`. Iconos y marcos se
+  generan con `ArtSource/UI/generar_interfaz_fulgor.py`.
+- El desplazamiento por el borde de la pantalla sigue activo sobre la barra de
+  recursos; encima del HUD solo se bloquea el zoom.
+
 - Pantalla Elige tu reino con doce retratos nuevos de gobernantes, héroes
   vigentes, lore, estandartes ilustrativos y navegación vertical. Castilla
   conserva su campaña jugable; las otras once campañas siguen pendientes.

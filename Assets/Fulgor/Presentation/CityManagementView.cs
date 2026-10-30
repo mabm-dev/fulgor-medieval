@@ -30,6 +30,7 @@ namespace Fulgor.Presentation.Map
         private RenderTexture target;
         private RawImage viewport;
         private Text heading,body,realmSummary,citySubtitle;
+        private readonly Text[] realmStock=new Text[5];
         private Button primary,secondary;
         private ScrollRect scroll;
         private RectTransform viewControls;
@@ -158,7 +159,9 @@ namespace Fulgor.Presentation.Map
             settlement=current;canManage=owner.CanManage(current.Id);
             SynchronizeTown();
             var state=campaign.State;var resources=state.Resources;
-            realmSummary.text=$"Turno {state.Turn}     Grano {resources.Grain}     Madera {resources.Wood}     Piedra {resources.Stone}     Oro {resources.Gold}     Mano de obra {resources.Labor}";
+            realmSummary.text=$"Turno {state.Turn}";
+            var stock=new[]{resources.Grain,resources.Wood,resources.Stone,resources.Gold,resources.Labor};
+            for(int i=0;i<realmStock.Length;i++)if(realmStock[i]!=null)realmStock[i].text=stock[i].ToString("N0");
             RefreshCityNotice();
             citySubtitle.text=owner.OwnerName(settlement.OwnerFactionId)+"  ·  "+(canManage?"Ciudad propia":"Inspección");
             primary.onClick.RemoveAllListeners();secondary.onClick.RemoveAllListeners();primary.interactable=true;secondary.interactable=true;
@@ -298,6 +301,14 @@ namespace Fulgor.Presentation.Map
             var secondaryRect=Stretch("Secondary action",content,new Vector2(0,0),new Vector2(1,0),new Vector2(24,26),new Vector2(-24,74));secondary=CreateButton(secondaryRect,"",()=>{});
             var footer=Stretch("Resources",ui.transform,new Vector2(0,0),new Vector2(1,0),Vector2.zero,new Vector2(0,88));Image(footer,new Color(.07f,.095f,.105f));
             realmSummary=Text("Resources",footer,new Vector2(28,-12),new Vector2(1860,30),"",19,new Color(.93f,.82f,.57f));
+            string[] names={"Grano","Madera","Piedra","Oro","Mano de obra"};
+            for(int i=0;i<names.Length;i++)
+            {
+                var x=200+i*190;
+                FulgorIcons.Create("Icon "+names[i],footer,FulgorIcons.Resources5[i],new Vector2(x,-6),40);
+                realmStock[i]=Text("Stock "+names[i],footer,new Vector2(x+48,-6),new Vector2(136,24),"",20,new Color(.95f,.9f,.79f));
+                Text("Name "+names[i],footer,new Vector2(x+48,-30),new Vector2(136,18),names[i].ToUpperInvariant(),12,new Color(.74f,.78f,.73f));
+            }
             cityNotice=Text("City activity",footer,new Vector2(28,-49),new Vector2(1860,28),"",16,new Color(.80f,.84f,.76f));
             var controls=Stretch("View controls",ui.transform,Vector2.zero,new Vector2(1,0),new Vector2(238,100),new Vector2(-370,138));viewControls=controls;
             var layout=controls.gameObject.AddComponent<HorizontalLayoutGroup>();layout.spacing=8;layout.childControlWidth=true;layout.childControlHeight=true;layout.childForceExpandWidth=true;layout.childForceExpandHeight=true;

@@ -17,6 +17,7 @@ namespace Fulgor.Presentation.Map
         private Canvas hudCanvas;
         private readonly Text[] resourceValues = new Text[5];
         private readonly Text[] resourceDeltas = new Text[5];
+        private Text populationValue;
         private Text details;
         private Text diagnostics;
         private Text turnSummary;
@@ -52,15 +53,24 @@ namespace Fulgor.Presentation.Map
                 "FULGOR MEDIEVAL", 23, LegacyUI.Gold, FontStyle.Bold);
             CreateText("Campaign label", resourceBar, new Vector2(24, -57), new Vector2(250, 24),
                 "MAPA DE CAMPAÑA", 14, Muted);
-            var resources = CreateRect("Treasury", resourceBar, new Vector2(650, 84), Vector2.zero);
+            var resources = CreateRect("Treasury", resourceBar, new Vector2(6 * 166 - 6, 84), Vector2.zero);
             resources.anchorMin = resources.anchorMax = resources.pivot = new Vector2(.5f, .5f);
             string[] names = { "GRANO", "MADERA", "PIEDRA", "ORO", "MANO DE OBRA" };
-            for (int i = 0; i < names.Length; i++)
+            for (int i = 0; i <= names.Length; i++)
             {
-                var slot = CreateRect("Resource " + i, resources, new Vector2(124, 84), new Vector2(i * 130, 0));
-                CreateText("Resource name", slot, new Vector2(8, -4), new Vector2(120, 20), names[i], 13, Muted);
-                resourceValues[i] = CreateText("Stock", slot, new Vector2(8, -25), new Vector2(120, 30), "—", 24, LegacyUI.Paper, FontStyle.Bold);
-                resourceDeltas[i] = CreateText("Next closing", slot, new Vector2(8, -57), new Vector2(120, 22), "— al cierre", 14, Muted);
+                var population = i == names.Length;
+                var slot = CreateRect(population ? "Population" : "Resource " + i, resources,
+                    new Vector2(160, 84), new Vector2(i * 166, 0));
+                FulgorIcons.Create("Icon", slot, population ? FulgorIcon.Population : FulgorIcons.Resources5[i],
+                    new Vector2(4, -20), 44);
+                CreateText("Resource name", slot, new Vector2(54, -4), new Vector2(106, 20),
+                    population ? "POBLACIÓN" : names[i], 13, Muted);
+                var value = CreateText("Stock", slot, new Vector2(54, -25), new Vector2(106, 30), "—", 24, LegacyUI.Paper, FontStyle.Bold);
+                var delta = CreateText("Next closing", slot, new Vector2(54, -57), new Vector2(106, 22),
+                    population ? "sin censo" : "— al cierre", 14, Muted);
+                if (population) { populationValue = value; continue; }
+                resourceValues[i] = value;
+                resourceDeltas[i] = delta;
             }
 
             panel = CreateRect("Map Information", canvasObject.transform, new Vector2(324, 228), new Vector2(20, -124));
@@ -207,6 +217,12 @@ namespace Fulgor.Presentation.Map
                 resourceDeltas[i].text = $"{delta:+0;-0;0} al cierre";
                 resourceDeltas[i].color = delta < 0 ? Negative : delta > 0 ? Positive : Muted;
             }
+        }
+
+        /// <summary>Las reglas aún no llevan censo: null deja un guion.</summary>
+        public void SetPopulation(int? population)
+        {
+            if (populationValue != null) populationValue.text = population?.ToString("N0") ?? "—";
         }
 
         public void SetMultipleArmyMode(bool enabled)
