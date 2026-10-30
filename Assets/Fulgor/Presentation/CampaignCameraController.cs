@@ -60,7 +60,8 @@ namespace Fulgor.Presentation.Map
 
             var mouse = Mouse.current;
             var pointer = mouse == null ? Vector2.zero : mouse.position.ReadValue();
-            bool allowPointer = mouse != null && sceneCamera.pixelRect.Contains(pointer) &&
+            bool pointerInView = mouse != null && sceneCamera.pixelRect.Contains(pointer);
+            bool allowPointer = pointerInView &&
                 (boardSelection == null || !boardSelection.BlocksPointer(pointer));
             if(mouse!=null)
             {
@@ -72,7 +73,9 @@ namespace Fulgor.Presentation.Map
                 }
                 else dragging=false;
             }
-            var direction = MapCameraControls.KeyboardDirection() + (allowPointer&&!dragging
+            // La barra de recursos toca el borde superior: la franja de desplazamiento sigue
+            // activa sobre el HUD, como en otros 4X; encima de los paneles solo se bloquea el zoom.
+            var direction = MapCameraControls.KeyboardDirection() + (pointerInView&&!dragging
                 ? MapPointerPolicy.EdgeDirection(pointer, sceneCamera.pixelRect, edgeSize) : Vector2.zero);
             if (direction.sqrMagnitude > 1f) direction.Normalize();
             var scaledSpeed = panSpeed * (navigation.Zoom / 10f) * Time.unscaledDeltaTime;

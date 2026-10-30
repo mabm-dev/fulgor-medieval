@@ -8,6 +8,8 @@
 | `ArtSource/Blender/crear_plantilla_escala_fulgor.py` | Genera la plantilla de escala | Herramienta propia reproducible |
 | `ArtSource/Portraits/Heroes/*.png` | 12 caracterizaciones de héroes para el proyecto Unity; colección de referencia vigente, aún no optimizada ni importada al runtime | Aportadas por el propietario del proyecto; derechos pendientes de auditoría comercial |
 | `Assets/Fulgor/Art/Validation/SM_VisualScaleValidation.fbx` | Validación del contrato Blender–Unity | Derivado de la plantilla; no es arte final |
+| `ArtSource/UI/generar_interfaz_fulgor.py` | Genera los iconos de recursos, población y turno y los marcos 9-slice del HUD | Herramienta propia reproducible |
+| `Assets/Fulgor/Resources/LegacyUI/Icons/*.png` | Iconos y marcos del HUD en estilo oro épico, derivados del script anterior | Fuente propia; provisional hasta el arte final de interfaz |
 | `Assets/Settings/` | Configuración de URP y perfil de build de Windows | Configuración del proyecto |
 | `ArtSource/Blender/Terrain/Llanura_v01.blend` | Estudio editable de pastizal, cereal y senda | Geometría y materiales propios generados con bpy; propuesta v01 |
 | `ArtSource/Blender/Terrain/crear_llanura_v01.py` | Reconstruye modelos, FBX y lámina de revisión | Herramienta propia reproducible, sin recursos externos |
