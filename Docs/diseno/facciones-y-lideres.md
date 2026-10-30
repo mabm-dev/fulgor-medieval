@@ -44,6 +44,9 @@ Cada facción completa tendrá:
 No se diseñarán doce economías incompatibles. Compartirán el núcleo de reglas
 y se diferenciarán mediante estas piezas.
 
+La propuesta de edificios, costes y efectos se recoge en
+[Edificios característicos](edificios-caracteristicos.md).
+
 ## Primera entrega
 
 La campaña inicial incluirá Castilla, León, Aragón, Navarra, Portugal y
