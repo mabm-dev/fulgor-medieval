@@ -33,16 +33,13 @@ namespace Fulgor.Presentation.Map
         private readonly Text[] realmStock=new Text[5];
         private Button primary,secondary;
         private ScrollRect scroll;
-        private RectTransform viewControls;
         private readonly List<Button> tabs=new();
         private readonly List<CityBuildingView> buildings=new();
         private Vector3 focus;
         private readonly List<Vector3> framingPoints=new();
         private Bounds townBounds;
         public float EffectiveDistance=>previewCamera!=null?Vector3.Distance(previewCamera.transform.position,focus):0;
-        public const float MinimumDistance=8.5f,MaximumDistance=14.5f,DefaultDistance=10.5f;
-        private float yaw=28,zoom=DefaultDistance;
-        public float ZoomDistance=>zoom;
+        public const float DefaultDistance=10.5f;
         public CityAmbientLife Life=>stage!=null?stage.GetComponent<CityAmbientLife>():null;
         private CityBuildingView selectedBuilding;
         private LineRenderer outline;
@@ -80,6 +77,8 @@ namespace Fulgor.Presentation.Map
                 mainCamera.cullingMask=1<<5;mainCamera.clearFlags=CameraClearFlags.SolidColor;mainCamera.backgroundColor=new Color(.035f,.052f,.06f);
                 stage=Instantiate(data.CityPrefab);stage.name="Vista de ciudad · "+state.Name;stage.transform.position=new Vector3(10000,0,10000);
                 foreach(var item in stage.GetComponentsInChildren<Transform>(true))item.gameObject.layer=PreviewLayer;
+                // Frame the complete city template once so later construction does not move the camera.
+                CollectFramingPoints();focus=TownFocus();
                 observedDevelopment=campaign.CityState(state.Id);observedConstructionTurn=campaign.State.Turn;CityGrowthPresentation.Apply(stage,observedDevelopment,observedConstructionTurn);
                 stage.GetComponent<CityVisualFinish>()?.Apply();
                 buildings.AddRange(stage.GetComponentsInChildren<CityBuildingView>());projectIndex=0;
@@ -92,7 +91,7 @@ namespace Fulgor.Presentation.Map
                 previewCamera.orthographic=false;previewCamera.fieldOfView=42;previewCamera.cullingMask=1<<PreviewLayer;previewCamera.nearClipPlane=.1f;previewCamera.farClipPlane=80;previewCamera.clearFlags=CameraClearFlags.SolidColor;previewCamera.backgroundColor=new Color(.11f,.15f,.15f);
                 previewCamera.allowHDR=false;previewCamera.allowMSAA=true;
                 target=new RenderTexture(1728,1200,24,RenderTextureFormat.ARGB32){name="Vista de ciudad",antiAliasing=4};target.Create();previewCamera.targetTexture=target;
-                CollectFramingPoints();focus=TownFocus();yaw=28;zoom=DefaultDistance;UpdateCamera();BuildUI();SelectPanel(CityPanelKind.Overview);return true;
+                UpdateCamera();BuildUI();SelectPanel(CityPanelKind.Overview);return true;
             }catch {Close();throw;}
         }
 
@@ -107,7 +106,7 @@ namespace Fulgor.Presentation.Map
             if(viewport!=null)viewport.texture=null;
             if(stage!=null){stage.SetActive(false);Release(stage);}if(ui!=null){ui.SetActive(false);Release(ui);}
             if(target!=null){target.Release();Release(target);}Release(outlineMaterial);
-            stage=null;ui=null;target=null;previewCamera=null;viewport=null;heading=null;body=null;realmSummary=null;citySubtitle=null;cityNotice=null;primary=null;secondary=null;scroll=null;viewControls=null;outline=null;outlineMaterial=null;selectedBuilding=null;
+            stage=null;ui=null;target=null;previewCamera=null;viewport=null;heading=null;body=null;realmSummary=null;citySubtitle=null;cityNotice=null;primary=null;secondary=null;scroll=null;outline=null;outlineMaterial=null;selectedBuilding=null;
             militaryNav=null;militarySelection=null;militaryTabs.Clear();militaryItem=0;MilitaryMode=CityMilitaryMode.Recruit;
             buildings.Clear();framingPoints.Clear();tabs.Clear();oldHud=null;oldHudEnabled=null;
         }
@@ -120,9 +119,6 @@ namespace Fulgor.Presentation.Map
             if(campaign.CityRevision!=observedCityRevision||campaign.State!=observedTurn||campaign.Army!=observedArmy||campaign.ArmyRegistry!=observedRegistry||campaign.MarchDestination!=observedMarch)Refresh();
             var mouse=Mouse.current;
             if(mouse==null||!Application.isFocused||viewport==null||!RectTransformUtility.RectangleContainsScreenPoint(viewport.rectTransform,mouse.position.ReadValue()))return;
-            if(viewControls!=null&&RectTransformUtility.RectangleContainsScreenPoint(viewControls,mouse.position.ReadValue()))return;
-            if(mouse.rightButton.isPressed)Rotate(mouse.delta.ReadValue().x*.25f);
-            float scroll=mouse.scroll.ReadValue().y;if(Mathf.Abs(scroll)>.01f)ChangeZoom(-Mathf.Sign(scroll)*.25f);
             if(mouse.leftButton.wasPressedThisFrame&&RectTransformUtility.ScreenPointToLocalPointInRectangle(viewport.rectTransform,mouse.position.ReadValue(),null,out var point)) {
                 var rect=viewport.rectTransform.rect;var uv=new Vector2((point.x-rect.xMin)/rect.width,(point.y-rect.yMin)/rect.height);
                 if(Physics.Raycast(previewCamera.ViewportPointToRay(uv),out var hit,80,1<<PreviewLayer)) {
@@ -192,7 +188,6 @@ namespace Fulgor.Presentation.Map
             CityGrowthPresentation.Apply(stage,development,campaign.State.Turn);stage.GetComponent<CityVisualFinish>()?.Apply();observedDevelopment=development;observedConstructionTurn=campaign.State.Turn;
             buildings.Clear();buildings.AddRange(stage.GetComponentsInChildren<CityBuildingView>());
             if(selectedBuilding!=null&&!selectedBuilding.gameObject.activeInHierarchy){selectedBuilding=null;if(outline!=null)outline.enabled=false;}
-            CollectFramingPoints();focus=TownFocus();UpdateCamera();
         }
         private void RefreshBuildings()
         {
@@ -243,14 +238,12 @@ namespace Fulgor.Presentation.Map
         public void FocusKind(CityBuildingKind kind){foreach(var building in buildings)if(building.Kind==kind){FocusBuilding(building);break;}}
         private void FocusBuilding(CityBuildingView building)
         {
-            selectedBuilding=building;focus=TownFocus();zoom=MinimumDistance;
+            selectedBuilding=building;
             if(outline==null){var root=new GameObject("Edificio seleccionado");root.transform.SetParent(stage.transform);root.layer=PreviewLayer;outline=root.AddComponent<LineRenderer>();outline.loop=true;outline.useWorldSpace=true;outline.positionCount=4;outline.startWidth=outline.endWidth=.025f;outlineMaterial=new Material(Shader.Find("Universal Render Pipeline/Unlit"));outlineMaterial.SetColor("_BaseColor",new Color(1,.72f,.18f));outline.sharedMaterial=outlineMaterial;}
             var b=building.Bounds;float y=b.min.y+.015f;outline.SetPositions(new[]{new Vector3(b.min.x-.05f,y,b.min.z-.05f),new Vector3(b.max.x+.05f,y,b.min.z-.05f),new Vector3(b.max.x+.05f,y,b.max.z+.05f),new Vector3(b.min.x-.05f,y,b.max.z+.05f)});outline.enabled=true;
-            UpdateCamera();SelectPanel(CityPanelKind.Buildings);
+            SelectPanel(CityPanelKind.Buildings);
         }
-        public void ResetView(){if(!IsOpen)return;focus=TownFocus();zoom=DefaultDistance;yaw=28;if(outline!=null)outline.enabled=false;selectedBuilding=null;UpdateCamera();Refresh();}
-        public void Rotate(float degrees){if(!IsOpen)return;yaw=Mathf.Repeat(yaw+degrees,360);UpdateCamera();}
-        public void ChangeZoom(float delta){if(!IsOpen)return;zoom=Mathf.Clamp(zoom+delta,MinimumDistance,MaximumDistance);UpdateCamera();}
+        public void ResetView(){if(!IsOpen)return;if(outline!=null)outline.enabled=false;selectedBuilding=null;Refresh();}
         private void CollectFramingPoints()
         {
             framingPoints.Clear();bool first=true;var ground=stage.transform.Find("Terreno de la villa");
@@ -266,9 +259,9 @@ namespace Fulgor.Presentation.Map
         private void UpdateCamera()
         {
             if(previewCamera==null)return;
-            var offset=Quaternion.Euler(0,yaw,0)*new Vector3(0,Mathf.Sin(31*Mathf.Deg2Rad),-Mathf.Cos(31*Mathf.Deg2Rad));
+            var offset=Quaternion.Euler(0,28,0)*new Vector3(0,Mathf.Sin(31*Mathf.Deg2Rad),-Mathf.Cos(31*Mathf.Deg2Rad));
             var rotation=Quaternion.LookRotation(-offset,Vector3.up);
-            float distance=Mathf.Max(zoom,CityCameraFraming.RequiredDistance(framingPoints,focus,rotation,previewCamera.fieldOfView,previewCamera.aspect));
+            float distance=Mathf.Max(DefaultDistance,CityCameraFraming.RequiredDistance(framingPoints,focus,rotation,previewCamera.fieldOfView,previewCamera.aspect));
             previewCamera.transform.SetPositionAndRotation(focus+offset*distance,rotation);
         }
 
@@ -311,14 +304,6 @@ namespace Fulgor.Presentation.Map
                 Text("Name "+names[i],footer,new Vector2(x+54,-32),new Vector2(130,18),names[i].ToUpperInvariant(),12,new Color(.74f,.78f,.73f));
             }
             cityNotice=Text("City activity",footer,new Vector2(28,-49),new Vector2(1860,28),"",16,new Color(.80f,.84f,.76f));
-            var controls=Stretch("View controls",ui.transform,Vector2.zero,new Vector2(1,0),new Vector2(238,100),new Vector2(-370,138));viewControls=controls;
-            var layout=controls.gameObject.AddComponent<HorizontalLayoutGroup>();layout.spacing=8;layout.childControlWidth=true;layout.childControlHeight=true;layout.childForceExpandWidth=true;layout.childForceExpandHeight=true;
-            CreateButton(Fixed("Rotate left",controls,new Vector2(0,0),new Vector2(140,38)),"GIRAR ‹",()=>Rotate(-15));
-            CreateButton(Fixed("Zoom out",controls,new Vector2(156,0),new Vector2(72,38)),"−",()=>ChangeZoom(.35f));
-            CreateButton(Fixed("Zoom in",controls,new Vector2(238,0),new Vector2(72,38)),"+",()=>ChangeZoom(-.35f));
-            CreateButton(Fixed("Rotate right",controls,new Vector2(326,0),new Vector2(140,38)),"› GIRAR",()=>Rotate(15));
-            CreateButton(Fixed("Reset view",controls,new Vector2(482,0),new Vector2(210,38)),"VISTA GENERAL",ResetView);
-            float[] weights={2,1,1,2,3};for(int i=0;i<controls.childCount;i++){var element=controls.GetChild(i).gameObject.AddComponent<LayoutElement>();element.minWidth=0;element.preferredWidth=0;element.flexibleWidth=weights[i];}
             LegacyUI.Parchment(content);
             foreach(var item in ui.GetComponentsInChildren<Transform>(true))item.gameObject.layer=5;
             Canvas.ForceUpdateCanvases();

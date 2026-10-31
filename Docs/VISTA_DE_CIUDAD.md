@@ -4,7 +4,7 @@ Un clic normal en la fortaleza abre una vista de ciudad separada del mapa. La ca
 
 ## Vista y paneles
 
-La vista contiene la fortaleza existente y una villa original. Al inicio aparecen dos viviendas; mercado, pozo, almacén, plaza y más casas se incorporan al terminar sus [obras de construcción](CIUDAD_CONSTRUCCION.md). Se muestra con una cámara propia en una RenderTexture, separada de las capas del tablero. Los edificios se pueden seleccionar con clic para examinarlos; la cámara permite girar, acercar, alejar y recuperar la vista general con botones, botón derecho y rueda.
+La vista contiene la fortaleza existente y una villa original. Al inicio aparecen dos viviendas; mercado, pozo, almacén, plaza y más casas se incorporan al terminar sus [obras de construcción](CIUDAD_CONSTRUCCION.md). Se muestra con una cámara propia en una RenderTexture, separada de las capas del tablero. Los edificios se pueden seleccionar con clic para examinarlos; la cámara mantiene un encuadre fijo durante la selección y la construcción, sin giro ni zoom.
 
 Los paneles son:
 

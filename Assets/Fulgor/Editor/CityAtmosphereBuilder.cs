@@ -128,14 +128,11 @@ namespace Fulgor.Editor
                 for(int i=0;i<50;i++)city.Life.Advance(.05f);
                 if(previous.Where((p,i)=>Vector3.Distance(p,city.Life.Positions()[i])>.01f).Count()<8)throw new InvalidOperationException("Los vecinos no pasean.");
                 Capture(camera,city,Path.Combine(output,"Ciudad_Viva_General.png"));
-                city.ChangeZoom(-1000);if(city.ZoomDistance!=CityManagementView.MinimumDistance)throw new InvalidOperationException("Zoom minimo incorrecto.");
-                Capture(camera,city,Path.Combine(output,"Ciudad_Viva_Cerca.png"));
-                city.ChangeZoom(1000);if(city.ZoomDistance!=CityManagementView.MaximumDistance)throw new InvalidOperationException("Zoom maximo incorrecto.");
-                Capture(camera,city,Path.Combine(output,"Ciudad_Viva_Lejos.png"));city.ResetView();
+                city.ResetView();
                 city.FocusKind(CityBuildingKind.Market);Capture(camera,city,Path.Combine(output,"Ciudad_Viva_Mercado.png"));
                 for(int i=0;i<18;i++){for(int j=0;j<4;j++)city.Life.Advance(.05f);Capture(camera,city,Path.Combine(output,"Paseo_"+i.ToString("D2")+".png"));}
                 city.Close();if(selection.IsInteractionSuspended)throw new InvalidOperationException("No se vuelve al mapa.");
-                File.WriteAllText(Path.Combine(output,"revision_ambiente.json"),"{\"residents\":14,\"animals\":8,\"perspective\":true,\"minimum_distance\":8.5,\"maximum_distance\":14.5,\"movement_checked\":true,\"return_to_map_checked\":true}");
+                File.WriteAllText(Path.Combine(output,"revision_ambiente.json"),"{\"residents\":14,\"animals\":8,\"perspective\":true,\"fixed_camera\":true,\"movement_checked\":true,\"return_to_map_checked\":true}");
                 Debug.Log("LIVING_CITY_REVIEW_OK");SessionState.SetInt(Stage,2);EditorApplication.isPlaying=false;
             }catch(Exception e){Debug.LogException(e);SessionState.SetBool(Running,false);EditorApplication.Exit(1);}
         }

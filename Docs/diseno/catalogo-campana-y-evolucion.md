@@ -1,14 +1,16 @@
 # Catálogo de campaña y evolución
 
-Base de diseño para Fulgor Medieval Unity. Esta es una propuesta de contenidos y reglas, no una afirmación de que las facciones, modelos, etapas o ventajas estén implementados. El repertorio vigente son doce facciones; las incorporaciones se presentan como candidatas hasta su aprobación. Los rasgos y nombres de unidades proponen papeles jugables, no uniformes históricos definitivos.
+Base de diseño para Fulgor Medieval Unity. Se han acordado quince facciones para el diseño: las doce originales más suevos, visigodos y Bizancio en Spania. Su incorporación es una decisión de diseño, no una afirmación de que las tres nuevas facciones, sus modelos, etapas o ventajas estén implementados en Unity. Barcelona sigue siendo candidata. Los rasgos y nombres de unidades proponen papeles jugables, no uniformes históricos definitivos.
+
+Para construir los árboles de edificios se establecen tres grupos de juego: cristiano peninsular (Asturias, León, Castilla, Aragón, Navarra y Portugal); andalusí (Córdoba, Sevilla, Zaragoza y Granada); y poderes extranjeros (almorávides, almohades, suevos, visigodos y bizantinos). Esta agrupación es una herramienta de diseño, no una afirmación de que todas las culturas de cada grupo compartan la misma arquitectura. Cada grupo tendrá edificios comunes con variantes culturales, y cada facción tendrá dos o tres edificios propios por etapa, pendientes de diseño y equilibrio.
 
 ## Facciones para cubrir la campaña
 
-La campaña histórica comienza en un año concreto y avanza en el tiempo. Cada facción puede estar ausente, aparecer, cambiar de denominación o quedar integrada, según los acontecimientos y el resultado de la partida. No es necesario que las doce coexistieran. Las fechas de aparición, fronteras y líderes se decidirán por escenario y podrán variar si el jugador altera el curso de la historia.
+La campaña histórica comienza en un año concreto y avanza en el tiempo. Cada facción puede estar ausente, aparecer, cambiar de denominación o quedar integrada, según los acontecimientos y el resultado de la partida. No es necesario que las quince coexistieran. Las fechas de aparición, fronteras y líderes se decidirán por escenario y podrán variar si el jugador altera el curso de la historia.
 
 | Grupo | Facciones | Periodo o función en campaña |
 |---|---|---|
-| Tempranas, candidatas | Reino visigodo; reino suevo; Bizancio en Spania | Siglos V–VII, según fecha: actores territoriales para Migraciones y primeros escenarios. |
+| Poderes extranjeros tempranos | Reino visigodo; reino suevo; Bizancio en Spania | Siglos V–VII, según fecha: actores territoriales para Migraciones y primeros escenarios. |
 | Primeros poderes medievales | Asturias; Córdoba en su fase de emirato y después califato; Navarra/Pamplona | Siglos VIII–XI, con nombres, gobernantes y límites adecuados al inicio. |
 | Candidato | Condado de Barcelona | Condados pirenaicos desde la época carolingia; definir relación con Aragón antes de representar su unión. |
 | Reinos y taifas | León, Castilla, Aragón, Portugal, Sevilla, Zaragoza | Aparición y cambios entre los siglos X–XII según el escenario. Portugal temprano como condado no se trata automáticamente como reino independiente. |
@@ -16,7 +18,7 @@ La campaña histórica comienza en un año concreto y avanza en el tiempo. Cada 
 | Tardío | Granada nazarí | Desde el siglo XIII hasta el final de la campaña; distinguirla de la taifa granadina del siglo XI. |
 | Actores adicionales candidatos | Taifas de Toledo y Badajoz; francos, vándalos, alanos y comunidades locales | Sus papeles (reino jugable, rival, ciudad o evento) se decidirán por campaña. Los vikingos se proponen como incursiones. |
 
-Visigodos, suevos, Bizancio y Barcelona serían cuatro candidatas para ampliar los doce a dieciséis, sin incluirlas aún como selección aprobada. Córdoba puede representar emirato y califato como fases de una misma línea, con cambios explícitos; Castilla/León y Aragón/Barcelona requieren decisiones de sucesión o unión, no sustitución automática.
+Visigodos, suevos y Bizancio se incorporan al repertorio de diseño; el condado de Barcelona sigue siendo candidato independiente y no está incluido entre las quince facciones. Córdoba puede representar emirato y califato como fases de una misma línea, con cambios explícitos; Castilla/León y Aragón/Barcelona requieren decisiones de sucesión o unión, no sustitución automática.
 
 ## Fichas iniciales de identidad
 
@@ -24,9 +26,9 @@ Cada ficha definitiva requiere gobernante para la fecha, héroe o capitán, vent
 
 | Facción | Construcción propuesta | Tropas propuestas: base / característica / élite | Dirección visual inicial |
 |---|---|---|---|
-| Visigodos* | Aula regia | Milicia con lanza / guerrero con escudo / guardia regia | Mampostería tardoantigua, ornamentos y escudos; paleta tierra y rojo apagado. |
-| Suevos* | Fortaleza de Gallaecia | Lanceros / infantería de colina / guardia del rey | Piedra y madera del noroeste, siluetas robustas; tierra y verde apagado. |
-| Bizancio en Spania* | Puerto fortificado | Infantería de guarnición / arqueros / caballería imperial | Fortificación costera de tradición romana oriental; púrpura y tonos arena. |
+| Visigodos | Aula regia | Milicia con lanza / guerrero con escudo / guardia regia | Mampostería tardoantigua, ornamentos y escudos; paleta tierra y rojo apagado. |
+| Suevos | Fortaleza de Gallaecia | Lanceros / infantería de colina / guardia del rey | Piedra y madera del noroeste, siluetas robustas; tierra y verde apagado. |
+| Bizancio en Spania | Puerto fortificado | Infantería de guarnición / arqueros / caballería imperial | Fortificación costera de tradición romana oriental; púrpura y tonos arena. |
 | Asturias | Torre de vigilancia montañesa | Milicia / lanceros de montaña / guardia regia | Piedra, madera y defensas de montaña; verde y tonos minerales. |
 | León | Cantería regia | Lanceros / infantería de escudo / caballería regia | Fortalezas de piedra y paños de estandarte; púrpura y crema. |
 | Castilla | Patio de mesnadas | Lanceros concejiles / ballesteros / caballería noble | Fortaleza y torres pétreas; rojo y dorado. |
@@ -45,7 +47,7 @@ Cada ficha definitiva requiere gobernante para la fecha, héroe o capitán, vent
 
 ## Árbol compartido y especialización
 
-Los edificios comunes proporcionan economía, defensa, reclutamiento y mejoras. Cada facción recibe una construcción característica y variaciones de sus unidades; no necesita quince economías distintas. Una ficha de unidad debe establecer: etapa, edificio requerido, coste de leva, duración, cantidad, mantenimiento, movimiento estratégico, ataque, defensa, salud, daño, iniciativa, alcance y habilidad. También debe explicar cómo se mejora y qué conserva la formación al hacerlo.
+Los edificios comunes proporcionan economía, defensa, reclutamiento y mejoras. Cada grupo comparte una base de construcciones y cada facción tendrá dos o tres edificios propios por etapa, además de variantes de unidades. Sus nombres, requisitos y efectos aún deben definirse y equilibrarse. Una ficha de unidad debe establecer: etapa, edificio requerido, coste de leva, duración, cantidad, mantenimiento, movimiento estratégico, ataque, defensa, salud, daño, iniciativa, alcance y habilidad. También debe explicar cómo se mejora y qué conserva la formación al hacerlo.
 
 Los edificios requieren coste, turnos, mantenimiento, efecto, requisitos, límite por ciudad y tratamiento al conquistar. La identidad visual se vincula a la ficha mediante retrato, bandera, icono, aspecto de edificio y apariencia de unidades. Las variantes visuales se añaden mediante datos y recursos; no requieren rehacer el terreno del mapa.
 

@@ -22,14 +22,14 @@ La Edad de las Migraciones es anterior a la formación de varios de los doce rei
 
 ## Otros pueblos y poderes para futuras campañas
 
-Este contexto amplía las posibilidades de campaña; no añade automáticamente facciones jugables a las doce ya previstas ni altera su selección en Unity.
+Suevos, visigodos y Bizancio en Spania se han añadido al repertorio de diseño como poderes extranjeros, junto a almorávides y almohades. Su selección, reglas y modelos todavía requieren implementación en Unity. Los demás actores de esta sección siguen siendo posibilidades para futuras campañas.
 
 - **Hispanorromanos**: poblaciones y autoridades locales de tradición romana, presentes durante la transición del siglo V; pueden inspirar ciudades, élites y eventos.
-- **Suevos**: reino establecido en el noroeste peninsular desde el siglo V hasta su incorporación al reino visigodo en 585; candidato a potencia territorial de una campaña temprana.
+- **Suevos**: reino establecido en el noroeste peninsular desde el siglo V hasta su incorporación al reino visigodo en 585; potencia territorial prevista para campañas tempranas.
 - **Vándalos y alanos**: pueblos presentes en Hispania durante el siglo V; candidatos a movimientos de población y conflictos de una campaña de migraciones. Los vándalos cruzaron al norte de África en 429.
-- **Visigodos**: inicialmente vinculados a Roma como aliados militares, consolidaron progresivamente un reino con centro en Toledo; candidato a potencia principal de una campaña temprana.
+- **Visigodos**: inicialmente vinculados a Roma como aliados militares, consolidaron progresivamente un reino con centro en Toledo; potencia prevista para campañas tempranas.
 - **Vascones**: poblaciones del área pirenaica occidental con relaciones diversas con los poderes vecinos; pueden inspirar territorios y actores locales. Su grado de romanización y autonomía varió según la zona y el periodo.
-- **Bizancio**: gobernó territorios del sur y sureste peninsular en los siglos VI y VII; posible potencia territorial en una campaña de ese periodo. Sus límites cambiaron y deben precisarse para cada fecha.
+- **Bizancio**: gobernó territorios del sur y sureste peninsular en los siglos VI y VII; potencia prevista para campañas de ese periodo. Sus límites cambiaron y deben precisarse para cada fecha.
 - **Francos y poder carolingio**: influyeron en el norte y los condados pirenaicos; posibles potencias y relaciones de dependencia para campañas de los siglos VIII y IX.
 - **Vikingos**: sus expediciones afectaron costas y ciudades peninsulares entre los siglos IX y XI; posibles incursiones o eventos, sin presuponer un reino permanente en la península.
 

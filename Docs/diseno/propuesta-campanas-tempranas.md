@@ -1,6 +1,6 @@
 # Propuesta de campañas y facciones tempranas
 
-Documento de propuesta, pendiente de aprobación y equilibrio. Las fechas son puntos de partida para preparar escenarios, no límites fijados para las edades del juego. Una facción de campaña necesita una identidad jugable propia; un pueblo o población no tiene por qué ser un Estado unificado.
+Documento de propuesta de escenarios y reglas, pendiente de equilibrio. Visigodos, suevos y Bizancio ya están aprobados para el repertorio de diseño como poderes extranjeros; Barcelona continúa como candidata. Las fechas son puntos de partida para preparar escenarios, no límites fijados para las edades del juego. Una facción de campaña necesita una identidad jugable propia; un pueblo o población no tiene por qué ser un Estado unificado.
 
 ## Nuevas facciones prioritarias
 
@@ -27,7 +27,7 @@ Las comunidades hispanorromanas y vasconas pueden representarse mediante poblaci
 
 ## Modo libre
 
-Los doce reinos previstos y las nuevas facciones que finalmente se incorporen podrán seleccionarse juntos y recorrer las cinco etapas acordadas: Migraciones, Alta, Expansión, Plena y Baja. La progresión es una regla de juego compartida, no una sucesión histórica forzosa. Cada facción conservará su identidad; falta diseñar sus costes, desbloqueos y equilibrio por etapa.
+Las quince facciones acordadas para diseño podrán seleccionarse juntas en la propuesta de modo libre y recorrer las cinco etapas: Migraciones, Alta, Expansión, Plena y Baja. La selección adicional aún no está implementada. La progresión es una regla de juego compartida, no una sucesión histórica forzosa. Cada facción conservará su identidad; falta diseñar sus costes, desbloqueos y equilibrio por etapa.
 
 ## Orden de trabajo recomendado
 

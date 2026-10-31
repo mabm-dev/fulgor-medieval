@@ -1,0 +1,33 @@
+{
+  "fuente_v7": "D:/IA/ComfyUI_windows_portable/ComfyUI/output/3d/fortaleza_completa_autentica_v7.blend",
+  "error_deformacion": 0.0,
+  "desvio_v7_original": 0.0,
+  "caras_originales": 1499152,
+  "ranuras_material": [
+    "Material_0",
+    "Almenas",
+    "Matacanes",
+    "Madera",
+    "Tapiz",
+    "Pendon",
+    "Hierro"
+  ],
+  "caras_por_ranura": {
+    "Material_0": 1385275,
+    "Almenas": 4784,
+    "Matacanes": 20438,
+    "Madera": 380,
+    "Tapiz": 960,
+    "Pendon": 160,
+    "Hierro": 12
+  },
+  "tono_matacanes_painter": [
+    0.3098,
+    0.2549,
+    0.1922
+  ],
+  "fbx": "Assets/Fulgor/Art/RawFortress/SM_Fortaleza_unificada.fbx",
+  "texturas": "Assets/Fulgor/Art/RawFortress/Unificada",
+  "painter_textures_untouched": true,
+  "source_glb_untouched": true
+}
