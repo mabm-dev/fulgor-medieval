@@ -40,10 +40,10 @@ namespace Fulgor.Editor
                 CityConstructionReviewBuilder.CompleteAll(city);
                 city.ResetView();Validate(city);Capture(camera,city,Path.Combine(output,"Ciudad_Encuadre_General.png"));
                 city.FocusKind(CityBuildingKind.Market);Validate(city);Capture(camera,city,Path.Combine(output,"Ciudad_Encuadre_Mercado.png"));
-                float closest=0;
-                for(int angle=0;angle<12;angle++){city.Rotate(30);city.ChangeZoom(-1000);Validate(city);closest=Mathf.Max(closest,city.EffectiveDistance);if(angle%3==0)Capture(camera,city,Path.Combine(output,"Ciudad_Encuadre_Giro"+angle+".png"));}
+                float closest=city.EffectiveDistance;
+                Validate(city);
                 for(int frame=0;frame<16;frame++){for(int i=0;i<4;i++)city.Life.Advance(.05f);Capture(camera,city,Path.Combine(output,"Paseo_"+frame.ToString("D2")+".png"));}
-                File.WriteAllText(Path.Combine(output,"revision_encuadre.json"),"{\"orbit_angles_checked\":12,\"minimum_viewport_margin\":0.025,\"market_focus_checked\":true,\"closest_request\":8.5,\"maximum_required_distance\":"+closest.ToString(System.Globalization.CultureInfo.InvariantCulture)+"}");
+                File.WriteAllText(Path.Combine(output,"revision_encuadre.json"),"{\"fixed_camera\":true,\"minimum_viewport_margin\":0.025,\"market_selection_checked\":true,\"distance\":"+closest.ToString(System.Globalization.CultureInfo.InvariantCulture)+"}");
                 city.Close();Debug.Log("CITY_FRAMING_REVIEW_OK");SessionState.SetInt(Stage,2);EditorApplication.isPlaying=false;
             }catch(Exception e){Debug.LogException(e);SessionState.SetBool(Running,false);EditorApplication.Exit(1);}
         }

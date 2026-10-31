@@ -1,0 +1,16 @@
+{
+  "vertices": 1085909,
+  "triangles": 1499152,
+  "uv_sha256_before": "41b6002c76dffc18f9e1c64fb20808f0a1d2599ace30d176bbbb79962dfe5af6",
+  "uv_sha256_after": "41b6002c76dffc18f9e1c64fb20808f0a1d2599ace30d176bbbb79962dfe5af6",
+  "same_topology": true,
+  "face_indices_sha256": "def9c55df353d9e1099d48accf54d2577f1533b6ad0e8bfe46d21ba670d27b57",
+  "new_collapsed_faces": 0,
+  "minimum_face_area_ratio": 0.2999180555343628,
+  "modified_vertices": 194524,
+  "max_displacement_source_units": 0.03279981017112732,
+  "source_glb_untouched": true,
+  "painter_spp_untouched": true,
+  "painter_textures_untouched": true,
+  "unity_fbx": "Assets/Fulgor/Art/RawFortress/SM_Fortaleza_completa_corregida.fbx"
+}

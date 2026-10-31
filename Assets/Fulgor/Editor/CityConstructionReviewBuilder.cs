@@ -47,8 +47,8 @@ namespace Fulgor.Editor
                 city.ResetView();city.SelectPanel(CityPanelKind.Overview);Validate(city);Capture(camera,city,Path.Combine(output,"Ciudad_ConMercado.png"));
                 CompleteAll(city);city.ResetView();city.SelectPanel(CityPanelKind.Buildings);Validate(city);Capture(camera,city,Path.Combine(output,"Ciudad_Ampliada.png"));
                 if(city.BuildingCount!=12||city.Life.Residents!=14||city.Life.Animals!=8)throw new InvalidOperationException("No crece toda la villa.");
-                for(int angle=0;angle<12;angle++){city.Rotate(30);city.ChangeZoom(-1000);Validate(city);}
-                File.WriteAllText(Path.Combine(output,"revision_construccion.json"),"{\"initial_buildings\":3,\"market_waits_for_completion\":true,\"market_buildings\":4,\"complete_buildings\":12,\"orbit_angles_checked\":12}");
+                Validate(city);
+                File.WriteAllText(Path.Combine(output,"revision_construccion.json"),"{\"initial_buildings\":3,\"market_waits_for_completion\":true,\"market_buildings\":4,\"complete_buildings\":12,\"fixed_camera\":true}");
                 CityArchitectureReviewBuilder.CaptureDetails(output);
                 city.Close();Debug.Log("CITY_CONSTRUCTION_REVIEW_OK");SessionState.SetInt(Stage,2);EditorApplication.isPlaying=false;
             }catch(Exception e){Debug.LogException(e);SessionState.SetBool(Running,false);EditorApplication.Exit(1);}

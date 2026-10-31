@@ -81,21 +81,19 @@ namespace Fulgor.Presentation.Tests.Map
             Assert.That(City.IsOpen,Is.False);Assert.That(settlements.Ready,Is.True);Assert.That(Camera.main.cullingMask,Is.EqualTo(mask));
             Assert.That(Object.FindObjectsByType<CityBuildingView>(FindObjectsSortMode.None),Is.Empty);Assert.That(settlements.Views.Count,Is.EqualTo(1));
         }
-        [UnityTest]public IEnumerator OrbitAndBuildingFocusOnlyAffectPreviewCamera()
+        [UnityTest]public IEnumerator BuildingSelectionKeepsBothCamerasFixed()
         {
             selection.ActivateTile(Castle);var mainPosition=Camera.main.transform.position;var mainRotation=Camera.main.transform.rotation;var previousPreview=City.PreviewCamera.transform.position;
-            City.Rotate(40);City.ChangeZoom(-1);Assert.That(City.PreviewCamera.transform.position,Is.Not.EqualTo(previousPreview));
             CompleteMarket();City.FocusKind(CityBuildingKind.Market);Assert.That(City.Panel,Is.EqualTo(CityPanelKind.Buildings));Assert.That(City.BodyText,Does.Contain("mercado"));
+            Assert.That(City.PreviewCamera.transform.position,Is.EqualTo(previousPreview));
             Physics.SyncTransforms();var market=City.PreviewCamera.transform.parent.GetComponentsInChildren<CityBuildingView>().First(b=>b.Kind==CityBuildingKind.Market);
             Assert.That(Physics.Raycast(City.PreviewCamera.ScreenPointToRay(City.PreviewCamera.WorldToScreenPoint(market.Bounds.center)),out var hit,80,1<<30),Is.True);
             Assert.That(hit.collider.GetComponentInParent<CityBuildingView>(),Is.Not.Null);Assert.That(selection.ResolveHit(hit.collider),Is.Null);
-            City.ResetView();Assert.That(City.ZoomDistance,Is.EqualTo(CityManagementView.DefaultDistance));Assert.That(Camera.main.transform.position,Is.EqualTo(mainPosition));Assert.That(Camera.main.transform.rotation,Is.EqualTo(mainRotation));yield return null;
+            City.ResetView();Assert.That(City.PreviewCamera.transform.position,Is.EqualTo(previousPreview));Assert.That(Camera.main.transform.position,Is.EqualTo(mainPosition));Assert.That(Camera.main.transform.rotation,Is.EqualTo(mainRotation));yield return null;
         }
-        [UnityTest]public IEnumerator PerspectiveZoomIsLimitedAndResidentsStayInsideTheTown()
+        [UnityTest]public IEnumerator FixedPerspectiveAndResidentsStayInsideTheTown()
         {
             selection.ActivateTile(Castle);Assert.That(City.PreviewCamera.orthographic,Is.False);
-            City.ChangeZoom(-1000);Assert.That(City.ZoomDistance,Is.EqualTo(CityManagementView.MinimumDistance));
-            City.ChangeZoom(1000);Assert.That(City.ZoomDistance,Is.EqualTo(CityManagementView.MaximumDistance));
             Assert.That(City.Life,Is.Not.Null);Assert.That(City.Life.Residents,Is.EqualTo(4));Assert.That(City.Life.Animals,Is.EqualTo(2));
             var before=City.Life.Positions();for(int i=0;i<100;i++)City.Life.Advance(.05f);var after=City.Life.Positions();
             Assert.That(before.Where((p,i)=>Vector3.Distance(p,after[i])>.01f).Count(),Is.GreaterThan(2));
@@ -103,13 +101,12 @@ namespace Fulgor.Presentation.Tests.Map
             var elapsed=City.Life.Elapsed;City.Close();yield return null;Assert.That(Object.FindObjectsByType<CityAmbientLife>(FindObjectsSortMode.None),Is.Empty);
         }
 
-        [UnityTest]public IEnumerator CompleteTownStaysInsideFrameAtEveryOrbitAngleAndBuildingFocus()
+        [UnityTest]public IEnumerator CompleteTownStaysInsideFixedFrameAndBuildingSelection()
         {
             selection.ActivateTile(Castle);CompleteMarket();var stage=City.PreviewCamera.transform.parent;
             foreach(var kind in new[]{CityBuildingKind.Market,CityBuildingKind.Fortress}) {
-                City.FocusKind(kind);City.ChangeZoom(-1000);
-                for(int angle=0;angle<12;angle++) {
-                    City.Rotate(30);
+                City.FocusKind(kind);
+                {
                     foreach(var renderer in stage.GetComponentsInChildren<MeshRenderer>()) {
                         if(renderer.name=="Terreno de la villa")continue;var bounds=renderer.bounds;
                         for(int x=-1;x<=1;x+=2)for(int y=-1;y<=1;y+=2)for(int z=-1;z<=1;z+=2) {
@@ -189,9 +186,7 @@ namespace Fulgor.Presentation.Tests.Map
                 var distance=site.Model.transform.position-template.transform.position;distance.y=0;Assert.That(distance.magnitude,Is.LessThan(.5f),project.Id);
                 Assert.That(site.Model.GetComponentsInChildren<Collider>(),Is.Empty);
                 for(int turn=0;turn<project.Turns;turn++) {
-                    City.ChangeZoom(-1000);
-                    for(int angle=0;angle<4;angle++) {
-                        City.Rotate(90);
+                    {
                         foreach(var renderer in site.Model.GetComponentsInChildren<MeshRenderer>()) {
                             var bounds=renderer.bounds;
                             for(int x=-1;x<=1;x+=2)for(int y=-1;y<=1;y+=2)for(int z=-1;z<=1;z+=2) {
@@ -249,7 +244,7 @@ namespace Fulgor.Presentation.Tests.Map
                 Assert.That(instance.transform.localRotation,Is.EqualTo(original.transform.localRotation));
                 Assert.That(instance.GetComponentsInChildren<MeshFilter>(true).Select(f=>f.sharedMesh),Is.EqualTo(original.GetComponentsInChildren<MeshFilter>(true).Select(f=>f.sharedMesh)));
             }
-            Assert.That(CityManagementView.MinimumDistance,Is.EqualTo(8.5f));Assert.That(CityManagementView.MaximumDistance,Is.EqualTo(14.5f));
+            Assert.That(City.EffectiveDistance,Is.GreaterThanOrEqualTo(CityManagementView.DefaultDistance));
             var castleMaterial=stage.GetComponentsInChildren<MeshRenderer>(true).SelectMany(r=>r.sharedMaterials).First(m=>m!=null&&m.name.StartsWith("M_CastillaV11LOD ·"));
             var originalCastle=originals.First(m=>m.name=="M_CastillaV11LOD");
             Assert.That(castleMaterial,Is.Not.SameAs(originalCastle));Assert.That(castleMaterial.GetTexture("_BaseMap"),Is.SameAs(originalCastle.GetTexture("_BaseMap")));

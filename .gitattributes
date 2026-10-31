@@ -9,3 +9,6 @@
 *.meta text eol=lf
 *.shader text eol=lf
 *.hlsl text eol=lf
+/ArtSource/Blender/Fortaleza*/*.blend filter=lfs diff=lfs merge=lfs -text
+/ArtSource/Substance/Fortaleza/*.spp filter=lfs diff=lfs merge=lfs -text
+/Assets/Fulgor/Art/RawFortress/*.fbx filter=lfs diff=lfs merge=lfs -text

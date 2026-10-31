@@ -1,6 +1,6 @@
 # Fichas de facción: propuesta de datos y colores
 
-Propuesta para diseño y pruebas, no contenido implementado ni equilibrio validado. Se incluyen las doce facciones existentes y cuatro candidatas. Los colores son una paleta de identificación del juego, no una atribución heráldica histórica certificada. Banderas, arquitectura y equipo requieren fuentes por fecha antes de su producción definitiva.
+Propuesta para diseño y pruebas, no contenido implementado ni equilibrio validado. A las doce facciones originales se incorporan al diseño suevos, visigodos y Bizancio en Spania; Barcelona permanece como candidata. Los colores son una paleta de identificación del juego, no una atribución heráldica histórica certificada. Banderas, arquitectura y equipo requieren fuentes por fecha antes de su producción definitiva.
 
 ## Reglas comunes de la propuesta
 
@@ -38,9 +38,11 @@ En cada ficha, **especial** es un ajuste aplicado a una clase base; **élite** u
 
 Líderes de referencia para la ficha visual, no gobernantes permanentes de una campaña de varios siglos. Las pasivas de terreno se aplican solo una vez al calcular defensa, además del terreno base; las pasivas económicas se calculan por ciudad y edificio terminado, se detienen si cambia de propietario y no se guardan como acumulaciones permanentes.
 
-## Candidatas tempranas
+## Facciones tempranas incorporadas y candidata condal
 
 Los líderes, retratos y heráldica concreta requieren investigación por fecha. Costes de edificio en el mismo orden; obra y efecto son provisionales. Están sujetos a las mismas reglas de ciudad y conquista que las doce anteriores.
+
+Visigodos, suevos y Bizancio pertenecen al grupo de poderes extranjeros para el diseño de edificios; Barcelona es una candidata y no forma parte de las quince facciones acordadas. Los edificios de esta tabla son propuestas iniciales y no completan los dos o tres edificios propios previstos por facción y etapa.
 
 | Facción | Paleta principal / secundaria / acento | Edificio propio: coste, duración y efecto | Especial / élite | Rasgo y limitación |
 |---|---|---|---|---|
