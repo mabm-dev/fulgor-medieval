@@ -16,6 +16,7 @@ namespace Fulgor.Presentation.Map
         [SerializeField] private bool reuseArtReviewFortress;
         private readonly Dictionary<HexCoordinates,CampaignSettlementView> views=new();
         private readonly List<GameObject> ownedVisuals=new();
+        private Dictionary<HexCoordinates,HexTileView> boardTiles;
         private CampaignBoardSelection selection;
         private CampaignTurnController campaign;
         private CampaignSelectionPanel campaignPanel;
@@ -57,7 +58,7 @@ namespace Fulgor.Presentation.Map
             if(!Ready)return;
             Registry=owners;
             foreach(var pair in views)
-                if(Registry.TryGet(pair.Key,out var city))pair.Value.SetOwner(city.OwnerFactionId==EffectivePlayerFaction);
+                if(Registry.TryGet(pair.Key,out var city)){bool own=city.OwnerFactionId==EffectivePlayerFaction;pair.Value.SetOwner(own);pair.Value.SetTerritory(own?boardTiles:null,TerritoryColor);}
             Refresh();
         }
 
@@ -67,6 +68,7 @@ namespace Fulgor.Presentation.Map
             foreach(var data in settlements)if(data!=null&&data.Create().Position==position)return true;
             return false;
         }
+        private Color TerritoryColor{get{var design=KingdomDesignCatalog.Find(EffectivePlayerFaction);return design!=null&&ColorUtility.TryParseHtmlString("#"+design.PrimaryColor,out var color)?color:new Color(.15f,.48f,.92f);}}
         public bool CanManage(string id)=>Ready&&id!=null&&Registry.TryGet(id,out var city)&&city.OwnerFactionId==EffectivePlayerFaction;
 
         private void LateUpdate()
@@ -98,7 +100,7 @@ namespace Fulgor.Presentation.Map
             var registry=new CampaignSettlementRegistry(owner.Routes,logical);
             var tileLookup=new Dictionary<HexCoordinates,HexTileView>();
             foreach(var tile in root.GetComponentsInChildren<HexTileView>())tileLookup.Add(tile.Cell.Coordinates,tile);
-            Clear();selection=owner;campaign=GetComponent<CampaignTurnController>();campaignPanel=GetComponent<CampaignSelectionPanel>();
+            Clear();boardTiles=tileLookup;selection=owner;campaign=GetComponent<CampaignTurnController>();campaignPanel=GetComponent<CampaignSelectionPanel>();
             Registry=registry;generation=root;
             for(int i=0;i<logical.Count;i++) {
                 var settlement=logical[i];var tile=tileLookup[settlement.Position];GameObject visual=null;

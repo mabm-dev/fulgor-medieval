@@ -177,6 +177,14 @@ namespace Fulgor.Presentation.Map
             var shader=Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             material=new Material(shader) {name="Hueste provisional · azul"};material.color=new Color(.08f,.38f,.88f);
             markerBase=CreatePart("Base",PrimitiveType.Cylinder,new Vector3(0,.06f,0),new Vector3(.65f,.06f,.65f));
+            var battalion=Resources.Load<GameObject>("Hueste/PF_Batallon");
+            if(battalion!=null) {
+                // El color del equipo queda en la peana; encima va el grupo de soldados.
+                var group=Instantiate(battalion,marker.transform);group.name="Batallón";group.transform.localPosition=new Vector3(0,.12f,0);
+                foreach(var part in group.GetComponentsInChildren<Transform>(true))part.gameObject.layer=2;
+                foreach(var collider in group.GetComponentsInChildren<Collider>(true))collider.enabled=false;
+                return;
+            }
             CreatePart("Asta",PrimitiveType.Cylinder,new Vector3(0,.65f,0),new Vector3(.06f,.55f,.06f));
             CreatePart("Estandarte",PrimitiveType.Cube,new Vector3(.22f,1,0),new Vector3(.45f,.3f,.055f));
         }

@@ -71,7 +71,8 @@ namespace Fulgor.Presentation.Tests.Map
         }
         [UnityTest]public IEnumerator PendingBattleCannotBeDiscardedOrSavedThroughTheSessionMenu()
         {
-            Menu.StartCampaign("castilla-conquest");yield return Ready();Campaign.CompleteTurn();Assert.That(Campaign.HasPendingBattle,Is.True);
+            Menu.StartCampaign("castilla-conquest");yield return Ready();for(int turn=0;turn<12&&!Campaign.HasPendingBattle;turn++)Campaign.CompleteTurn(); // los rivales parten a cuatro casillas: el choque llega tras unos turnos
+            Assert.That(Campaign.HasPendingBattle,Is.True);
             Assert.That(Session.Open(),Is.False);Assert.That(Session.DiscardAndReturn(),Is.False);Assert.That(Campaign.TrySaveCampaign(),Is.False);
             Assert.That(PlayerPrefs.HasKey(CampaignTurnController.LocalSaveKey),Is.False);
         }

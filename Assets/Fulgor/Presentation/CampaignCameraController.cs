@@ -16,6 +16,7 @@ namespace Fulgor.Presentation.Map
         private CameraNavigationState navigation;
         private Vector3 cameraOffset;
         private CampaignBoardSelection boardSelection;
+        public const float FieldOfView = 35f;
 
         public void Initialize(
             float minimumX,
@@ -39,7 +40,7 @@ namespace Fulgor.Presentation.Map
                 initialFocus,
                 initialZoom,
                 sceneCamera.aspect,
-                4f,
+                2.5f,
                 initialZoom);
             ApplyState();
         }
@@ -48,7 +49,7 @@ namespace Fulgor.Presentation.Map
         {
             if (navigation == null) return;
             navigation.SetAspect(sceneCamera.aspect);
-            navigation.ChangeZoom(Mathf.Min(navigation.Zoom, 6f) - navigation.Zoom);
+            navigation.ChangeZoom(Mathf.Min(navigation.Zoom, 4.5f) - navigation.Zoom);
             navigation.Pan(new Vector2(position.x - navigation.Focus.x, position.z - navigation.Focus.z));
             ApplyState();
         }
@@ -101,8 +102,14 @@ namespace Fulgor.Presentation.Map
 
         private void ApplyState()
         {
+            // El zoom sigue siendo la mitad de la altura visible en el punto de foco; con perspectiva
+            // la cámara se aleja o acerca por su dirección habitual hasta encuadrar esa altura.
+            sceneCamera.orthographic = false;
+            sceneCamera.fieldOfView = FieldOfView;
             sceneCamera.orthographicSize = navigation.Zoom;
-            transform.position = navigation.Focus + cameraOffset;
+            float distance = navigation.Zoom / Mathf.Tan(FieldOfView * 0.5f * Mathf.Deg2Rad);
+            sceneCamera.farClipPlane = Mathf.Max(sceneCamera.farClipPlane, distance * 2f + 100f);
+            transform.position = navigation.Focus + cameraOffset.normalized * distance;
             transform.LookAt(navigation.Focus);
         }
     }

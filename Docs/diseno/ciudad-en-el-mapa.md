@@ -14,6 +14,8 @@ La ciudad se ve en el mapa como su fortaleza y las casillas que administra. Cada
 
 El territorio parte de la casilla central y del primer anillo de seis casillas contiguas, y se amplía por méritos, según [Población, alimento y capacidad de ciudad](poblacion-alimento-capacidad-ciudad.md). Cada casilla incorporada da un efecto pasivo por su terreno; un edificio que la trabaje añade el activo.
 
+**Territorio visible y distancia entre fortalezas.** Al asentarse una ciudad, su primer anillo se marca en el mapa con un sombreado suave del color del reino y un recuadro en su borde. A medida que la ciudad crece se podrá elegir una casilla de ampliación de terreno, y el sombreado y el recuadro la incluyen. Una fortaleza no puede fundarse a menos de un anillo completo de la frontera de otra: la frontera es la del territorio actual, ampliaciones incluidas, de modo que la distancia mínima crece con la ciudad. Con solo el primer anillo, la fortaleza vecina queda como mínimo a 3 casillas del centro. Esta regla todavía no está implementada: aún no existe la fundación de ciudades en el juego.
+
 Seleccionar un edificio en el mapa abre una ficha breve con su estado, producción, mantenimiento, trabajadores, mejoras disponibles, coste, duración y requisitos. Las decisiones afectan al estado real de campaña y son persistentes.
 
 La cámara del mapa conserva su comportamiento: zoom con rueda y desplazamiento horizontal y vertical, sin giro. Las piezas se diseñan para esa vista fija, con su cara visible hacia la cámara, y no necesitan modelar las caras traseras.

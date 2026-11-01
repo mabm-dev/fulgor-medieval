@@ -96,7 +96,7 @@ namespace Fulgor.Core.Map
             TerrainType.Plain => 1,
             TerrainType.Forest => onRoute ? 1 : 2,
             TerrainType.Hill => onRoute ? 1 : 2,
-            TerrainType.Mountain => onRoute ? 1 : 3,
+            TerrainType.Mountain => int.MaxValue, // las rocas no se atraviesan ni por camino
             _ => int.MaxValue,
         };
 

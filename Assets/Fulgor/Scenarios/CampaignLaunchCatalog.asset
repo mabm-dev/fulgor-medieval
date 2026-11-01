@@ -20,7 +20,7 @@ MonoBehaviour:
     scenario: {fileID: 11400000, guid: 60f7b31379b6fb046a66d6db8715df8a, type: 2}
     settlements:
     - {fileID: 11400000, guid: 60abe8404f7726241be80de423aa4cfd, type: 2}
-    - {fileID: 11400000, guid: 39dc9c6c16761b34bb9f8c20e71fed43, type: 2}
+    - {fileID: 11400000, guid: c966d486c4c844e8963027ddda9e7913, type: 2}
   - id: castilla-mission
     title: "Misi\xF3n de exploraci\xF3n"
     description: "Conduce una hueste hasta el objetivo del mapa. Conserva las reglas de la misi\xF3n anterior."

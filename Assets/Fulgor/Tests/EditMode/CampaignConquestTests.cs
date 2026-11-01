@@ -10,7 +10,7 @@ namespace Fulgor.Core.Tests.Campaign
     {
         private static HexCoordinates At(int q)=>new(q,0);
         private static GeneratedMap Map()=>new(4,1,8,new[]{new MapCell(At(0),TerrainType.Plain,false),
-            new MapCell(At(1),TerrainType.Forest,false),new MapCell(At(2),TerrainType.Hill,true),new MapCell(At(3),TerrainType.Mountain,false)});
+            new MapCell(At(1),TerrainType.Forest,false),new MapCell(At(2),TerrainType.Hill,true),new MapCell(At(3),TerrainType.Hill,false)});
         private static CampaignSettlementRegistry Cities(bool reverse=false)
         {
             var home=new CampaignSettlement("a","Casa","castilla",At(0));var enemy=new CampaignSettlement("b","Villa rival","rival",At(3));
@@ -27,7 +27,7 @@ namespace Fulgor.Core.Tests.Campaign
         {
             var cities=Cities();var own=CampaignIncomeCalculator.ForFaction(Map(),cities,"castilla");var enemy=CampaignIncomeCalculator.ForFaction(Map(),cities,"rival");
             Assert.That(own,Is.EqualTo(new CampaignResources(1,1,0,0,2)));
-            Assert.That(enemy,Is.EqualTo(new CampaignResources(0,0,3,1,2)));
+            Assert.That(enemy,Is.EqualTo(new CampaignResources(0,0,2,1,2)));
             Assert.That(own.Add(enemy),Is.EqualTo(CampaignIncomeCalculator.FromMap(Map())));
             Assert.That(CampaignIncomeCalculator.ForFaction(Map(),Cities(true),"castilla"),Is.EqualTo(own));
         }

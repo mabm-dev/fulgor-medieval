@@ -356,7 +356,7 @@ namespace Fulgor.Presentation.Map
             var boardWidth = last.x - first.x + 2f * OuterRadius;
             var boardDepth = last.z - first.z + 2f * OuterRadius;
 
-            sceneCamera.orthographic = true;
+            sceneCamera.orthographic = false;
             sceneCamera.orthographicSize = Mathf.Max(boardDepth * 0.62f, boardWidth / sceneCamera.aspect * 0.58f);
             sceneCamera.transform.position = center + new Vector3(0f, 28f, -22f);
             sceneCamera.transform.LookAt(center);

@@ -450,7 +450,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignSettlementController
   settlements:
   - {fileID: 11400000, guid: 60abe8404f7726241be80de423aa4cfd, type: 2}
-  - {fileID: 11400000, guid: 39dc9c6c16761b34bb9f8c20e71fed43, type: 2}
+  - {fileID: 11400000, guid: c966d486c4c844e8963027ddda9e7913, type: 2}
   playerFactionId: castilla
   reuseArtReviewFortress: 0
 --- !u!114 &661519027
