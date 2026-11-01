@@ -38,7 +38,7 @@ MonoBehaviour:
       quantity: 10
   - id: Castilla-2
     factionId: castilla
-    position: {x: 14, y: 7}
+    position: {x: 13, y: 9}
     movementPerTurn: 6
     formations:
     - id: Castilla-2-tropas
@@ -46,7 +46,7 @@ MonoBehaviour:
       quantity: 20
   - id: Rival-A
     factionId: rival
-    position: {x: 14, y: 8}
+    position: {x: 17, y: 8}
     movementPerTurn: 6
     formations:
     - id: Rival-A-tropas

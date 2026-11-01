@@ -20,12 +20,12 @@ namespace Fulgor.Core.Tests.Campaign
         public void MovementChargesAllTerrainAndPreservesPreviousState()
         {
             var initial = new ArmyMovementState(Line(TerrainType.Plain, TerrainType.Forest,
-                TerrainType.Mountain), At(0), 6);
+                TerrainType.Hill), At(0), 6);
             Assert.That(initial.TryMove(At(2), out var next, out var path, out var failure), Is.True);
-            Assert.That(path.TotalCost, Is.EqualTo(5));
+            Assert.That(path.TotalCost, Is.EqualTo(4));
             Assert.That(path.Steps, Is.EqualTo(2));
             Assert.That(next.Position, Is.EqualTo(At(2)));
-            Assert.That(next.RemainingMovement, Is.EqualTo(1));
+            Assert.That(next.RemainingMovement, Is.EqualTo(2));
             Assert.That(failure, Is.EqualTo(ArmyMoveFailure.None));
             Assert.That(initial.Position, Is.EqualTo(At(0)));
             Assert.That(initial.RemainingMovement, Is.EqualTo(6));
@@ -35,10 +35,10 @@ namespace Fulgor.Core.Tests.Campaign
         public void InsufficientBudgetRejectsWholeMoveAndReturnsPreview()
         {
             var initial = new ArmyMovementState(Line(TerrainType.Plain, TerrainType.Forest,
-                TerrainType.Mountain), At(0), 4);
+                TerrainType.Hill), At(0), 3);
             Assert.That(initial.TryMove(At(2), out var next, out var path, out var failure), Is.False);
             Assert.That(next, Is.SameAs(initial));
-            Assert.That(path.TotalCost, Is.EqualTo(5));
+            Assert.That(path.TotalCost, Is.EqualTo(4));
             Assert.That(failure, Is.EqualTo(ArmyMoveFailure.InsufficientMovement));
         }
 
@@ -93,11 +93,22 @@ namespace Fulgor.Core.Tests.Campaign
         }
 
         [Test]
-        public void RoadsReduceTheActualChargedCost()
+        public void MountainsCannotBeCrossedEvenAlongARoad()
         {
             var map = new GeneratedMap(2, 1, 1, new[] {
                 new MapCell(At(0), TerrainType.Plain, false),
                 new MapCell(At(1), TerrainType.Mountain, false) });
+            var graph = new MapRouteGraph(map, new[] { new MapRouteSegment(At(0), At(1), MapRouteKind.Road) });
+            Assert.That(graph.CanStandAt(At(1)), Is.False);
+            Assert.That(graph.TryGetMovementCost(At(0), At(1), out _), Is.False);
+        }
+
+        [Test]
+        public void RoadsReduceTheActualChargedCost()
+        {
+            var map = new GeneratedMap(2, 1, 1, new[] {
+                new MapCell(At(0), TerrainType.Plain, false),
+                new MapCell(At(1), TerrainType.Hill, false) });
             var graph = new MapRouteGraph(map, new[] { new MapRouteSegment(At(0), At(1), MapRouteKind.Road) });
             var initial = new ArmyMovementState(graph, At(0), 1);
             Assert.That(initial.TryMove(At(1), out var next, out var path, out _), Is.True);
