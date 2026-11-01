@@ -396,6 +396,7 @@ GameObject:
   - component: {fileID: 661519026}
   - component: {fileID: 661519027}
   - component: {fileID: 661519028}
+  - component: {fileID: 661519029}
   m_Layer: 0
   m_Name: Campaign Board
   m_TagString: Untagged
@@ -480,6 +481,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignPlaySession
   catalog: {fileID: 11400000, guid: 79dd1508661c27448be9bdc83cfde25a, type: 2}
   entryId: castilla-conquest
+--- !u!114 &661519029
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 661519023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 009f27580c05d6b4dbaf42aa30234231, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignTileBuildings
+  entries:
+  - label: Centro de aprovisionamiento
+    cell: {x: 12, y: 9}
+    prefab: {fileID: 2446743674152260061, guid: d41a2d479b42c4b43807e2897a94a722, type: 3}
+    doorMinute: 25
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
