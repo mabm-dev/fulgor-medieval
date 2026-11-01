@@ -81,7 +81,7 @@ namespace Fulgor.Presentation.Tests.Map
             var settlements=board.GetComponent<CampaignSettlementController>();Assert.That(settlements.Ready,Is.True);Assert.That(settlements.Views.Count,Is.EqualTo(1));
             Assert.That(board.transform.Find("Generated Board").GetComponentsInChildren<MeshCollider>().Length,Is.EqualTo(384));Assert.That(board.GetComponent<CampaignTurnController>().State.Turn,Is.EqualTo(1));
         }
-        [UnityTest]public IEnumerator CityAndMapUseTheSameFortressAtlasAndTintWithoutChangingAssets()
+        [UnityTest]public IEnumerator MapFortressUsesItsOwnAtlasAndOpeningTheCityDoesNotChangeAssets()
         {
             var settings=AssetDatabase.LoadAssetAtPath<CampaignMapAppearanceSettings>("Assets/Fulgor/MapAppearance/CastillaMapAppearance.asset");settings.Validate();
             Assert.That(settings.SelectionShader,Is.Not.Null);Assert.That(settings.SelectionShader.name,Is.EqualTo("Universal Render Pipeline/Unlit"));
@@ -90,13 +90,15 @@ namespace Fulgor.Presentation.Tests.Map
             Assert.That(plain,Is.Not.SameAs(source));Assert.That(plain.GetTexture("_BaseMap"),Is.SameAs(source.GetTexture("_BaseMap")));
             Assert.That(Vector4.Distance(plain.GetColor("_BaseColor"),CampaignVisualPalette.TerrainTint(TerrainType.Plain)),Is.LessThan(.00001f));
             var settlements=board.GetComponent<CampaignSettlementController>();var castle=settlements.Views.Values.Single();
-            var mapMaterial=castle.GetComponentsInChildren<MeshRenderer>(true).SelectMany(r=>r.sharedMaterials).First(m=>m.name.StartsWith("M_CastillaV11LOD ·"));
+            // La fortaleza del mapa es la de Tripo retocada en Blender (PF_FortalezaCastilla): su atlas es propio y no lleva el tinte de la V11,
+            // que sigue usando la vista de ciudad mientras no se retire.
+            var mapMaterial=castle.GetComponentsInChildren<MeshRenderer>(true).SelectMany(r=>r.sharedMaterials).First(m=>m.name.StartsWith("M_Fortaleza_Castilla"));
+            var atlas=AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Fulgor/Art/Buildings/FortalezaCastillaCastilla3/T_Fortaleza_Castilla_Castilla3_BaseColor.jpg");
+            Assert.That(atlas,Is.Not.Null);Assert.That(mapMaterial.GetTexture("_BaseMap"),Is.SameAs(atlas));
             settlements.LocateFirst();Assert.That(castle.Selected,Is.True);Assert.That(castle.Tile.HasColorOverride,Is.False);
-            Assert.That(Vector4.Distance(mapMaterial.GetColor("_BaseColor"),CampaignVisualPalette.FortressTint),Is.LessThan(.00001f));
+            Assert.That(castle.GetComponent<BoxCollider>(),Is.Not.Null);
             Assert.That(settlements.OpenCityAt(settlements.Registry.Settlements[0].Position),Is.True);
-            var city=board.GetComponent<CityManagementView>();var cityMaterial=city.PreviewCamera.transform.parent.GetComponentsInChildren<MeshRenderer>(true).SelectMany(r=>r.sharedMaterials).First(m=>m.name.StartsWith("M_CastillaV11LOD ·"));
-            Assert.That(cityMaterial.GetTexture("_BaseMap"),Is.SameAs(mapMaterial.GetTexture("_BaseMap")));Assert.That(cityMaterial.GetTexture("_BumpMap"),Is.SameAs(mapMaterial.GetTexture("_BumpMap")));
-            Assert.That(cityMaterial.GetColor("_BaseColor"),Is.EqualTo(mapMaterial.GetColor("_BaseColor")));city.Close();yield return null;
+            var city=board.GetComponent<CityManagementView>();city.Close();yield return null;
             Assert.That(EditorJsonUtility.ToJson(source),Is.EqualTo(before));
         }
     }
