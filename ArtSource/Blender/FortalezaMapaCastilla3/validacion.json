@@ -1,0 +1,26 @@
+{
+  "fuente": "ArtSource/Blender/FortalezaMapaCastilla2/Fortaleza_Castilla_Castilla2.blend",
+  "caras_quitadas_banderas": 481,
+  "color_merlon_lineal": [
+    0.676,
+    0.569,
+    0.426
+  ],
+  "merlones_nuevos": 52,
+  "caras_borradas_merlones": 2230,
+  "vertices_aplastados": 515,
+  "pendones": 3,
+  "tapiz": {
+    "x": 0.003,
+    "y": -0.157,
+    "ancho": 0.0944,
+    "alto": 0.188
+  },
+  "vertices_aplanados": 454,
+  "pendones_puerta_texels": [
+    27189,
+    22107,
+    2848
+  ],
+  "triangulos": 66750
+}
