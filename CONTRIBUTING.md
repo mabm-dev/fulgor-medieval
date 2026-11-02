@@ -32,6 +32,10 @@ Sin interfaz gráfica, desde la raíz del proyecto y con el editor cerrado:
 
 El resultado queda en `Logs/EditMode.xml`, que Git ignora.
 
+Las pruebas de escena crean cámaras y `RenderTexture`, y sin dispositivo gráfico
+Unity puede cerrarse de golpe y sin informe (se ha visto en Linux, código 139).
+Si ocurre, quita `-nographics` o ejecuta el editor en una pantalla virtual.
+
 En Linux (el contenedor `fulgor-ci` del servidor), `Tools/ci/run-editmode-tests.sh`
 hace lo mismo de forma repetible: actualiza el clon, se coloca en la rama o
 commit indicado (por defecto `origin/main`), conserva `Library/` entre
@@ -46,6 +50,11 @@ Tools/ci/run-editmode-tests.sh feat/modo-benchmark-v0.7  # otra rama
 Se niega a empezar si el clon tiene cambios sin confirmar. Las rutas de Unity,
 del proyecto y de los resultados se cambian con `UNITY_EDITOR`, `PROJECT_DIR` y
 `RESULTS_DIR`; los informes y logs quedan en `~/test-results/`.
+
+El modo gráfico se elige con `FULGOR_GRAPHICS`. Por defecto (`auto`) el script usa
+`xvfb-run` si está instalado y no hay pantalla, y si no, `-nographics`. Con `xvfb`
+exige `xvfb-run`, con `display` usa la pantalla actual y con `none` ejecuta sin
+gráficos. Imprime el modo elegido en su primera línea.
 
 ## Integración continua
 
