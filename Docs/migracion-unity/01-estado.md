@@ -1,5 +1,9 @@
 # Estado comprobado de la migración
 
+> Instantánea del 21 de octubre de 2026, antes de la campaña jugable. El estado
+> vigente está en el [README](../../README.md), el [roadmap](../ROADMAP.md) y el
+> [plan de migración](04-plan.md).
+
 Revisado el 21 de octubre de 2026 a partir del proyecto Unity 6000.6.0f1
 y una copia aislada de Assets, Packages y ProjectSettings para validación batch.
 
