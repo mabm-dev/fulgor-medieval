@@ -185,18 +185,14 @@ namespace Fulgor.Presentation.Tests.Map
                 Assert.That(site.Model.GetComponentsInChildren<MeshFilter>().All(f=>f.sharedMesh.vertexCount>0),Is.True);
                 var distance=site.Model.transform.position-template.transform.position;distance.y=0;Assert.That(distance.magnitude,Is.LessThan(.5f),project.Id);
                 Assert.That(site.Model.GetComponentsInChildren<Collider>(),Is.Empty);
-                for(int turn=0;turn<project.Turns;turn++) {
-                    {
-                        foreach(var renderer in site.Model.GetComponentsInChildren<MeshRenderer>()) {
-                            var bounds=renderer.bounds;
-                            for(int x=-1;x<=1;x+=2)for(int y=-1;y<=1;y+=2)for(int z=-1;z<=1;z+=2) {
-                                var point=City.PreviewCamera.WorldToViewportPoint(bounds.center+Vector3.Scale(bounds.extents,new Vector3(x,y,z)));
-                                Assert.That(point.z,Is.GreaterThan(0));Assert.That(point.x,Is.InRange(.025f,.975f));Assert.That(point.y,Is.InRange(.025f,.975f));
-                            }
-                        }
+                foreach(var renderer in site.Model.GetComponentsInChildren<MeshRenderer>()) {
+                    var bounds=renderer.bounds;
+                    for(int x=-1;x<=1;x+=2)for(int y=-1;y<=1;y+=2)for(int z=-1;z<=1;z+=2) {
+                        var point=City.PreviewCamera.WorldToViewportPoint(bounds.center+Vector3.Scale(bounds.extents,new Vector3(x,y,z)));
+                        Assert.That(point.z,Is.GreaterThan(0));Assert.That(point.x,Is.InRange(.025f,.975f));Assert.That(point.y,Is.InRange(.025f,.975f));
                     }
-                    City.CompleteTurn();
                 }
+                for(int turn=0;turn<project.Turns;turn++)City.CompleteTurn();
                 Assert.That(site.Model,Is.Null);Assert.That(template.gameObject.activeSelf,Is.True);
                 yield return null;
             }
