@@ -2,11 +2,20 @@ using Fulgor.Core.Map;
 
 namespace Fulgor.Core.Campaign
 {
-    public enum CampaignAttackFailure { None, UnknownArmy, FriendlyArmy, ArmyInBattle, NotAdjacent, NoMovement }
+    public enum CampaignAttackFailure { None, UnknownArmy, FriendlyArmy, ArmyInBattle, NotAdjacent, NoMovement, NoTroops, UndefendedHero }
 
     public sealed partial class CampaignArmyRegistry
     {
+        /// <summary>Batalla entre huestes con tropas. A un héroe solo no se le ataca: se le apresa.</summary>
         public CampaignAttackFailure PreviewAttack(string attackerId, string defenderId)
+        {
+            var failure = PreviewEngagement(attackerId, defenderId);
+            if (failure == CampaignAttackFailure.None && armies[defenderId].Army.IsLoneHero) return CampaignAttackFailure.UndefendedHero;
+            return failure;
+        }
+
+        // Condiciones comunes a atacar y a apresar a un héroe solo; un héroe solo no puede atacar.
+        private CampaignAttackFailure PreviewEngagement(string attackerId, string defenderId)
         {
             if (!TryGetArmy(attackerId, out var attacker) || !TryGetArmy(defenderId, out var defender))
                 return CampaignAttackFailure.UnknownArmy;
@@ -14,6 +23,7 @@ namespace Fulgor.Core.Campaign
             if (IsLocked(attackerId) || IsLocked(defenderId)) return CampaignAttackFailure.ArmyInBattle;
             if (attacker.Movement.Position.DistanceTo(defender.Movement.Position) != 1) return CampaignAttackFailure.NotAdjacent;
             if (attacker.Movement.RemainingMovement < 1) return CampaignAttackFailure.NoMovement;
+            if (attacker.Army.Formations.Count == 0) return CampaignAttackFailure.NoTroops;
             return CampaignAttackFailure.None;
         }
 
