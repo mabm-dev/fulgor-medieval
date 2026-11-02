@@ -35,39 +35,51 @@ Hitos 0 y 1 del plan de migración.
 - [x] Revisión de la escena en el editor con gráficos.
 - [x] Medición de una build de Windows.
 
-## v0.7 — Mapa de campaña
+## v0.7 — Mapa de campaña y primera campaña jugable (cerrada)
 
-Hitos 2 y 3.
+Hitos 2 y 3. La versión se cerró al quedar jugable la conquista con Castilla,
+que adelanta buena parte de v0.8 y v0.9; lo pendiente de este bloque pasa a
+las versiones siguientes.
 
-- Primera casilla con arte de producción, validada de cerca y de lejos.
-- Kit de terreno completo, con variantes reales de agua y llanura.
-- Costa, ríos y caminos como datos lógicos, no solo decorativos.
-- Mapa peninsular diseñado para Unity, con el mapa anterior como antecedente.
-- Escenarios configurables sin duplicar recursos al regenerar el tablero.
-- Rendimiento del tablero completo, según la
-  [investigación de rendimiento](v0.7-rendimiento-tablero.md).
+- [x] Arte de terreno de detalle integrado en el mapa (biomas, agua, caminos
+      y cultivos).
+- [x] Kit de terreno con variantes de agua: costa, bahía, cabo, desembocadura
+      y río.
+- [x] Costa, caminos y riberas como datos lógicos de rutas, no solo
+      decorativos.
+- [ ] Mapa peninsular diseñado para Unity, con el mapa anterior como
+      antecedente.
+- [x] Escenarios configurables sin duplicar recursos al regenerar el tablero.
+- [ ] Rendimiento del tablero completo, según la
+      [investigación de rendimiento](v0.7-rendimiento-tablero.md). Hecho: color
+      propio solo en hover y selección y modo benchmark; falta combinar mallas.
 
 ## v0.8 — Misión rápida jugable
 
 Hitos 4 y 5. Implementa las reglas de misión definidas para Unity.
 
-- Nueva partida y selección de reino.
-- Turno con recursos, producción, consumo y registro de eventos.
-- Movimiento, rutas y suministro.
-- Combate táctico con formaciones, héroes y resolución automática.
-- Ocupación de asentamientos, victoria y derrota.
-- Guardado y carga versionados.
-- Fortaleza castellana como primer modelo completo.
+- [x] Nueva partida y selección de reino (doce reinos; solo Castilla jugable).
+- [x] Turno con recursos, producción, consumo y previsión al cierre.
+- [x] Movimiento, rutas, marchas de varios turnos y suministro.
+- [x] Combate táctico con formaciones, moral y resolución automática.
+- [ ] Héroes en combate y en el mapa.
+- [x] Ocupación de asentamientos, victoria y derrota.
+- [x] Guardado y carga versionados.
+- [x] Fortaleza castellana como primer modelo completo.
 
 ## v0.9 — Campaña regional
 
 Hitos 6 y 7. Implementa asentamientos, IA rival y diplomacia en Unity.
 
-- Huestes y héroes con modelo, identidad y animación.
-- Asentamientos, población, construcción y fueros.
-- Niebla de guerra.
-- Reino rival con IA estratégica y economía propia.
-- Diplomacia, rescate de héroes cautivos y ascenso de capitanes.
+- [ ] Huestes y héroes con modelo, identidad y animación. Hecho: batallón
+      de nueve soldados y tropas con modelo; faltan héroes y animación.
+- [ ] Asentamientos, población, construcción y fueros. Hecho: conquista,
+      construcción y reclutamiento; faltan población y fueros.
+- [x] Niebla de guerra.
+- [x] Reino rival con IA estratégica y economía propia.
+- [ ] Diplomacia, rescate de héroes cautivos y ascenso de capitanes. Hecho:
+      paz, pactos, comercio y tratados; el resto depende de los héroes.
+- [ ] Campañas jugables para los otros once reinos.
 
 ## v0.10 — Tutorial
 
