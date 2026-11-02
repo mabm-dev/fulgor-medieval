@@ -112,3 +112,5 @@ InitTestScene*.unity*
 __pycache__/
 *.py[cod]
 *.painter_lock
+# Proyectos de Substance Painter: solo en la torre
+ArtSource/Substance/FortalezaCastilla/
