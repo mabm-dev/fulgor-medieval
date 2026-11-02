@@ -20,6 +20,8 @@ namespace Fulgor.Core.Campaign
         public CampaignFormationData[] formations;
         public string[] appliedEncounters;
         public string heroId;
+        /// <summary>JsonUtility devuelve "" en lugar de null: vacío y nulo significan «sin héroe».</summary>
+        public string Hero => string.IsNullOrEmpty(heroId) ? null : heroId;
     }
 
     [Serializable]
@@ -89,9 +91,9 @@ namespace Fulgor.Core.Campaign
                     spawn.HasValue && !MapPathfinder.TryFindPath(initial.graph, spawn.Value, position, out _))
                     throw new ArgumentException("Saved army position is occupied or inaccessible.");
                 var movement = ArmyMovementState.Restore(initial.graph, position, budget, saved.remainingMovement);
-                if (saved.formations == null || saved.formations.Length > 6 || saved.formations.Length == 0 && saved.heroId == null)
+                if (saved.formations == null || saved.formations.Length > 6 || saved.formations.Length == 0 && saved.Hero == null)
                     throw new ArgumentException("Saved army requires surviving formations or a hero.");
-                if (saved.heroId != null && !heroes.Add(saved.heroId))
+                if (saved.Hero != null && !heroes.Add(saved.Hero))
                     throw new ArgumentException("A hero leads several armies.");
                 var survivors = new List<CampaignFormationState>();
                 foreach (var formation in saved.formations)
@@ -107,7 +109,7 @@ namespace Fulgor.Core.Campaign
                 }
                 var applied = ValidateHistory(saved.appliedEncounters);
                 if (!applied.IsSubsetOf(history)) throw new ArgumentException("Army history contains an unresolved encounter.");
-                var army = CampaignArmyState.RestoreSurvivors(saved.id, faction, survivors, applied, saved.heroId);
+                var army = CampaignArmyState.RestoreSurvivors(saved.id, faction, survivors, applied, saved.Hero);
                 restored.armies.Add(army.Id, new CampaignArmyOnMap(army, movement));
             }
             return restored;

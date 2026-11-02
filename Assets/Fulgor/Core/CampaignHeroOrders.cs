@@ -173,10 +173,10 @@ namespace Fulgor.Core.Campaign
             if (saved.id.StartsWith(HeroArmyPrefix, StringComparison.Ordinal))
             {
                 var hero = HeroCatalog.Find(saved.id.Substring(HeroArmyPrefix.Length));
-                if (hero == null || saved.heroId != hero.Id) return false;
+                if (hero == null || saved.Hero != hero.Id) return false;
                 faction = hero.FactionId; return true;
             }
-            if (saved.id.StartsWith(SplitArmyPrefix, StringComparison.Ordinal) && saved.heroId == null &&
+            if (saved.id.StartsWith(SplitArmyPrefix, StringComparison.Ordinal) && saved.Hero == null &&
                 saved.formations != null && saved.formations.Length > 0)
             {
                 faction = formationFaction(saved.formations[0]?.id);

@@ -181,6 +181,26 @@ namespace Fulgor.Core.Tests.Campaign
         }
 
         [Test]
+        public void EmptyStringsFromJsonUtilityMeanNoHero()
+        {
+            // JsonUtility devuelve "" en lugar de null: una partida sin héroes debe cargar igual.
+            var initial = Registry(2);
+            var data = initial.Capture();
+            foreach (var army in data.armies) { Assert.That(army.heroId, Is.Null); army.heroId = ""; }
+            var restored = CampaignArmyRegistry.Restore(data, initial);
+            Assert.That(restored.Armies.Count, Is.EqualTo(initial.Armies.Count));
+            Assert.That(restored.Armies.All(a => a.Army.HeroId == null), Is.True);
+
+            // Una partida con un héroe real conserva ese héroe y las huestes sin héroe siguen con "".
+            var withHero = WithRodrigo(initial);
+            var mixed = withHero.Capture();
+            foreach (var army in mixed.armies) if (army.heroId == null) army.heroId = "";
+            var again = CampaignArmyRegistry.Restore(mixed, initial);
+            Assert.That(again.Armies.Count(a => a.Army.HeroId != null), Is.EqualTo(1));
+            Assert.That(again.TryGetHeroArmy(Rodrigo, out _), Is.True);
+        }
+
+        [Test]
         public void SavedHeroArmiesLoneHeroesAndSplitsAreRestored()
         {
             var initial = Registry(2);
