@@ -9,25 +9,41 @@ El proyecto se plantea como una antología de la Edad Media ibérica: las
 campañas históricas respetan su periodo, mientras que el modo Leyendas permite
 enfrentar líderes de siglos distintos dentro de una cronología alternativa.
 
-> Estado: **pre-alpha, migración a Unity (v0.6 cerrada, v0.7 en curso)**. El
-> núcleo y el tablero de campaña ya funcionan en Unity; las reglas jugables se
-> implementan en C# siguiendo el [roadmap](Docs/ROADMAP.md).
+> Estado: **pre-alpha, v0.7 cerrada**. La campaña de conquista con Castilla
+> ya se juega de principio a fin en Unity; el resto de reinos, los héroes y la
+> población siguen pendientes según el [roadmap](Docs/ROADMAP.md).
 
 ## Lo que ya funciona en Unity
 
-- Núcleo C# independiente del motor: coordenadas axiales, generador aleatorio
-  determinista y mapas procedurales.
-- El mismo mapa que el prototipo web para la misma semilla, comprobado con
-  pruebas.
-- Tablero de 24 × 16 con relieve provisional, transiciones, esquinas y costas.
-- Cámara de campaña, selección de casillas y panel de información.
-- Contrato visual Blender–Unity para escala, ejes y pivotes, con importador de
-  modelos estáticos.
-- 94 pruebas Edit Mode de núcleo, presentación, importación y escena. La
-  integración continua las ejecuta cuando dispone de los secretos de Unity.
+- **Inicio y reinos:** menú común para conquista y misión, configuración,
+  continuación validada del guardado y pantalla Elige tu reino con los doce
+  reinos. Castilla es, por ahora, la única campaña jugable.
+- **Mapa de campaña:** tablero hexagonal con arte de terreno, agua conectada,
+  cámara en perspectiva, territorio de ciudad, rocas y montañas impasables y
+  caminos y riberas como rutas lógicas. Fortaleza de Castilla como primer
+  modelo completo.
+- **Turno y economía:** cinco recursos, ingresos derivados del mapa, previsión
+  al cierre y logística de huestes y guarniciones con suministro por rutas.
+- **Huestes:** varias huestes por bando, marchas de varios turnos con rutas
+  recalculadas, reclutamiento urbano con coste y plazo, guarniciones y
+  traslados.
+- **Combate:** ataques desde el mapa, campo táctico 3D con formaciones, moral,
+  control manual o resolución automática y aplicación única de bajas.
+- **Ciudades:** conquista y ocupación, propiedad dinámica, construcción de
+  edificios y vista de gestión de ciudad.
+- **Rival y diplomacia:** IA estratégica con economía y levas propias, niebla
+  de guerra por facción y consejo diplomático con paz, pactos, comercio y
+  tratados.
+- **Victoria, derrota y guardado:** objetivo de conquista, pausa con guardar o
+  volver, y guardado versionado (v11) que lee los formatos anteriores.
+- **Interfaz:** piel de madera y pergamino con iconos de recursos.
+- **Calidad:** núcleo C# sin `UnityEngine`, paridad del generador con el
+  prototipo web y más de 330 pruebas Edit Mode de reglas, presentación y
+  escenas. La integración continua las ejecuta cuando dispone de los secretos
+  de Unity.
 
-Todavía no hay turnos, economía, asentamientos ni combate en Unity; esos
-sistemas están previstos para las versiones 0.8 y 0.9.
+Todavía faltan los héroes, la población, el mapa peninsular, las campañas de
+los otros once reinos y el tutorial.
 
 ## Archivo histórico del prototipo web
 
