@@ -13,9 +13,10 @@ namespace Fulgor.Core.Campaign
             if(objective==CampaignObjectiveKind.ReachDestination)return missionWon?CampaignConclusion.Victory:CampaignConclusion.InProgress;
             if(armies==null||owners==null||string.IsNullOrWhiteSpace(player))throw new ArgumentException("Conquest requires an army registry, cities and player faction.");
             if(armies.HasActiveEncounters)return CampaignConclusion.InProgress;
-            bool own=armies.Armies.Any(a=>a.Army.FactionId==player)||owners.Settlements.Any(c=>c.OwnerFactionId==player);
+            // Un héroe solo no combate ni ocupa nada: sin tropas ni ciudades no mantiene a nadie en la partida.
+            bool own=armies.Armies.Any(a=>a.Army.FactionId==player&&a.Army.Formations.Count>0)||owners.Settlements.Any(c=>c.OwnerFactionId==player);
             if(!own)return CampaignConclusion.Defeat;
-            bool rivals=armies.Armies.Any(a=>a.Army.FactionId!=player)||owners.Settlements.Any(c=>c.OwnerFactionId!=player);
+            bool rivals=armies.Armies.Any(a=>a.Army.FactionId!=player&&a.Army.Formations.Count>0)||owners.Settlements.Any(c=>c.OwnerFactionId!=player);
             return rivals?CampaignConclusion.InProgress:CampaignConclusion.Victory;
         }
     }
