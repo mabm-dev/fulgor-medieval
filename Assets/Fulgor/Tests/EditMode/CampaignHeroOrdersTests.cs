@@ -164,6 +164,23 @@ namespace Fulgor.Core.Tests.Campaign
         }
 
         [Test]
+        public void StartingHeroesGoAloneForThePlayerAndLeadTheRivalArmy()
+        {
+            var roster = CampaignHeroRoster.Start(new[] { "castilla", "granada" });
+            var registry = Registry().PlaceStartingHeroes(roster, "castilla", faction => faction == "castilla" ? At(2) : (HexCoordinates?)null);
+            Assert.That(registry.TryGetHeroArmy(Rodrigo, out var rodrigo), Is.True);
+            Assert.That(rodrigo.Army.IsLoneHero, Is.True);
+            Assert.That(rodrigo.Movement.Position.DistanceTo(At(2)), Is.EqualTo(1), "Nearest free cell to the occupied capital.");
+            Assert.That(registry.TryGetHeroArmy(Zahir, out var zahir), Is.True);
+            Assert.That(zahir.Army.Id, Is.EqualTo("e"), "The rival hero leads its first army.");
+
+            var again = registry.PlaceStartingHeroes(roster, "castilla", _ => At(2));
+            Assert.That(again.Armies.Count, Is.EqualTo(registry.Armies.Count), "Heroes already on the map are not duplicated.");
+            var captive = roster.CaptureUndefended(Rodrigo, "granada");
+            Assert.That(Registry().PlaceStartingHeroes(captive, "castilla", _ => At(0)).TryGetHeroArmy(Rodrigo, out _), Is.False);
+        }
+
+        [Test]
         public void SavedHeroArmiesLoneHeroesAndSplitsAreRestored()
         {
             var initial = Registry(2);

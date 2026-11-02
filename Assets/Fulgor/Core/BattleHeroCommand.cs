@@ -92,6 +92,40 @@ namespace Fulgor.Core.Campaign
             return true;
         }
 
+        /// <summary>
+        /// Elección de la IA o del combate automático: cura si su bando ha perdido más de un tercio de la
+        /// vida, anima si la moral media baja de 50 y, si no, usa la orden de daño más cara que pueda pagar
+        /// contra el batallón enemigo más numeroso. Devuelve false si no conviene o no puede actuar.
+        /// </summary>
+        public bool TryActAutomatically(BattleRoster roster, out HeroCommandResult result)
+        {
+            result = default;
+            if (roster == null || roster.Outcome != BattleOutcome.InProgress || HasActed(roster)) return false;
+            var own = roster.FormationIds.Select(roster.GetFormation).Where(f => f.IsInBattle && f.Slot.Side == Side).ToList();
+            var foes = roster.FormationIds.Select(roster.GetFormation).Where(f => f.IsInBattle && f.Slot.Side != Side).ToList();
+            if (own.Count == 0 || foes.Count == 0) return false;
+            long health = own.Sum(f => f.TotalHealth), full = own.Sum(f => (long)f.InitialQuantity * f.Attributes.HealthPerMember);
+            double morale = own.Average(f => f.Morale);
+            var target = foes.OrderByDescending(f => f.Quantity).ThenBy(f => f.Slot.Id).First().Slot.Id;
+            var weakest = own.OrderBy(f => f.Morale).ThenBy(f => f.Slot.Id).First().Slot.Id;
+            foreach (var ability in Hero.Abilities.OrderByDescending(a => Priority(a, health * 3 < full * 2, morale < 50)))
+            {
+                if (Priority(ability, health * 3 < full * 2, morale < 50) <= 0) continue;
+                var kind = HeroCatalog.Ability(ability).Target;
+                int? id = kind == HeroAbilityTarget.Enemy ? target : kind == HeroAbilityTarget.Ally ? weakest : (int?)null;
+                if (TryUse(ability, id, roster, out result, out _)) return true;
+            }
+            return false;
+        }
+
+        // Orden de preferencia: apoyo cuando hace falta y, si no, el daño de mayor coste.
+        private static int Priority(HeroAbility ability, bool wounded, bool shaken) => ability switch
+        {
+            HeroAbility.HoldTheLine => wounded ? 100 : 0,
+            HeroAbility.WarCry or HeroAbility.Regroup => shaken ? 90 : 0,
+            _ => 10 + HeroCatalog.Ability(ability).Cost,
+        };
+
         /// <summary>Bonificaciones pasivas que el héroe da a sus batallones al desplegar.</summary>
         public static FormationAttributes Empower(FormationAttributes attributes, HeroDefinition hero)
         {

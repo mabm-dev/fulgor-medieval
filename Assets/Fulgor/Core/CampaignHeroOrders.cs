@@ -45,6 +45,49 @@ namespace Fulgor.Core.Campaign
             failure = HeroOrderFailure.None; return true;
         }
 
+        /// <summary>Coloca al héroe en la casilla libre más cercana a la indicada, hasta seis casillas de distancia.</summary>
+        public bool TryPlaceHeroNear(string heroId, HexCoordinates anchor, out CampaignArmyRegistry next, out HeroOrderFailure failure)
+        {
+            next = this; failure = HeroOrderFailure.Occupied;
+            for (int radius = 0; radius <= 6; radius++)
+                foreach (var cell in anchor.CellsInRadius(radius).Where(c => c.DistanceTo(anchor) == radius)
+                    .OrderBy(c => c.Q).ThenBy(c => c.R))
+                {
+                    if (TryPlaceHero(heroId, cell, out next, out failure)) return true;
+                    if (failure != HeroOrderFailure.Occupied) return false;
+                }
+            return false;
+        }
+
+        /// <summary>
+        /// Pone en el mapa a los héroes activos que aún no están: el del jugador va solo junto a su capital;
+        /// los rivales encabezan su primera hueste sin héroe, para que la IA no maneje héroes solos.
+        /// También repone los héroes de partidas guardadas antes de existir el sistema.
+        /// </summary>
+        public CampaignArmyRegistry PlaceStartingHeroes(CampaignHeroRoster roster, string playerFactionId,
+            Func<string, HexCoordinates?> capitalOf)
+        {
+            if (roster == null) throw new ArgumentNullException(nameof(roster));
+            if (capitalOf == null) throw new ArgumentNullException(nameof(capitalOf));
+            var pending = new HashSet<string>(roster.PendingFates.Select(p => p.HeroId), StringComparer.Ordinal);
+            var next = this;
+            foreach (var hero in roster.Heroes)
+            {
+                if (hero.Status != HeroStatus.Active || pending.Contains(hero.HeroId) || next.TryGetHeroArmy(hero.HeroId, out _)) continue;
+                var own = next.Armies.Where(a => a.Army.FactionId == hero.FactionId).ToList();
+                var led = hero.FactionId == playerFactionId ? null : own.FirstOrDefault(a => a.Army.HeroId == null && a.Army.Formations.Count > 0);
+                if (led != null)
+                {
+                    var copy = new CampaignArmyRegistry(next);
+                    copy.armies[led.Army.Id] = new CampaignArmyOnMap(led.Army.WithHero(hero.HeroId), led.Movement);
+                    next = copy; continue;
+                }
+                var anchor = capitalOf(hero.FactionId) ?? own.Select(a => (HexCoordinates?)a.Movement.Position).FirstOrDefault();
+                if (anchor.HasValue && next.TryPlaceHeroNear(hero.HeroId, anchor.Value, out var placed, out _)) next = placed;
+            }
+            return next;
+        }
+
         /// <summary>
         /// Un batallón propio contiguo se une al héroe. Ambos conservan la casilla del héroe, el menor
         /// movimiento restante y el menor presupuesto por turno.
