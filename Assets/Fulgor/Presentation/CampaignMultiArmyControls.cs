@@ -90,7 +90,7 @@ namespace Fulgor.Presentation.Map
             }
             if (active == null) { panel.SetArmyState(null, "No quedan huestes propias.", false); return; }
             long troops = 0; foreach (var formation in active.Army.Formations) troops += formation.Quantity;
-            string info = $"{active.Army.Id} · {troops} tropas"+ActiveMarchText()+ArmyLogisticsText(active);
+            string info = $"{active.Army.Id} · {troops} tropas"+(active.Army.Hero!=null?$" · {active.Army.Hero.Name}":"")+ActiveMarchText()+ArmyLogisticsText(active);
             bool canMove = false;
             if (IsCampaignFinished) info += " · Misión completada.";
             else if (selection != null && selection.SelectedCell.HasValue)
@@ -108,10 +108,11 @@ namespace Fulgor.Presentation.Map
                 if (registry.TryGetOccupant(target, out var enemy) && enemy.Army.FactionId != playerFaction)
                 {
                     var attackFailure = registry.PreviewAttack(selectedArmyId, enemy.Army.Id);
-                    panel.SetArmyActionLabel("ATACAR HUESTE ENEMIGA");
+                    bool captureHero = attackFailure == CampaignAttackFailure.UndefendedHero && Heroes != null;
+                    panel.SetArmyActionLabel(captureHero ? "APRESAR HÉROE" : "ATACAR HUESTE ENEMIGA");
                     info += $" · Rival: {enemy.Army.Id}\n" + (attackFailure == CampaignAttackFailure.None ?
-                        "Atacar gasta el movimiento restante." : AttackFailureText(attackFailure));
-                    panel.SetArmyState(Army, info, attackFailure == CampaignAttackFailure.None);
+                        "Atacar gasta el movimiento restante." : captureHero ? "Un héroe solo no combate: cae prisionero." : AttackFailureText(attackFailure));
+                    panel.SetArmyState(Army, info, attackFailure == CampaignAttackFailure.None || captureHero);
                     return;
                 }
                 if(SettlementState.TryGet(target,out var city)&&city.OwnerFactionId!=playerFaction)
@@ -170,6 +171,7 @@ namespace Fulgor.Presentation.Map
                     foreach(var faction in nextRivals.Factions)nextRivals=nextRivals.WithResources(faction,logistics.Resources(faction));
                     logisticsResult=logistics;
                 }
+                nextState=ChargeHeroUpkeep(nextState,ref nextRivals);
                 var nextMilitary=closingMilitary.Advance(nextState.Turn,nextRegistry);
                 registry = nextRegistry; State = nextState;Military=nextMilitary;Rivals=nextRivals;LastLogisticsReport=logisticsResult;CityRevision++;
                 CloseDiplomacy();AdvanceCities();

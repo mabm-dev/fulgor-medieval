@@ -76,9 +76,25 @@ arquetipo y atributos quedan pendientes de la sesión de diseño.
   apresa salvo que ya retenga dos cautivos; entonces ejecuta.
 - Un cautivo puede **liberarse** por diplomacia o rescate y vuelve activo con su reino.
 
+## En la partida
+
+Los héroes se activan por escenario (`enableHeroes`); de momento solo en la conquista jugable de Castilla.
+
+- **Inicio:** el héroe del jugador aparece solo junto a su capital; cada rival encabeza su primera hueste.
+- **Mapa:** panel del héroe abajo a la derecha con **Unir** (el batallón propio de la casilla elegida, contigua,
+  se une al héroe), **Separar** (su último batallón pasa a la casilla contigua elegida) y **Contratar** (en la
+  ciudad propia elegida). Un héroe solo se mueve 6 casillas por turno; con batallones, al ritmo del más lento.
+- **Atacar a un héroe solo:** la acción pasa a «Apresar héroe» y no hay batalla. La IA rival también lo hace.
+- **Batalla:** recuadro del héroe sobre el campo con sus órdenes y puntos de mando. Si la orden necesita
+  objetivo, usa el batallón consultado o elige uno. El héroe rival y el modo automático actúan solos.
+- **Hueste destruida:** si vences, una ventana te pide apresar o ejecutar; si vence la IA, decide ella.
+- **Cierre de turno:** se cobra el mantenimiento en oro de los héroes activos de todos los reinos.
+- **Guardado:** se guardan héroes, cautivos, contrataciones y decisiones pendientes; las partidas anteriores
+  empiezan con los héroes principales.
+
 ## Pendiente
 
-- Integración en la campaña: héroe en el mapa, unir y separar batallones, bonificaciones en el despliegue,
-  ventana de decisión, contratación en ciudad, mantenimiento en el cierre de turno y guardado.
-- Interfaz del héroe en combate y uso de órdenes por la IA.
-- Nombres y atributos de los héroes secundarios.
+- Rescate e intercambio de cautivos en la diplomacia.
+- Contratación de héroes por la IA rival.
+- La previsión de recursos al cierre aún no descuenta el mantenimiento de los héroes.
+- Modelo 3D del héroe en el mapa (sesión de gráficos) y nombres de los héroes secundarios (sesión de diseño).

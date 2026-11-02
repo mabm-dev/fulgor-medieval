@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using Fulgor.Core.Campaign;
 using Fulgor.Core.Combat;
 using Fulgor.Core.Map;
 using UnityEngine;
@@ -32,6 +33,8 @@ namespace Fulgor.Presentation.Map
         private bool hadManual;
         private float lastAspect;
         private readonly Queue<string> recent=new();
+        private Text heroText;
+        private readonly List<(Button button,HeroAbility ability)> heroButtons=new();
         public bool CanNavigate=>IsOpen&&!RetreatConfirmationVisible&&!ResultVisible;
         public bool IsOpen=>ui!=null&&ui.activeSelf;
         public BattleGraphicalStage Stage {get;private set;}
@@ -106,6 +109,7 @@ namespace Fulgor.Presentation.Map
                 var backing=label.gameObject.AddComponent<Outline>();backing.effectColor=new Color(.01f,.02f,.015f,1);backing.effectDistance=new Vector2(1,-1);badges.Add(id,label);
             }
             MapCameraControls.Create(field,new Vector2(.5f,0),new Vector2(0,12),d=>Stage.PanView(d),d=>Stage.SetZoom(Stage.Zoom+d*.08f),()=>Stage.ResetView(),()=>CanNavigate);
+            BuildHeroBox();
             var footer=Box("Órdenes y parte",ui.transform,18,18,18,0,new Color(.055f,.075f,.08f));footer.anchorMax=new Vector2(1,0);footer.offsetMin=new Vector2(18,18);footer.offsetMax=new Vector2(-18,204);
             instruction=Label(footer,"",new Rect(20,8,1240,35),21,Gold);
             confirm=SmallButton(footer,"ELIGE UN DESTINO",new Rect(20,52,258,45),ConfirmSelection);
@@ -143,6 +147,32 @@ namespace Fulgor.Presentation.Map
             if(Mathf.Abs(aspect-lastAspect)>.005f){lastAspect=aspect;Stage.FitCamera(aspect);}
             Refresh(false);PositionBadges();
         }
+        // El héroe dirige desde fuera del campo: su recuadro queda sobre la esquina superior izquierda.
+        private void BuildHeroBox()
+        {
+            heroButtons.Clear();
+            var hero=controller.PlayerHero;
+            var box=CampaignMenuUI.Rect("Mando del héroe",field,new Vector2(0,1),new Vector2(12,-12),new Vector2(472,118));
+            CampaignMenuUI.Background(box,new Color(.02f,.035f,.04f,.85f));
+            heroText=Label(box,"",new Rect(12,4,448,48),16,Gold);
+            if(hero!=null)
+                for(int i=0;i<hero.Hero.Abilities.Count;i++)
+                {
+                    var ability=hero.Hero.Abilities[i];var definition=HeroCatalog.Ability(ability);
+                    var button=SmallButton(box,$"{definition.Name} · {definition.Cost}",new Rect(12+i*152,58,144,50),()=>UseHero(ability));
+                    button.GetComponentInChildren<Text>().fontSize=13;heroButtons.Add((button,ability));
+                }
+            box.gameObject.SetActive(hero!=null||controller.RivalHero!=null);
+        }
+        private void UseHero(HeroAbility ability)
+        {if(retreatDialog.activeSelf||ResultVisible)return;controller.TryUsePlayerHero(ability,inspected,out _);Refresh(true);}
+        private void RefreshHero(BattleRoster roster)
+        {
+            var hero=controller.PlayerHero;var rival=controller.RivalHero;
+            heroText.text=(hero!=null?$"{hero.Hero.Name} · {hero.CommandPoints} puntos de mando"+(hero.HasActed(roster)?" · ya actuó esta ronda":" · una orden por ronda"):"Tu hueste no lleva héroe")+
+                (rival!=null?$"\nRival: {rival.Hero.Name} · {rival.CommandPoints} puntos de mando":"");
+            foreach(var (button,ability) in heroButtons)button.interactable=roster.Outcome==BattleOutcome.InProgress&&hero.CanUse(ability,roster,out _);
+        }
         private void OnOrderApplied(BattleRecordedOrder order,MapPath path){Stage?.QueueOrder(order,path);}
         private void Refresh(bool force)
         {
@@ -177,6 +207,7 @@ namespace Fulgor.Presentation.Map
                 cards[id].color=f.IsInBattle?Paper:Muted;cardBars[id].color=active==id?Gold:ours?Blue:Red;
                 badges[id].text=(ours?"PROPIA ":"RIVAL ")+f.Quantity;badges[id].color=active==id?Gold:ours?new Color(.65f,.87f,1):new Color(1,.65f,.56f);
             }
+            RefreshHero(roster);
             ownTotal.text=$"TUS FUERZAS\n{own} soldados";rivalTotal.text=$"HUESTE RIVAL\n{rival} soldados";
             defend.interactable=manual;wait.interactable=manual&&active.HasValue&&!roster.HasWaited(active.Value);
             automatic.interactable=outcome==BattleOutcome.InProgress;
@@ -268,6 +299,7 @@ namespace Fulgor.Presentation.Map
         public static string FormationName(BattleFormationState f)=>f.Slot.Kind==FormationKind.Cavalry?"Jinetes ligeros":f.Slot.Kind==FormationKind.Ranged?"Ballesteros":f.Attributes.Attack>=7?"Hombres de armas":"Lanceros";
         private string FriendlyMessage(string raw)
         {
+            if(raw.Contains("puntos de mando"))return raw;
             if(raw.Contains("daño"))return "Las formaciones intercambian un ataque. Consulta las bajas y la moral.";
             if(raw.Contains("mueve"))return "Una formación ha avanzado por el campo.";
             if(raw.Contains("defensa"))return "Una formación ha adoptado una posición defensiva.";
