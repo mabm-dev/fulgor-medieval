@@ -1,18 +1,18 @@
 # Plan de migración y criterios de cierre
 
-Los estados describen el repositorio revisado el 21 de octubre de 2026. Cada hito
+Los estados describen el repositorio revisado el 2 de noviembre de 2026 (v0.7.0). Cada hito
 necesita su propia prueba jugable, visual o de rendimiento además de Edit Mode.
 
 | Orden | Objetivo | Estado | Criterio de cierre pendiente |
 |---|---|---|---|
 | 0 | Base técnica | Cerrada: 94/94 Edit Mode en integración continua y escena revisada con gráficos en la build de Windows | — |
 | 1 | Contrato Blender–Unity | Puerta técnica superada | Comprobar siluetas, pivotes e iluminación cerca y lejos con gráficos |
-| 2 | Kit vertical de terreno | Blockout, transiciones, esquinas y costas integrados | Variantes reales de agua y llanura; arte, materiales y revisión visual final |
-| 3 | Ríos, caminos y costa | Costa y agua clasificada solo en Presentation | Trazados lógicos continuos y representación integrada |
-| 4 | Fortaleza castellana | Revisión natural V02, FBX y mapas propios | Refinamiento, reducción, LOD, material/prefab URP y revisión en Unity |
-| 5 | Misión rápida 24×16 | Tablero, selección y prototipo de turnos e ingresos | Nueva partida, movimiento, combate, ocupación, victoria/derrota y guardar/cargar |
-| 6 | Huestes y héroes | Cuatro tropas, dos héroes y marcador estáticos; revisión natural V02 | Refinamiento, identidad por facción, rig, animación e integración con reglas |
-| 7 | Campaña regional | Sin implementar | Economía, suministro, niebla, diplomacia y rival jugables |
+| 2 | Kit vertical de terreno | Arte de detalle de biomas, agua (costa, bahía, cabo, desembocadura, río), caminos y cultivos integrado en el mapa | Revisión visual final de cerca y de lejos |
+| 3 | Ríos, caminos y costa | Caminos y riberas como rutas lógicas (`MapRouteGraph`) con coste de movimiento; agua conectada | Ríos como trazados continuos de varias casillas |
+| 4 | Fortaleza castellana | Prefab de mapa (66.750 triángulos, atlas de 4096) asignado a Castilla y LOD de revisión | Repetir el flujo con los otros reinos |
+| 5 | Misión rápida 24×16 | Jugable: nueva partida, movimiento, combate, ocupación, victoria/derrota y guardado v11 | Héroes |
+| 6 | Huestes y héroes | Batallón de nueve soldados en el mapa y tropas con modelo en combate | Héroes en reglas, identidad por facción, rig y animación |
+| 7 | Campaña regional | Economía, logística, niebla, diplomacia y rival con IA jugables en la conquista de Castilla | Población, fueros y campañas de los otros once reinos |
 | 8 | Mundo | Generador acepta dimensiones variables | Escenario mayor y presupuesto de CPU/GPU/memoria medido |
 | 9 | Distribución | Sin implementar | Build reproducible, licencias, accesibilidad y prueba en equipos |
 

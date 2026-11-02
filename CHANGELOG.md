@@ -7,8 +7,20 @@ juego se desarrolla en Unity.
 
 ## [Sin publicar]
 
+## [0.7.0] - 2026-11-02
+
+Primera campaña jugable en Unity: conquista con Castilla de principio a fin.
+
 ### Añadido
 
+- Mapa en perspectiva con territorio de ciudad recuadrado en el color del
+  reino, batallón de nueve soldados en lugar de la bandera y montañas
+  impasables incluso por camino.
+- Fortaleza de Castilla retocada como visual del mapa, Centro de
+  aprovisionamiento colocado por casilla y scripts de Blender, Painter y Unity
+  para repetir el flujo con otros reinos.
+- Diseño de facciones, territorio y rendimientos de ciudad, y la ciudad
+  construida en casillas del mapa con un panel de preferencias.
 - Piel de menús «madera y pergamino»: paneles de información y opciones en
   pergamino con herrajes y tinta oscura, barras y navegación en madera con
   filo de latón, botones de madera con estados al pasar, pulsar y desactivar,
@@ -80,10 +92,22 @@ juego se desarrolla en Unity.
   de combates resueltos y rechaza datos incompatibles antes de sustituir la partida.
 - Escena de revisión con dos huestes propias y una rival, usando los recursos existentes.
 
+### Cambiado
+
+- El color propio de hover y selección solo se aplica a la casilla afectada,
+  para no romper el batching del resto del tablero.
+- Los ingresos del prototipo se derivan del mapa generado.
+
+### Corregido
+
+- La cámara del mapa ya no lanza `NullReferenceException` en cada fotograma
+  cuando el objeto seleccionado de la interfaz se destruye al cambiar de
+  escena.
+
 ### Limitaciones
 
 - Guardar y cargar requiere resolver los encuentros tácticos abiertos. El escritor
-  actual es v9; conserva lectura simple v1/v2/v3/v5/v6/v7/v8 y multihueste v4/v5/v6/v7/v8.
+  actual es v11 y conserva la lectura de los formatos anteriores.
 - Los costes militares son provisionales; no hay mantenimiento militar todavía; la IA básica de levas es opcional por escenario.
 
 ## [0.6.0] - 2026-09-27
