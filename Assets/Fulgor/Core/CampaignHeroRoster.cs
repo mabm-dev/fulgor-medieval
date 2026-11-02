@@ -194,6 +194,47 @@ namespace Fulgor.Core.Campaign
             return next;
         }
 
+        public CampaignHeroRosterData Capture() => new() {
+            heroes = Heroes.Select(h => new CampaignHeroData {
+                heroId = h.HeroId, status = h.Status, captorFactionId = h.CaptorFactionId, hiredTurn = h.HiredTurn }).ToArray(),
+            pending = PendingFates.Select(p => new PendingHeroFateData { heroId = p.HeroId, victorFactionId = p.VictorFactionId }).ToArray(),
+            hired = hired.OrderBy(h => h.Key, StringComparer.Ordinal)
+                .Select(h => new HeroHireCountData { factionId = h.Key, count = h.Value }).ToArray() };
+
+        /// <summary>Reconstruye el registro validando héroes, reinos, cautivos y decisiones pendientes.</summary>
+        public static CampaignHeroRoster Restore(CampaignHeroRosterData data, IEnumerable<string> factionIds)
+        {
+            if (data?.heroes == null || data.pending == null || data.hired == null || factionIds == null)
+                throw new ArgumentException("Missing hero state.");
+            var factions = new HashSet<string>(factionIds, StringComparer.Ordinal);
+            var heroes = new Dictionary<string, CampaignHero>(StringComparer.Ordinal);
+            foreach (var saved in data.heroes)
+            {
+                var definition = HeroCatalog.Find(saved?.heroId);
+                if (definition == null || !factions.Contains(definition.FactionId) || heroes.ContainsKey(definition.Id) ||
+                    !Enum.IsDefined(typeof(HeroStatus), saved.status) || saved.hiredTurn < 1 ||
+                    (saved.status == HeroStatus.Captive) != (saved.captorFactionId != null) ||
+                    saved.captorFactionId != null && (saved.captorFactionId == definition.FactionId || !factions.Contains(saved.captorFactionId)))
+                    throw new ArgumentException("Invalid saved hero.");
+                heroes.Add(definition.Id, new CampaignHero(definition.Id, definition.FactionId, saved.status, saved.captorFactionId, saved.hiredTurn));
+            }
+            var hired = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (var count in data.hired)
+                if (count == null || !factions.Contains(count.factionId) || !hired.TryAdd(count.factionId, count.count) ||
+                    count.count < heroes.Values.Count(h => h.FactionId == count.factionId))
+                    throw new ArgumentException("Invalid hero hiring count.");
+            foreach (var faction in factions)
+                if (heroes.Values.Count(h => h.FactionId == faction && h.Status != HeroStatus.Dead) > MaxLivingHeroes)
+                    throw new ArgumentException("Too many living heroes.");
+            var pending = new Dictionary<string, PendingHeroFate>(StringComparer.Ordinal);
+            foreach (var fate in data.pending)
+                if (fate == null || !heroes.TryGetValue(fate.heroId ?? "", out var hero) || hero.Status != HeroStatus.Active ||
+                    fate.victorFactionId == hero.FactionId || !factions.Contains(fate.victorFactionId) ||
+                    !pending.TryAdd(hero.HeroId, new PendingHeroFate(hero.HeroId, fate.victorFactionId)))
+                    throw new ArgumentException("Invalid pending hero decision.");
+            return new CampaignHeroRoster(heroes, pending, hired);
+        }
+
         private CampaignHero RequireActive(string heroId, string opponentFactionId)
         {
             if (!TryGet(heroId, out var hero) || hero.Status != HeroStatus.Active)
@@ -207,5 +248,29 @@ namespace Fulgor.Core.Campaign
             new Dictionary<string, CampaignHero>(heroes, StringComparer.Ordinal),
             new Dictionary<string, PendingHeroFate>(pending, StringComparer.Ordinal),
             new Dictionary<string, int>(hired, StringComparer.Ordinal));
+    }
+
+    [Serializable] public sealed class CampaignHeroData { public string heroId, captorFactionId; public HeroStatus status; public int hiredTurn; }
+    [Serializable] public sealed class PendingHeroFateData { public string heroId, victorFactionId; }
+    [Serializable] public sealed class HeroHireCountData { public string factionId; public int count; }
+    [Serializable] public sealed class CampaignHeroRosterData
+    {
+        public CampaignHeroData[] heroes;
+        public PendingHeroFateData[] pending;
+        public HeroHireCountData[] hired;
+    }
+
+    public sealed partial class CampaignSaveData
+    {
+        /// <summary>0 en partidas anteriores a los héroes: se empieza con los principales.</summary>
+        public int heroesVersion; public CampaignHeroRosterData heroes;
+        public void IncludeHeroes(CampaignHeroRoster roster)
+        { if (roster == null) throw new ArgumentNullException(nameof(roster)); heroesVersion = 1; heroes = roster.Capture(); }
+        public CampaignHeroRoster RestoreHeroes(IEnumerable<string> factions)
+        {
+            if (heroesVersion == 0) return CampaignHeroRoster.Start(factions);
+            if (heroesVersion != 1 || heroes == null) throw new ArgumentException("Missing or unsupported hero state.");
+            return CampaignHeroRoster.Restore(heroes, factions);
+        }
     }
 }

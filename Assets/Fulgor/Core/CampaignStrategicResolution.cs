@@ -124,7 +124,7 @@ namespace Fulgor.Core.Campaign
             if(field!=null)history.UnionWith(field.Army.CaptureEncounterHistory());
             next.guards[cityId]=guard.WithFormations(Array.Empty<CampaignFormationState>());moved=armies;armyId=field?.Army.Id;
             if(field!=null)
-                moved=armies.PlaceRetreatedArmy(CampaignArmyState.RestoreSurvivors(field.Army.Id,guard.FactionId,forms,history),destination);
+                moved=armies.PlaceRetreatedArmy(CampaignArmyState.RestoreSurvivors(field.Army.Id,guard.FactionId,forms,history,field.Army.HeroId),destination);
             else if(destination.HasValue)
             {
                 var record=new MusterRecord{serial=checked(musters.Count+1),settlementId=cityId,factionId=guard.FactionId};next.musters.Add(record);armyId=record.ArmyId;

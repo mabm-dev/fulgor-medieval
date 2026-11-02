@@ -143,6 +143,38 @@ namespace Fulgor.Core.Tests.Campaign
         }
 
         [Test]
+        public void SavedRosterKeepsStatusesHiresAndPendingDecisions()
+        {
+            var roster = CampaignHeroRoster.Start(Factions);
+            roster.TryRecruit("castilla", 2, 5, Rich, out roster, out _, out _);
+            roster = roster.CaptureUndefended("granada/1", "castilla").Defeat("castilla/2", "granada");
+
+            var save = new CampaignSaveData();
+            save.IncludeHeroes(roster);
+            var restored = save.RestoreHeroes(Factions);
+            Assert.That(restored.Heroes.Select(h => (h.HeroId, h.Status, h.CaptorFactionId)),
+                Is.EqualTo(roster.Heroes.Select(h => (h.HeroId, h.Status, h.CaptorFactionId))));
+            Assert.That(restored.HiredCount("castilla"), Is.EqualTo(2));
+            Assert.That(restored.PendingFates.Single().HeroId, Is.EqualTo("castilla/2"));
+            Assert.That(restored.NextOffer("castilla").Cost.Gold, Is.EqualTo(240));
+
+            Assert.That(new CampaignSaveData().RestoreHeroes(Factions).Heroes, Has.Count.EqualTo(2),
+                "Saves made before heroes start with the principal heroes.");
+        }
+
+        [Test]
+        public void TamperedHeroSavesAreRejected()
+        {
+            CampaignHeroRosterData Data() => CampaignHeroRoster.Start(Factions).CaptureUndefended("granada/1", "castilla").Capture();
+            var foreign = Data(); foreign.heroes[0].heroId = "leon/1";
+            var freed = Data(); freed.heroes.Single(h => h.heroId == "granada/1").captorFactionId = null;
+            var cheap = Data(); cheap.hired[0].count = 0;
+            var self = Data(); self.heroes.Single(h => h.heroId == "granada/1").captorFactionId = "granada";
+            foreach (var data in new[] { foreign, freed, cheap, self })
+                Assert.Throws<ArgumentException>(() => CampaignHeroRoster.Restore(data, Factions));
+        }
+
+        [Test]
         public void HeroActsOncePerRoundAndPaysCommandPoints()
         {
             var roster = Battle();
