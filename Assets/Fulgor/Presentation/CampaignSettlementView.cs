@@ -9,8 +9,6 @@ namespace Fulgor.Presentation.Map
         private LineRenderer outline;
         private Material material;
         private BoxCollider pickCollider;
-        private LineRenderer control;
-        private Material controlMaterial;
         public HexTileView Tile { get; private set; }
         public bool Selected=>outline!=null&&outline.enabled;
         public void Initialize(HexTileView tile)
@@ -32,19 +30,6 @@ namespace Fulgor.Presentation.Map
             outline.enabled=false;
         }
         public void SetSelected(bool selected){if(outline!=null)outline.enabled=selected;}
-        public void SetOwner(bool own)
-        {
-            if(control==null)
-            {
-                var root=new GameObject("Control de la fortaleza");root.transform.SetParent(transform,false);
-                control=root.AddComponent<LineRenderer>();control.useWorldSpace=true;control.loop=true;control.positionCount=48;
-                control.startWidth=control.endWidth=.012f;
-                controlMaterial=new Material(Shader.Find("Universal Render Pipeline/Unlit"));control.sharedMaterial=controlMaterial;
-                control.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;control.receiveShadows=false;
-                for(int i=0;i<48;i++){float a=i*Mathf.PI*2/48;control.SetPosition(i,new Vector3(Tile.transform.position.x+Mathf.Cos(a)*.66f,transform.position.y+.012f,Tile.transform.position.z+Mathf.Sin(a)*.66f));}
-            }
-            controlMaterial.SetColor("_BaseColor",own?new Color(.15f,.48f,.92f):new Color(.82f,.23f,.17f));
-        }
         private static readonly HexCoordinates[] Directions={new(1,0),new(1,-1),new(0,-1),new(-1,0),new(-1,1),new(0,1)};
         private static readonly float[] DirectionDegrees={0,-60,-120,180,120,60};
         private readonly System.Collections.Generic.List<LineRenderer> territory=new();
@@ -144,6 +129,6 @@ namespace Fulgor.Presentation.Map
             point.y=(float.IsNegativeInfinity(height)?point.y:height)+lift;return point;
         }
         private static void Release(Object item){if(item==null)return;if(Application.isPlaying)Destroy(item);else DestroyImmediate(item);}
-        private void OnDestroy(){if(Tile!=null)Tile.UseSelectionOutline(false);Release(material);Release(controlMaterial);Release(territoryMaterial);Release(shadeMaterial);if(shade!=null)Release(shade);foreach(var line in territory)if(line!=null)Release(line.gameObject);if(outline!=null)Release(outline.gameObject);if(control!=null)Release(control.gameObject);Release(pickCollider);}
+        private void OnDestroy(){if(Tile!=null)Tile.UseSelectionOutline(false);Release(material);Release(territoryMaterial);Release(shadeMaterial);if(shade!=null)Release(shade);foreach(var line in territory)if(line!=null)Release(line.gameObject);if(outline!=null)Release(outline.gameObject);Release(pickCollider);}
     }
 }

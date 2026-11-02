@@ -58,7 +58,7 @@ namespace Fulgor.Presentation.Map
             if(!Ready)return;
             Registry=owners;
             foreach(var pair in views)
-                if(Registry.TryGet(pair.Key,out var city)){bool own=city.OwnerFactionId==EffectivePlayerFaction;pair.Value.SetOwner(own);pair.Value.SetTerritory(own?boardTiles:null,TerritoryColor);}
+                if(Registry.TryGet(pair.Key,out var city)){bool own=city.OwnerFactionId==EffectivePlayerFaction;pair.Value.SetTerritory(own?boardTiles:null,TerritoryColor);}
             Refresh();
         }
 
