@@ -238,6 +238,29 @@ namespace Fulgor.Core.Tests.Campaign
         }
 
         [Test]
+        public void AutomaticHeroStrikesHardestThenSupportsWhenNeeded()
+        {
+            var roster = Battle();
+            var rodrigo = new BattleHeroCommand(HeroCatalog.PrincipalOf("castilla"), BattleSide.Attacker);
+            Assert.That(rodrigo.TryActAutomatically(roster, out var first), Is.True);
+            Assert.That(first.Ability, Is.EqualTo(HeroAbility.FrontalCharge));
+            Assert.That(first.Targets, Is.EqualTo(new[] { 1 }));
+            Assert.That(rodrigo.TryActAutomatically(roster, out _), Is.False, "Once per round.");
+
+            var shaken = Battle();
+            shaken.TryApplyResolvedDamage(0, 112, out _);
+            var knight = new BattleHeroCommand(HeroCatalog.PrincipalOf("castilla"), BattleSide.Attacker);
+            Assert.That(knight.TryActAutomatically(shaken, out var cry), Is.True);
+            Assert.That(cry.Ability, Is.EqualTo(HeroAbility.WarCry));
+
+            var bleeding = Battle();
+            bleeding.TryApplyResolvedDamage(0, 300, out _);
+            var alcaide = new BattleHeroCommand(HeroCatalog.PrincipalOf("leon"), BattleSide.Attacker);
+            Assert.That(alcaide.TryActAutomatically(bleeding, out var heal), Is.True);
+            Assert.That(heal.Ability, Is.EqualTo(HeroAbility.HoldTheLine));
+        }
+
+        [Test]
         public void HeroBonusesRaiseAttackDefenseAndInitiativeOnly()
         {
             var troop = TroopCatalog.Get(TroopProfile.MenAtArms).Attributes;
