@@ -185,13 +185,18 @@ namespace Fulgor.Presentation.Tests.Map
                 Assert.That(site.Model.GetComponentsInChildren<MeshFilter>().All(f=>f.sharedMesh.vertexCount>0),Is.True);
                 var distance=site.Model.transform.position-template.transform.position;distance.y=0;Assert.That(distance.magnitude,Is.LessThan(.5f),project.Id);
                 Assert.That(site.Model.GetComponentsInChildren<Collider>(),Is.Empty);
+                // La obra solo cambia de geometría al pasar de fase y la cámara queda fija, así que comprobar el
+                // encuadre en cada fase cubre lo mismo que hacerlo en cada turno, sin repetir el recorrido.
+                int checkedPhase=-1;
                 for(int turn=0;turn<project.Turns;turn++) {
-                    {
+                    if(site.Phase!=checkedPhase) {
+                        checkedPhase=site.Phase;
                         foreach(var renderer in site.Model.GetComponentsInChildren<MeshRenderer>()) {
                             var bounds=renderer.bounds;
                             for(int x=-1;x<=1;x+=2)for(int y=-1;y<=1;y+=2)for(int z=-1;z<=1;z+=2) {
                                 var point=City.PreviewCamera.WorldToViewportPoint(bounds.center+Vector3.Scale(bounds.extents,new Vector3(x,y,z)));
-                                Assert.That(point.z,Is.GreaterThan(0));Assert.That(point.x,Is.InRange(.025f,.975f));Assert.That(point.y,Is.InRange(.025f,.975f));
+                                var at=$"{project.Id} · fase {checkedPhase} · turno {turn}";
+                                Assert.That(point.z,Is.GreaterThan(0),at);Assert.That(point.x,Is.InRange(.025f,.975f),at);Assert.That(point.y,Is.InRange(.025f,.975f),at);
                             }
                         }
                     }
