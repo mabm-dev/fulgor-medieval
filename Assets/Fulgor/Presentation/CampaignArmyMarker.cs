@@ -68,7 +68,10 @@ namespace Fulgor.Presentation.Map
 
         private void Update()
         {
-            if (pip != null && Camera.main != null) pip.rotation=Camera.main.transform.rotation; // la insignia siempre mira a la cámara
+            if (pip != null) {
+                if (Camera.main != null) pip.rotation=Camera.main.transform.rotation; // la insignia siempre mira a la cámara
+                pip.localPosition=new Vector3(0,PipHeight+Mathf.Sin(Time.realtimeSinceStartup*2f)*.012f,0); // y flota con suavidad
+            }
             if (owner == null || !owner.IsInteractionSuspended) AdvanceVisual(Time.deltaTime);
         }
 
@@ -209,9 +212,11 @@ namespace Fulgor.Presentation.Map
                 blob.transform.SetParent(markerBase,false);blob.transform.localPosition=new Vector3(0,-.04f,0);blob.transform.localRotation=Quaternion.Euler(90,0,0);blob.transform.localScale=new Vector3(.85f,.85f,1);
                 blob.GetComponent<Renderer>().sharedMaterial=shadow;
             }
-            pip=new GameObject("Insignia"){layer=2}.transform;pip.SetParent(marker.transform,false);pip.localPosition=new Vector3(0,PipHeight,0);pip.localScale=Vector3.one*.22f;
-            pip.gameObject.AddComponent<MeshFilter>().sharedMesh=PipMesh();pip.gameObject.AddComponent<MeshRenderer>().sharedMaterial=material;
-            pip.GetComponent<MeshRenderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
+            pip=new GameObject("Insignia"){layer=2}.transform;pip.SetParent(marker.transform,false);pip.localPosition=new Vector3(0,PipHeight,0);pip.localScale=Vector3.one*.24f;
+            // Escudete de tres capas: marco dorado, campo perlado del color del equipo y un brillo encima.
+            BadgeLayer("Marco",Resources.Load<Material>("Hueste/M_InsigniaMarco"),0);
+            BadgeLayer("Campo",material,-.002f);
+            BadgeLayer("Brillo",Resources.Load<Material>("Hueste/M_InsigniaBrillo"),-.004f);
             var battalion=Resources.Load<GameObject>("Hueste/PF_Batallon");
             if(battalion!=null) {
                 // Encima de la sombra va el grupo de soldados.
@@ -224,13 +229,12 @@ namespace Fulgor.Presentation.Map
             CreatePart("Asta",PrimitiveType.Cylinder,new Vector3(0,.65f,0),new Vector3(.06f,.55f,.06f));
             CreatePart("Estandarte",PrimitiveType.Cube,new Vector3(.22f,1,0),new Vector3(.45f,.3f,.055f));
         }
-        private static Mesh pipMesh;
-        private static Mesh PipMesh()
+        private void BadgeLayer(string label,Material layerMaterial,float depth)
         {
-            if(pipMesh!=null)return pipMesh;
-            pipMesh=new Mesh{name="Insignia"};
-            pipMesh.vertices=new[]{new Vector3(0,.5f,0),new Vector3(.3f,0,0),new Vector3(0,-.5f,0),new Vector3(-.3f,0,0)};
-            pipMesh.triangles=new[]{0,1,2,0,2,3,2,1,0,3,2,0};pipMesh.RecalculateBounds();return pipMesh;
+            if(layerMaterial==null)return;
+            var layer=GameObject.CreatePrimitive(PrimitiveType.Quad);layer.name=label;layer.layer=2;Release(layer.GetComponent<Collider>());
+            layer.transform.SetParent(pip,false);layer.transform.localPosition=new Vector3(0,0,depth);layer.transform.localScale=new Vector3(.8f,1,1);
+            var renderer=layer.GetComponent<Renderer>();renderer.sharedMaterial=layerMaterial;renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
         }
         private Transform CreatePart(string label,PrimitiveType type,Vector3 position,Vector3 scale)
         {
