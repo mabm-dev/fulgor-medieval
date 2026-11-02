@@ -12,8 +12,12 @@ juego se desarrolla en Unity.
 - Núcleo del sistema de héroes: tres héroes por reino, órdenes desde fuera del
   campo pagadas con puntos de mando y bonificaciones a la hueste, contratación
   con precio creciente y requisitos de ciudades y turno, mantenimiento en oro,
-  cautiverio y decisión del vencedor entre apresar o ejecutar. Aún no está
-  integrado en la campaña. Ver [Héroes](Docs/diseno/heroes.md).
+  cautiverio y decisión del vencedor entre apresar o ejecutar. Ver [Héroes](Docs/diseno/heroes.md).
+- Héroes en la conquista de Castilla: héroe inicial junto a la capital, unir y
+  separar batallones, contratación en ciudad, apresar a un héroe solo sin
+  batalla, órdenes del héroe en el combate (también para la IA y el modo
+  automático), ventana para apresar o ejecutar al héroe vencido, mantenimiento
+  al cierre de turno y guardado. Se activan por escenario con `enableHeroes`.
 
 ## [0.7.0] - 2026-11-02
 

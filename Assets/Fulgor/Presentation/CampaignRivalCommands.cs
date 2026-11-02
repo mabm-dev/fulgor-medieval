@@ -97,6 +97,7 @@ namespace Fulgor.Presentation.Map
             bool guarded=SettlementState.TryGet(target,out var city)&&Military.HasHostileGarrison(city.Id,attacker.Army.FactionId);
             registry.TryGetOccupant(target,out var field);
             if(!guarded&&(field==null||field.Army.FactionId!=playerFaction))return false;
+            if(!guarded&&field.Army.IsLoneHero){CaptureLoneHero(attackerId,field.Army.Id);return false;}
             string id;int suffix=1;
             do{id=$"turn-{State.Turn}-rival-{suffix++}";}while(registry.HasResolvedEncounter(id)||registry.TryGetEncounter(id,out _));
             uint seed=2166136261;foreach(char c in saveContext+":"+id+":"+attackerId)seed=unchecked((seed^c)*16777619);

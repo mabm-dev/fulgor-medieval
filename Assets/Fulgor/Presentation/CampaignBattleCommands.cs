@@ -22,6 +22,7 @@ namespace Fulgor.Presentation.Map
             bool guarded=SettlementState.TryGet(target,out var defended)&&Military.HasHostileGarrison(defended.Id,playerFaction);
             registry.TryGetOccupant(target,out var enemy);
             var guard=guarded?Military.Garrison(defended.Id):null;
+            if(!guarded&&enemy!=null&&enemy.Army.FactionId!=playerFaction&&enemy.Army.IsLoneHero)return CaptureLoneHero(selectedArmyId,enemy.Army.Id);
             if(guarded?registry.PreviewGarrisonAttack(selectedArmyId,guard,target)!=CampaignAttackFailure.None:
                 enemy==null||registry.PreviewAttack(selectedArmyId,enemy.Army.Id)!=CampaignAttackFailure.None)return false;
             if (GetComponent<CityManagementView>()?.IsOpen == true || GetComponent<BattleLabController>()?.IsOpen == true) return false;
@@ -78,8 +79,10 @@ namespace Fulgor.Presentation.Map
                     owners.TryCapture(next,encounter.AttackerId,fort.Id,out var capturedOwners,out _))
                 {owners=capturedOwners;conquered=fort.Id;}
             }
+            var lostHeroes=CampaignArmyRegistry.HeroesLost(registry,next);
             var economy=WithCityEconomy(State,cities,owners);
             registry = next;Military=military;CityRevision++; LastBattleReport = report; ActiveEncounterId = null;
+            RecordHeroDefeats(lostHeroes,attacker.Army.FactionId,defender.Army.FactionId);
             if(conquered!=null)CommitOwnership(owners,economy,conquered);
             marchOrders=marchOrders.Prune(registry,playerFaction);
             foreach(var retreat in LastRetreats)marchOrders=marchOrders.Cancel(retreat.ArmyId);
@@ -90,6 +93,7 @@ namespace Fulgor.Presentation.Map
             var message=conquered!=null?$"{(attacking?"Fortaleza conquistada":"Fortaleza perdida")} · {fort.Name} · Rentas al próximo cierre":
                 $"Batalla resuelta · bajas propias {(attacking?report.Attacker.Casualties:report.Defender.Casualties)}, rivales {(attacking?report.Defender.Casualties:report.Attacker.Casualties)}";
             if(LastRetreats.Count>0)message+=" · "+RetreatSummary();
+            if(lostHeroes.Count>0)message+=" · "+LastHeroMessage;
             panel.SetSaveStatus(message,true);
             return true;
         }
@@ -108,6 +112,7 @@ namespace Fulgor.Presentation.Map
             CampaignAttackFailure.NoMovement => "Sin movimiento: espera al siguiente turno para atacar.",
             CampaignAttackFailure.ArmyInBattle => "Hueste bloqueada en un combate.",
             CampaignAttackFailure.FriendlyArmy => "Hueste de tu facción.",
+            CampaignAttackFailure.NoTroops => "Un héroe solo no puede atacar: únele batallones.",
             _ => "Ataque no disponible.",
         };
     }
