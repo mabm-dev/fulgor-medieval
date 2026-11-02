@@ -181,6 +181,29 @@ namespace Fulgor.Core.Tests.Campaign
         }
 
         [Test]
+        public void LoneHeroesDoNotKeepAFactionAliveInConquest()
+        {
+            var graph = new MapRouteGraph(new GeneratedMap(6, 1, 3,
+                Enumerable.Range(0, 6).Select(q => new MapCell(At(q), TerrainType.Plain, false)).ToArray()));
+            var city = new CampaignSettlementRegistry(graph, new[] { new CampaignSettlement("fort", "Fuerte", "granada", At(5)) });
+            var noCities = new CampaignSettlementRegistry(graph, Array.Empty<CampaignSettlement>());
+            var troops = new CampaignArmyState("e", "granada", new[] { Unit("e-1") });
+
+            // Solo queda el héroe del jugador: derrota, aunque siga en el mapa.
+            var heroOnly = new CampaignArmyRegistry(graph, new[] { new CampaignArmyPlacement(troops, At(5), 6) });
+            Assert.That(heroOnly.TryPlaceHero(Rodrigo, At(0), out heroOnly, out _), Is.True);
+            Assert.That(CampaignConclusionRules.Evaluate(CampaignObjectiveKind.Conquest, heroOnly, city, "castilla"), Is.EqualTo(CampaignConclusion.Defeat));
+
+            // Un rival reducido a un héroe solo, sin ciudades, ya está vencido.
+            var rivalHero = new CampaignArmyRegistry(graph, new[] { new CampaignArmyPlacement(new CampaignArmyState("b", "castilla", new[] { Unit("b-1") }), At(2), 6) });
+            Assert.That(rivalHero.TryPlaceHero(Zahir, At(4), out rivalHero, out _), Is.True);
+            Assert.That(CampaignConclusionRules.Evaluate(CampaignObjectiveKind.Conquest, rivalHero, noCities, "castilla"), Is.EqualTo(CampaignConclusion.Victory));
+
+            // Con una ciudad rival, la partida sigue.
+            Assert.That(CampaignConclusionRules.Evaluate(CampaignObjectiveKind.Conquest, rivalHero, city, "castilla"), Is.EqualTo(CampaignConclusion.InProgress));
+        }
+
+        [Test]
         public void EmptyStringsFromJsonUtilityMeanNoHero()
         {
             // JsonUtility devuelve "" en lugar de null: una partida sin héroes debe cargar igual.

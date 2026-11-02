@@ -84,6 +84,9 @@ Los héroes se activan por escenario (`enableHeroes`); de momento solo en la con
 - **Mapa:** panel del héroe abajo a la derecha con **Unir** (el batallón propio de la casilla elegida, contigua,
   se une al héroe), **Separar** (su último batallón pasa a la casilla contigua elegida) y **Contratar** (en la
   ciudad propia elegida). Un héroe solo se mueve 6 casillas por turno; con batallones, al ritmo del más lento.
+- **Victoria y derrota:** un héroe solo, sin tropas ni ciudades, no mantiene a nadie en la partida: no puede
+  atacar ni ocupar nada. Perder todas las tropas y ciudades es derrota aunque el héroe siga en el mapa, y un
+  rival reducido a un héroe solo está vencido.
 - **Atacar a un héroe solo:** la acción pasa a «Apresar héroe» y no hay batalla. La IA rival también lo hace.
 - **Batalla:** recuadro del héroe sobre el campo con sus órdenes y puntos de mando. Si la orden necesita
   objetivo, usa el batallón consultado o elige uno. El héroe rival y el modo automático actúan solos.
