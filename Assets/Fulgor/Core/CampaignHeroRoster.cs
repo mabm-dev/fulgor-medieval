@@ -213,10 +213,10 @@ namespace Fulgor.Core.Campaign
                 var definition = HeroCatalog.Find(saved?.heroId);
                 if (definition == null || !factions.Contains(definition.FactionId) || heroes.ContainsKey(definition.Id) ||
                     !Enum.IsDefined(typeof(HeroStatus), saved.status) || saved.hiredTurn < 1 ||
-                    (saved.status == HeroStatus.Captive) != (saved.captorFactionId != null) ||
-                    saved.captorFactionId != null && (saved.captorFactionId == definition.FactionId || !factions.Contains(saved.captorFactionId)))
+                    (saved.status == HeroStatus.Captive) != (saved.Captor != null) ||
+                    saved.Captor != null && (saved.Captor == definition.FactionId || !factions.Contains(saved.Captor)))
                     throw new ArgumentException("Invalid saved hero.");
-                heroes.Add(definition.Id, new CampaignHero(definition.Id, definition.FactionId, saved.status, saved.captorFactionId, saved.hiredTurn));
+                heroes.Add(definition.Id, new CampaignHero(definition.Id, definition.FactionId, saved.status, saved.Captor, saved.hiredTurn));
             }
             var hired = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var count in data.hired)
@@ -250,7 +250,12 @@ namespace Fulgor.Core.Campaign
             new Dictionary<string, int>(hired, StringComparer.Ordinal));
     }
 
-    [Serializable] public sealed class CampaignHeroData { public string heroId, captorFactionId; public HeroStatus status; public int hiredTurn; }
+    [Serializable] public sealed class CampaignHeroData
+    {
+        public string heroId, captorFactionId; public HeroStatus status; public int hiredTurn;
+        /// <summary>JsonUtility devuelve "" en lugar de null: vacío y nulo significan «sin captor».</summary>
+        public string Captor => string.IsNullOrEmpty(captorFactionId) ? null : captorFactionId;
+    }
     [Serializable] public sealed class PendingHeroFateData { public string heroId, victorFactionId; }
     [Serializable] public sealed class HeroHireCountData { public string factionId; public int count; }
     [Serializable] public sealed class CampaignHeroRosterData

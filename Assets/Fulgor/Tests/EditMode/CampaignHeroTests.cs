@@ -163,6 +163,20 @@ namespace Fulgor.Core.Tests.Campaign
         }
 
         [Test]
+        public void EmptyCaptorFromJsonUtilityMeansNoCaptor()
+        {
+            var roster = CampaignHeroRoster.Start(Factions).CaptureUndefended("granada/1", "castilla");
+            var data = roster.Capture();
+            foreach (var hero in data.heroes) if (hero.captorFactionId == null) hero.captorFactionId = "";
+            var restored = CampaignHeroRoster.Restore(data, Factions);
+            restored.TryGet("castilla/1", out var free);
+            restored.TryGet("granada/1", out var prisoner);
+            Assert.That(free.Status, Is.EqualTo(HeroStatus.Active));
+            Assert.That(free.CaptorFactionId, Is.Null);
+            Assert.That(prisoner.CaptorFactionId, Is.EqualTo("castilla"));
+        }
+
+        [Test]
         public void TamperedHeroSavesAreRejected()
         {
             CampaignHeroRosterData Data() => CampaignHeroRoster.Start(Factions).CaptureUndefended("granada/1", "castilla").Capture();

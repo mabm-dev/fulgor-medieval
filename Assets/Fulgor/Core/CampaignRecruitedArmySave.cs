@@ -26,8 +26,8 @@ namespace Fulgor.Core.Campaign
                 var position=new HexCoordinates(saved.q,saved.r);
                 if(!occupied.Add(position)||!initial.graph.CanStandAt(position)||spawn.HasValue&&!MapPathfinder.TryFindPath(initial.graph,spawn.Value,position,out _))throw new ArgumentException("Occupied or inaccessible army position.");
                 var movement=ArmyMovementState.Restore(initial.graph,position,budget,saved.remainingMovement);
-                if(saved.formations==null||saved.formations.Length>6||saved.formations.Length<1&&saved.heroId==null)throw new ArgumentException("Invalid field army roster.");
-                if(saved.heroId!=null&&!heroes.Add(saved.heroId))throw new ArgumentException("A hero leads several armies.");
+                if(saved.formations==null||saved.formations.Length>6||saved.formations.Length<1&&saved.Hero==null)throw new ArgumentException("Invalid field army roster.");
+                if(saved.Hero!=null&&!heroes.Add(saved.Hero))throw new ArgumentException("A hero leads several armies.");
                 var formations=new List<CampaignFormationState>();
                 foreach(var dataFormation in saved.formations)
                 {
@@ -36,7 +36,7 @@ namespace Fulgor.Core.Campaign
                 }
                 var applied=ValidateHistory(saved.appliedEncounters);
                 if(!applied.IsSubsetOf(history))throw new ArgumentException("Unresolved army history.");
-                var army=CampaignArmyState.RestoreSurvivors(saved.id,faction,formations,applied,saved.heroId);restored.armies.Add(saved.id,new CampaignArmyOnMap(army,movement));
+                var army=CampaignArmyState.RestoreSurvivors(saved.id,faction,formations,applied,saved.Hero);restored.armies.Add(saved.id,new CampaignArmyOnMap(army,movement));
             }
             military.ValidateDeployment(restored);return restored;
         }
