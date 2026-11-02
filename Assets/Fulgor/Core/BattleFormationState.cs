@@ -94,6 +94,18 @@ namespace Fulgor.Core.Combat
             return new BattleFormationState(baseline, health, false, morale);
         }
 
+        // Las órdenes del héroe cambian moral o curan sin consumir activaciones.
+        internal BattleFormationState WithMoraleChange(int delta) =>
+            !IsInBattle ? this : new BattleFormationState(this, TotalHealth, false, Math.Max(0, Math.Min(100, Morale + delta)));
+
+        internal BattleFormationState Heal(long amount)
+        {
+            if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount));
+            if (!IsInBattle) return this;
+            long cap = checked((long)InitialQuantity * Attributes.HealthPerMember);
+            return new BattleFormationState(this, Math.Min(cap, TotalHealth + amount), false);
+        }
+
         // Withdrawal preserves survivors and wounds for a future strategic result.
         public BattleFormationState Withdraw() => !IsInBattle ? this : new BattleFormationState(this, TotalHealth, true);
     }

@@ -66,6 +66,25 @@ namespace Fulgor.Core.Combat
             return true;
         }
 
+        internal bool TryAdjustMorale(int targetId, int delta)
+        {
+            if (Outcome != BattleOutcome.InProgress || !formations.TryGetValue(targetId, out var target) || !target.IsInBattle)
+                return false;
+            formations[targetId] = target.WithMoraleChange(delta);
+            return true;
+        }
+
+        internal bool TryHeal(int targetId, long amount, out long healed)
+        {
+            healed = 0;
+            if (Outcome != BattleOutcome.InProgress || !formations.TryGetValue(targetId, out var target) || !target.IsInBattle)
+                return false;
+            var next = target.Heal(amount);
+            healed = next.TotalHealth - target.TotalHealth;
+            formations[targetId] = next;
+            return true;
+        }
+
         // Applies an explicit whole-army withdrawal, never a morale-triggered one.
         public bool TryWithdrawArmy(BattleSide side)
         {
