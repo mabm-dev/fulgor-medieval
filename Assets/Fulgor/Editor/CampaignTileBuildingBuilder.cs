@@ -41,6 +41,10 @@ namespace Fulgor.Editor
             new("CasaConocimiento", "Casa de conocimiento", new Vector2Int(14, 9), -1f),
             new("CampoMilicias", "Campo de milicias", new Vector2Int(13, 6), -1f),
             new("CanteraSencilla", "Cantera sencilla", new Vector2Int(15, 6), -1f),
+            new("AldeaConcejil", "Aldea concejil", new Vector2Int(12, 11), -1f),
+            new("PatioMesnadas", "Patio de mesnadas", new Vector2Int(12, 6), -1f),
+            new("Empalizada", "Empalizada", new Vector2Int(11, 10), -1f),
+            new("HuertoCampo", "Huerto o campo", new Vector2Int(14, 10), -1f),
         };
 
         [MenuItem("Fulgor/Arte/Preparar edificios de casilla")]
