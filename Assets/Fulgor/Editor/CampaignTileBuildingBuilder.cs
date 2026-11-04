@@ -28,7 +28,11 @@ namespace Fulgor.Editor
             public string PrefabPath => $"{Folder}/PF_{Name}.prefab";
         }
 
-        // casillas de prueba: primer anillo de la fortaleza (13,8), en llanura
+        // Al empezar, la niebla de guerra solo deja ver lo que está a CampaignFogState.VisionRadius de la fortaleza y de la hueste que sale con ella
+        // (PlayableConquest); cualquier otra casilla se dibuja negra. Los edificios de prueba tienen que caer dentro de lo visible.
+        static readonly Vector2Int[] StartVisionSources = { new(13, 8), new(13, 9) };
+
+        // casillas de prueba junto a la fortaleza (13,8), en llanura siempre que quede alguna visible
         static readonly Building[] Buildings =
         {
             new("CentroAprovisionamiento", "Centro de aprovisionamiento", new Vector2Int(12, 9), 25f),
@@ -42,7 +46,7 @@ namespace Fulgor.Editor
             new("CampoMilicias", "Campo de milicias", new Vector2Int(13, 6), -1f),
             new("CanteraSencilla", "Cantera sencilla", new Vector2Int(15, 6), -1f),
             new("AldeaConcejil", "Aldea concejil", new Vector2Int(12, 11), -1f),
-            new("PatioMesnadas", "Patio de mesnadas", new Vector2Int(12, 6), -1f),
+            new("PatioMesnadas", "Patio de mesnadas", new Vector2Int(12, 8), -1f), // colina junto a la fortaleza: en llanura no queda casilla visible
             new("Empalizada", "Empalizada", new Vector2Int(11, 10), -1f),
             new("HuertoCampo", "Huerto o campo", new Vector2Int(14, 10), -1f),
         };
@@ -127,6 +131,10 @@ namespace Fulgor.Editor
             for (int i = 0; i < Buildings.Length; i++)
             {
                 var building = Buildings[i];
+                var cell = new HexCoordinates(building.Cell.x, building.Cell.y);
+                // Para probar vale una casilla en niebla, pero en partida el edificio no se dibuja hasta explorarla (CampaignTileBuildings), así que no se vería en las capturas.
+                if (!StartVisionSources.Any(s => new HexCoordinates(s.x, s.y).DistanceTo(cell) <= Fulgor.Core.Campaign.CampaignFogState.VisionRadius))
+                    Debug.LogWarning($"{building.Label} en {building.Cell} cae en niebla de guerra al empezar: no se verá hasta explorar la casilla.");
                 var entry = entries.GetArrayElementAtIndex(i);
                 entry.FindPropertyRelative("label").stringValue = building.Label;
                 entry.FindPropertyRelative("cell").vector2IntValue = building.Cell;
