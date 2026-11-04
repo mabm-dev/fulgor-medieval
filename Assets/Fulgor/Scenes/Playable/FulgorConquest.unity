@@ -530,6 +530,22 @@ MonoBehaviour:
     cell: {x: 15, y: 6}
     prefab: {fileID: 2032473960742830275, guid: 6e92805b1a7c6ab4488624262172aee4, type: 3}
     doorMinute: 54.999996
+  - label: Aldea concejil
+    cell: {x: 12, y: 11}
+    prefab: {fileID: 4759649882074483001, guid: 0e96004bb34b3524a9e92957c1f2f3eb, type: 3}
+    doorMinute: 31.815565
+  - label: Patio de mesnadas
+    cell: {x: 12, y: 6}
+    prefab: {fileID: 7696227072771919289, guid: 82bad5fc10684954689fbc62a6e68de5, type: 3}
+    doorMinute: 8.184432
+  - label: Empalizada
+    cell: {x: 11, y: 10}
+    prefab: {fileID: 2094122453199347635, guid: dbf33e756ed1c244797e3aaf153dc0bd, type: 3}
+    doorMinute: 25.000002
+  - label: Huerto o campo
+    cell: {x: 14, y: 10}
+    prefab: {fileID: 108795028662442658, guid: fc69086af888f34468223aaf2e765bf9, type: 3}
+    doorMinute: 38.184437
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
