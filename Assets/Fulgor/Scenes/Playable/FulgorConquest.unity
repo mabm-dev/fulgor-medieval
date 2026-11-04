@@ -535,9 +535,9 @@ MonoBehaviour:
     prefab: {fileID: 4759649882074483001, guid: 0e96004bb34b3524a9e92957c1f2f3eb, type: 3}
     doorMinute: 31.815565
   - label: Patio de mesnadas
-    cell: {x: 12, y: 6}
+    cell: {x: 12, y: 8}
     prefab: {fileID: 7696227072771919289, guid: 82bad5fc10684954689fbc62a6e68de5, type: 3}
-    doorMinute: 8.184432
+    doorMinute: 15.000001
   - label: Empalizada
     cell: {x: 11, y: 10}
     prefab: {fileID: 2094122453199347635, guid: dbf33e756ed1c244797e3aaf153dc0bd, type: 3}

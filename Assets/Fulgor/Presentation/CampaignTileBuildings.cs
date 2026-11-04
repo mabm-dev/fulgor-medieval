@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using Fulgor.Core.Campaign;
 using Fulgor.Core.Map;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Fulgor.Presentation.Map
 {
@@ -23,17 +25,62 @@ namespace Fulgor.Presentation.Map
         }
 
         [SerializeField] private Entry[] entries = Array.Empty<Entry>();
+        private sealed class Slot
+        {
+            public GameObject instance;
+            public HexCoordinates cell;
+            public Renderer[] renderers;
+            public ShadowCastingMode[] shadows;
+            public bool shown = true;
+        }
+
         private readonly List<GameObject> placed = new();
+        private readonly List<Slot> slots = new();
         private Transform generation;
         public IReadOnlyList<GameObject> Placed => placed;
 
         public static float YawForDoorMinute(float minute) => (minute - DoorMinuteAtZeroYaw) * 6f;
 
+        /// <summary>En partida un edificio solo se dibuja sobre terreno que el jugador ya ha visto; sobre casilla sin explorar quedaría en terreno negro.</summary>
+        public static bool IsShownOn(CampaignVisibility visibility) => visibility != CampaignVisibility.Unknown;
+
         private void LateUpdate()
         {
             var root = transform.Find("Generated Board");
             if (root == null || !root.gameObject.activeInHierarchy) { Clear(); return; }
-            if (root == generation) return;
+            if (root != generation) Place(root);
+            ApplyFog();
+        }
+
+        /// <summary>Casilla en la que está colocado un edificio de esta capa.</summary>
+        public bool TryGetCell(GameObject instance, out HexCoordinates cell)
+        {
+            foreach (var slot in slots)
+                if (slot.instance == instance) { cell = slot.cell; return true; }
+            cell = default;
+            return false;
+        }
+
+        private void ApplyFog()
+        {
+            var campaign = GetComponent<CampaignTurnController>();
+            foreach (var slot in slots)
+            {
+                if (slot.instance == null) continue;
+                bool show = campaign == null || IsShownOn(campaign.VisibilityAt(slot.cell));
+                if (show == slot.shown) continue;
+                slot.shown = show;
+                for (int i = 0; i < slot.renderers.Length; i++)
+                {
+                    if (slot.renderers[i] == null) continue;
+                    slot.renderers[i].forceRenderingOff = !show;
+                    slot.renderers[i].shadowCastingMode = show ? slot.shadows[i] : ShadowCastingMode.Off;
+                }
+            }
+        }
+
+        private void Place(Transform root)
+        {
             Clear();
             generation = root;
             var tiles = new Dictionary<HexCoordinates, HexTileView>();
@@ -49,6 +96,12 @@ namespace Fulgor.Presentation.Map
                 instance.name = string.IsNullOrEmpty(entry.label) ? entry.prefab.name : entry.label;
                 instance.transform.SetPositionAndRotation(ground + Vector3.up * .008f, Quaternion.Euler(0f, YawForDoorMinute(entry.doorMinute), 0f));
                 placed.Add(instance);
+                var renderers = instance.GetComponentsInChildren<Renderer>(true);
+                slots.Add(new Slot
+                {
+                    instance = instance, cell = new HexCoordinates(entry.cell.x, entry.cell.y), renderers = renderers,
+                    shadows = Array.ConvertAll(renderers, r => r.shadowCastingMode),
+                });
             }
         }
 
@@ -56,6 +109,7 @@ namespace Fulgor.Presentation.Map
         {
             foreach (var item in placed) if (item != null) Destroy(item);
             placed.Clear();
+            slots.Clear();
             generation = null;
         }
     }
