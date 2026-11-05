@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Fulgor.Presentation.Map
 {
@@ -25,6 +26,11 @@ namespace Fulgor.Presentation.Map
         private UnityEngine.Rendering.RenderPipeline.StandardRequest renderRequest;
         private RenderTexture benchmarkTarget,previousTarget;
         private int focusLosses;
+        private bool classicPending, moveReady;
+        private double classicRegenerateMilliseconds = -1d;
+        private Vector3 moveFocus, moveForward, moveRight, moveForwardFlat;
+        private float moveDistance;
+        private static BenchmarkOptions pending;
 
         /// <summary>Fotogramas por encima de este tiempo se cuentan como tirones en el informe.</summary>
         public const double SlowFrameMilliseconds = 50d;
@@ -33,9 +39,26 @@ namespace Fulgor.Presentation.Map
         private static void StartFromCommandLine()
         {
             var parsed = BenchmarkOptions.Parse(Environment.GetCommandLineArgs());
-            if (!parsed.Enabled || FindAnyObjectByType<CampaignBoardPreview>() == null) return;
+            if (!parsed.Enabled) return;
+            if (FindAnyObjectByType<CampaignBoardPreview>() != null) { Create(parsed); return; }
+            if (string.IsNullOrEmpty(parsed.Scene)) return;
+            // el build empieza en el menú: se carga la escena pedida y el benchmark arranca cuando aparece el tablero
+            pending = parsed;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            SceneManager.LoadScene(parsed.Scene);
+        }
+
+        private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (FindAnyObjectByType<CampaignBoardPreview>() == null) return;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            Create(pending);
+        }
+
+        private static void Create(BenchmarkOptions options)
+        {
             var runner = new GameObject("Benchmark").AddComponent<CampaignBenchmark>();
-            runner.options = parsed;
+            runner.options = options;
         }
 
         private void Start()
@@ -56,6 +79,7 @@ namespace Fulgor.Presentation.Map
             }
             var selection = FindAnyObjectByType<CampaignBoardSelection>();
             if (selection != null) selection.enabled = false;
+            classicPending = options.ClassicTerrain;
             Debug.Log($"Fulgor benchmark: {options.WarmupSeconds:F0} s de calentamiento, " +
                 $"{options.Seconds:F0} s de medición.");
         }
@@ -68,6 +92,18 @@ namespace Fulgor.Presentation.Map
         private void Update()
         {
             if (finished) return;
+            if (classicPending)
+            {
+                // terreno de antes: se regenera el tablero con las piezas fijas y el calentamiento empieza de nuevo
+                var appearance = FindAnyObjectByType<CampaignMapAppearance>();
+                var board = FindAnyObjectByType<CampaignBoardPreview>();
+                if (appearance == null || board == null || !appearance.Ready) return;
+                appearance.UseFixedPiecesOnly();
+                var watch = System.Diagnostics.Stopwatch.StartNew(); board.RegenerateBoard(); watch.Stop();
+                classicRegenerateMilliseconds = watch.Elapsed.TotalMilliseconds; classicPending = false; elapsed = 0f;
+                return;
+            }
+            if (options.MoveCamera) MoveCamera();
             if(benchmarkCamera!=null&&renderRequest!=null)
                 UnityEngine.Rendering.RenderPipeline.SubmitRenderRequest(benchmarkCamera,renderRequest);
             FrameTimingManager.CaptureFrameTimings();
@@ -95,6 +131,25 @@ namespace Fulgor.Presentation.Map
             }
         }
 
+        /// <summary>Recorre el mapa en un ocho de 20×12 unidades cada 10 s, acercándose y alejándose un 30 %: unas 6 unidades por segundo.</summary>
+        private void MoveCamera()
+        {
+            if (benchmarkCamera == null) return;
+            var t = benchmarkCamera.transform;
+            if (!moveReady)
+            {
+                moveForward = t.forward;
+                moveRight = Vector3.ProjectOnPlane(t.right, Vector3.up).normalized;
+                moveForwardFlat = Vector3.ProjectOnPlane(t.forward, Vector3.up).normalized;
+                moveDistance = Mathf.Abs(moveForward.y) > .01f ? Mathf.Abs(t.position.y / moveForward.y) : 20f;
+                moveFocus = t.position + moveForward * moveDistance;
+                moveReady = true;
+            }
+            float w = 2f * Mathf.PI / 10f, s = elapsed;
+            var focus = moveFocus + moveRight * (10f * Mathf.Sin(w * s)) + moveForwardFlat * (6f * Mathf.Sin(2f * w * s));
+            t.position = focus - moveForward * (moveDistance * (1f + .3f * Mathf.Sin(1.5f * w * s)));
+        }
+
         private void WriteReport()
         {
             var frames = FrameTimeStatistics.From(frameMilliseconds);
@@ -107,6 +162,10 @@ namespace Fulgor.Presentation.Map
             {
                 offscreenRender = benchmarkTarget != null,
                 label = options.Label,
+                scene = SceneManager.GetActiveScene().name,
+                moveCamera = options.MoveCamera,
+                classicTerrain = options.ClassicTerrain,
+                classicRegenerateMilliseconds = classicRegenerateMilliseconds,
                 date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                 unityVersion = Application.unityVersion,
                 gpu = SystemInfo.graphicsDeviceName,
@@ -169,6 +228,10 @@ namespace Fulgor.Presentation.Map
         {
             public bool offscreenRender;
             public string label;
+            public string scene;
+            public bool moveCamera;
+            public bool classicTerrain;
+            public double classicRegenerateMilliseconds;
             public string date;
             public string unityVersion;
             public string gpu;

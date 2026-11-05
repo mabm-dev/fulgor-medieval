@@ -23,6 +23,17 @@ namespace Fulgor.Presentation.Tests.Map
         }
 
         [Test]
+        public void ReadsSceneCameraMovementAndClassicTerrainForComparisons()
+        {
+            var plain = BenchmarkOptions.Parse(new[] { "-benchmark" });
+            Assert.That(plain.Scene, Is.Null); Assert.That(plain.MoveCamera, Is.False); Assert.That(plain.ClassicTerrain, Is.False);
+            var options = BenchmarkOptions.Parse(new[] { "-benchmark", "-benchmarkScene", "FulgorConquest", "-benchmarkMove", "-benchmarkClassicTerrain" });
+            Assert.That(options.Scene, Is.EqualTo("FulgorConquest"));
+            Assert.That(options.MoveCamera, Is.True);
+            Assert.That(options.ClassicTerrain, Is.True);
+        }
+
+        [Test]
         public void UsesDefaultsWhenOnlyFlagIsPresent()
         {
             var options = BenchmarkOptions.Parse(new[] { "Fulgor.exe", "-benchmark" });
