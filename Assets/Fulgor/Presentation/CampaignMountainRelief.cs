@@ -1,0 +1,275 @@
+using System;
+using System.Collections.Generic;
+using Fulgor.Core.Map;
+using UnityEngine;
+using UnityEngine.Rendering;
+
+namespace Fulgor.Presentation.Map
+{
+    /// <summary>
+    /// Relieve continuo de las montañas del mapa. La altura sale de la distancia al borde más cercano entre una casilla de montaña y otra que no
+    /// lo es: una montaña suelta tiene la cumbre en el centro, dos vecinas comparten una cresta y un grupo forma un macizo más alto por dentro.
+    /// En ese borde la altura vale exactamente <see cref="EdgeHeight"/>, la misma a la que terminan las piezas de llanura, bosque y colina; y como
+    /// es una sola función para todo el tablero, dos casillas de montaña vecinas casan sin costura. Todo en coordenadas del tablero (radio exterior 1).
+    /// </summary>
+    public sealed class CampaignMountainRelief
+    {
+        public const float EdgeHeight = .12f;
+        /// <summary>Altura sobre el borde de la cumbre de una montaña suelta, con crestas medias.</summary>
+        public const float PeakRise = 1.15f;
+        private static readonly HexCoordinates[] Directions = { new(1, 0), new(1, -1), new(0, -1), new(-1, 0), new(-1, 1), new(0, 1) };
+        private readonly float radius, apothem, bucketSize;
+        private readonly HashSet<HexCoordinates> mountains;
+        private readonly List<Vector4> segments = new();
+        private readonly Dictionary<Vector2Int, List<int>> buckets = new();
+        private readonly Dictionary<(long, long), float> heights = new();
+        private readonly float offsetX, offsetZ;
+
+        public CampaignMountainRelief(IEnumerable<HexCoordinates> mountainCells, int seed, float outerRadius = VisualScaleContract.HexOuterRadius)
+        {
+            if (outerRadius <= 0f) throw new ArgumentOutOfRangeException(nameof(outerRadius));
+            radius = outerRadius; apothem = outerRadius * Mathf.Sqrt(3f) * .5f; bucketSize = 2f * outerRadius;
+            mountains = new HashSet<HexCoordinates>(mountainCells ?? throw new ArgumentNullException(nameof(mountainCells)));
+            var random = new System.Random(seed);
+            offsetX = (float)random.NextDouble() * 512f; offsetZ = (float)random.NextDouble() * 512f;
+            foreach (var cell in mountains)
+            {
+                var centre = Centre(cell);
+                foreach (var direction in Directions)
+                {
+                    var neighbour = cell.Add(direction);
+                    if (mountains.Contains(neighbour)) continue;
+                    var towards = Centre(neighbour) - centre;
+                    var middle = centre + towards * .5f;
+                    var along = new Vector2(-towards.y, towards.x).normalized * (radius * .5f);
+                    AddSegment(middle - along, middle + along);
+                }
+            }
+        }
+
+        public bool IsMountain(HexCoordinates cell) => mountains.Contains(cell);
+        public int BoundarySegments => segments.Count;
+
+        public Vector2 Centre(HexCoordinates cell)
+        {
+            var p = HexWorldLayout.ToWorld(cell, radius);
+            return new Vector2(p.x, p.z);
+        }
+
+        /// <summary>Esquinas del hexágono (punta arriba), en el orden en que se recorre su contorno.</summary>
+        public Vector2 Corner(HexCoordinates cell, int k)
+        {
+            float a = Mathf.Deg2Rad * (30f + 60f * k);
+            return Centre(cell) + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * radius;
+        }
+
+        /// <summary>Distancia al pie de la montaña: al tramo de borde más cercano con una casilla que no es montaña.</summary>
+        public float DistanceToFoot(Vector2 p)
+        {
+            var home = Bucket(p);
+            for (int reach = 1; reach <= 4; reach++)
+            {
+                float best = float.MaxValue;
+                for (int x = -reach; x <= reach; x++)
+                for (int z = -reach; z <= reach; z++)
+                {
+                    if (!buckets.TryGetValue(new Vector2Int(home.x + x, home.y + z), out var list)) continue;
+                    foreach (var index in list) best = Mathf.Min(best, DistanceToSegment(p, segments[index]));
+                }
+                // un tramo de fuera del cuadrado buscado está, como poco, a reach·cubo − medio tramo
+                if (best < float.MaxValue && best <= reach * bucketSize - .5f * radius) return best;
+            }
+            return 4f * bucketSize;
+        }
+
+        /// <summary>Altura del terreno de montaña en un punto del tablero; fuera de las montañas, la del borde.</summary>
+        public float Height(Vector2 p)
+        {
+            var key = ((long)Mathf.Round(p.x * 20000f), (long)Mathf.Round(p.y * 20000f));
+            if (heights.TryGetValue(key, out var cached)) return cached;
+            float value = Compute(p);
+            heights[key] = value;
+            return value;
+        }
+
+        /// <summary>Cuánto de "montaña" tiene un punto: 0 en el pie, 1 a la altura de la cumbre de una montaña suelta.</summary>
+        public float Rise(Vector2 p) => Mathf.Clamp01(Profile(DistanceToFoot(p)));
+
+        /// <summary>
+        /// Rejilla triangular común a todas las montañas: con radio 1 y esta división, las esquinas y los centros de todas las casillas caen en sus
+        /// puntos. La normal de un vértice sale de sus vecinos en esa rejilla (siempre a la resolución completa): son puntos que ya se calculan para
+        /// la malla, así que cada vértice cuesta una evaluación y no cinco, y la normal es la misma en las dos casillas de una arista y en todos los
+        /// niveles de detalle.
+        /// </summary>
+        public const int NormalLattice = 32;
+
+        public Vector3 LatticeNormal(Vector2 p)
+        {
+            float s = radius / NormalLattice;
+            var e1 = new Vector2(.8660254f, .5f) * s; var e2 = new Vector2(0f, s);
+            float d1 = (Height(p + e1) - Height(p - e1)) / (2f * s);
+            float d2 = (Height(p + e2) - Height(p - e2)) / (2f * s);
+            float gz = d2, gx = (d1 - .5f * gz) / .8660254f;
+            return new Vector3(-gx, 1f, -gz).normalized;
+        }
+
+        public Vector3 Normal(Vector2 p)
+        {
+            const float e = .012f;
+            float hx = Height(p + new Vector2(e, 0f)) - Height(p - new Vector2(e, 0f));
+            float hz = Height(p + new Vector2(0f, e)) - Height(p - new Vector2(0f, e));
+            return new Vector3(-hx, 2f * e, -hz).normalized;
+        }
+
+        /// <summary>
+        /// Malla de una casilla de montaña, con los vértices relativos al centro de la casilla (sin giro). Las aristas reparten los mismos puntos que
+        /// las de la casilla vecina, así que casan; un faldón corto por debajo del contorno tapa las rendijas cuando dos vecinas usan distinto detalle.
+        /// Color de vértice: r = cuánto de montaña (0 en el pie), g = altura sobre el borde normalizada.
+        /// </summary>
+        public Mesh BuildTile(HexCoordinates cell, int subdivisions, string name)
+        {
+            if (!mountains.Contains(cell)) throw new ArgumentException("La casilla no es de montaña.", nameof(cell));
+            if (subdivisions < 1) throw new ArgumentOutOfRangeException(nameof(subdivisions));
+            var centre = Centre(cell);
+            var corners = new Vector2[6];
+            for (int k = 0; k < 6; k++) corners[k] = Corner(cell, k);
+            var positions = new List<Vector3>(); var normals = new List<Vector3>(); var colors = new List<Color>(); var uvs = new List<Vector2>();
+            var triangles = new List<int>(); var index = new Dictionary<(long, long), int>();
+
+            int Vertex(Vector2 p)
+            {
+                var key = ((long)Mathf.Round(p.x * 20000f), (long)Mathf.Round(p.y * 20000f));
+                if (index.TryGetValue(key, out var found)) return found;
+                float h = Height(p);
+                positions.Add(new Vector3(p.x - centre.x, h, p.y - centre.y));
+                normals.Add(LatticeNormal(p));
+                colors.Add(new Color(Rise(p), Mathf.Clamp01((h - EdgeHeight) / 1.3f), 0f, 1f));
+                uvs.Add(p);
+                index.Add(key, positions.Count - 1);
+                return positions.Count - 1;
+            }
+
+            Vector2 Point(int k, int i, int j, int n) =>
+                centre + (corners[k] - centre) * ((float)i / n) + (corners[(k + 1) % 6] - centre) * ((float)j / n);
+
+            int n = subdivisions;
+            for (int k = 0; k < 6; k++)
+            for (int i = 0; i < n; i++)
+            for (int j = 0; j < n - i; j++)
+            {
+                int v00 = Vertex(Point(k, i, j, n)), v10 = Vertex(Point(k, i + 1, j, n)), v01 = Vertex(Point(k, i, j + 1, n));
+                triangles.Add(v00); triangles.Add(v01); triangles.Add(v10);
+                if (i + j < n - 1)
+                {
+                    int v11 = Vertex(Point(k, i + 1, j + 1, n));
+                    triangles.Add(v10); triangles.Add(v01); triangles.Add(v11);
+                }
+            }
+
+            // faldón: cada tramo del contorno baja 6 cm por debajo de su propia altura
+            const float skirt = .06f;
+            for (int k = 0; k < 6; k++)
+            for (int s = 0; s < n; s++)
+            {
+                var a = Vector2.Lerp(corners[k], corners[(k + 1) % 6], (float)s / n);
+                var b = Vector2.Lerp(corners[k], corners[(k + 1) % 6], (float)(s + 1) / n);
+                int top0 = Vertex(a), top1 = Vertex(b);
+                int low0 = positions.Count; positions.Add(positions[top0] - Vector3.up * skirt); normals.Add(normals[top0]); colors.Add(colors[top0]); uvs.Add(uvs[top0]);
+                int low1 = positions.Count; positions.Add(positions[top1] - Vector3.up * skirt); normals.Add(normals[top1]); colors.Add(colors[top1]); uvs.Add(uvs[top1]);
+                triangles.Add(top0); triangles.Add(top1); triangles.Add(low1);
+                triangles.Add(top0); triangles.Add(low1); triangles.Add(low0);
+            }
+
+            var mesh = new Mesh { name = name, indexFormat = positions.Count > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16 };
+            mesh.SetVertices(positions); mesh.SetNormals(normals); mesh.SetColors(colors); mesh.SetUVs(0, uvs);
+            mesh.SetTriangles(triangles, 0); mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        private float Compute(Vector2 p)
+        {
+            var cell = HexWorldLayout.FromWorld(new Vector3(p.x, 0f, p.y), radius);
+            if (!mountains.Contains(cell)) return EdgeHeight;
+            float near = DistanceToFoot(p);
+            if (near <= 1e-5f) return EdgeHeight;
+            // una ligera deformación del espacio quita la forma de pirámide; se apaga junto al pie para que el borde siga a la altura justa
+            float s = Smooth(near / (.35f * radius));
+            var warp = new Vector2(Noise(p.x * .9f + offsetX, p.y * .9f + offsetZ) - .5f,
+                Noise(p.x * .9f + offsetZ + 37f, p.y * .9f + offsetX + 11f) - .5f) * (.5f * radius * s);
+            float d = Mathf.Lerp(near, DistanceToFoot(p + warp), s);
+            float profile = Profile(d);
+            float ridges = Ridged(p.x * 2.2f + offsetX, p.y * 2.2f + offsetZ);
+            // erosión: crestas finas que marcan barrancos en las laderas, más fuertes cuanto más arriba
+            float erosion = Ridged(p.x * 6.5f + offsetZ, p.y * 6.5f + offsetX) - .35f;
+            float detail = Fbm(p.x * 13f + offsetZ, p.y * 13f + offsetX) - .5f;
+            return EdgeHeight + PeakRise * profile * (.62f + .6f * ridges) + .11f * erosion * Mathf.Clamp01(profile) * s + .025f * detail * s;
+        }
+
+        // falda cóncava hasta la apotema (la cumbre de una montaña suelta); más adentro de un macizo sigue subiendo, más despacio
+        private float Profile(float distance)
+        {
+            float t = distance / apothem;
+            return t < 1f ? Mathf.Pow(t, 1.35f) : 1f + .45f * (t - 1f);
+        }
+
+        private static float Smooth(float t) { t = Mathf.Clamp01(t); return t * t * (3f - 2f * t); }
+
+        private Vector2Int Bucket(Vector2 p) => new(Mathf.FloorToInt(p.x / bucketSize), Mathf.FloorToInt(p.y / bucketSize));
+
+        private void AddSegment(Vector2 a, Vector2 b)
+        {
+            segments.Add(new Vector4(a.x, a.y, b.x, b.y));
+            var key = Bucket((a + b) * .5f);
+            if (!buckets.TryGetValue(key, out var list)) buckets.Add(key, list = new List<int>());
+            list.Add(segments.Count - 1);
+        }
+
+        private static float DistanceToSegment(Vector2 p, Vector4 s)
+        {
+            var a = new Vector2(s.x, s.y); var b = new Vector2(s.z, s.w);
+            var ab = b - a; float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / Mathf.Max(ab.sqrMagnitude, 1e-12f));
+            return Vector2.Distance(p, a + ab * t);
+        }
+
+        private static float Hash(int x, int y)
+        {
+            unchecked
+            {
+                uint h = (uint)(x * 374761393 + y * 668265263);
+                h = (h ^ (h >> 13)) * 1274126177u;
+                h ^= h >> 16;
+                return (h & 0xffffff) / 16777215f;
+            }
+        }
+
+        private static float Noise(float x, float y)
+        {
+            int ix = Mathf.FloorToInt(x), iy = Mathf.FloorToInt(y);
+            float fx = x - ix, fy = y - iy;
+            float ux = fx * fx * (3f - 2f * fx), uy = fy * fy * (3f - 2f * fy);
+            float a = Mathf.Lerp(Hash(ix, iy), Hash(ix + 1, iy), ux);
+            float b = Mathf.Lerp(Hash(ix, iy + 1), Hash(ix + 1, iy + 1), ux);
+            return Mathf.Lerp(a, b, uy);
+        }
+
+        private static float Fbm(float x, float y)
+        {
+            float sum = 0f, amplitude = .5f, total = 0f;
+            for (int o = 0; o < 4; o++) { sum += amplitude * Noise(x, y); total += amplitude; x = x * 2.03f + 17.1f; y = y * 2.03f + 5.3f; amplitude *= .5f; }
+            return sum / total;
+        }
+
+        // crestas: 1 - |2n - 1| al cuadrado, en tres octavas
+        private static float Ridged(float x, float y)
+        {
+            float sum = 0f, amplitude = .55f, total = 0f;
+            for (int o = 0; o < 3; o++)
+            {
+                float r = 1f - Mathf.Abs(2f * Noise(x, y) - 1f);
+                sum += amplitude * r * r; total += amplitude;
+                x = x * 2.1f + 7.7f; y = y * 2.1f + 3.1f; amplitude *= .5f;
+            }
+            return sum / total;
+        }
+    }
+}

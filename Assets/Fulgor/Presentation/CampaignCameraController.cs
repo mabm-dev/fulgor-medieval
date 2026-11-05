@@ -6,7 +6,9 @@ namespace Fulgor.Presentation.Map
     [RequireComponent(typeof(Camera))]
     public sealed class CampaignCameraController : MonoBehaviour
     {
-        [SerializeField, Min(1f)] private float panSpeed = 12f;
+        // el desplazamiento (teclado, borde de la pantalla y botones) recorre panSpeed/20 alturas de pantalla por segundo a cualquier zoom;
+        // con 12 eran 0,6 y el usuario la notaba lenta (5 nov 2026): con 30 son 1,5, el ritmo habitual de un juego de estrategia
+        [SerializeField, Min(1f)] private float panSpeed = 30f;
         [SerializeField, Min(0.1f)] private float zoomSpeed = 2.5f;
         [SerializeField, Range(0f, 64f)] private float edgeSize = 14f;
 
