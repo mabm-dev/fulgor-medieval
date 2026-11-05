@@ -73,6 +73,9 @@ namespace Fulgor.Presentation.Map
                 GroundMark(reliefMaterial,TerrainType.Hill); // el sombreador pasa a grava donde empieza la roca de la montaña
                 if(settings.TerrainNoise!=null)reliefMaterial.SetTexture("_FulgorNoise",settings.TerrainNoise);
             }
+            // las mallas del relieve, todas a la vez y en paralelo, con sus tres niveles de detalle
+            var reliefTiles=relief!=null?relief.BuildTiles(tiles.Select(t=>t.Cell.Coordinates).Where(relief.IsHighland),settings.ReliefSubdivisions)
+                :new Dictionary<HexCoordinates,CampaignMountainRelief.TileLevels>();
             foreach(var tile in tiles) {
                 foreach(Transform child in tile.transform)
                     if(child.name.StartsWith("Transition ",StringComparison.Ordinal)||child.name.StartsWith("Junction ",StringComparison.Ordinal))child.gameObject.SetActive(false);
@@ -80,9 +83,8 @@ namespace Fulgor.Presentation.Map
                 var renderer=tile.GetComponent<MeshRenderer>();var material=materials[index];
                 if(relief!=null&&relief.IsHighland(tile.Cell.Coordinates)) {
                     // sin giro: la malla sale de la función de todo el tablero, relativa al centro de la casilla
-                    tile.transform.localRotation=Quaternion.identity;var cell=tile.Cell.Coordinates;int detail=settings.ReliefSubdivisions;
-                    mesh=relief.BuildTile(cell,detail,"Relieve "+cell.Key);
-                    var medium=relief.BuildTile(cell,Mathf.Max(3,detail/2),"Relieve "+cell.Key+" media");var distant=relief.BuildTile(cell,Mathf.Max(2,detail/4),"Relieve "+cell.Key+" lejana");
+                    tile.transform.localRotation=Quaternion.identity;var levels=reliefTiles[tile.Cell.Coordinates];
+                    mesh=levels.Full;var medium=levels.Medium;var distant=levels.Distant;
                     ownedMeshes.Add(mesh);ownedMeshes.Add(medium);ownedMeshes.Add(distant);material=reliefMaterial;
                     land.Add(new Land{Filter=tile.GetComponent<MeshFilter>(),Full=mesh,Medium=medium,Distant=distant});
                 } else if(index==0) {

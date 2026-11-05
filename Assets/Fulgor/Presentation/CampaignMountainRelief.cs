@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Fulgor.Core.Map;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -234,6 +236,159 @@ namespace Fulgor.Presentation.Map
             mesh.SetVertices(positions); mesh.SetNormals(normals); mesh.SetColors(colors); mesh.SetUVs(0, uvs);
             mesh.SetTriangles(triangles, 0); mesh.RecalculateBounds();
             return mesh;
+        }
+
+        /// <summary>Mallas de una casilla en los tres niveles de detalle.</summary>
+        public readonly struct TileLevels
+        {
+            public readonly Mesh Full, Medium, Distant;
+            public TileLevels(Mesh full, Mesh medium, Mesh distant) { Full = full; Medium = medium; Distant = distant; }
+        }
+
+        /// <summary>Detalle medio y lejano que acompañan a un detalle completo, los mismos que usa el aspecto del mapa.</summary>
+        public static int MediumSubdivisions(int subdivisions) => Mathf.Max(3, subdivisions / 2);
+        public static int DistantSubdivisions(int subdivisions) => Mathf.Max(2, subdivisions / 4);
+
+        // direcciones de las seis esquinas en la rejilla común (puntos a·e1 + b·e2, con e1 a 30° y e2 a 90°): la esquina k está en 32·U[k]
+        private static readonly Vector2Int[] LatticeCorners = { new(1, 0), new(0, 1), new(-1, 1), new(-1, 0), new(0, -1), new(1, -1) };
+
+        /// <summary>
+        /// Mallas de muchas casillas a la vez, con <paramref name="subdivisions"/> tramos por radio en el detalle completo y
+        /// <see cref="MediumSubdivisions"/> y <see cref="DistantSubdivisions"/> en el medio y el lejano: las mismas que dan tres
+        /// <see cref="BuildTile"/>, pero cada casilla se calcula una sola vez y en paralelo con las demás. Sus puntos están en la rejilla común con
+        /// coordenadas enteras, así que una arista compartida da la misma altura y la misma normal en las dos casillas sin caché compartida, y los
+        /// niveles medio y lejano toman uno de cada dos y uno de cada cuatro puntos. Las Mesh se crean al final, en el hilo principal. Si el detalle
+        /// no divide la rejilla (<see cref="NormalLattice"/>), se hace casilla a casilla con <see cref="BuildTile"/>.
+        /// </summary>
+        public Dictionary<HexCoordinates, TileLevels> BuildTiles(IEnumerable<HexCoordinates> cells, int subdivisions, string prefix = "Relieve ")
+        {
+            var list = cells.Distinct().ToList();
+            foreach (var cell in list)
+                if (!highlands.Contains(cell)) throw new ArgumentException($"La casilla {cell.Key} no es de colina ni de montaña.", nameof(cells));
+            int medium = MediumSubdivisions(subdivisions), distant = DistantSubdivisions(subdivisions);
+            var result = new Dictionary<HexCoordinates, TileLevels>(list.Count);
+            if (subdivisions < 1 || NormalLattice % subdivisions != 0 || NormalLattice % medium != 0 || NormalLattice % distant != 0)
+            {
+                foreach (var cell in list)
+                    result[cell] = new TileLevels(BuildTile(cell, subdivisions, prefix + cell.Key), BuildTile(cell, medium, prefix + cell.Key + " media"),
+                        BuildTile(cell, distant, prefix + cell.Key + " lejana"));
+                return result;
+            }
+            var levels = new[] { subdivisions, medium, distant };
+            var data = new LatticeMesh[list.Count][];
+            void Build(int t) => data[t] = BuildLatticeTile(list[t], levels);
+            if (Application.platform == RuntimePlatform.WebGLPlayer) for (int t = 0; t < list.Count; t++) Build(t); // sin hilos
+            else Parallel.For(0, list.Count, Build);
+            for (int t = 0; t < list.Count; t++)
+            {
+                string name = prefix + list[t].Key;
+                result[list[t]] = new TileLevels(data[t][0].ToMesh(name), data[t][1].ToMesh(name + " media"), data[t][2].ToMesh(name + " lejana"));
+            }
+            return result;
+        }
+
+        // malla calculada fuera del hilo principal
+        private sealed class LatticeMesh
+        {
+            public readonly List<Vector3> Positions = new(), Normals = new();
+            public readonly List<Color> Colors = new();
+            public readonly List<Vector2> Uvs = new();
+            public readonly List<int> Triangles = new();
+
+            public Mesh ToMesh(string name)
+            {
+                var mesh = new Mesh { name = name, indexFormat = Positions.Count > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16 };
+                mesh.SetVertices(Positions); mesh.SetNormals(Normals); mesh.SetColors(Colors); mesh.SetUVs(0, Uvs);
+                mesh.SetTriangles(Triangles, 0); mesh.RecalculateBounds();
+                return mesh;
+            }
+        }
+
+        private Vector2 LatticePoint(int a, int b)
+        {
+            float s = radius / NormalLattice;
+            return new Vector2(a * (.8660254f * s), (a * .5f + b) * s);
+        }
+
+        // Una casilla en la rejilla común: alturas de todos sus puntos y de un anillo más (para las normales del borde), calculadas una vez, y
+        // de ahí las mallas de cada detalle, en el mismo orden de vértices y triángulos que BuildTile. Solo lee el relieve: se puede llamar en paralelo.
+        private LatticeMesh[] BuildLatticeTile(HexCoordinates cell, int[] levels)
+        {
+            const int N = NormalLattice, Ring = N + 1, Width = 2 * Ring + 1;
+            int a0 = 2 * N * cell.Q + N * cell.R, b0 = N * (cell.R - cell.Q); // el centro de la casilla en la rejilla
+            int At(int a, int b) => (a + Ring) * Width + (b + Ring);
+            var heights = new float[Width * Width];
+            for (int a = -Ring; a <= Ring; a++)
+            for (int b = -Ring; b <= Ring; b++)
+                if (Math.Abs(a + b) <= Ring) heights[At(a, b)] = Compute(LatticePoint(a0 + a, b0 + b));
+            var rise = new float[Width * Width];
+            for (int i = 0; i < rise.Length; i++) rise[i] = float.NaN;
+            var centre = Centre(cell);
+            float twice = 2f * radius / N;
+
+            var meshes = new LatticeMesh[levels.Length];
+            var index = new int[Width * Width];
+            for (int level = 0; level < levels.Length; level++)
+            {
+                int n = levels[level], step = N / n;
+                var mesh = meshes[level] = new LatticeMesh();
+                for (int i = 0; i < index.Length; i++) index[i] = -1;
+
+                int Vertex(int a, int b)
+                {
+                    int key = At(a, b);
+                    if (index[key] >= 0) return index[key];
+                    float h = heights[key];
+                    var p = LatticePoint(a0 + a, b0 + b);
+                    mesh.Positions.Add(new Vector3(p.x - centre.x, h, p.y - centre.y));
+                    // la normal de la rejilla, como LatticeNormal: diferencias a lo largo de e1 (a) y e2 (b)
+                    float d1 = (heights[At(a + 1, b)] - heights[At(a - 1, b)]) / twice, gz = (heights[At(a, b + 1)] - heights[At(a, b - 1)]) / twice;
+                    mesh.Normals.Add(new Vector3(-(d1 - .5f * gz) / .8660254f, 1f, -gz).normalized);
+                    if (float.IsNaN(rise[key])) rise[key] = Rise(p);
+                    mesh.Colors.Add(new Color(rise[key], Mathf.Clamp01((h - EdgeHeight) / 1.3f), 0f, 1f));
+                    mesh.Uvs.Add(p);
+                    index[key] = mesh.Positions.Count - 1;
+                    return index[key];
+                }
+
+                int Point(int k, int i, int j)
+                {
+                    var u = LatticeCorners[k]; var v = LatticeCorners[(k + 1) % 6];
+                    return Vertex(step * (i * u.x + j * v.x), step * (i * u.y + j * v.y));
+                }
+
+                for (int k = 0; k < 6; k++)
+                for (int i = 0; i < n; i++)
+                for (int j = 0; j < n - i; j++)
+                {
+                    int v00 = Point(k, i, j), v10 = Point(k, i + 1, j), v01 = Point(k, i, j + 1);
+                    mesh.Triangles.Add(v00); mesh.Triangles.Add(v01); mesh.Triangles.Add(v10);
+                    if (i + j < n - 1)
+                    {
+                        int v11 = Point(k, i + 1, j + 1);
+                        mesh.Triangles.Add(v10); mesh.Triangles.Add(v01); mesh.Triangles.Add(v11);
+                    }
+                }
+
+                // faldón, como en BuildTile: el punto s de la arista k está en step·((n − s)·U[k] + s·U[k + 1])
+                const float skirt = .06f;
+                for (int k = 0; k < 6; k++)
+                for (int s = 0; s < n; s++)
+                {
+                    int top0 = Point(k, n - s, s), top1 = Point(k, n - s - 1, s + 1);
+                    int low0 = mesh.Positions.Count; AddSkirt(mesh, top0, skirt);
+                    int low1 = mesh.Positions.Count; AddSkirt(mesh, top1, skirt);
+                    mesh.Triangles.Add(top0); mesh.Triangles.Add(top1); mesh.Triangles.Add(low1);
+                    mesh.Triangles.Add(top0); mesh.Triangles.Add(low1); mesh.Triangles.Add(low0);
+                }
+            }
+            return meshes;
+        }
+
+        private static void AddSkirt(LatticeMesh mesh, int top, float depth)
+        {
+            mesh.Positions.Add(mesh.Positions[top] - Vector3.up * depth); mesh.Normals.Add(mesh.Normals[top]);
+            mesh.Colors.Add(mesh.Colors[top]); mesh.Uvs.Add(mesh.Uvs[top]);
         }
 
         private float Compute(Vector2 p)
