@@ -99,6 +99,67 @@ namespace Fulgor.Editor
             }
         }
 
+        /// <summary>
+        /// Mide lo que cuesta el relieve de las colinas y montañas del tablero de Conquista: casilla a casilla (tres BuildTile por casilla, como
+        /// antes) y todas a la vez (BuildTiles), y comprueba que las dos formas dan las mismas mallas. Tres vueltas, para ver el arranque en frío.
+        /// Uso: -executeMethod Fulgor.Editor.CampaignTerrainReliefBuilder.Measure
+        /// </summary>
+        public static void Measure()
+        {
+            try
+            {
+                UnityEditor.SceneManagement.EditorSceneManager.OpenScene("Assets/Fulgor/Scenes/Playable/FulgorConquest.unity");
+                var board = UnityEngine.Object.FindFirstObjectByType<CampaignBoardPreview>() ?? throw new InvalidOperationException("La escena no tiene tablero.");
+                var scenario = new SerializedObject(board).FindProperty("scenario").objectReferenceValue as CampaignScenarioDefinition
+                    ?? throw new InvalidOperationException("El tablero no tiene escenario.");
+                var map = Fulgor.Core.Map.ProceduralMapGenerator.Generate(scenario.Width, scenario.Height, scenario.Seed);
+                var mountains = map.Cells.Where(c => c.Terrain == Fulgor.Core.Map.TerrainType.Mountain).Select(c => c.Coordinates).ToArray();
+                var hills = map.Cells.Where(c => c.Terrain == Fulgor.Core.Map.TerrainType.Hill).Select(c => c.Coordinates).ToArray();
+                var highland = mountains.Concat(hills).ToArray();
+                const int detail = 32, seed = 1086;
+                var report = new System.Text.StringBuilder($"Relieve de Conquista: {mountains.Length} montañas y {hills.Length} colinas, detalle {detail}\n");
+                for (int run = 1; run <= 3; run++)
+                {
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
+                    var single = new CampaignMountainRelief(mountains, seed, VisualScaleContract.HexOuterRadius, hills);
+                    var oneByOne = highland.ToDictionary(c => c, c => new CampaignMountainRelief.TileLevels(single.BuildTile(c, detail, "a"),
+                        single.BuildTile(c, CampaignMountainRelief.MediumSubdivisions(detail), "b"), single.BuildTile(c, CampaignMountainRelief.DistantSubdivisions(detail), "c")));
+                    double before = watch.Elapsed.TotalMilliseconds; watch.Restart();
+                    var together = new CampaignMountainRelief(mountains, seed, VisualScaleContract.HexOuterRadius, hills).BuildTiles(highland, detail);
+                    double after = watch.Elapsed.TotalMilliseconds;
+                    // las dos formas, vértice a vértice
+                    float position = 0f, normal = 0f, color = 0f; int different = 0;
+                    foreach (var cell in highland)
+                    {
+                        var x = oneByOne[cell]; var y = together[cell];
+                        foreach (var (p, q) in new[] { (x.Full, y.Full), (x.Medium, y.Medium), (x.Distant, y.Distant) })
+                        {
+                            if (p.vertexCount != q.vertexCount || !p.triangles.SequenceEqual(q.triangles))
+                            {
+                                // vértices en el mismo sitio dentro de una misma malla (la clave redondeada de BuildTile a veces no los junta)
+                                static int Repeated(Mesh m) => m.vertices.Length - m.vertices.Select(v => (Mathf.RoundToInt(v.x * 1e4f), Mathf.RoundToInt(v.y * 1e4f), Mathf.RoundToInt(v.z * 1e4f))).Distinct().Count();
+                                if (different++ < 4)
+                                    report.AppendLine($"  {cell.Key} {p.name}: casilla a casilla {p.vertexCount} vértices ({Repeated(p)} repetidos), todas a la vez {q.vertexCount} ({Repeated(q)} repetidos)");
+                                continue;
+                            }
+                            var pv = p.vertices; var qv = q.vertices; var pn = p.normals; var qn = q.normals; var pc = p.colors; var qc = q.colors;
+                            for (int i = 0; i < pv.Length; i++)
+                            {
+                                position = Mathf.Max(position, Vector3.Distance(pv[i], qv[i])); normal = Mathf.Max(normal, Vector3.Distance(pn[i], qn[i]));
+                                color = Mathf.Max(color, Mathf.Max(Mathf.Abs(pc[i].r - qc[i].r), Mathf.Abs(pc[i].g - qc[i].g)));
+                            }
+                        }
+                        foreach (var m in new[] { x.Full, x.Medium, x.Distant, y.Full, y.Medium, y.Distant }) UnityEngine.Object.DestroyImmediate(m);
+                    }
+                    report.AppendLine($"vuelta {run}: casilla a casilla {before:0} ms, todas a la vez {after:0} ms; mallas distintas {different}, " +
+                                      $"diferencia máxima: posición {position:0.000000}, normal {normal:0.000000}, color {color:0.000000}");
+                }
+                Debug.Log("RELIEVE_MEDIDA\n" + report);
+            }
+            catch (Exception e) { Debug.LogException(e); if (Application.isBatchMode) EditorApplication.Exit(1); return; }
+            if (Application.isBatchMode) EditorApplication.Exit(0);
+        }
+
         [MenuItem("Fulgor/Campaña/Preparar relieve de montaña y sombreador del terreno")]
         public static void Prepare()
         {

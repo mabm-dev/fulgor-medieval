@@ -152,6 +152,56 @@ namespace Fulgor.Presentation.Tests.Map
         }
 
         [Test]
+        public void AllTilesAtOnceFollowTheReliefAndMatchAcrossDetailLevels()
+        {
+            var relief = WithHills();
+            var cells = new[] { Lonely, MountainBeside, HillAlone, HillBeside };
+            var tiles = relief.BuildTiles(cells, 32);
+            Assert.AreEqual(4, tiles.Count);
+            try
+            {
+                foreach (var cell in cells)
+                {
+                    var levels = tiles[cell];
+                    foreach (var (mesh, n) in new[] { (levels.Full, 32), (levels.Medium, 16), (levels.Distant, 8) })
+                    {
+                        Assert.AreEqual(6 * n * n + 6 * n * 2, mesh.triangles.Length / 3, mesh.name);
+                        var v = mesh.vertices; var normals = mesh.normals;
+                        for (int i = 0; i < v.Length; i += 5)
+                        {
+                            var p = new Vector2(v[i].x, v[i].z) + relief.Centre(cell);
+                            float surface = relief.Height(p);
+                            if (Mathf.Abs(v[i].y - surface) > .03f) continue; // faldón, 6 cm por debajo
+                            Assert.AreEqual(surface, v[i].y, 1e-4f, "La misma altura que el relieve.");
+                            Assert.Less(Vector3.Distance(relief.LatticeNormal(p), normals[i]), 2e-3f, "La misma normal de la rejilla.");
+                        }
+                    }
+                }
+                // la arista de la colina con la montaña vecina casa vértice a vértice, y también entre niveles de detalle distintos
+                Assert.AreEqual(33, MatchSharedEdge(relief, HillBeside, tiles[HillBeside].Full, MountainBeside, tiles[MountainBeside].Full));
+                Assert.AreEqual(17, MatchSharedEdge(relief, HillBeside, tiles[HillBeside].Medium, MountainBeside, tiles[MountainBeside].Full));
+                Assert.AreEqual(9, MatchSharedEdge(relief, MountainBeside, tiles[MountainBeside].Distant, HillBeside, tiles[HillBeside].Medium));
+            }
+            finally
+            {
+                foreach (var levels in tiles.Values) { Object.DestroyImmediate(levels.Full); Object.DestroyImmediate(levels.Medium); Object.DestroyImmediate(levels.Distant); }
+            }
+        }
+
+        [Test]
+        public void ADetailOutsideTheLatticeIsBuiltTileByTile()
+        {
+            var relief = Relief();
+            var tiles = relief.BuildTiles(new[] { Lonely }, 12);
+            var levels = tiles[Lonely];
+            Assert.AreEqual(6 * 12 * 12 + 6 * 12 * 2, levels.Full.triangles.Length / 3);
+            Assert.AreEqual(6 * 6 * 6 + 6 * 6 * 2, levels.Medium.triangles.Length / 3);
+            Assert.AreEqual(6 * 3 * 3 + 6 * 3 * 2, levels.Distant.triangles.Length / 3);
+            Object.DestroyImmediate(levels.Full); Object.DestroyImmediate(levels.Medium); Object.DestroyImmediate(levels.Distant);
+            Assert.Throws<System.ArgumentException>(() => relief.BuildTiles(new[] { new HexCoordinates(30, 30) }, 32), "Solo colinas y montañas.");
+        }
+
+        [Test]
         public void TheReliefIsTheSameForTheSameSeed()
         {
             var p = Vector2.Lerp(Relief().Centre(Left), Relief().Centre(Right), .3f);
