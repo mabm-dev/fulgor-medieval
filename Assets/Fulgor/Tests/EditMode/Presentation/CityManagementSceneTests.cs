@@ -178,6 +178,10 @@ namespace Fulgor.Presentation.Tests.Map
         [UnityTest]public IEnumerator EveryProjectHasAVisibleSiteAtItsOwnFootprintAndReplacesItOnCompletion()
         {
             selection.ActivateTile(Castle);var stage=City.PreviewCamera.transform.parent;
+            // La prueba solo usa la cámara de la ciudad para proyectar puntos: no necesita que dibuje. Encendida, cada uno de los nueve
+            // fotogramas pinta la vista a 1728×1200 con antialiasing ×4 y sombras: 225 de los 255 ms de la prueba con GPU, y con render por
+            // software (el servidor de pruebas) más de los 180 s de límite. Apagada, esos fotogramas cuestan 10 ms.
+            City.PreviewCamera.enabled=false;
             foreach(var project in Fulgor.Core.Campaign.CityProjects.All) {
                 StartProject(project.Id);var site=stage.GetComponent<CityConstructionSite>();
                 var template=stage.GetComponentsInChildren<CityBuildingView>(true).Single(b=>b.ConstructionId==project.Id);
