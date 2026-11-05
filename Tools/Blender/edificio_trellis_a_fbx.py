@@ -26,6 +26,7 @@ GLB, WORK, NAME, MODE = args[0], args[1], args[2], args[3]
 DOOR = args[4] if MODE in ("juego", "directo") else None
 TARGET_TRIS = int(args[5]) if MODE == "juego" and len(args) > 5 else 30000
 TEX = int(os.environ.get("TEX", "2048"))
+TEX_NRM = int(os.environ.get("TEX_NORMALES", str(TEX)))  # el relieve se usa suave en el juego: puede ir a menos resolución que el color
 OUT = os.path.join(WORK, NAME)
 os.makedirs(OUT, exist_ok=True)
 report = {"nombre": NAME}
@@ -364,7 +365,7 @@ for n in list(nt.nodes):
         nt.nodes.remove(n)
 low.data.materials.append(mat)
 img_col = bpy.data.images.new("T_%s_BaseColor" % NAME, TEX, TEX, alpha=False)
-img_nrm = bpy.data.images.new("T_%s_Normal" % NAME, TEX, TEX, alpha=False)
+img_nrm = bpy.data.images.new("T_%s_Normal" % NAME, TEX_NRM, TEX_NRM, alpha=False)
 img_nrm.colorspace_settings.name = "Non-Color"
 n_col = nt.nodes.new("ShaderNodeTexImage"); n_col.image = img_col
 n_nrm = nt.nodes.new("ShaderNodeTexImage"); n_nrm.image = img_nrm
@@ -380,8 +381,68 @@ n_bsdf.inputs["Metallic"].default_value = 0.0
 extr, dist = 0.012, 0.03
 
 
+def _caja(a, r):
+    """Desenfoque de caja separable de radio r (ventana de 2r+1) con sumas acumuladas; a es (H, W) o (H, W, C)."""
+    k = 2 * r + 1
+    for eje in (0, 1):
+        relleno = [(r + 1, r) if i == eje else (0, 0) for i in range(a.ndim)]
+        c = np.cumsum(np.pad(a, relleno, mode="edge"), axis=eje, dtype=np.float64)
+        n = a.shape[eje]
+        corte = lambda ini, fin: tuple(slice(ini, fin) if i == eje else slice(None) for i in range(a.ndim))
+        a = (c[corte(k, k + n)] - c[corte(0, n)]) / k
+    return a.astype(np.float32)
+
+
+def _min_max(a, r):
+    """Mínimo y máximo de cada píxel en su entorno de (2r+1)x(2r+1), por separado en cada eje."""
+    lo, hi = a, a
+    for eje in (0, 1):
+        relleno = [(r, r) if i == eje else (0, 0) for i in range(a.ndim)]
+        n = a.shape[eje]
+        corte = lambda d: tuple(slice(d, d + n) if i == eje else slice(None) for i in range(a.ndim))
+        p_lo, p_hi = np.pad(lo, relleno, mode="edge"), np.pad(hi, relleno, mode="edge")
+        lo = np.minimum.reduce([p_lo[corte(d)] for d in range(2 * r + 1)])
+        hi = np.maximum.reduce([p_hi[corte(d)] for d in range(2 * r + 1)])
+    return lo, hi
+
+
+def mejorar_color(out, cov):
+    """Retoque del color horneado, solo dentro de las islas. Los píxeles de una imagen de 8 bits llegan de Blender ya codificados en sRGB
+    (pixels no los pasa a lineal), así que se trabaja directamente sobre ellos:
+    (1) afinado sin halos: cada píxel no sale del mínimo y el máximo de su entorno 3x3, así no fabrica motas negras ni brillos;
+    (2) claridad opcional, contraste local de radio medio (tejas, sillares, tablones), con el mismo límite en un entorno 5x5;
+    (3) al final se quitan las motas negras sueltas (grupos de hasta 4 píxeles muy oscuros rodeados de claro), que con la luz del juego
+    se ven como manchas; las ventanas, los vanos y las juntas de las tejas son zonas o líneas más grandes y se quedan como están.
+    Variables de entorno: AFINADO (cantidad), CLARIDAD (0 la desactiva) y SOMBRAS (luminancia por debajo de la cual un píxel es negro)."""
+    umbral = float(os.environ.get("SOMBRAS", "0.10"))
+    cantidad = float(os.environ.get("AFINADO", "0.8"))
+    claridad = float(os.environ.get("CLARIDAD", "0.4"))
+    k = max(1, TEX // 2048)  # los radios de los desenfoques gruesos se escalan con la resolución del mapa
+    s = np.clip(out[..., :3], 0, 1).astype(np.float32)
+    cm = cov.astype(np.float32)
+    desenfocado = _caja(_caja(s * cm[..., None], 2), 2) / np.maximum(_caja(_caja(cm, 2), 2)[..., None], 1e-4)
+    lo, hi = _min_max(s, 1)
+    s = np.clip(s + cantidad * (s - desenfocado), lo, hi)
+    if claridad > 0:
+        grande = _caja(_caja(s * cm[..., None], 8 * k), 8 * k) / np.maximum(_caja(_caja(cm, 8 * k), 8 * k)[..., None], 1e-4)
+        lo, hi = _min_max(s, 2)
+        s = np.clip(s + claridad * (s - grande), lo, hi)
+    lum = s @ np.array([0.3, 0.59, 0.11], dtype=np.float32)
+    negro = (lum < umbral) & cov
+    claro = (cov & ~negro).astype(np.float32)
+    # en una ventana de 5x5: una mota tiene 4 negros o menos; una ventana o una junta, más
+    negros_cerca = _caja(negro.astype(np.float32), 2) * 25
+    mota = negro & (negros_cerca <= 4.5) & (_caja(claro, 2) > 0.5)
+    relleno = _caja(s * claro[..., None], 2) / np.maximum(_caja(claro, 2)[..., None], 1e-4)
+    s = np.where(mota[..., None], relleno, s)
+    out[..., :3] = np.where(cov[..., None], s, out[..., :3]).astype(np.float32)
+    return int(mota.sum())
+
+
 def proyectar_color(high_obj, low_obj, target):
-    """Color por punto más cercano: cada píxel de la UV baja toma el color de la alta; no deja huecos."""
+    """Color de la alta para cada píxel de la UV baja. Por defecto con un rayo que sale un poco por fuera de la baja y entra por su normal:
+    toma la primera cara que encuentra, la exterior. El punto más cercano (COLOR_RAYOS=0, y donde el rayo no da con nada) cogía a veces
+    la cara de dentro de una teja o de un hueco, que es oscura, y dejaba manchas negras y borrones donde la baja se aparta de la alta."""
     src = None
     for hm in high_obj.data.materials:
         pr = next((n for n in hm.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
@@ -404,7 +465,8 @@ def proyectar_color(high_obj, low_obj, target):
     lme = low_obj.data
     luv = lme.uv_layers.active.data
     lco = np.array([v.co[:] for v in lme.vertices], dtype=np.float64)
-    texels, pos3 = [], []
+    lno = np.array([v.normal[:] for v in lme.vertices], dtype=np.float64)
+    texels, pos3, nrm3 = [], [], []
     W = TEX
     for tri in lme.loop_triangles:
         uvs = np.array([luv[l].uv[:] for l in tri.loops], dtype=np.float64) * W
@@ -427,14 +489,29 @@ def proyectar_color(high_obj, low_obj, target):
         wv = np.stack([w0[ok], w1[ok], w2[ok]], axis=1)
         texels.append(np.stack([xs.ravel()[ok], ys.ravel()[ok]], axis=1))
         pos3.append(wv @ p3)
-    texels = np.concatenate(texels); pos3 = np.concatenate(pos3)
+        nrm3.append(wv @ lno[list(tri.vertices)])
+    texels = np.concatenate(texels); pos3 = np.concatenate(pos3); nrm3 = np.concatenate(nrm3)
     valid = (texels[:, 0] >= 0) & (texels[:, 0] < W) & (texels[:, 1] >= 0) & (texels[:, 1] < W)
-    texels, pos3 = texels[valid], pos3[valid]
+    texels, pos3, nrm3 = texels[valid], pos3[valid], nrm3[valid]
     n = len(texels)
     tri_idx = np.empty(n, dtype=np.int64); hit = np.empty((n, 3), dtype=np.float64)
+    rayos = os.environ.get("COLOR_RAYOS", "1") == "1"
+    fuera, alcance = 0.02, 0.06  # en metros, con la huella a 1 m: el rayo sale 2 cm por fuera de la baja y mira hasta 4 cm por dentro
+    sin_impacto = 0
     for i in range(n):
-        loc, nor, idx, dst = bvh.find_nearest(Vector(pos3[i]))
+        p = Vector(pos3[i])
+        if rayos:
+            nn = Vector(nrm3[i])
+            if nn.length > 1e-8:
+                nn.normalize()
+                loc, nor, idx, dst = bvh.ray_cast(p + nn * fuera, -nn, alcance)
+                if idx is not None:
+                    tri_idx[i] = idx; hit[i] = loc
+                    continue
+            sin_impacto += 1
+        loc, nor, idx, dst = bvh.find_nearest(p)
         tri_idx[i] = idx; hit[i] = loc
+    report["color_rayos_sin_impacto"] = sin_impacto
     tv = hverts[htris[tri_idx]].astype(np.float64)
     v0, v1, v2 = tv[:, 0], tv[:, 1], tv[:, 2]
     e0, e1, e2 = v1 - v0, v2 - v0, hit - v0
@@ -457,7 +534,7 @@ def proyectar_color(high_obj, low_obj, target):
     black = cov & (out[..., :3].max(axis=2) < 0.02)
     report["color_negros_rellenados"] = int(black.sum())
     cov &= ~black
-    for _ in range(16):
+    for _ in range(16 * max(1, TEX // 2048)):  # margen de relleno alrededor de las islas, proporcional a la resolución
         grow = np.zeros_like(cov)
         acc = np.zeros_like(out)
         for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
@@ -466,6 +543,8 @@ def proyectar_color(high_obj, low_obj, target):
             take = sh_cov & ~cov & ~grow
             acc[take] = sh_col[take]; grow |= take
         out[grow] = acc[grow]; cov |= grow
+    if os.environ.get("MEJORAR", "1") == "1":
+        report["color_motas_quitadas"] = mejorar_color(out, cov)
     target.pixels.foreach_set(out.ravel())
     target.update()
     return int(n), int(cov.sum())
@@ -481,7 +560,7 @@ def bake(kind, node, e, d, clear, **kw):
 report["color_texels"], report["color_cubiertos"] = proyectar_color(high, low, img_col)
 bake("NORMAL", n_nrm, extr * 3, dist * 3, True, normal_space="TANGENT")
 bake("NORMAL", n_nrm, extr, dist, False, normal_space="TANGENT")
-_n = np.empty(TEX * TEX * 4, dtype=np.float32); img_nrm.pixels.foreach_get(_n); _n = _n.reshape(TEX, TEX, 4)
+_n = np.empty(TEX_NRM * TEX_NRM * 4, dtype=np.float32); img_nrm.pixels.foreach_get(_n); _n = _n.reshape(TEX_NRM, TEX_NRM, 4)
 _black = (_n[..., :3].sum(axis=2) < 0.05) | (_n[..., 2] < 0.62)
 _n[_black] = (0.5, 0.5, 1.0, 1.0)
 report["normales_vacias_rellenadas"] = int(_black.sum())

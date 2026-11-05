@@ -39,7 +39,7 @@ namespace Fulgor.Presentation.Map
         {
             foreach(var line in territory)if(line!=null)Release(line.gameObject);
             territory.Clear();
-            if(shade!=null)Release(shade);shade=null;
+            foreach(var overlay in shades)if(overlay!=null)Release(overlay);shades.Clear();followed.Clear();
             if(tiles==null||Tile==null)return;
             var center=Tile.Cell.Coordinates;var set=new System.Collections.Generic.HashSet<HexCoordinates>{center};
             foreach(var direction in Directions)if(tiles.ContainsKey(center.Add(direction)))set.Add(center.Add(direction));
@@ -80,45 +80,52 @@ namespace Fulgor.Presentation.Map
                 line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.receiveShadows=false;
                 territory.Add(line);
             }
-            Shade(set,tiles,colliders,color);
+            Shade(set,tiles,color);
         }
-        private GameObject shade;
+        private readonly System.Collections.Generic.List<GameObject> shades=new();
+        private readonly System.Collections.Generic.List<(MeshFilter source,MeshFilter copy)> followed=new();
         private Material shadeMaterial;
-        /// <summary>Sombreado suave del color del reino sobre el terreno del primer anillo, sin tocar los materiales del suelo.</summary>
-        private void Shade(System.Collections.Generic.HashSet<HexCoordinates> set,System.Collections.Generic.IReadOnlyDictionary<HexCoordinates,HexTileView> tiles,System.Collections.Generic.List<MeshCollider> colliders,Color color)
+        /// <summary>Altura, en vertical, a la que el sombreado flota sobre el suelo: lo justo para no solaparse con él en la profundidad.</summary>
+        private const float ShadeLift=.006f;
+        /// <summary>Sombreado suave del color del reino sobre el terreno del primer anillo, sin tocar los materiales del suelo. Copia la malla de cada
+        /// casilla en lugar de usar una lámina aparte: sigue el relieve sin asomar, no cruza las paredes de los edificios y deja las montañas sin teñir.</summary>
+        private void Shade(System.Collections.Generic.HashSet<HexCoordinates> set,System.Collections.Generic.IReadOnlyDictionary<HexCoordinates,HexTileView> tiles,Color color)
         {
             var template=Resources.Load<Material>("Hueste/M_Territorio");
             if(template==null)return;
-            const int segments=72,rings=4;float apothem=VisualScaleContract.HexOuterRadius*Mathf.Sqrt(3f)*.5f;
-            var vertices=new System.Collections.Generic.List<Vector3>();var triangles=new System.Collections.Generic.List<int>();
-            foreach(var coordinate in set)
-            {
-                var middle=tiles[coordinate].transform.position;int start=vertices.Count;
-                vertices.Add(OnGround(colliders,middle,.11f));
-                for(int ring=1;ring<=rings;ring++)
-                    for(int s=0;s<segments;s++)
-                    {
-                        float degrees=s*360f/segments,phi=Mathf.Repeat(degrees+30,60)-30;
-                        float length=apothem/Mathf.Cos(phi*Mathf.Deg2Rad)*ring/rings;
-                        vertices.Add(OnGround(colliders,middle+Corner(degrees,length),.11f));
-                    }
-                for(int s=0;s<segments;s++)
-                {
-                    int next=(s+1)%segments;triangles.Add(start);triangles.Add(start+1+s);triangles.Add(start+1+next);
-                    for(int ring=1;ring<rings;ring++)
-                    {
-                        int a=start+1+(ring-1)*segments+s,b=start+1+(ring-1)*segments+next,c=start+1+ring*segments+s,d=start+1+ring*segments+next;
-                        triangles.Add(a);triangles.Add(c);triangles.Add(b);triangles.Add(b);triangles.Add(c);triangles.Add(d);
-                    }
-                }
-            }
-            for(int i=0;i<vertices.Count;i++)vertices[i]=transform.InverseTransformPoint(vertices[i]); // los vértices se calcularon en mundo y el sombreado cuelga de la fortaleza
-            var mesh=new Mesh{name="Sombreado del territorio"};mesh.SetVertices(vertices);mesh.SetTriangles(triangles,0);mesh.RecalculateBounds();
             if(shadeMaterial==null)shadeMaterial=new Material(template);
             color.a=.30f;shadeMaterial.SetColor("_BaseColor",color);
-            shade=new GameObject("Sombreado del territorio");shade.transform.SetParent(transform,false);
-            shade.AddComponent<MeshFilter>().sharedMesh=mesh;var renderer=shade.AddComponent<MeshRenderer>();renderer.sharedMaterial=shadeMaterial;
-            renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=false;shade.layer=2;
+            foreach(var coordinate in set)
+            {
+                if(!tiles.TryGetValue(coordinate,out var tile)||tile==null||tile.Cell.Terrain==TerrainType.Mountain)continue;
+                var source=tile.GetComponent<MeshFilter>();
+                if(source==null||source.sharedMesh==null)continue;
+                var overlay=new GameObject("Sombreado del territorio"){layer=2};
+                overlay.transform.SetParent(transform,false);
+                Follow(overlay.transform,tile.transform);
+                var copy=overlay.AddComponent<MeshFilter>();copy.sharedMesh=source.sharedMesh;
+                var renderer=overlay.AddComponent<MeshRenderer>();renderer.sharedMaterial=shadeMaterial;
+                renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;renderer.receiveShadows=false;
+                shades.Add(overlay);followed.Add((source,copy));
+            }
+        }
+        /// <summary>Pone el sombreado sobre su casilla: misma posición (apenas levantado), giro y escala que ella. Cuelga de la fortaleza y no del tablero para no contar entre sus renderers.</summary>
+        private void Follow(Transform overlay,Transform tile)
+        {
+            overlay.SetPositionAndRotation(tile.position+Vector3.up*ShadeLift,tile.rotation);
+            var parent=transform.lossyScale;var wanted=tile.lossyScale;
+            overlay.localScale=new Vector3(wanted.x/Mathf.Max(parent.x,1e-6f),wanted.y/Mathf.Max(parent.y,1e-6f),wanted.z/Mathf.Max(parent.z,1e-6f));
+        }
+        /// <summary>El sombreado acompaña a su casilla; si el terreno cambia de malla (nivel de detalle), cambia con él.</summary>
+        private void LateUpdate()
+        {
+            for(int i=0;i<followed.Count;i++)
+            {
+                var (source,copy)=followed[i];
+                if(source==null||copy==null)continue;
+                if(copy.sharedMesh!=source.sharedMesh)copy.sharedMesh=source.sharedMesh;
+                Follow(copy.transform,source.transform);
+            }
         }
         private static Vector3 Corner(float degrees,float radius){float a=degrees*Mathf.Deg2Rad;return new Vector3(Mathf.Cos(a),0,Mathf.Sin(a))*radius;}
         private static Vector2Int Key(Vector3 point)=>new(Mathf.RoundToInt(point.x*20),Mathf.RoundToInt(point.z*20));
@@ -129,6 +136,6 @@ namespace Fulgor.Presentation.Map
             point.y=(float.IsNegativeInfinity(height)?point.y:height)+lift;return point;
         }
         private static void Release(Object item){if(item==null)return;if(Application.isPlaying)Destroy(item);else DestroyImmediate(item);}
-        private void OnDestroy(){if(Tile!=null)Tile.UseSelectionOutline(false);Release(material);Release(territoryMaterial);Release(shadeMaterial);if(shade!=null)Release(shade);foreach(var line in territory)if(line!=null)Release(line.gameObject);if(outline!=null)Release(outline.gameObject);Release(pickCollider);}
+        private void OnDestroy(){if(Tile!=null)Tile.UseSelectionOutline(false);Release(material);Release(territoryMaterial);Release(shadeMaterial);foreach(var overlay in shades)if(overlay!=null)Release(overlay);foreach(var line in territory)if(line!=null)Release(line.gameObject);if(outline!=null)Release(outline.gameObject);Release(pickCollider);}
     }
 }

@@ -68,20 +68,41 @@ namespace Fulgor.Editor
                 if (navigation != null) navigation.enabled = false;
                 string output = SessionState.GetString(Output, "");
                 var report = new System.Text.StringBuilder();
-                foreach (var building in buildings.Placed.Where(b => b != null))
+                // opcionales: -fulgorElevation <grados> (32 por defecto; el juego mira desde más arriba), -fulgorZoom <factores separados por
+                // comas> (3.4; varios dan una captura por distancia, _z1, _z2...), -fulgorOnly <nombres con guiones bajos, separados por comas>
+                // y -fulgorSides <sur,este,norte,oeste>
+                float elevation = ReadFloat("-fulgorElevation", 32f);
+                var zooms = (ReadText("-fulgorZoom") ?? "3.4").Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(z => float.Parse(z, System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+                var only = ReadText("-fulgorOnly")?.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var sides = ReadText("-fulgorSides")?.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                // -fulgorBump <intensidad>: cambia la fuerza del mapa de normales de los edificios (0 lo quita) para ver qué oscurece
+                if (ReadText("-fulgorBump") != null)
+                {
+                    float bump = ReadFloat("-fulgorBump", 1f);
+                    foreach (var placed in buildings.Placed.Where(b => b != null))
+                        foreach (var renderer in placed.GetComponentsInChildren<Renderer>())
+                            foreach (var material in renderer.materials) material.SetFloat("_BumpScale", bump);
+                }
+                foreach (var building in buildings.Placed.Where(b => b != null && (only == null || only.Contains(Safe(b.name)))))
                 {
                     var renderers = building.GetComponentsInChildren<Renderer>();
                     var bounds = renderers[0].bounds;
                     foreach (var r in renderers) bounds.Encapsulate(r.bounds);
                     int triangles = building.GetComponentsInChildren<MeshFilter>().Sum(m => m.sharedMesh.triangles.Length / 3);
                     report.AppendLine($"{building.name}: {triangles} triángulos, tamaño {bounds.size.x:0.00} × {bounds.size.y:0.00} × {bounds.size.z:0.00}, yaw {building.transform.eulerAngles.y:0}");
-                    float distance = Mathf.Max(bounds.extents.x, bounds.extents.z) * 3.4f + 1f;
                     var focus = bounds.center - Vector3.up * bounds.extents.y * .25f;
-                    foreach (var (side, direction) in new[] { ("sur", Vector3.back), ("este", Vector3.right), ("norte", Vector3.forward), ("oeste", Vector3.left) })
+                    for (int z = 0; z < zooms.Length; z++)
                     {
-                        camera.transform.position = focus + (direction * Mathf.Cos(32f * Mathf.Deg2Rad) + Vector3.up * Mathf.Sin(32f * Mathf.Deg2Rad)) * distance;
-                        camera.transform.LookAt(focus);
-                        for (int i = 0; i < 2; i++) Capture(camera, Path.Combine(output, $"{Safe(building.name)}_{side}.png"));
+                        float distance = Mathf.Max(bounds.extents.x, bounds.extents.z) * zooms[z] + 1f;
+                        string suffix = zooms.Length > 1 ? $"_z{z + 1}" : "";
+                        foreach (var (side, direction) in new[] { ("sur", Vector3.back), ("este", Vector3.right), ("norte", Vector3.forward), ("oeste", Vector3.left) })
+                        {
+                            if (sides != null && !sides.Contains(side)) continue;
+                            camera.transform.position = focus + (direction * Mathf.Cos(elevation * Mathf.Deg2Rad) + Vector3.up * Mathf.Sin(elevation * Mathf.Deg2Rad)) * distance;
+                            camera.transform.LookAt(focus);
+                            for (int i = 0; i < 2; i++) Capture(camera, Path.Combine(output, $"{Safe(building.name)}_{side}{suffix}.png"));
+                        }
                     }
                 }
                 File.WriteAllText(Path.Combine(output, "edificios.txt"), report.ToString());
@@ -90,6 +111,15 @@ namespace Fulgor.Editor
             }
             catch (Exception e) { Debug.LogException(e); SessionState.SetBool(Running, false); EditorApplication.Exit(1); }
         }
+
+        static string ReadText(string name)
+        {
+            var args = Environment.GetCommandLineArgs(); int at = Array.IndexOf(args, name);
+            return at >= 0 && at + 1 < args.Length ? args[at + 1] : null;
+        }
+
+        static float ReadFloat(string name, float fallback) =>
+            float.TryParse(ReadText(name), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value) ? value : fallback;
 
         static string Safe(string name) => new string(name.Select(c => char.IsLetterOrDigit(c) ? c : '_').ToArray());
 
