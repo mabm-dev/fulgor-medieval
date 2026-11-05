@@ -55,6 +55,7 @@ namespace Fulgor.Presentation.Map
                     if(settings.TerrainNoise!=null)materials[i].SetTexture("_FulgorNoise",settings.TerrainNoise);
                     // la llanura es casi plana: la luz de su montículo dibujaba el panal; el suelo del bosque, a medias; la colina tiene relieve real
                     materials[i].SetFloat("_FulgorFlatten",(TerrainType)i==TerrainType.Plain?.85f:(TerrainType)i==TerrainType.Forest?.6f:0f);
+                    GroundMark(materials[i],(TerrainType)i);
                 }
                 materials[i].SetColor("_BaseColor",CampaignVisualPalette.TerrainTint((TerrainType)i));ownedMaterials.Add(materials[i]);
             }
@@ -62,9 +63,14 @@ namespace Fulgor.Presentation.Map
             // relieve continuo de montaña: dos montañas vecinas forman una sierra en vez de dos picos sueltos
             CampaignMountainRelief relief=null;Material reliefMaterial=null;
             if(settings.ReliefMountainMaterial!=null&&!fixedPiecesOnly) {
-                relief=new CampaignMountainRelief(tiles.Where(t=>t.Cell.Terrain==TerrainType.Mountain&&(settlements==null||!settlements.HasSettlementAt(t.Cell.Coordinates))).Select(t=>t.Cell.Coordinates),ReliefSeed);
+                bool Open(HexTileView t)=>settlements==null||!settlements.HasSettlementAt(t.Cell.Coordinates); // un asentamiento conserva su llano
+                // bajo un edificio de casilla el relieve se allana (CampaignTileBuildings lo coloca después, sobre ese llano)
+                var buildings=GetComponent<CampaignTileBuildings>();var built=buildings!=null?buildings.PlannedCells():null;
+                relief=new CampaignMountainRelief(tiles.Where(t=>t.Cell.Terrain==TerrainType.Mountain&&Open(t)).Select(t=>t.Cell.Coordinates),ReliefSeed,
+                    VisualScaleContract.HexOuterRadius,tiles.Where(t=>t.Cell.Terrain==TerrainType.Hill&&Open(t)).Select(t=>t.Cell.Coordinates),built);
                 reliefMaterial=new Material(settings.ReliefMountainMaterial){name=settings.ReliefMountainMaterial.name+" · campaña",enableInstancing=true};
                 reliefMaterial.SetFloat("_FulgorGroundY",root.position.y+CampaignMountainRelief.EdgeHeight);ownedMaterials.Add(reliefMaterial);
+                GroundMark(reliefMaterial,TerrainType.Hill); // el sombreador pasa a grava donde empieza la roca de la montaña
                 if(settings.TerrainNoise!=null)reliefMaterial.SetTexture("_FulgorNoise",settings.TerrainNoise);
             }
             foreach(var tile in tiles) {
@@ -72,11 +78,11 @@ namespace Fulgor.Presentation.Map
                     if(child.name.StartsWith("Transition ",StringComparison.Ordinal)||child.name.StartsWith("Junction ",StringComparison.Ordinal))child.gameObject.SetActive(false);
                 int index=(int)tile.Cell.Terrain;Mesh mesh;
                 var renderer=tile.GetComponent<MeshRenderer>();var material=materials[index];
-                if(relief!=null&&relief.IsMountain(tile.Cell.Coordinates)) {
+                if(relief!=null&&relief.IsHighland(tile.Cell.Coordinates)) {
                     // sin giro: la malla sale de la función de todo el tablero, relativa al centro de la casilla
                     tile.transform.localRotation=Quaternion.identity;var cell=tile.Cell.Coordinates;int detail=settings.ReliefSubdivisions;
-                    mesh=relief.BuildTile(cell,detail,"Montaña "+cell.Key);
-                    var medium=relief.BuildTile(cell,Mathf.Max(3,detail/2),"Montaña "+cell.Key+" media");var distant=relief.BuildTile(cell,Mathf.Max(2,detail/4),"Montaña "+cell.Key+" lejana");
+                    mesh=relief.BuildTile(cell,detail,"Relieve "+cell.Key);
+                    var medium=relief.BuildTile(cell,Mathf.Max(3,detail/2),"Relieve "+cell.Key+" media");var distant=relief.BuildTile(cell,Mathf.Max(2,detail/4),"Relieve "+cell.Key+" lejana");
                     ownedMeshes.Add(mesh);ownedMeshes.Add(medium);ownedMeshes.Add(distant);material=reliefMaterial;
                     land.Add(new Land{Filter=tile.GetComponent<MeshFilter>(),Full=mesh,Medium=medium,Distant=distant});
                 } else if(index==0) {
@@ -139,6 +145,12 @@ namespace Fulgor.Presentation.Map
         {
             Ready=false;generation=null;land.Clear();TileCount=0;WaterLayout=null;Array.Clear(LevelCounts,0,3);
             foreach(var mesh in ownedMeshes)Release(mesh);foreach(var material in ownedMaterials)Release(material);ownedMeshes.Clear();ownedMaterials.Clear();
+        }
+        // suelo pisado alrededor de los edificios de casilla: la tierra y la hierba que sobrevive según el terreno
+        private static void GroundMark(Material material,TerrainType terrain)
+        {
+            material.SetColor("_FulgorPisadoColor",CampaignVisualPalette.TrampledGround(terrain));
+            material.SetFloat("_FulgorMatas",CampaignVisualPalette.GroundTufts(terrain));material.SetFloat("_FulgorMatasLuz",CampaignVisualPalette.GroundTuftLight(terrain));
         }
         private static void Release(UnityEngine.Object value){if(value==null)return;if(Application.isPlaying)Destroy(value);else DestroyImmediate(value);}
         private void OnDestroy()=>ReleaseGeneration();

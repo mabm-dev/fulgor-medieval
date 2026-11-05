@@ -7,47 +7,91 @@ using UnityEngine.Rendering;
 namespace Fulgor.Presentation.Map
 {
     /// <summary>
-    /// Relieve continuo de las montañas del mapa. La altura sale de la distancia al borde más cercano entre una casilla de montaña y otra que no
-    /// lo es: una montaña suelta tiene la cumbre en el centro, dos vecinas comparten una cresta y un grupo forma un macizo más alto por dentro.
-    /// En ese borde la altura vale exactamente <see cref="EdgeHeight"/>, la misma a la que terminan las piezas de llanura, bosque y colina; y como
-    /// es una sola función para todo el tablero, dos casillas de montaña vecinas casan sin costura. Todo en coordenadas del tablero (radio exterior 1).
+    /// Relieve continuo de las tierras altas del mapa (colinas y montañas). Dos distancias lo forman:
+    /// - al borde de las tierras altas con la tierra baja: una ondulación suave (lomas), que hace de pie a las colinas y a las montañas;
+    /// - al borde de la montaña con lo que no es montaña: los picos, encima. Una montaña suelta tiene la cumbre en el centro, dos vecinas comparten
+    ///   una cresta y un grupo forma un macizo más alto por dentro.
+    /// En el borde con la tierra baja la altura vale exactamente <see cref="EdgeHeight"/>, la misma a la que terminan las piezas de llanura y bosque;
+    /// y como es una sola función para todo el tablero, dos casillas vecinas (colina o montaña) casan sin costura. Coordenadas del tablero, radio 1.
+    /// Bajo un edificio el suelo se allana: hasta <see cref="FlatRadius"/> del centro queda a la altura media que tenía, y se funde con el relieve
+    /// antes de <see cref="FlatBlend"/>, por dentro de la apotema, así que las aristas con las vecinas no cambian.
     /// </summary>
     public sealed class CampaignMountainRelief
     {
         public const float EdgeHeight = .12f;
         /// <summary>Altura sobre el borde de la cumbre de una montaña suelta, con crestas medias.</summary>
         public const float PeakRise = 1.15f;
+        /// <summary>Altura sobre el borde de una colina suelta (lomas medias).</summary>
+        public const float HillRise = .24f;
+        /// <summary>Radio del llano bajo un edificio: cabe la huella más larga (la empalizada llega a 0,55 del centro).</summary>
+        public const float FlatRadius = .58f;
+        /// <summary>Distancia al centro a la que el llano ya es el relieve de siempre; menor que la apotema (0,866).</summary>
+        public const float FlatBlend = .8f;
         private static readonly HexCoordinates[] Directions = { new(1, 0), new(1, -1), new(0, -1), new(-1, 0), new(-1, 1), new(0, 1) };
         private readonly float radius, apothem, bucketSize;
-        private readonly HashSet<HexCoordinates> mountains;
+        private readonly HashSet<HexCoordinates> mountains, highlands;
+        private readonly List<Vector4> highlandSegments = new();
+        private readonly Dictionary<Vector2Int, List<int>> highlandBuckets = new();
         private readonly List<Vector4> segments = new();
         private readonly Dictionary<Vector2Int, List<int>> buckets = new();
         private readonly Dictionary<(long, long), float> heights = new();
+        private readonly Dictionary<HexCoordinates, float> flats = new();
         private readonly float offsetX, offsetZ;
 
-        public CampaignMountainRelief(IEnumerable<HexCoordinates> mountainCells, int seed, float outerRadius = VisualScaleContract.HexOuterRadius)
+        public CampaignMountainRelief(IEnumerable<HexCoordinates> mountainCells, int seed, float outerRadius = VisualScaleContract.HexOuterRadius,
+            IEnumerable<HexCoordinates> hillCells = null, IEnumerable<HexCoordinates> builtCells = null)
         {
             if (outerRadius <= 0f) throw new ArgumentOutOfRangeException(nameof(outerRadius));
             radius = outerRadius; apothem = outerRadius * Mathf.Sqrt(3f) * .5f; bucketSize = 2f * outerRadius;
             mountains = new HashSet<HexCoordinates>(mountainCells ?? throw new ArgumentNullException(nameof(mountainCells)));
+            highlands = new HashSet<HexCoordinates>(mountains);
+            if (hillCells != null) highlands.UnionWith(hillCells);
             var random = new System.Random(seed);
             offsetX = (float)random.NextDouble() * 512f; offsetZ = (float)random.NextDouble() * 512f;
-            foreach (var cell in mountains)
+            AddEdges(mountains, segments, buckets);
+            AddEdges(highlands, highlandSegments, highlandBuckets);
+            if (builtCells != null)
+                foreach (var cell in builtCells)
+                    if (highlands.Contains(cell) && !flats.ContainsKey(cell)) flats.Add(cell, MeanNaturalHeight(cell));
+        }
+
+        // altura media del relieve sin allanar en el círculo del llano: el edificio queda en una terraza, medio cortada en la loma y medio rellena
+        private float MeanNaturalHeight(HexCoordinates cell)
+        {
+            var centre = Centre(cell); float step = FlatRadius * radius / 6f, sum = 0f; int count = 0;
+            for (int i = -6; i <= 6; i++)
+            for (int j = -6; j <= 6; j++)
+            {
+                var p = centre + new Vector2(i, j) * step;
+                if ((p - centre).sqrMagnitude > FlatRadius * radius * FlatRadius * radius) continue;
+                sum += Natural(p, cell); count++;
+            }
+            return sum / count;
+        }
+
+        // tramos de borde entre las casillas del conjunto y las que no lo son
+        private void AddEdges(HashSet<HexCoordinates> cells, List<Vector4> segs, Dictionary<Vector2Int, List<int>> bks)
+        {
+            foreach (var cell in cells)
             {
                 var centre = Centre(cell);
                 foreach (var direction in Directions)
                 {
                     var neighbour = cell.Add(direction);
-                    if (mountains.Contains(neighbour)) continue;
+                    if (cells.Contains(neighbour)) continue;
                     var towards = Centre(neighbour) - centre;
                     var middle = centre + towards * .5f;
                     var along = new Vector2(-towards.y, towards.x).normalized * (radius * .5f);
-                    AddSegment(middle - along, middle + along);
+                    AddSegment(middle - along, middle + along, segs, bks);
                 }
             }
         }
 
         public bool IsMountain(HexCoordinates cell) => mountains.Contains(cell);
+        /// <summary>Colina o montaña: casillas cuya malla sale de este relieve.</summary>
+        public bool IsHighland(HexCoordinates cell) => highlands.Contains(cell);
+        /// <summary>Casilla de colina o montaña con un edificio: el relieve se allana bajo su huella.</summary>
+        public bool IsLevelled(HexCoordinates cell) => flats.ContainsKey(cell);
         public int BoundarySegments => segments.Count;
 
         public Vector2 Centre(HexCoordinates cell)
@@ -64,7 +108,12 @@ namespace Fulgor.Presentation.Map
         }
 
         /// <summary>Distancia al pie de la montaña: al tramo de borde más cercano con una casilla que no es montaña.</summary>
-        public float DistanceToFoot(Vector2 p)
+        public float DistanceToFoot(Vector2 p) => DistanceTo(p, segments, buckets);
+
+        /// <summary>Distancia a la tierra baja: al tramo de borde más cercano con una casilla que no es colina ni montaña.</summary>
+        public float DistanceToLowland(Vector2 p) => DistanceTo(p, highlandSegments, highlandBuckets);
+
+        private float DistanceTo(Vector2 p, List<Vector4> segs, Dictionary<Vector2Int, List<int>> bks)
         {
             var home = Bucket(p);
             for (int reach = 1; reach <= 4; reach++)
@@ -73,8 +122,8 @@ namespace Fulgor.Presentation.Map
                 for (int x = -reach; x <= reach; x++)
                 for (int z = -reach; z <= reach; z++)
                 {
-                    if (!buckets.TryGetValue(new Vector2Int(home.x + x, home.y + z), out var list)) continue;
-                    foreach (var index in list) best = Mathf.Min(best, DistanceToSegment(p, segments[index]));
+                    if (!bks.TryGetValue(new Vector2Int(home.x + x, home.y + z), out var list)) continue;
+                    foreach (var index in list) best = Mathf.Min(best, DistanceToSegment(p, segs[index]));
                 }
                 // un tramo de fuera del cuadrado buscado está, como poco, a reach·cubo − medio tramo
                 if (best < float.MaxValue && best <= reach * bucketSize - .5f * radius) return best;
@@ -82,7 +131,7 @@ namespace Fulgor.Presentation.Map
             return 4f * bucketSize;
         }
 
-        /// <summary>Altura del terreno de montaña en un punto del tablero; fuera de las montañas, la del borde.</summary>
+        /// <summary>Altura del terreno en un punto del tablero; fuera de las colinas y montañas, la del borde.</summary>
         public float Height(Vector2 p)
         {
             var key = ((long)Mathf.Round(p.x * 20000f), (long)Mathf.Round(p.y * 20000f));
@@ -93,7 +142,8 @@ namespace Fulgor.Presentation.Map
         }
 
         /// <summary>Cuánto de "montaña" tiene un punto: 0 en el pie, 1 a la altura de la cumbre de una montaña suelta.</summary>
-        public float Rise(Vector2 p) => Mathf.Clamp01(Profile(DistanceToFoot(p)));
+        public float Rise(Vector2 p) =>
+            mountains.Contains(HexWorldLayout.FromWorld(new Vector3(p.x, 0f, p.y), radius)) ? Mathf.Clamp01(Profile(DistanceToFoot(p))) : 0f;
 
         /// <summary>
         /// Rejilla triangular común a todas las montañas: con radio 1 y esta división, las esquinas y los centros de todas las casillas caen en sus
@@ -122,13 +172,13 @@ namespace Fulgor.Presentation.Map
         }
 
         /// <summary>
-        /// Malla de una casilla de montaña, con los vértices relativos al centro de la casilla (sin giro). Las aristas reparten los mismos puntos que
+        /// Malla de una casilla de colina o montaña, con los vértices relativos al centro de la casilla (sin giro). Las aristas reparten los mismos puntos que
         /// las de la casilla vecina, así que casan; un faldón corto por debajo del contorno tapa las rendijas cuando dos vecinas usan distinto detalle.
         /// Color de vértice: r = cuánto de montaña (0 en el pie), g = altura sobre el borde normalizada.
         /// </summary>
         public Mesh BuildTile(HexCoordinates cell, int subdivisions, string name)
         {
-            if (!mountains.Contains(cell)) throw new ArgumentException("La casilla no es de montaña.", nameof(cell));
+            if (!highlands.Contains(cell)) throw new ArgumentException("La casilla no es de colina ni de montaña.", nameof(cell));
             if (subdivisions < 1) throw new ArgumentOutOfRangeException(nameof(subdivisions));
             var centre = Centre(cell);
             var corners = new Vector2[6];
@@ -189,9 +239,28 @@ namespace Fulgor.Presentation.Map
         private float Compute(Vector2 p)
         {
             var cell = HexWorldLayout.FromWorld(new Vector3(p.x, 0f, p.y), radius);
-            if (!mountains.Contains(cell)) return EdgeHeight;
+            if (!highlands.Contains(cell)) return EdgeHeight;
+            float natural = Natural(p, cell);
+            if (!flats.TryGetValue(cell, out var flat)) return natural;
+            float level = 1f - Smooth(((p - Centre(cell)).magnitude - FlatRadius * radius) / ((FlatBlend - FlatRadius) * radius));
+            return Mathf.Lerp(natural, flat, level);
+        }
+
+        private float Natural(Vector2 p, HexCoordinates cell)
+        {
+            float height = EdgeHeight;
+            // lomas: colinas y montañas forman una tierra alta ondulada que baja hasta la tierra baja
+            float toLowland = DistanceToLowland(p);
+            if (toLowland > 1e-5f)
+            {
+                float rim = Smooth(toLowland / (.35f * radius));
+                float swell = Smooth(toLowland / (apothem * 1.15f));
+                float rolling = .75f + .5f * Fbm(p.x * 1.3f + offsetZ, p.y * 1.3f + offsetX);
+                height += HillRise * swell * rolling + .02f * (Fbm(p.x * 9f + offsetX, p.y * 9f + offsetZ) - .5f) * rim;
+            }
+            if (!mountains.Contains(cell)) return height;
             float near = DistanceToFoot(p);
-            if (near <= 1e-5f) return EdgeHeight;
+            if (near <= 1e-5f) return height;
             // una ligera deformación del espacio quita la forma de pirámide; se apaga junto al pie para que el borde siga a la altura justa
             float s = Smooth(near / (.35f * radius));
             var warp = new Vector2(Noise(p.x * .9f + offsetX, p.y * .9f + offsetZ) - .5f,
@@ -202,7 +271,7 @@ namespace Fulgor.Presentation.Map
             // erosión: crestas finas que marcan barrancos en las laderas, más fuertes cuanto más arriba
             float erosion = Ridged(p.x * 6.5f + offsetZ, p.y * 6.5f + offsetX) - .35f;
             float detail = Fbm(p.x * 13f + offsetZ, p.y * 13f + offsetX) - .5f;
-            return EdgeHeight + PeakRise * profile * (.62f + .6f * ridges) + .11f * erosion * Mathf.Clamp01(profile) * s + .025f * detail * s;
+            return height + PeakRise * profile * (.62f + .6f * ridges) + .11f * erosion * Mathf.Clamp01(profile) * s + .025f * detail * s;
         }
 
         // falda cóncava hasta la apotema (la cumbre de una montaña suelta); más adentro de un macizo sigue subiendo, más despacio
@@ -216,12 +285,12 @@ namespace Fulgor.Presentation.Map
 
         private Vector2Int Bucket(Vector2 p) => new(Mathf.FloorToInt(p.x / bucketSize), Mathf.FloorToInt(p.y / bucketSize));
 
-        private void AddSegment(Vector2 a, Vector2 b)
+        private void AddSegment(Vector2 a, Vector2 b, List<Vector4> segs, Dictionary<Vector2Int, List<int>> bks)
         {
-            segments.Add(new Vector4(a.x, a.y, b.x, b.y));
+            segs.Add(new Vector4(a.x, a.y, b.x, b.y));
             var key = Bucket((a + b) * .5f);
-            if (!buckets.TryGetValue(key, out var list)) buckets.Add(key, list = new List<int>());
-            list.Add(segments.Count - 1);
+            if (!bks.TryGetValue(key, out var list)) bks.Add(key, list = new List<int>());
+            list.Add(segs.Count - 1);
         }
 
         private static float DistanceToSegment(Vector2 p, Vector4 s)

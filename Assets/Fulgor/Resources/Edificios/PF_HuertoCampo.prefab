@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2739928722052661993}
+  - component: {fileID: 1215549534476836642}
   m_Layer: 0
   m_Name: PF_HuertoCampo
   m_TagString: Untagged
@@ -32,6 +33,23 @@ Transform:
   - {fileID: 5749565568834853489}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1215549534476836642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 108795028662442658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a3b771eb864c754bbf61e9b36d5ccf6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignBuildingFootprint
+  centre: {x: 0.019521922, y: -0.0015740842}
+  halfSize: {x: 0.42382592, y: 0.3337549}
+  cornerRadius: 0.10358687
+  bottom: -0.000026574386
+  baseHeight: 0.031000001
 --- !u!1001 &5206220617519119770
 PrefabInstance:
   m_ObjectHideFlags: 0
