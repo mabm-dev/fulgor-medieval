@@ -52,6 +52,14 @@ namespace Fulgor.Presentation.Map
             ApplyFog();
         }
 
+        /// <summary>Indica si hay un edificio colocado en la casilla.</summary>
+        public bool HasBuildingAt(HexCoordinates cell)
+        {
+            foreach (var slot in slots)
+                if (slot.instance != null && slot.cell.Equals(cell)) return true;
+            return false;
+        }
+
         /// <summary>Casilla en la que está colocado un edificio de esta capa.</summary>
         public bool TryGetCell(GameObject instance, out HexCoordinates cell)
         {

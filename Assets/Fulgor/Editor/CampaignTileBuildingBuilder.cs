@@ -24,7 +24,8 @@ namespace Fulgor.Editor
             public readonly string Name, Label;
             public readonly Vector2Int Cell;
             public readonly float DoorMinute; // minutero: 0 norte, 15 este, 30 sur, 45 oeste; negativo = mirar a la fortaleza
-            public Building(string name, string label, Vector2Int cell, float doorMinute) { Name = name; Label = label; Cell = cell; DoorMinute = doorMinute; }
+            public readonly float Size; // tamaño respecto a la huella normal (80 % del radio seguro de la casilla); un pozo no es un edificio
+            public Building(string name, string label, Vector2Int cell, float doorMinute, float size = 1f) { Name = name; Label = label; Cell = cell; DoorMinute = doorMinute; Size = size; }
             public string PrefabPath => $"{Folder}/PF_{Name}.prefab";
         }
 
@@ -39,7 +40,7 @@ namespace Fulgor.Editor
             new("Almacen", "Almacén", new Vector2Int(13, 7), 35f), // de espaldas a la fortaleza
             // hechos con TRELLIS.2 desde los sprites de la edad 01; puerta hacia la fortaleza hasta que el usuario diga otra cosa
             new("ViviendaSencilla", "Vivienda sencilla", new Vector2Int(13, 9), -1f),
-            new("Pozo", "Pozo", new Vector2Int(12, 10), -1f),
+            new("Pozo", "Pozo", new Vector2Int(12, 10), -1f, .5f), // el usuario: "es un pozo, no un edificio", al menos un 50 % más pequeño
             new("Lenera", "Leñera", new Vector2Int(11, 9), -1f),
             new("PuestoIntercambio", "Puesto de intercambio", new Vector2Int(13, 10), -1f),
             new("CasaConocimiento", "Casa de conocimiento", new Vector2Int(14, 9), -1f),
@@ -77,8 +78,9 @@ namespace Fulgor.Editor
             string texturePath = $"{art}/T_{building.Name}_BaseColor.png";
             if (AssetImporter.GetAtPath(texturePath) is TextureImporter importer)
             {
-                importer.sRGBTexture = true; importer.maxTextureSize = 2048; importer.mipmapEnabled = true;
-                importer.textureCompression = TextureImporterCompression.Compressed; importer.SaveAndReimport();
+                // la cámara mira el edificio en oblicuo: filtrado anisótropo y compresión de calidad para que las paredes no se vean borrosas
+                importer.sRGBTexture = true; importer.maxTextureSize = 4096; importer.mipmapEnabled = true; importer.anisoLevel = 8;
+                importer.textureCompression = TextureImporterCompression.CompressedHQ; importer.compressionQuality = 100; importer.SaveAndReimport();
             }
             string materialPath = $"{Folder}/M_{building.Name}.mat";
             var material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
@@ -90,10 +92,11 @@ namespace Fulgor.Editor
             if (AssetImporter.GetAtPath(normalPath) is TextureImporter normalImporter)
             {
                 normalImporter.textureType = TextureImporterType.NormalMap; normalImporter.sRGBTexture = false;
-                normalImporter.maxTextureSize = 2048; normalImporter.mipmapEnabled = true;
+                normalImporter.maxTextureSize = 2048; normalImporter.mipmapEnabled = true; normalImporter.anisoLevel = 8;
                 normalImporter.textureCompression = TextureImporterCompression.Compressed; normalImporter.SaveAndReimport();
                 material.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>(normalPath));
-                material.SetFloat("_BumpScale", 1f); material.EnableKeyword("_NORMALMAP");
+                // suave: el color de TRELLIS ya trae la sombra de las tejas pintada; con 1 el relieve la duplica y las juntas salen negras
+                material.SetFloat("_BumpScale", .35f); material.EnableKeyword("_NORMALMAP");
             }
             material.enableInstancing = true;
             EditorUtility.SetDirty(material);
@@ -111,7 +114,7 @@ namespace Fulgor.Editor
                 float radius = filter.sharedMesh.vertices
                     .Select(v => root.transform.InverseTransformPoint(filter.transform.TransformPoint(v)))
                     .Max(p => new Vector2(p.x, p.z).magnitude);
-                instance.transform.localScale *= VisualScaleContract.PropSafeRadius * .8f / radius;
+                instance.transform.localScale *= VisualScaleContract.PropSafeRadius * .8f * building.Size / radius;
                 PrefabUtility.SaveAsPrefabAsset(root, building.PrefabPath);
             }
             finally { UnityEngine.Object.DestroyImmediate(root); }
