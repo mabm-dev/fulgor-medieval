@@ -123,6 +123,54 @@ namespace Fulgor.Presentation.Tests.Map
             Assert.Greater(checkedArmies, 0, "Alguna hueste inicial está sobre una casilla con edificio (la vivienda de prueba).");
         }
 
+        [UnityTest]
+        public IEnumerator BuildingsSitOnLevelGroundAndMarkTheGroundAround()
+        {
+            hadSave = PlayerPrefs.HasKey(CampaignTurnController.LocalSaveKey);
+            saved = PlayerPrefs.GetString(CampaignTurnController.LocalSaveKey, "");
+            oldScene = EditorSceneManager.GetActiveScene().path;
+            EditorSceneManager.OpenScene(ConquestScene);
+            yield return new EnterPlayMode();
+            var buildings = Object.FindFirstObjectByType<CampaignTileBuildings>();
+            Assert.NotNull(buildings, "La escena de Conquista no tiene edificios de casilla.");
+            for (int i = 0; i < 180 && buildings.Placed.Count == 0; i++) yield return null;
+            Assert.IsNotEmpty(buildings.Placed);
+            Assert.NotNull(buildings.GroundMap, "Con edificios se publica el mapa de huellas para el suelo pisado.");
+            Assert.AreEqual(buildings.Placed.Count, buildings.GroundMap.Buildings);
+            Assert.AreEqual(1f, Shader.GetGlobalFloat("_FulgorHuellasActivas"));
+
+            var tiles = Object.FindObjectsByType<HexTileView>(FindObjectsSortMode.None).GroupBy(t => t.Cell.Coordinates).ToDictionary(g => g.Key, g => g.First());
+            bool onHill = false;
+            foreach (var building in buildings.Placed)
+            {
+                var footprint = building.GetComponent<CampaignBuildingFootprint>();
+                Assert.NotNull(footprint, building.name + " lleva su huella.");
+                Assert.IsTrue(buildings.TryGetCell(building, out var cell));
+                var collider = tiles[cell].GetComponent<MeshCollider>();
+                float baseY = building.transform.position.y + footprint.Bottom;
+                var edge = Enumerable.Range(0, 16).Select(k => footprint.Outline(k * Mathf.PI / 8f))
+                    .Select(p => Ground(collider, building.transform.TransformPoint(new Vector3(p.x, 0f, p.y)))).OrderBy(y => y).ToArray();
+                Assert.AreEqual(CampaignTileBuildings.SeatDepth, edge[8] - baseY, 1e-3f, building.name + ": la base queda apenas por debajo del suelo de su borde.");
+                // el suelo apenas cambia bajo el borde (la llanura es plana y la colina se allana): la losa no deja rendijas
+                Assert.Less(edge[12] - edge[4], .015f, building.name + ": suelo llano bajo el borde.");
+                var centre = building.transform.position;
+                Assert.Less(buildings.GroundMap.DistanceAt(new Vector2(centre.x, centre.z)), 0f, building.name + ": su huella está en el mapa.");
+                var outside = building.transform.TransformPoint(new Vector3(footprint.Centre.x + footprint.HalfSize.x + .1f, 0f, footprint.Centre.y));
+                float scale = CampaignTileBuildings.GroundBandScale(footprint);
+                Assert.That(scale, Is.InRange(1f, 2f));
+                Assert.AreEqual(.1f * scale, buildings.GroundMap.DistanceAt(new Vector2(outside.x, outside.z)), .03f * scale, building.name + ": a 10 cm de su pared.");
+                onHill |= tiles[cell].Cell.Terrain == TerrainType.Hill;
+            }
+            Assert.IsTrue(onHill, "El patio de mesnadas de prueba está en una colina: comprueba el llano del relieve.");
+        }
+
+        private static float Ground(MeshCollider collider, Vector3 world)
+        {
+            var bounds = collider.bounds;
+            Assert.IsTrue(collider.Raycast(new Ray(new Vector3(world.x, bounds.max.y + 1f, world.z), Vector3.down), out var hit, bounds.size.y + 2f), "Hay suelo bajo el borde.");
+            return hit.point.y;
+        }
+
         [UnityTearDown]
         public IEnumerator Cleanup()
         {

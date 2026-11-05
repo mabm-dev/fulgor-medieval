@@ -84,6 +84,25 @@ namespace Fulgor.Editor
                         foreach (var renderer in placed.GetComponentsInChildren<Renderer>())
                             foreach (var material in renderer.materials) material.SetFloat("_BumpScale", bump);
                 }
+                // asiento de cada edificio: altura del suelo bajo el borde de su huella y bajo el interior, respecto a lo más bajo del modelo
+                foreach (var building in buildings.Placed.Where(b => b != null))
+                {
+                    var footprint = building.GetComponent<CampaignBuildingFootprint>();
+                    if (footprint == null) { report.AppendLine($"Asiento de {building.name}: sin huella"); continue; }
+                    float baseY = building.transform.position.y + footprint.Bottom;
+                    var edge = new System.Collections.Generic.List<float>(); var inside = new System.Collections.Generic.List<float>();
+                    for (int k = 0; k < 24; k++)
+                        if (GroundBelow(building.transform, footprint.Outline(k * Mathf.PI / 12f), out var y)) edge.Add(y - baseY);
+                    for (int x = -3; x <= 3; x++)
+                        for (int z = -3; z <= 3; z++)
+                        {
+                            var local = footprint.Centre + new Vector2(x / 3.5f * footprint.HalfSize.x, z / 3.5f * footprint.HalfSize.y);
+                            if (footprint.SignedDistance(local) < -.02f && GroundBelow(building.transform, local, out var y)) inside.Add(y - baseY);
+                        }
+                    report.AppendLine(edge.Count == 0 || inside.Count == 0 ? $"Asiento de {building.name}: sin suelo debajo" :
+                        $"Asiento de {building.name}: suelo en el borde de {edge.Min() * 100:0.0} a {edge.Max() * 100:0.0} cm, " +
+                        $"dentro de {inside.Min() * 100:0.0} a {inside.Max() * 100:0.0} cm sobre la base (losa {footprint.BaseHeight * 100:0.0} cm)");
+                }
                 foreach (var building in buildings.Placed.Where(b => b != null && (only == null || only.Contains(Safe(b.name)))))
                 {
                     var renderers = building.GetComponentsInChildren<Renderer>();
@@ -110,6 +129,16 @@ namespace Fulgor.Editor
                 SessionState.SetInt(Stage, 2); EditorApplication.isPlaying = false;
             }
             catch (Exception e) { Debug.LogException(e); SessionState.SetBool(Running, false); EditorApplication.Exit(1); }
+        }
+
+        // altura del suelo de las casillas bajo un punto (x, z) de la raíz de un edificio
+        static bool GroundBelow(Transform building, Vector2 local, out float height)
+        {
+            var world = building.TransformPoint(new Vector3(local.x, 0f, local.y));
+            height = float.NegativeInfinity;
+            foreach (var hit in Physics.RaycastAll(world + Vector3.up * 5f, Vector3.down, 20f))
+                if (hit.collider.GetComponent<HexTileView>() != null) height = Mathf.Max(height, hit.point.y);
+            return !float.IsNegativeInfinity(height);
         }
 
         static string ReadText(string name)

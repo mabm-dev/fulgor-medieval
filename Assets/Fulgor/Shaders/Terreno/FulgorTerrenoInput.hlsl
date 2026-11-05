@@ -49,6 +49,14 @@ half4 _FulgorRockDark;
 half4 _FulgorCapColor;
 half4 _FulgorGrassColor;
 float _FulgorStrata;
+half4 _FulgorPisadoColor;
+half _FulgorPisadoAncho;
+half _FulgorPisadoFuerza;
+half _FulgorMatas;
+half _FulgorMatasLuz;
+half _FulgorEdificio;
+float _FulgorBaseY;
+half _FulgorBaseAlto;
 UNITY_TEXTURE_STREAMING_DEBUG_VARS;
 CBUFFER_END
 
@@ -142,6 +150,10 @@ TEXTURE2D(_MetallicGlossMap);   SAMPLER(sampler_MetallicGlossMap);
 TEXTURE2D(_SpecGlossMap);       SAMPLER(sampler_SpecGlossMap);
 TEXTURE2D(_ClearCoatMap);       SAMPLER(sampler_ClearCoatMap);
 TEXTURE2D(_FulgorNoise);        SAMPLER(sampler_FulgorNoise); // Fulgor: ruido del terreno que se repite sin costuras
+// Fulgor: huellas de los edificios de casilla (CampaignTileBuildings), comunes a toda la escena: van fuera del bloque del material
+TEXTURE2D(_FulgorHuellas);      SAMPLER(sampler_FulgorHuellas);
+float4 _FulgorHuellasST;
+float _FulgorHuellasActivas;
 
 #ifdef _SPECULAR_SETUP
     #define SAMPLE_METALLICSPECULAR(uv) SAMPLE_TEXTURE2D(_SpecGlossMap, sampler_SpecGlossMap, uv)

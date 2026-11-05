@@ -8,18 +8,18 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: M_Empalizada
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_Shader: {fileID: 4800000, guid: 95fdebfa2a788e44d83fe9d672bd7192, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _FULGOR_EDIFICIO
   - _NORMALMAP
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Opaque
+  stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
   m_LockedProperties: 
@@ -48,6 +48,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FulgorNoise:
+        m_Texture: {fileID: 2800000, guid: e08df53ff8639b147a59affc37524f3e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -99,6 +103,24 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
+    - _FulgorBaseAlto: 0.03
+    - _FulgorBaseY: 0
+    - _FulgorDryStrength: 0.55
+    - _FulgorEdificio: 1
+    - _FulgorFlatten: 0
+    - _FulgorGroundY: 0.12
+    - _FulgorMacroScale: 0.16
+    - _FulgorMatas: 0.7
+    - _FulgorMatasLuz: 1
+    - _FulgorMontana: 0
+    - _FulgorPieceDetail: 0.3
+    - _FulgorPieceLuma: 0.21
+    - _FulgorPisadoAncho: 0.2
+    - _FulgorPisadoFuerza: 0.9
+    - _FulgorSaturation: 0.9
+    - _FulgorSinRuido: 0
+    - _FulgorStrata: 9
+    - _FulgorUnify: 0.9
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
@@ -122,6 +144,13 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FulgorCapColor: {r: 0.84, g: 0.81, b: 0.75, a: 1}
+    - _FulgorDryColor: {r: 0.7, g: 0.62, b: 0.38, a: 1}
+    - _FulgorGrassColor: {r: 0.45, g: 0.54, b: 0.26, a: 1}
+    - _FulgorLushColor: {r: 0.33, g: 0.46, b: 0.2, a: 1}
+    - _FulgorPisadoColor: {r: 0.56, g: 0.47, b: 0.34, a: 1}
+    - _FulgorRockColor: {r: 0.7, g: 0.65, b: 0.56, a: 1}
+    - _FulgorRockDark: {r: 0.31, g: 0.28, b: 0.25, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

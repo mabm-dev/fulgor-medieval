@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6996704207494998668}
+  - component: {fileID: 5166559198554598178}
   m_Layer: 0
   m_Name: PF_AldeaConcejil
   m_TagString: Untagged
@@ -32,6 +33,23 @@ Transform:
   - {fileID: 5230752729352887348}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5166559198554598178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759649882074483001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a3b771eb864c754bbf61e9b36d5ccf6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignBuildingFootprint
+  centre: {x: 0.0008074194, y: 0.0007183999}
+  halfSize: {x: 0.38667578, y: 0.37723082}
+  cornerRadius: 0.14406799
+  bottom: 0.00045248092
+  baseHeight: 0.009000001
 --- !u!1001 &5700964052227242975
 PrefabInstance:
   m_ObjectHideFlags: 0

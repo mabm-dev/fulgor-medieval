@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7926053368082179485}
+  - component: {fileID: 3727046377792879733}
   m_Layer: 0
   m_Name: PF_CasaConocimiento
   m_TagString: Untagged
@@ -32,6 +33,23 @@ Transform:
   - {fileID: 6306887216916399685}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3727046377792879733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8248297266375896023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a3b771eb864c754bbf61e9b36d5ccf6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignBuildingFootprint
+  centre: {x: -0.0019892603, y: 0.0029165745}
+  halfSize: {x: 0.4342082, y: 0.3468674}
+  cornerRadius: 0.064424194
+  bottom: 0.00033388878
+  baseHeight: 0.055000003
 --- !u!1001 &5768031399365599662
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6160827169803722171}
+  - component: {fileID: 2280424220803426099}
   m_Layer: 0
   m_Name: PF_CampoMilicias
   m_TagString: Untagged
@@ -32,6 +33,23 @@ Transform:
   - {fileID: 15686923835258516}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2280424220803426099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7392307427331094804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a3b771eb864c754bbf61e9b36d5ccf6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignBuildingFootprint
+  centre: {x: -0.0017981231, y: 0.008058906}
+  halfSize: {x: 0.33704287, y: 0.4204098}
+  cornerRadius: 0.13256693
+  bottom: 0.00027919357
+  baseHeight: 0.011000001
 --- !u!1001 &557604479745970559
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -29,15 +29,32 @@ namespace Fulgor.Presentation.Map
         {
             public GameObject instance;
             public HexCoordinates cell;
+            public CampaignBuildingFootprint footprint;
             public Renderer[] renderers;
             public ShadowCastingMode[] shadows;
             public bool shown = true;
         }
 
+        /// <summary>La base de un edificio queda estos metros por debajo del suelo que hay bajo el borde de su huella: el borde no flota.</summary>
+        public const float SeatDepth = .004f;
+        private static readonly int GroundMapId = Shader.PropertyToID("_FulgorHuellas"), GroundMapUv = Shader.PropertyToID("_FulgorHuellasST"),
+            GroundMapOn = Shader.PropertyToID("_FulgorHuellasActivas"), BaseY = Shader.PropertyToID("_FulgorBaseY"),
+            TrampledColor = Shader.PropertyToID("_FulgorPisadoColor"), Tufts = Shader.PropertyToID("_FulgorMatas"), TuftLight = Shader.PropertyToID("_FulgorMatasLuz");
+
         private readonly List<GameObject> placed = new();
         private readonly List<Slot> slots = new();
         private Transform generation;
+        private Texture2D groundTexture;
         public IReadOnlyList<GameObject> Placed => placed;
+        /// <summary>Huellas publicadas para el suelo pisado del terreno; null sin edificios.</summary>
+        public CampaignBuildingGroundMap GroundMap { get; private set; }
+
+        /// <summary>Casillas en las que se colocan edificios: el relieve de colinas y montañas se allana en ellas antes de colocarlos.</summary>
+        public IEnumerable<HexCoordinates> PlannedCells()
+        {
+            foreach (var entry in entries)
+                if (entry.prefab != null) yield return new HexCoordinates(entry.cell.x, entry.cell.y);
+        }
 
         public static float YawForDoorMinute(float minute) => (minute - DoorMinuteAtZeroYaw) * 6f;
 
@@ -98,19 +115,113 @@ namespace Fulgor.Presentation.Map
                 if (entry.prefab == null || !tiles.TryGetValue(new HexCoordinates(entry.cell.x, entry.cell.y), out var tile)) continue;
                 var collider = tile.GetComponent<MeshCollider>();
                 if (collider == null || collider.sharedMesh == null) continue;
-                var surface = new TerrainGroundSurface(collider.sharedMesh);
-                if (!surface.TrySample(tile.transform, tile.transform.position, out var ground, out _, out _)) continue;
+                var rotation = Quaternion.Euler(0f, YawForDoorMinute(entry.doorMinute), 0f);
+                var footprint = entry.prefab.GetComponent<CampaignBuildingFootprint>();
+                if (!TrySeat(collider, tile.transform.position, rotation, footprint, out var position)) continue;
                 var instance = Instantiate(entry.prefab, transform);
                 instance.name = string.IsNullOrEmpty(entry.label) ? entry.prefab.name : entry.label;
-                instance.transform.SetPositionAndRotation(ground + Vector3.up * .008f, Quaternion.Euler(0f, YawForDoorMinute(entry.doorMinute), 0f));
+                instance.transform.SetPositionAndRotation(position, rotation);
                 placed.Add(instance);
                 var renderers = instance.GetComponentsInChildren<Renderer>(true);
                 slots.Add(new Slot
                 {
                     instance = instance, cell = new HexCoordinates(entry.cell.x, entry.cell.y), renderers = renderers,
-                    shadows = Array.ConvertAll(renderers, r => r.shadowCastingMode),
+                    footprint = instance.GetComponent<CampaignBuildingFootprint>(), shadows = Array.ConvertAll(renderers, r => r.shadowCastingMode),
                 });
+                // la base del edificio toma la tierra pisada del terreno de su casilla (sombreador Fulgor/Terreno en modo edificio)
+                TakeGround(renderers, tile.Cell.Terrain, position.y + (footprint != null ? footprint.Bottom : 0f));
             }
+            PublishGroundMap(tiles.Values);
+        }
+
+        /// <summary>
+        /// Asiento del edificio: la base queda <see cref="SeatDepth"/> por debajo del suelo que hay bajo el borde de su huella (la mediana de dieciséis
+        /// puntos, así una piedra suelta de la pieza no lo levanta). Sin huella, como antes: 8 mm sobre el suelo del centro.
+        /// </summary>
+        private static bool TrySeat(MeshCollider ground, Vector3 centre, Quaternion rotation, CampaignBuildingFootprint footprint, out Vector3 position)
+        {
+            position = centre;
+            if (!GroundAt(ground, centre, out var middle)) return false;
+            if (footprint == null) { position = new Vector3(centre.x, middle + .008f, centre.z); return true; }
+            var heights = new List<float>();
+            for (int k = 0; k < 16; k++)
+            {
+                var local = footprint.Outline(k * Mathf.PI / 8f);
+                if (GroundAt(ground, centre + rotation * new Vector3(local.x, 0f, local.y), out var height)) heights.Add(height);
+            }
+            heights.Sort();
+            float seat = heights.Count > 0 ? heights[heights.Count / 2] : middle;
+            position = new Vector3(centre.x, seat - SeatDepth - footprint.Bottom, centre.z);
+            return true;
+        }
+
+        private static bool GroundAt(MeshCollider collider, Vector3 world, out float height)
+        {
+            var bounds = collider.bounds;
+            height = 0f;
+            if (!collider.Raycast(new Ray(new Vector3(world.x, bounds.max.y + 1f, world.z), Vector3.down), out var hit, bounds.size.y + 2f)) return false;
+            height = hit.point.y;
+            return true;
+        }
+
+        private static void TakeGround(Renderer[] renderers, TerrainType terrain, float baseY)
+        {
+            var block = new MaterialPropertyBlock();
+            foreach (var renderer in renderers)
+            {
+                if (renderer.sharedMaterial == null || !renderer.sharedMaterial.HasProperty(BaseY)) continue;
+                renderer.GetPropertyBlock(block);
+                block.SetFloat(BaseY, baseY);
+                block.SetColor(TrampledColor, CampaignVisualPalette.TrampledGround(terrain));
+                block.SetFloat(Tufts, CampaignVisualPalette.GroundTufts(terrain));
+                block.SetFloat(TuftLight, CampaignVisualPalette.GroundTuftLight(terrain));
+                renderer.SetPropertyBlock(block);
+            }
+        }
+
+        /// <summary>
+        /// Cuánto se multiplica la distancia a la huella en el mapa del suelo pisado: 1 en un edificio de casilla normal (lado medio de unos 0,36) y
+        /// hasta 2 en uno pequeño, con la franja la mitad de ancha; un pozo no pisa el suelo como una casa.
+        /// </summary>
+        public static float GroundBandScale(CampaignBuildingFootprint footprint) =>
+            1f / Mathf.Clamp(Mathf.Sqrt(footprint.HalfSize.x * footprint.HalfSize.y) / .36f, .5f, 1f);
+
+        // el terreno pinta tierra pisada alrededor de cada huella: un mapa de distancias de todo el tablero, en una textura global
+        private void PublishGroundMap(IEnumerable<HexTileView> tiles)
+        {
+            ReleaseGroundMap();
+            float minX = float.MaxValue, minZ = float.MaxValue, maxX = float.MinValue, maxZ = float.MinValue;
+            foreach (var tile in tiles)
+            {
+                var p = tile.transform.position;
+                minX = Mathf.Min(minX, p.x); maxX = Mathf.Max(maxX, p.x); minZ = Mathf.Min(minZ, p.z); maxZ = Mathf.Max(maxZ, p.z);
+            }
+            if (minX > maxX || !slots.Exists(s => s.footprint != null)) return;
+            float margin = VisualScaleContract.HexOuterRadius;
+            var map = new CampaignBuildingGroundMap(Rect.MinMaxRect(minX - margin, minZ - margin, maxX + margin, maxZ + margin));
+            foreach (var slot in slots)
+                if (slot.footprint != null)
+                    map.Add(slot.instance.transform.worldToLocalMatrix, slot.footprint.Centre, slot.footprint.HalfSize, slot.footprint.CornerRadius,
+                        GroundBandScale(slot.footprint));
+            groundTexture = new Texture2D(map.Width, map.Height, TextureFormat.R8, true, true)
+            {
+                name = "Huellas de los edificios", wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear,
+            };
+            groundTexture.SetPixelData(map.Values, 0);
+            groundTexture.Apply(true, true);
+            Shader.SetGlobalTexture(GroundMapId, groundTexture);
+            Shader.SetGlobalVector(GroundMapUv, map.UvTransform);
+            Shader.SetGlobalFloat(GroundMapOn, 1f);
+            GroundMap = map;
+        }
+
+        private void ReleaseGroundMap()
+        {
+            Shader.SetGlobalFloat(GroundMapOn, 0f);
+            GroundMap = null;
+            if (groundTexture == null) return;
+            if (Application.isPlaying) Destroy(groundTexture); else DestroyImmediate(groundTexture);
+            groundTexture = null;
         }
 
         private void Clear()
@@ -119,6 +230,9 @@ namespace Fulgor.Presentation.Map
             placed.Clear();
             slots.Clear();
             generation = null;
+            ReleaseGroundMap();
         }
+
+        private void OnDestroy() => ReleaseGroundMap();
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Fulgor.Core.Map;
@@ -16,6 +17,7 @@ namespace Fulgor.Editor
         const string Folder = "Assets/Fulgor/Resources/Edificios";
         const string ConquestScene = "Assets/Fulgor/Scenes/Playable/FulgorConquest.unity";
         const string FortressPrefab = "Assets/Fulgor/Prefabs/PF_FortalezaCastilla.prefab";
+        const string NoisePath = "Assets/Fulgor/Art/Terrain/Relieve/T_Terreno_Ruido.png";
         static readonly Vector2Int FortressCell = new(13, 8);
 
         /// <summary>Un edificio de casilla: su carpeta de arte (SM_/T_ con su nombre), la casilla de prueba y hacia dónde mira la puerta.</summary>
@@ -84,7 +86,16 @@ namespace Fulgor.Editor
             }
             string materialPath = $"{Folder}/M_{building.Name}.mat";
             var material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
-            if (material == null) { material = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(material, materialPath); }
+            // el sombreador del terreno en modo edificio: es Lit, y además la base toma la tierra pisada de su casilla (CampaignTileBuildings le
+            // dice la altura de la base y el terreno al colocarlo) con el mismo ruido que el suelo de alrededor
+            var shader = Shader.Find("Fulgor/Terreno") ?? throw new InvalidOperationException("Falta el sombreador Fulgor/Terreno.");
+            CampaignTerrainReliefBuilder.AssertCompiles(shader);
+            if (material == null) { material = new Material(shader); AssetDatabase.CreateAsset(material, materialPath); }
+            if (material.shader != shader) material.shader = shader;
+            CampaignTerrainReliefBuilder.ResetTerrainDefaults(material, shader);
+            material.SetFloat("_FulgorMontana", 0f); material.SetFloat("_FulgorEdificio", 1f);
+            material.EnableKeyword("_FULGOR_EDIFICIO"); material.DisableKeyword("_FULGOR_MONTANA");
+            material.SetTexture("_FulgorNoise", AssetDatabase.LoadAssetAtPath<Texture2D>(NoisePath) ?? throw new FileNotFoundException("Falta el ruido del terreno", NoisePath));
             material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath));
             material.SetColor("_BaseColor", Color.white); material.SetFloat("_Metallic", 0f); material.SetFloat("_Smoothness", .12f);
             // los edificios hechos con TRELLIS traen además un mapa de normales horneado desde la malla alta
@@ -115,9 +126,59 @@ namespace Fulgor.Editor
                     .Select(v => root.transform.InverseTransformPoint(filter.transform.TransformPoint(v)))
                     .Max(p => new Vector2(p.x, p.z).magnitude);
                 instance.transform.localScale *= VisualScaleContract.PropSafeRadius * .8f * building.Size / radius;
+                AddFootprint(root, filter, building);
                 PrefabUtility.SaveAsPrefabAsset(root, building.PrefabPath);
             }
             finally { UnityEngine.Object.DestroyImmediate(root); }
+        }
+
+        /// <summary>
+        /// Huella del edificio, desde la malla ya escalada: el contorno de lo que toca el suelo (el primer centímetro desde abajo) ajustado a un
+        /// rectángulo de esquinas redondeadas, y el alto de la losa de la base (la altura con más superficie hacia arriba en el cuarto inferior).
+        /// Medido en las trece de la edad 01: huellas de 0,33–0,44 de medio lado (la empalizada, 0,53 × 0,16; el pozo, 0,2), losas de 1–2 cm.
+        /// </summary>
+        static void AddFootprint(GameObject root, MeshFilter filter, Building building)
+        {
+            var mesh = filter.sharedMesh;
+            var toRoot = root.transform.worldToLocalMatrix * filter.transform.localToWorldMatrix;
+            var points = mesh.vertices.Select(v => toRoot.MultiplyPoint3x4(v)).ToArray();
+            float bottom = points.Min(p => p.y), top = points.Max(p => p.y);
+            // lo que toca el suelo: los primeros 4 cm desde abajo (la base de TRELLIS no siempre es plana: el huerto tiene los surcos a 3 cm)
+            var floor = points.Where(p => p.y < bottom + .04f).Select(p => new Vector2(p.x, p.z)).ToArray();
+            static float Percentile(IEnumerable<float> values, float q)
+            {
+                var sorted = values.OrderBy(v => v).ToArray();
+                return sorted[Mathf.Clamp(Mathf.RoundToInt(q * (sorted.Length - 1)), 0, sorted.Length - 1)];
+            }
+            // los extremos sin el medio por ciento de cada lado: un vértice suelto no agranda la huella
+            float minX = Percentile(floor.Select(p => p.x), .005f), maxX = Percentile(floor.Select(p => p.x), .995f);
+            float minZ = Percentile(floor.Select(p => p.y), .005f), maxZ = Percentile(floor.Select(p => p.y), .995f);
+            var centre = new Vector2((minX + maxX) * .5f, (minZ + maxZ) * .5f);
+            var half = new Vector2((maxX - minX) * .5f, (maxZ - minZ) * .5f);
+            // esquinas: en un rectángulo los puntos llegan a |x|/hx + |z|/hz = 2; en un óvalo, a √2
+            float reach = Percentile(floor.Select(p => Mathf.Abs(p.x - centre.x) / half.x + Mathf.Abs(p.y - centre.y) / half.y), .98f);
+            float roundness = Mathf.Clamp01((2f - reach) / (2f - Mathf.Sqrt(2f)));
+            float corner = roundness * Mathf.Min(half.x, half.y);
+
+            // superficie hacia arriba por tramos de 2 mm de altura en el cuarto inferior: la losa es el tramo con más
+            var triangles = mesh.triangles; var area = new SortedDictionary<int, float>(); float lowQuarter = bottom + (top - bottom) * .25f;
+            for (int i = 0; i < triangles.Length; i += 3)
+            {
+                var a = points[triangles[i]]; var b = points[triangles[i + 1]]; var c = points[triangles[i + 2]];
+                var normal = Vector3.Cross(b - a, c - a); float twice = normal.magnitude;
+                if (twice < 1e-12f || normal.y / twice < .9f) continue;
+                float height = (a.y + b.y + c.y) / 3f; if (height > lowQuarter) continue;
+                int bin = Mathf.FloorToInt((height - bottom) / .002f);
+                area[bin] = (area.TryGetValue(bin, out var sum) ? sum : 0f) + normal.y * .5f;
+            }
+            float slab = area.Count == 0 ? 0f : (area.OrderByDescending(p => p.Value).First().Key + .5f) * .002f;
+            var footprint = root.AddComponent<CampaignBuildingFootprint>();
+            footprint.Set(centre, half, corner, bottom, slab);
+            float footprintArea = 4f * half.x * half.y - (4f - Mathf.PI) * corner * corner;
+            Debug.Log($"Huella de {building.Label}: centro ({centre.x:0.000}, {centre.y:0.000}), medio ancho {half.x:0.000} × {half.y:0.000}, " +
+                      $"esquinas {corner:0.000} (redondez {roundness:0.00}), abajo {bottom:0.000}, alto {top - bottom:0.000}, losa {slab:0.000}; " +
+                      "superficie hacia arriba por altura (cm: % de la huella): " +
+                      string.Join(", ", area.OrderByDescending(p => p.Value).Take(5).Select(p => $"{(p.Key + .5f) * .2f:0.0}: {100f * p.Value / footprintArea:0}")));
         }
 
         [MenuItem("Fulgor/Arte/Colocar edificios de casilla en la escena de Conquista")]

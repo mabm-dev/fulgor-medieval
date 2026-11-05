@@ -74,6 +74,31 @@ namespace Fulgor.Editor
             }
         }
 
+        /// <summary>Falla si Fulgor/Terreno no compila, con los mensajes del compilador.</summary>
+        internal static void AssertCompiles(Shader shader)
+        {
+            if (ShaderUtil.ShaderHasError(shader))
+                throw new InvalidOperationException("Fulgor/Terreno tiene errores: " + string.Join(" | ", ShaderUtil.GetShaderMessages(shader).Select(m => $"{m.message} ({m.file}:{m.line})")));
+        }
+
+        /// <summary>
+        /// Devuelve las propiedades _Fulgor* de un material de Fulgor/Terreno a los valores del sombreador (colores, escalas, suelo pisado), menos
+        /// el ruido y los interruptores de modo (montaña, edificio), que pone quien prepara el material.
+        /// </summary>
+        internal static void ResetTerrainDefaults(Material material, Shader shader)
+        {
+            for (int i = 0; i < shader.GetPropertyCount(); i++)
+            {
+                string name = shader.GetPropertyName(i);
+                if (!name.StartsWith("_Fulgor", StringComparison.Ordinal) || name == "_FulgorMontana" || name == "_FulgorEdificio") continue;
+                var type = shader.GetPropertyType(i);
+                if (type == UnityEngine.Rendering.ShaderPropertyType.Color || type == UnityEngine.Rendering.ShaderPropertyType.Vector)
+                    material.SetVector(name, shader.GetPropertyDefaultVectorValue(i));
+                else if (type == UnityEngine.Rendering.ShaderPropertyType.Float || type == UnityEngine.Rendering.ShaderPropertyType.Range)
+                    material.SetFloat(name, shader.GetPropertyDefaultFloatValue(i));
+            }
+        }
+
         [MenuItem("Fulgor/Campaña/Preparar relieve de montaña y sombreador del terreno")]
         public static void Prepare()
         {
@@ -85,24 +110,14 @@ namespace Fulgor.Editor
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             var shader = Shader.Find("Fulgor/Terreno") ?? throw new InvalidOperationException("No se encuentra el sombreador Fulgor/Terreno.");
-            if (ShaderUtil.ShaderHasError(shader))
-                throw new InvalidOperationException("Fulgor/Terreno tiene errores: " + string.Join(" | ", ShaderUtil.GetShaderMessages(shader).Select(m => $"{m.message} ({m.file}:{m.line})")));
+            AssertCompiles(shader);
             if (!AssetDatabase.IsValidFolder(Folder)) AssetDatabase.CreateFolder("Assets/Fulgor/Art/Terrain", "Relieve");
             var material = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
             if (material == null) { material = new Material(shader); AssetDatabase.CreateAsset(material, MaterialPath); }
             material.shader = shader;
             // los colores y escalas del terreno vuelven a los del sombreador, los mismos que usan llanura, bosque y colina
-            for (int i = 0; i < shader.GetPropertyCount(); i++)
-            {
-                string name = shader.GetPropertyName(i);
-                if (!name.StartsWith("_Fulgor", StringComparison.Ordinal) || name == "_FulgorMontana") continue;
-                var type = shader.GetPropertyType(i);
-                if (type == UnityEngine.Rendering.ShaderPropertyType.Color || type == UnityEngine.Rendering.ShaderPropertyType.Vector)
-                    material.SetVector(name, shader.GetPropertyDefaultVectorValue(i));
-                else if (type == UnityEngine.Rendering.ShaderPropertyType.Float || type == UnityEngine.Rendering.ShaderPropertyType.Range)
-                    material.SetFloat(name, shader.GetPropertyDefaultFloatValue(i));
-            }
-            material.SetFloat("_FulgorMontana", 1f); material.EnableKeyword("_FULGOR_MONTANA");
+            ResetTerrainDefaults(material, shader);
+            material.SetFloat("_FulgorMontana", 1f); material.EnableKeyword("_FULGOR_MONTANA"); material.DisableKeyword("_FULGOR_EDIFICIO");
             var noise = BuildNoise(NoisePath);
             material.SetTexture("_FulgorNoise", noise);
             material.SetFloat("_Smoothness", .12f); material.SetColor("_BaseColor", Color.white);

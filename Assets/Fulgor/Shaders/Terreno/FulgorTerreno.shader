@@ -26,6 +26,15 @@ Shader "Fulgor/Terreno"
         _FulgorCapColor("Cumbres", Color) = (0.84, 0.81, 0.75, 1)
         _FulgorGrassColor("Hierba media", Color) = (0.45, 0.54, 0.26, 1)
         _FulgorStrata("Estratos por metro", Float) = 9
+        [Header(Suelo pisado junto a los edificios)]
+        _FulgorPisadoColor("Tierra pisada", Color) = (0.56, 0.47, 0.34, 1)
+        _FulgorPisadoAncho("Ancho de lo pisado", Float) = 0.2
+        _FulgorPisadoFuerza("Fuerza de lo pisado", Range(0, 1)) = 0.9
+        _FulgorMatas("Hierba que sobrevive", Range(0, 1)) = 0.7
+        _FulgorMatasLuz("Luz de esa hierba", Range(0, 1.5)) = 1
+        [Toggle(_FULGOR_EDIFICIO)] _FulgorEdificio("Base de edificio", Float) = 0
+        _FulgorBaseY("Altura de la base en el mundo", Float) = 0
+        _FulgorBaseAlto("Alto de la base que toma el suelo", Float) = 0.03
 
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
@@ -205,7 +214,7 @@ Shader "Fulgor/Terreno"
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
 
             #include "FulgorTerrenoInput.hlsl"
-            #pragma shader_feature_local_fragment _FULGOR_MONTANA
+            #pragma shader_feature_local_fragment _ _FULGOR_MONTANA _FULGOR_EDIFICIO
             #include "FulgorTerrenoForwardPass.hlsl"
             ENDHLSL
         }
