@@ -62,9 +62,10 @@ namespace Fulgor.Presentation.Tests.Map
             Assert.That(turnController.State.IncomePerTurn.Gold, Is.GreaterThan(0));
             Assert.That(panel.GetComponentsInChildren<Text>()
                 .Any(text => text.text.Contains("Turno 2")), Is.True);
-            Assert.That(board.GetComponentsInChildren<HexTileView>().Count(view => view.HasColorOverride),
+            var castles=board.GetComponent<CampaignSettlementController>().Views.Values;
+            Assert.That(board.GetComponentsInChildren<HexTileView>().Count(view => view.HasColorOverride && castles.All(c=>c.Tile.Cell.Coordinates.DistanceTo(view.Cell.Coordinates)>1)),
                 Is.LessThanOrEqualTo(1),
-                "Solo la casilla bajo el puntero puede llevar MaterialPropertyBlock; las demás, en reposo, no.");
+                "Fuera del territorio teñido, solo la casilla bajo el puntero puede llevar MaterialPropertyBlock.");
             var tile = board.GetComponentInChildren<HexTileView>();
             board.GetComponent<CampaignBoardSelection>().Select(tile);
             Assert.That(panel.GetComponentsInChildren<Text>()

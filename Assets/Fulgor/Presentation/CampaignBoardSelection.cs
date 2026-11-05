@@ -45,6 +45,7 @@ namespace Fulgor.Presentation.Map
 
         public void ResetBoard()
         {
+            GetComponent<CampaignCityMapView>()?.Close();
             SetHover(null);
             ClearSelection();
             Routes = null;
@@ -114,7 +115,7 @@ namespace Fulgor.Presentation.Map
 
         public bool BlocksPointer(Vector2 screenPosition)
         {
-            return isActiveAndEnabled && ((panel != null && panel.IsVisible &&
+            return isActiveAndEnabled && ((GetComponent<CampaignCityMapView>()?.IsOpen==true&&panel!=null&&panel.BlocksCityMapPointer(screenPosition)) || (panel != null && panel.IsVisible &&
                 panel.ContainsScreenPoint(screenPosition)) ||
                 GetComponent<CampaignSettlementController>()?.BlocksPointer(screenPosition) == true);
         }
@@ -130,15 +131,18 @@ namespace Fulgor.Presentation.Map
         public bool ActivateTile(HexTileView tile)
         {
             if(IsInteractionSuspended||tile==null||tile.Owner!=this||!tile.gameObject.activeInHierarchy)return false;
-            Select(tile);GetComponent<CampaignSettlementController>()?.OpenCityAt(tile.Cell.Coordinates);return true;
+            var cityMap=GetComponent<CampaignCityMapView>();if(cityMap!=null&&cityMap.IsOpen)return cityMap.Place(tile);
+            Select(tile);var settlements=GetComponent<CampaignSettlementController>();
+            if(settlements!=null&&(gameObject.scene.name!="FulgorConquest"||!settlements.OpenCityMapAt(tile.Cell.Coordinates)))settlements.OpenCityAt(tile.Cell.Coordinates);
+            return true;
         }
 
         private void Update()
         {
-            if(GetComponent<BattleLabController>()?.ClosedThisFrame==true||GetComponent<CityManagementView>()?.ClosedThisFrame==true||GetComponent<CampaignPlaySession>()?.ClosedThisFrame==true){SetHover(null);return;}
+            if(GetComponent<BattleLabController>()?.ClosedThisFrame==true||GetComponent<CityManagementView>()?.ClosedThisFrame==true||GetComponent<CampaignCityMapView>()?.ClosedThisFrame==true||GetComponent<CampaignPlaySession>()?.ClosedThisFrame==true){SetHover(null);return;}
             if (!Application.isFocused || IsInteractionSuspended) { pointerDown=false;SetHover(null); return; }
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-                ClearSelection();
+            {var cityMap=GetComponent<CampaignCityMapView>();if(cityMap!=null&&cityMap.IsOpen)return;ClearSelection();}
             var mouse = Mouse.current;
             var camera = Camera.main;
             if (mouse == null || camera == null) { SetHover(null); return; }
@@ -161,6 +165,7 @@ namespace Fulgor.Presentation.Map
             if(mouse.leftButton.wasPressedThisFrame){pointerDown=true;pointerDragged=false;pointerStart=pointer;}
             if(mouse.rightButton.wasPressedThisFrame&&tile!=null)
             {
+                var cityMap=GetComponent<CampaignCityMapView>();if(cityMap!=null&&cityMap.IsOpen){cityMap.Cancel(tile);return;}
                 Select(tile);
                 if(panel?.MoveArmyButton.interactable==true)GetComponent<CampaignTurnController>()?.MoveToSelectedCell();
             }
@@ -180,6 +185,7 @@ namespace Fulgor.Presentation.Map
             if (hoveredView != null) hoveredView.SetHovered(false);
             hoveredView = tile;
             if (hoveredView != null) hoveredView.SetHovered(true);
+            GetComponent<CampaignCityMapView>()?.Inspect(tile);
         }
 
         private void OnDisable()

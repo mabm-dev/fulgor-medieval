@@ -203,7 +203,7 @@ namespace Fulgor.Presentation.Map
                 tile.AddComponent<MeshCollider>().sharedMesh = tileMesh;
                 tile.AddComponent<HexTileView>().Initialize(cell, boardSelection, style.Color);
 
-                if (showGold && cell.HasGold)
+                if (showGold && cell.HasGold && cell.Terrain!=TerrainType.Mountain)
                 {
                     CreateGoldMarker(tile.transform, style.Height);
                     goldCount++;
@@ -228,7 +228,7 @@ namespace Fulgor.Presentation.Map
             selectionPanel.SetDiagnostics(metrics);
             var turnController = GetComponent<CampaignTurnController>();
             if (turnController == null) turnController = gameObject.AddComponent<CampaignTurnController>();
-            turnController.Initialize(selectionPanel, map, mission, armyRegistry, scenario != null ? scenario.PlayerFactionId : null,scenario!=null&&scenario.EnableStrategicRivals,scenario!=null?scenario.ObjectiveKind:CampaignObjectiveKind.ReachDestination,scenario!=null&&scenario.EnableMilitaryLogistics,scenario!=null&&scenario.EnableFogOfWar);
+            turnController.Initialize(selectionPanel, map, mission, armyRegistry, scenario != null ? scenario.PlayerFactionId : null,scenario!=null&&scenario.EnableStrategicRivals,scenario!=null?scenario.ObjectiveKind:CampaignObjectiveKind.ReachDestination,scenario!=null&&scenario.EnableMilitaryLogistics,scenario!=null&&scenario.EnableFogOfWar,scenario!=null?scenario.StartingResources:default);
         }
 
         private int CreateTransitions(Transform tile, MapCell cell,

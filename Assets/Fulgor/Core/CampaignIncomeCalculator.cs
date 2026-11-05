@@ -18,12 +18,13 @@ namespace Fulgor.Core.Campaign
             var grain = 0; var wood = 0; var stone = 0; var gold = 0; var labor = 0;
             foreach (var cell in cells)
             {
+                // Historical map fingerprints can retain gold flags on mountains; they are inert.
+                if(cell.Terrain==TerrainType.Mountain)continue;
                 switch (cell.Terrain)
                 {
                     case TerrainType.Plain: grain++; break;
                     case TerrainType.Forest: wood++; break;
                     case TerrainType.Hill: stone++; break;
-                    case TerrainType.Mountain: stone += 2; break;
                 }
                 if (cell.Terrain != TerrainType.Water) labor++;
                 if (cell.HasGold) gold++;

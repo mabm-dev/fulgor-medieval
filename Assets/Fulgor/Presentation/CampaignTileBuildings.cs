@@ -24,8 +24,10 @@ namespace Fulgor.Presentation.Map
 
         [SerializeField] private Entry[] entries = Array.Empty<Entry>();
         private readonly List<GameObject> placed = new();
+        private readonly HashSet<HexCoordinates> occupied = new();
         private Transform generation;
         public IReadOnlyList<GameObject> Placed => placed;
+        public bool Occupies(HexCoordinates cell) => occupied.Contains(cell);
 
         public static float YawForDoorMinute(float minute) => (minute - DoorMinuteAtZeroYaw) * 6f;
 
@@ -49,6 +51,7 @@ namespace Fulgor.Presentation.Map
                 instance.name = string.IsNullOrEmpty(entry.label) ? entry.prefab.name : entry.label;
                 instance.transform.SetPositionAndRotation(ground + Vector3.up * .008f, Quaternion.Euler(0f, YawForDoorMinute(entry.doorMinute), 0f));
                 placed.Add(instance);
+                occupied.Add(tile.Cell.Coordinates);
             }
         }
 
@@ -56,6 +59,7 @@ namespace Fulgor.Presentation.Map
         {
             foreach (var item in placed) if (item != null) Destroy(item);
             placed.Clear();
+            occupied.Clear();
             generation = null;
         }
     }

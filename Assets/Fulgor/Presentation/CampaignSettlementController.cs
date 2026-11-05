@@ -84,6 +84,9 @@ namespace Fulgor.Presentation.Map
                 try{Initialize(root);}catch(Exception e){Clear();Debug.LogException(e,this);enabled=false;}
             }
             if(!Ready)return;
+            if(campaignPanel?.HasCampaignHud==true&&panel!=null)
+                panel.gameObject.SetActive(selection.SelectedCell.HasValue&&Registry.TryGet(selection.SelectedCell.Value.Coordinates,out _)&&
+                    GetComponent<CampaignCityMapView>()?.IsOpen!=true&&!campaignPanel.HasCampaignDrawer);
             bool canMove=campaignPanel.MoveArmyButton.interactable;
             if(observedArmy!=campaign.Army||observedRegistry!=campaign.ArmyRegistry||observedTurn!=campaign.State||observedCanMove!=canMove)Refresh();
         }
@@ -142,6 +145,15 @@ namespace Fulgor.Presentation.Map
             return city.Open(this,settlement,definition,settlement.OwnerFactionId==EffectivePlayerFaction);
         }
 
+        public bool OpenCityMapAt(HexCoordinates position)
+        {
+            if(!Ready||EffectivePlayerFaction!="castilla"||campaign?.CanObserve(position)==false||GetComponent<BattleLabController>()?.IsOpen==true||
+                !Registry.TryGet(position,out var settlement)||settlement.OwnerFactionId!=EffectivePlayerFaction)return false;
+            selection.Select(views[position].Tile);
+            var mapCity=GetComponent<CampaignCityMapView>();if(mapCity==null)mapCity=gameObject.AddComponent<CampaignCityMapView>();
+            return mapCity.Open(this,settlement);
+        }
+
         public bool LocateFirst()
         {
             if(!Ready||selection.IsInteractionSuspended||Registry.Settlements.Count==0)return false;
@@ -171,6 +183,8 @@ namespace Fulgor.Presentation.Map
             if(!Ready)return;
             CampaignSettlement selected=null;
             if(selection.SelectedCell.HasValue)Registry.TryGet(selection.SelectedCell.Value.Coordinates,out selected);
+            if(campaignPanel?.HasCampaignHud==true&&panel!=null)
+                panel.gameObject.SetActive(selected!=null&&GetComponent<CampaignCityMapView>()?.IsOpen!=true&&!campaignPanel.HasCampaignDrawer);
             foreach(var pair in views)pair.Value.SetSelected(selected!=null&&pair.Key==selected.Position);
             if(details==null)return;
             if(selection.SelectedCell.HasValue&&!campaign.CanObserve(selection.SelectedCell.Value.Coordinates))
@@ -202,7 +216,8 @@ namespace Fulgor.Presentation.Map
             observedArmy=campaign.Army;observedRegistry=campaign.ArmyRegistry;observedTurn=campaign.State;observedCanMove=campaignPanel.MoveArmyButton.interactable;
         }
 
-        public bool BlocksPointer(Vector2 screenPosition)=>GetComponent<CityManagementView>()?.IsOpen==true||Ready&&canvas!=null&&canvas.enabled&&panel!=null&&panel.gameObject.activeInHierarchy&&RectTransformUtility.RectangleContainsScreenPoint(panel,screenPosition);
+        public bool BlocksPointer(Vector2 screenPosition)=>GetComponent<CampaignCityMapView>()?.BlocksPointer(screenPosition)==true||GetComponent<CityManagementView>()?.IsOpen==true||Ready&&canvas!=null&&canvas.enabled&&panel!=null&&panel.gameObject.activeInHierarchy&&RectTransformUtility.RectangleContainsScreenPoint(panel,screenPosition);
+        public void SetCityMapMode(bool enabled){if(panel!=null)panel.gameObject.SetActive(!enabled);if(!enabled)Refresh();}
         private void CreatePanel()
         {
             var root=new GameObject("Settlement HUD",typeof(RectTransform),typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));root.transform.SetParent(transform,false);
@@ -218,6 +233,17 @@ namespace Fulgor.Presentation.Map
             VisitButton=Button("Open city","GESTIONAR CIUDAD",new Vector2(18,-236));VisitButton.GetComponent<RectTransform>().sizeDelta=new Vector2(288,36);
             VisitButton.GetComponentInChildren<Text>().rectTransform.sizeDelta=new Vector2(288,36);
             LegacyUI.Skin(panel);
+            if(campaignPanel?.HasCampaignHud==true)
+            {
+                scaler.matchWidthOrHeight=0;
+                panel.anchoredPosition=new Vector2(20,-200);
+                background.enabled=false;
+                var oldOutline=panel.GetComponent<Outline>();if(oldOutline!=null)oldOutline.enabled=false;
+                var ink=panel.GetComponent<ParchmentInk>();if(ink!=null)ink.enabled=false;
+                var surface=CampaignMenuUI.Rect("Campaign settlement surface",panel,new Vector2(0,1),Vector2.zero,panel.sizeDelta);
+                CampaignHudArt.Surface(surface);surface.SetAsFirstSibling();
+                foreach(var label in panel.GetComponentsInChildren<Text>())label.color=CampaignMenuUI.Paper;
+            }
             VisitButton.onClick.AddListener(()=>{if(selection.SelectedCell.HasValue)OpenCityAt(selection.SelectedCell.Value.Coordinates);});
         }
         private Button Button(string name,string caption,Vector2 position)
