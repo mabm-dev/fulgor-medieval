@@ -8,6 +8,13 @@ namespace Fulgor.Presentation.Map
     public sealed class CampaignArmyMarkerLayer : MonoBehaviour
     {
         private readonly Dictionary<string, CampaignArmyMarker> markers = new();
+        private bool cityVisible = true;
+        public bool CityPresentationVisible => cityVisible;
+        public void SetCityVisible(bool visible)
+        {
+            cityVisible=visible;
+            foreach(var marker in markers.Values) if(marker!=null) marker.SetCityVisible(visible);
+        }
         public void Initialize(CampaignBoardSelection owner, CampaignArmyRegistry registry, string playerFaction)
         {
             Clear();
@@ -17,6 +24,7 @@ namespace Fulgor.Presentation.Map
                 root.transform.SetParent(transform, false);
                 var marker = root.AddComponent<CampaignArmyMarker>();
                 marker.Initialize(owner);
+                marker.SetCityVisible(cityVisible);
                 marker.SetColor(unit.Army.FactionId == playerFaction ? new Color(.08f, .38f, .88f) : new Color(.85f, .16f, .12f));
                 marker.SetArmy(unit.Movement); markers.Add(unit.Army.Id, marker);
                 marker.SetFogVisible(unit.Army.FactionId==playerFaction||GetComponent<CampaignTurnController>()?.CanObserve(unit.Movement.Position)!=false);

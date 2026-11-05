@@ -1,6 +1,18 @@
 # Ciudad en el mapa
 
-Propuesta de experiencia de gestión de la ciudad. Sustituye a la propuesta anterior de una pantalla de ciudad con construcciones seleccionables, que se descarta: sería redundante con el mapa. No son reglas implementadas ni cifras definitivas.
+Propuesta de experiencia de gestión de la ciudad. Sustituye a la propuesta anterior de una pantalla de ciudad con construcciones seleccionables. El primer anillo de Castilla tiene un prototipo limitado en `FulgorConquest`; las demás reglas y cifras siguen siendo propuestas.
+
+## Prototipo conectado de Castilla
+
+En la escena jugable `FulgorConquest`, pulsar una fortaleza propia de Castilla abre la construcción sobre el mapa 3D. Se puede elegir vivienda, huerto o leñera y colocarla con clic izquierdo en el primer anillo asignado; clic derecho cancela una obra y devuelve su coste. Solo avanza la primera obra de cada cola. Al terminar, el huerto produce 3 de grano por turno y la leñera 3 de madera; las cifras son provisionales. La vivienda ocupa su casilla pero todavía no amplía población, ya que ese sistema aún no existe.
+
+El formato de guardado 12 conserva la cola y las construcciones terminadas. Los guardados anteriores se cargan sin estas obras. Los edificios se muestran con marcadores provisionales, no con modelos 3D; las miniaturas son referencias de arte. El rendimiento pasivo continúa procediendo de la economía territorial existente y no se vuelve a sumar. La expansión territorial por méritos, los ríos, la población, el comercio por casilla y las demás facciones quedan pendientes. La pantalla anterior sigue accesible desde el botón de gestión para las funciones militares y económicas existentes.
+
+Escape abre la pausa con Guardar y Cargar: cinco ranuras manuales seleccionables, con campaña, turno y fecha. El último guardado anterior sigue disponible. Guardar no obliga a salir al inicio.
+
+En la campaña se oculta la botonera de navegación; la cámara conserva ratón y teclado. El color territorial se aplica al renderizador de cada terreno, sin una malla superpuesta y sin teñir edificios. La tarjeta elegida lleva un doble ribete dorado interior con esquinas recortadas.
+
+La columna izquierda sitúa la cola sobre la ficha de ciudad, con plazos acumulados porque solo avanza la primera obra. La ficha muestra población sin censo, territorio, suelo edificable disponible, edificios terminados en las casillas y aporte de las mejoras terminadas por turno. No simula una población ni atribuye a la ciudad las reservas globales del reino. Los fondos usan el arte de referencia de madera oscura y pergamino.
 
 ## Decisión de diseño
 
@@ -63,3 +75,7 @@ Cada uno de los tres grupos de facciones tiene funciones de edificios comunes co
 Hoy existe una vista de ciudad con la fortaleza, dos viviendas y obras que se completan por turnos (mercado, pozo, almacén y viviendas adicionales con economía básica), descrita en [construcción de ciudad](../CIUDAD_CONSTRUCCION.md). Esa pantalla de edificios deberá retirarse o reducirse al panel de preferencias, y habrá que mantener las pruebas existentes y la compatibilidad de guardados. El mercado actual genera oro y no es aún un sistema de intercambio real.
 
 Para validar esta propuesta, preparar primero una sola ciudad de Castilla en la primera etapa: la fortaleza y las seis casillas del primer anillo, con vivienda, huerto, puesto de intercambio, campo de milicias y, si ya existe sabiduría, casa de conocimiento. Cada construcción debe operar sobre estado real, indicar claramente las funciones pendientes y sobrevivir a guardar y cargar. Comprobar construir, selección en el mapa, producción según terreno, reclutamiento, intercambio y cierre de turno solo cuando sus reglas estén implementadas. Probar después una ciudad andalusí y las variantes de otros grupos.
+
+### Revisión de montañas e interfaz
+
+Las montañas son terreno inerte: no proporcionan piedra, oro ni mano de obra, no admiten edificios y no muestran marcadores de recurso o colocación. Pertenecen al territorio pero conservan su material y solo llevan la frontera exterior. Se mantienen los datos de generación antiguos para no invalidar las huellas de los guardados. La frontera usa las aristas del hexágono sin redondear sus esquinas; los paneles recortan su contenido mediante una silueta de máscara y reservan un margen interior para los textos.

@@ -95,7 +95,10 @@ namespace Fulgor.Presentation.Tests.Map
             var mapMaterial=castle.GetComponentsInChildren<MeshRenderer>(true).SelectMany(r=>r.sharedMaterials).First(m=>m.name.StartsWith("M_Fortaleza_Castilla"));
             var atlas=AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Fulgor/Art/Buildings/FortalezaCastillaCastilla3/T_Fortaleza_Castilla_Castilla3_BaseColor.jpg");
             Assert.That(atlas,Is.Not.Null);Assert.That(mapMaterial.GetTexture("_BaseMap"),Is.SameAs(atlas));
-            settlements.LocateFirst();Assert.That(castle.Selected,Is.True);Assert.That(castle.Tile.HasColorOverride,Is.False);
+            var groundBefore=new MaterialPropertyBlock();castle.Tile.GetComponent<MeshRenderer>().GetPropertyBlock(groundBefore);
+            settlements.LocateFirst();Assert.That(castle.Selected,Is.True);
+            var groundAfter=new MaterialPropertyBlock();castle.Tile.GetComponent<MeshRenderer>().GetPropertyBlock(groundAfter);
+            Assert.That(groundAfter.GetColor("_BaseColor"),Is.EqualTo(groundBefore.GetColor("_BaseColor")),"Seleccionar la fortaleza debe conservar el tinte territorial del suelo.");
             Assert.That(castle.GetComponent<BoxCollider>(),Is.Not.Null);
             Assert.That(settlements.OpenCityAt(settlements.Registry.Settlements[0].Position),Is.True);
             var city=board.GetComponent<CityManagementView>();city.Close();yield return null;

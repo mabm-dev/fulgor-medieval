@@ -25,8 +25,11 @@ namespace Fulgor.Presentation.Map
         private const float Speed = 2.5f, Clearance = .006f, BaseRadius = .325f;
         public bool IsMoving => waypoint < waypoints.Count;
         private bool fogVisible=true;
-        public void SetFogVisible(bool value){fogVisible=value;if(marker!=null)foreach(var renderer in marker.GetComponentsInChildren<Renderer>(true)){renderer.forceRenderingOff=!value;renderer.shadowCastingMode=value?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;}}
-        public bool IsVisible => marker != null && marker.activeSelf&&fogVisible;
+        private bool cityVisible=true;
+        public void SetFogVisible(bool value){fogVisible=value;ApplyVisibility();}
+        public void SetCityVisible(bool value){cityVisible=value;ApplyVisibility();}
+        private void ApplyVisibility(){bool visible=fogVisible&&cityVisible;if(marker!=null)foreach(var renderer in marker.GetComponentsInChildren<Renderer>(true)){renderer.forceRenderingOff=!visible;renderer.shadowCastingMode=visible?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;}}
+        public bool IsVisible => marker != null && marker.activeSelf&&fogVisible&&cityVisible;
         public Vector3 VisualPosition => marker != null ? marker.transform.position : transform.position;
 
         public void Initialize(CampaignBoardSelection selectionOwner)

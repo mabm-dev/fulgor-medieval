@@ -69,6 +69,9 @@ namespace Fulgor.Presentation.Map
             Require(campaign.SelectedArmyId == initialArmy, "Army selection did not cycle.");
             hud.LocateArmyButton.onClick.Invoke();
             Require(selection.SelectedCell?.Coordinates == campaign.Army.Position, "Locate army failed.");
+            // Host pointer/keyboard input must not pan the camera during an unattended resize review.
+            var navigation=Camera.main.GetComponent<CampaignCameraController>();
+            if(navigation!=null)navigation.enabled=false;
 
             foreach (var size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1280, 720), new Vector2Int(1024, 768) })
             {
@@ -109,9 +112,11 @@ namespace Fulgor.Presentation.Map
             Canvas.ForceUpdateCanvases();
             if (width == 0) { width = Screen.width; height = Screen.height; }
             var rects = campaign.GetComponentsInChildren<RectTransform>();
-            string[] names = { "Campaign resource bar", "Map Information", "Turn Panel", "Turn closing", "Campaign tools", "Navegación de cámara", "Settlement information" };
-            var panels = names.Select(name => rects.Single(r => r.name == name)).ToArray();
             var hud = campaign.GetComponent<CampaignSelectionPanel>();
+            string[] names = hud.HasCampaignHud
+                ?new[]{"Campaign kingdom","Campaign resource bar","Map Information","Turn Panel","Turn closing","Campaign navigation","Avisos de campaña","Settlement information"}
+                :new[]{"Campaign resource bar","Map Information","Turn Panel","Turn closing","Campaign tools","Navegación de cámara","Settlement information"};
+            var panels = rects.Where(r=>r.gameObject.activeInHierarchy&&names.Contains(r.name)).ToArray();
             foreach (var panel in panels)
             {
                 var box = Bounds(panel, camera);
@@ -122,9 +127,9 @@ namespace Fulgor.Presentation.Map
                 foreach (var label in panel.GetComponentsInChildren<Text>())
                     Require(label.preferredHeight <= label.rectTransform.rect.height + 2, "Clipped text: " + panel.name + "/" + label.name + " " + label.text);
             }
-            var treasury = rects.Single(r => r.name == "Treasury");
-            var diplomacy = rects.Single(r => r.name == "Diplomacy");
-            Require(!Bounds(treasury, camera).Overlaps(Bounds(diplomacy, camera)), "Treasury overlaps diplomacy.");
+            var treasury = rects.FirstOrDefault(r => r.name == "Treasury");
+            var diplomacy = rects.FirstOrDefault(r => r.name == "Diplomacy"&&r.gameObject.activeInHierarchy);
+            if(treasury!=null&&diplomacy!=null)Require(!Bounds(treasury, camera).Overlaps(Bounds(diplomacy, camera)), "Treasury overlaps diplomacy.");
             if (camera == null) Require(!hud.ContainsScreenPoint(new Vector2(Screen.width / 2f, Screen.height / 2f)), "Map center is blocked.");
         }
 
@@ -156,7 +161,8 @@ namespace Fulgor.Presentation.Map
                     if (scalers[i] != null) scalers[i].enabled = false;
                     canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = camera; canvas.planeDistance = camera.nearClipPlane + 1;
                     // Same match-width-or-height calculation, independent of the host monitor's window limit.
-                    canvas.scaleFactor = Mathf.Sqrt(size.x / 1920f * size.y / 1080f);
+                    float match=scalers[i]!=null?scalers[i].matchWidthOrHeight:.5f;
+                    canvas.scaleFactor = Mathf.Pow(size.x / 1920f,1-match)*Mathf.Pow(size.y / 1080f,match);
                 }
                 camera.cullingMask = -1; Canvas.ForceUpdateCanvases();
                 ValidateLayout(campaign, camera, size.x, size.y);

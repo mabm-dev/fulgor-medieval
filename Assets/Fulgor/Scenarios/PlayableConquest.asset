@@ -27,6 +27,8 @@ MonoBehaviour:
   enableFogOfWar: 1
   enableMilitaryLogistics: 1
   objectiveKind: 1
+  startingWood: 25
+  startingLabor: 15
   armies:
   - id: Castilla-1
     factionId: castilla

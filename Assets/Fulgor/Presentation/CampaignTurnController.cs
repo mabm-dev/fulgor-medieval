@@ -20,7 +20,7 @@ namespace Fulgor.Presentation.Map
         public ReachDestinationMission Mission { get; private set; }
         public HexCoordinates? MarchDestination { get; private set; }
 
-        public void Initialize(CampaignSelectionPanel turnPanel, GeneratedMap map, ReachDestinationMission mission = null, CampaignArmyRegistry armyRegistry = null, string faction = null, bool strategicRivals = false,CampaignObjectiveKind objectiveKind = CampaignObjectiveKind.ReachDestination,bool militaryLogistics=false,bool fogOfWar=false)
+        public void Initialize(CampaignSelectionPanel turnPanel, GeneratedMap map, ReachDestinationMission mission = null, CampaignArmyRegistry armyRegistry = null, string faction = null, bool strategicRivals = false,CampaignObjectiveKind objectiveKind = CampaignObjectiveKind.ReachDestination,bool militaryLogistics=false,bool fogOfWar=false,CampaignResources startingResources=default)
         {
             if (turnPanel == null) throw new System.ArgumentNullException(nameof(turnPanel));
             if (map == null) throw new System.ArgumentNullException(nameof(map));
@@ -38,7 +38,7 @@ namespace Fulgor.Presentation.Map
             panel = turnPanel;
             selection = GetComponent<CampaignBoardSelection>();
             TerritoryIncome = CampaignIncomeCalculator.FromMap(map);
-            State = new CampaignTurnState(1, default, TerritoryIncome);
+            State = new CampaignTurnState(1, startingResources, TerritoryIncome);
             ResetCities();
             var routes = selection != null && selection.Routes != null ? selection.Routes : new MapRouteGraph(map);
             activeRoutes = routes;
@@ -165,7 +165,7 @@ namespace Fulgor.Presentation.Map
             if(State==null||registry==null&&Army==null||HasPendingBattle||IsRivalPhaseActive)throw new System.InvalidOperationException("Campaign cannot be saved now.");
             var payload=registry!=null?CampaignSaveData.CaptureMultiple(saveContext,State,registry,selectedArmyId,playerFaction,CaptureCities(),Mission?.IsWon==true):
                 CampaignSaveData.Capture(saveContext,State,Army,MarchDestination,CaptureCities());
-            IncludeOwnership(payload);Military.ValidateDeployment(registry);payload.IncludeMilitary(Military);payload.IncludeMarches(marchOrders);payload.IncludeRivals(Rivals);payload.IncludeCampaignRules(ObjectiveKind);payload.IncludeLogistics(LogisticsEnabled);RefreshFog();payload.IncludeFog(Fog);payload.IncludeDiplomacy(Diplomacy);
+            IncludeOwnership(payload);Military.ValidateDeployment(registry);payload.IncludeMilitary(Military);payload.IncludeMarches(marchOrders);payload.IncludeRivals(Rivals);payload.IncludeCampaignRules(ObjectiveKind);payload.IncludeLogistics(LogisticsEnabled);RefreshFog();payload.IncludeFog(Fog);payload.IncludeDiplomacy(Diplomacy);payload.IncludeTileCities(tileCities);
             return payload;
         }
 
@@ -202,6 +202,7 @@ namespace Fulgor.Presentation.Map
             {
                 var payload = JsonUtility.FromJson<CampaignSaveData>(json);
                 if (payload == null) throw new System.ArgumentException("Empty save.");
+                var restoredTiles=payload.RestoreTileCities(initialSettlements,incomeMap);
                 payload.RestoreCampaignRules(ObjectiveKind);payload.RestoreLogistics(LogisticsEnabled);
                 payload.Restore(ExpectedSaveContext(payload), activeRoutes, spawn, TerritoryIncome, 6,
                     out var restoredState, out var restoredArmy);
@@ -214,8 +215,9 @@ namespace Fulgor.Presentation.Map
                 var restoredRivals=payload.RestoreRivals(rivalsConfigured,RivalFactions());
                 var restoredDiplomacy=payload.RestoreDiplomacy(incomeFaction,KnownFactions());
                 var restoredMilitary=RestoreMilitary(payload,restoredOwners);restoredMilitary.ValidateDeployment(null);
-                restoredState = WithCityEconomy(restoredState,restoredCities,restoredOwners);
+                restoredState = WithCityEconomy(restoredState,restoredCities,restoredOwners,tileDevelopments:restoredTiles);
                 cities = restoredCities; CityRevision++;
+                tileCities = restoredTiles; TileCityRevision++;
                 cityCompletions.Clear();
                 State = restoredState;Military=restoredMilitary;Rivals=restoredRivals;Diplomacy=restoredDiplomacy;
                 CommitOwnership(restoredOwners,restoredState,null);

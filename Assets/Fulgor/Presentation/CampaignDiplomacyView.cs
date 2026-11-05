@@ -23,7 +23,7 @@ namespace Fulgor.Presentation.Map
         {
             if(launcher==null)return;
             bool modal=GetComponent<CityManagementView>()?.IsOpen==true||GetComponent<BattleLabController>()?.IsOpen==true||GetComponent<CampaignPlaySession>()?.IsOpen==true;
-            launcher.gameObject.SetActive(!modal);launcher.interactable=campaign.CanManageDiplomacy;
+            launcher.gameObject.SetActive(!modal&&(GetComponent<CampaignSelectionPanel>()?.HasCampaignHud!=true||GetComponent<CampaignCityMapView>()?.IsOpen==true));launcher.interactable=campaign.CanManageDiplomacy;
             int pending=campaign.Diplomacy?.Proposals.Count(p=>p.receiver==campaign.PlayerFactionId&&p.response==0)??0;
             launcher.GetComponentInChildren<Text>().text="DIPLOMACIA"+(pending>0?" ("+pending+")":"");
             if(IsOpen&&(!campaign.CanManageDiplomacy||modal))Close();

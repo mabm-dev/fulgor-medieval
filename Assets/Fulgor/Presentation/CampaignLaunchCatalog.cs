@@ -31,10 +31,11 @@ namespace Fulgor.Presentation.Map
             try
             {
                 Validate();if(string.IsNullOrWhiteSpace(json)||json.Length>4000000)return false;
-                var data=JsonUtility.FromJson<CampaignSaveData>(json);if(data==null||data.version<1||data.version>11)return false;
+                var data=JsonUtility.FromJson<CampaignSaveData>(json);if(data==null||data.version<1||data.version>12)return false;
                 var map=ProceduralMapGenerator.Generate(scenario.Width,scenario.Height,scenario.Seed);var routes=scenario.CreateRouteGraph(map);
                 var initial=scenario.CreateArmyRegistry(routes);var mission=scenario.CreateMission(map,routes,initial);
                 var towns=new CampaignSettlementRegistry(routes,settlements.Select(s=>s.Create()));string faction=scenario.PlayerFactionId;
+                data.RestoreTileCities(towns,map);
                 var factions=new HashSet<string>(towns.Settlements.Select(c=>c.OwnerFactionId),StringComparer.Ordinal){faction};
                 if(initial!=null)foreach(var army in initial.Armies)factions.Add(army.Army.FactionId);
                 string context=CampaignSaveData.ScenarioSignature(map,routes,mission);
