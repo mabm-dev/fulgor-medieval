@@ -49,6 +49,9 @@ namespace Fulgor.Presentation.Map
         public bool Occupies(HexCoordinates cell) => HasBuildingAt(cell);
         /// <summary>Huellas publicadas para el suelo pisado del terreno; null sin edificios.</summary>
         public CampaignBuildingGroundMap GroundMap { get; private set; }
+        /// <summary>Lo que tardó la última colocación (instanciar, asentar y publicar las huellas) y, de ello, el mapa de huellas.</summary>
+        public double PlaceMilliseconds { get; private set; }
+        public double GroundMapMilliseconds { get; private set; }
 
         /// <summary>Casillas en las que se colocan edificios: el relieve de colinas y montañas se allana en ellas antes de colocarlos.</summary>
         public IEnumerable<HexCoordinates> PlannedCells()
@@ -107,6 +110,7 @@ namespace Fulgor.Presentation.Map
 
         private void Place(Transform root)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             Clear();
             generation = root;
             var tiles = new Dictionary<HexCoordinates, HexTileView>();
@@ -132,7 +136,10 @@ namespace Fulgor.Presentation.Map
                 // la base del edificio toma la tierra pisada del terreno de su casilla (sombreador Fulgor/Terreno en modo edificio)
                 TakeGround(renderers, tile.Cell.Terrain, position.y + (footprint != null ? footprint.Bottom : 0f));
             }
+            var mapWatch = System.Diagnostics.Stopwatch.StartNew();
             PublishGroundMap(tiles.Values);
+            GroundMapMilliseconds = mapWatch.Elapsed.TotalMilliseconds;
+            PlaceMilliseconds = watch.Elapsed.TotalMilliseconds;
         }
 
         /// <summary>
