@@ -1,10 +1,10 @@
 """Convierte el GLB de un edificio de casilla (Tripo, por partes) en un FBX listo para Unity.
 
 Uso:
-  blender -b --python Tools/Blender/edificio_glb_a_fbx.py -- modelo.glb NombreEdificio
+  blender -b --python Tools/Blender/edificio_glb_a_fbx.py -- modelo.glb NombreEdificio [CarpetaDeArte]
 
 Une las piezas en una sola malla, deja el pivote en el centro de la huella y el suelo en cero, y exporta
-Assets/Fulgor/Art/Buildings/<NombreEdificio>/SM_<NombreEdificio>.fbx con sus texturas al lado.
+Assets/Fulgor/Art/<CarpetaDeArte, por defecto Buildings>/<NombreEdificio>/SM_<NombreEdificio>.fbx con sus texturas al lado.
 La puerta debe mirar a −Y; el giro y la escala se aplican en Unity (ver CampaignTileBuildingBuilder).
 """
 import os
@@ -14,7 +14,8 @@ import bpy
 args = sys.argv[sys.argv.index('--') + 1:]
 fuente, nombre = os.path.abspath(args[0]), args[1]
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-destino = os.path.join(REPO, 'Assets', 'Fulgor', 'Art', 'Buildings', nombre)
+carpeta = args[2] if len(args) > 2 else 'Buildings'
+destino = os.path.join(REPO, 'Assets', 'Fulgor', 'Art', carpeta, nombre)
 os.makedirs(destino, exist_ok=True)
 
 bpy.ops.wm.read_factory_settings(use_empty=True)

@@ -13,7 +13,9 @@ namespace Fulgor.Presentation.Map
         private readonly Dictionary<(Mesh,Quaternion,Vector3),Vector3> anchors = new();
         private readonly List<HexCoordinates> waypoints = new();
         private GameObject marker;
-        private Transform markerBase;
+        private Transform markerBase, group, pip;
+        private CampaignSoldierWalk walker;
+        private float facing;
         private Material material;
         private CampaignBoardSelection owner;
         private HexCoordinates? destination;
@@ -23,6 +25,9 @@ namespace Fulgor.Presentation.Map
         private Vector2 lastGroundXZ;
         private static readonly HexCoordinates[] Directions={new(1,0),new(1,-1),new(0,-1),new(-1,0),new(-1,1),new(0,1)};
         private const float Speed = 2.5f, Clearance = .006f, BaseRadius = .325f;
+        // El grupo gira hacia el rumbo de la marcha; el paso lo pone el esqueleto de los soldados.
+        private const float GroupHeight = .12f, TurnSpeed = 540f, PipHeight = .72f;
+        public float Facing => facing;
         public bool IsMoving => waypoint < waypoints.Count;
         private bool fogVisible=true;
         private bool cityVisible=true;
@@ -66,6 +71,10 @@ namespace Fulgor.Presentation.Map
 
         private void Update()
         {
+            if (pip != null) {
+                if (Camera.main != null) pip.rotation=Camera.main.transform.rotation; // la insignia siempre mira a la cámara
+                pip.localPosition=new Vector3(0,PipHeight+Mathf.Sin(Time.realtimeSinceStartup*2f)*.012f,0); // y flota con suavidad
+            }
             if (owner == null || !owner.IsInteractionSuspended) AdvanceVisual(Time.deltaTime);
         }
 
@@ -73,17 +82,35 @@ namespace Fulgor.Presentation.Map
         public void AdvanceVisual(float seconds)
         {
             if (!IsVisible || !destination.HasValue) return;
-            float remaining=Mathf.Max(0,seconds)*Speed;
+            float remaining=Mathf.Max(0,seconds)*Speed; bool walked=false;
             while (IsMoving && remaining > 0) {
                 if (!tiles.TryGetValue(waypoints[waypoint],out var tile) || tile == null || !tile.gameObject.activeInHierarchy)
                 { SetArmy(null); return; }
                 var current=marker.transform.position; var goal=Anchor(tile); goal.y=current.y;
                 float length=Vector3.Distance(current,goal), travel=Mathf.Min(remaining,length);
+                if (travel > 0) { walked=true; Face(goal-current,seconds); }
                 marker.transform.position=Vector3.MoveTowards(current,goal,travel); remaining-=travel;
                 if (length <= travel+.00001f) waypoint++; else break;
             }
             if (!IsMoving && waypoints.Count>0) { waypoints.Clear(); waypoint=0; }
+            Walk(walked,seconds);
             Ground(); // Also observes terrain replacement after initial board generation and LOD changes.
+        }
+
+        /// <summary>Gira el grupo hacia el rumbo de la marcha (yaw en grados, 0 = +Z del mundo).</summary>
+        private void Face(Vector3 direction,float seconds)
+        {
+            direction.y=0;
+            if (group == null || direction.sqrMagnitude < 1e-8f) return;
+            float target=Mathf.Atan2(direction.x,direction.z)*Mathf.Rad2Deg;
+            facing=Mathf.MoveTowardsAngle(facing,target,TurnSpeed*Mathf.Max(seconds,.0001f));
+        }
+
+        private void Walk(bool walking,float seconds)
+        {
+            if (group == null) return;
+            group.localRotation=Quaternion.Euler(0,facing,0);
+            if (walker != null) walker.Advance(walking,seconds);
         }
 
         private bool Sample(Vector3 position,out Vector3 point,out Vector3 normal)
@@ -177,19 +204,40 @@ namespace Fulgor.Presentation.Map
         private void CreateMarker()
         {
             marker=new GameObject("Hueste provisional");marker.transform.SetParent(transform,false);
-            var shader=Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-            material=new Material(shader) {name="Hueste provisional · azul"};material.color=new Color(.08f,.38f,.88f);
-            markerBase=CreatePart("Base",PrimitiveType.Cylinder,new Vector3(0,.06f,0),new Vector3(.65f,.06f,.65f));
+            var template=Resources.Load<Material>("Hueste/M_Insignia");
+            material=template!=null?new Material(template):new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default"));
+            material.name="Hueste provisional · insignia";material.color=new Color(.08f,.38f,.88f);
+            // Sin peana: una sombra suave agarra al grupo al suelo y una insignia sobre las cabezas lleva el color del equipo.
+            markerBase=new GameObject("Base"){layer=2}.transform;markerBase.SetParent(marker.transform,false);
+            var shadow=Resources.Load<Material>("Hueste/M_Sombra");
+            if(shadow!=null) {
+                var blob=GameObject.CreatePrimitive(PrimitiveType.Quad);blob.name="Sombra";blob.layer=2;Release(blob.GetComponent<Collider>());
+                blob.transform.SetParent(markerBase,false);blob.transform.localPosition=new Vector3(0,-.04f,0);blob.transform.localRotation=Quaternion.Euler(90,0,0);blob.transform.localScale=new Vector3(.85f,.85f,1);
+                blob.GetComponent<Renderer>().sharedMaterial=shadow;
+            }
+            pip=new GameObject("Insignia"){layer=2}.transform;pip.SetParent(marker.transform,false);pip.localPosition=new Vector3(0,PipHeight,0);pip.localScale=Vector3.one*.24f;
+            // Escudete de tres capas: marco dorado, campo perlado del color del equipo y un brillo encima.
+            BadgeLayer("Marco",Resources.Load<Material>("Hueste/M_InsigniaMarco"),0);
+            BadgeLayer("Campo",material,-.002f);
+            BadgeLayer("Brillo",Resources.Load<Material>("Hueste/M_InsigniaBrillo"),-.004f);
             var battalion=Resources.Load<GameObject>("Hueste/PF_Batallon");
             if(battalion!=null) {
-                // El color del equipo queda en la peana; encima va el grupo de soldados.
-                var group=Instantiate(battalion,marker.transform);group.name="Batallón";group.transform.localPosition=new Vector3(0,.12f,0);
-                foreach(var part in group.GetComponentsInChildren<Transform>(true))part.gameObject.layer=2;
-                foreach(var collider in group.GetComponentsInChildren<Collider>(true))collider.enabled=false;
+                // Encima de la sombra va el grupo de soldados.
+                var soldiers=Instantiate(battalion,marker.transform);soldiers.name="Batallón";soldiers.transform.localPosition=new Vector3(0,GroupHeight,0);
+                foreach(var part in soldiers.GetComponentsInChildren<Transform>(true))part.gameObject.layer=2;
+                foreach(var collider in soldiers.GetComponentsInChildren<Collider>(true))collider.enabled=false;
+                group=soldiers.transform;walker=soldiers.GetComponentInChildren<CampaignSoldierWalk>();
                 return;
             }
             CreatePart("Asta",PrimitiveType.Cylinder,new Vector3(0,.65f,0),new Vector3(.06f,.55f,.06f));
             CreatePart("Estandarte",PrimitiveType.Cube,new Vector3(.22f,1,0),new Vector3(.45f,.3f,.055f));
+        }
+        private void BadgeLayer(string label,Material layerMaterial,float depth)
+        {
+            if(layerMaterial==null)return;
+            var layer=GameObject.CreatePrimitive(PrimitiveType.Quad);layer.name=label;layer.layer=2;Release(layer.GetComponent<Collider>());
+            layer.transform.SetParent(pip,false);layer.transform.localPosition=new Vector3(0,0,depth);layer.transform.localScale=new Vector3(.8f,1,1);
+            var renderer=layer.GetComponent<Renderer>();renderer.sharedMaterial=layerMaterial;renderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
         }
         private Transform CreatePart(string label,PrimitiveType type,Vector3 position,Vector3 scale)
         {
