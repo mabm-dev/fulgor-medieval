@@ -499,7 +499,7 @@ MonoBehaviour:
     prefab: {fileID: 2446743674152260061, guid: d41a2d479b42c4b43807e2897a94a722, type: 3}
     doorMinute: 25
   - label: "Almac\xE9n"
-    cell: {x: 13, y: 7}
+    cell: {x: 14, y: 11}
     prefab: {fileID: 8676142402838224046, guid: ba4cf1785ac23f84bb18fdab6b9cdcc7, type: 3}
     doorMinute: 35
   - label: Vivienda sencilla

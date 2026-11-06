@@ -12,7 +12,7 @@ namespace Fulgor.Presentation.Map
         private readonly Dictionary<string,string> cityCompletions=new(StringComparer.Ordinal);
         public CampaignResources TerritoryIncome { get; private set; }
         public CampaignResources CityIncomePerTurn=>SumCityEffects(cities,false).Add(TileCityIncome(SettlementState,tileCities));
-        public CampaignResources CityUpkeepPerTurn=>SumCityEffects(cities,true);
+        public CampaignResources CityUpkeepPerTurn=>SumCityEffects(cities,true).Add(CivilUpkeep(SettlementState,tileCities));
         public int CityRevision { get; private set; }
         public string LastCompletedProject(string id)=>id!=null&&cityCompletions.TryGetValue(id,out var project)?project:null;
         public CityDevelopment CityState(string id)=>id!=null&&cities.TryGetValue(id,out var value)?value:InitialCity;
@@ -54,7 +54,7 @@ namespace Fulgor.Presentation.Map
             owners??=SettlementState;
             var armyUpkeep=LogisticsEnabled?CampaignArmyLogistics.UpkeepForFaction(armies??registry,military??Military,owners,incomeFaction):default;
             return new CampaignTurnState(state.Turn,state.Resources,
-                IncomeFrom(owners).Add(SumCityEffects(developments,false,owners)).Add(TileCityIncome(owners,tileDevelopments??tileCities)),SumCityEffects(developments,true,owners).Add(armyUpkeep));
+                IncomeFrom(owners).Add(SumCityEffects(developments,false,owners)).Add(TileCityIncome(owners,tileDevelopments??tileCities)),SumCityEffects(developments,true,owners).Add(CivilUpkeep(owners,tileDevelopments??tileCities)).Add(armyUpkeep));
         }
         private CityDevelopmentData[] CaptureCities()=>cities.OrderBy(p=>p.Key,StringComparer.Ordinal).Select(p=>p.Value.Capture(p.Key)).ToArray();
         private Dictionary<string,CityDevelopment> RestoreCities(CampaignSaveData save)

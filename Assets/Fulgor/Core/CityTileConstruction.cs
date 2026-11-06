@@ -129,6 +129,7 @@ namespace Fulgor.Core.Campaign
     public sealed class CityTileDevelopmentData
     {
         public string settlementId;
+        public int population;
         public CityTileOrderData[] pending;
         public CityTileOrderData[] completed;
     }
@@ -136,6 +137,21 @@ namespace Fulgor.Core.Campaign
     /// <summary>Obras terminadas y pendientes de una ciudad sobre casillas reales.</summary>
     public sealed class CityTileDevelopment
     {
+        public const int StartingPopulation = 10;
+        public int Population { get; private set; } = StartingPopulation;
+        public int HousingCapacity(int houses)
+        {
+            foreach (var building in completed.Values)
+                if (building == "house") houses++;
+            return houses * 10;
+        }
+        public static int FoodConsumption(int population) => (population + 9) / 10;
+        public void Grow(int food, int houses)
+        {
+            if (Population < HousingCapacity(houses) && food > FoodConsumption(Population))
+                Population++;
+        }
+
         private CityTileQueue queue = new();
         private readonly Dictionary<HexCoordinates, string> completed = new();
         public CityTileOrderData[] Pending => queue.Capture();
@@ -170,14 +186,15 @@ namespace Fulgor.Core.Campaign
             foreach (var item in completed)
                 built.Add(new CityTileOrderData { q = item.Key.Q, r = item.Key.R, project = item.Value, turnsRemaining = 0 });
             built.Sort((a, b) => a.q == b.q ? a.r.CompareTo(b.r) : a.q.CompareTo(b.q));
-            return new CityTileDevelopmentData { settlementId = settlementId, pending = queue.Capture(), completed = built.ToArray() };
+            return new CityTileDevelopmentData { population = Population, settlementId = settlementId, pending = queue.Capture(), completed = built.ToArray() };
         }
 
         public static CityTileDevelopment Restore(HexCoordinates city, CityTileDevelopmentData data, IReadOnlyDictionary<HexCoordinates, MapCell> map)
         {
             if (data == null || string.IsNullOrWhiteSpace(data.settlementId) || data.pending == null || data.completed == null || map == null)
                 throw new ArgumentException("Estado de ciudad inválido.");
-            var result = new CityTileDevelopment();
+            if (data.population < 0 || data.population > 10000) throw new ArgumentException("Censo fuera de rango.");
+            var result = new CityTileDevelopment { Population = data.population == 0 ? StartingPopulation : data.population };
             foreach (var item in data.completed)
             {
                 if (item == null || item.turnsRemaining != 0) throw new ArgumentException("Edificio inválido.");

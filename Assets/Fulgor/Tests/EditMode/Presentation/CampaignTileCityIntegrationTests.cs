@@ -20,13 +20,6 @@ namespace Fulgor.Presentation.Tests.Map
         {
             previousScene=EditorSceneManager.GetActiveScene().path;
             EditorSceneManager.OpenScene("Assets/Fulgor/Scenes/Playable/FulgorConquest.unity");
-            // Reserve a free first-ring tile for construction; the scene now showcases buildings on the entire ring.
-            var buildings=Object.FindAnyObjectByType<CampaignTileBuildings>();
-            var buildingData=new SerializedObject(buildings);
-            var entries=buildingData.FindProperty("entries");
-            for(int i=entries.arraySize-1;i>=0;i--)
-                if(entries.GetArrayElementAtIndex(i).FindPropertyRelative("cell").vector2IntValue!=new Vector2Int(12,9))entries.DeleteArrayElementAtIndex(i);
-            buildingData.ApplyModifiedPropertiesWithoutUndo();
             yield return new EnterPlayMode();
             for(int i=0;i<300;i++)
             {
@@ -70,7 +63,7 @@ namespace Fulgor.Presentation.Tests.Map
             var list=GameObject.Find("Ciudades del reino").transform;
             list.GetComponentsInChildren<Button>().First(b=>b.name==own.Id).onClick.Invoke();
             Assert.IsTrue(campaign.GetComponent<CampaignCityMapView>().IsOpen);
-            Assert.IsFalse(header.gameObject.activeInHierarchy);
+            Assert.AreSame(header,GameObject.Find("Campaign kingdom").GetComponent<RectTransform>());
             Assert.IsFalse(hud.CitiesButton.gameObject.activeInHierarchy);
             campaign.GetComponent<CampaignCityMapView>().BackButton.onClick.Invoke();yield return null;
             Assert.IsTrue(header.gameObject.activeInHierarchy);Assert.IsTrue(hud.CitiesButton.gameObject.activeInHierarchy);
@@ -88,7 +81,12 @@ namespace Fulgor.Presentation.Tests.Map
             Assert.AreEqual(15,campaign.State.Resources.Labor);
             Assert.IsTrue(campaign.IsCityTileOccupied(new HexCoordinates(12,9)),"El edificio visible debe ocupar su casilla.");
             Assert.IsTrue(campaign.TryPlaceCityTile(own.Id,tile.Cell,"farm"),"El jugador puede construir desde el primer turno.");
+            yield return null;
+            Assert.IsFalse(campaign.GetComponent<CampaignTileBuildings>().HasBuildingAt(tile.Cell.Coordinates));
             Assert.IsTrue(campaign.CancelCityTile(own.Id,tile.Cell.Coordinates));
+            yield return null;
+            var models=campaign.GetComponent<CampaignTileBuildings>();
+            Assert.IsFalse(models.HasBuildingAt(tile.Cell.Coordinates));
             var save=campaign.CaptureCampaignSnapshot();save.wood=200;save.labor=200;
             Assert.IsTrue(campaign.TryLoadCampaignSnapshot(JsonUtility.ToJson(save)));
             var selection=campaign.GetComponent<CampaignBoardSelection>();
@@ -114,7 +112,7 @@ namespace Fulgor.Presentation.Tests.Map
             session.Resume();yield return null;
             var toolbar=GameObject.Find("Edificios").transform;
             var home=toolbar.Find("Vivienda");var farm=toolbar.Find("Huerto");
-            Assert.IsNull(GameObject.Find("Reino").transform.Find("Cerrar"));
+            Assert.IsNull(GameObject.Find("Campaign kingdom").transform.Find("Cerrar"));
             Assert.IsTrue(farm.Find("Selección").gameObject.activeSelf);
             home.GetComponent<Button>().onClick.Invoke();
             Assert.IsTrue(home.Find("Selección").gameObject.activeSelf);
@@ -135,18 +133,27 @@ namespace Fulgor.Presentation.Tests.Map
             Assert.IsFalse(Overlaps((RectTransform)queue.Find("Title"),(RectTransform)queue.Find("Cola texto")),"La cola no debe solapar su encabezado.");
             var cityData=GameObject.Find("Datos de la ciudad").transform;
             Assert.IsFalse(Overlaps((RectTransform)queue,(RectTransform)cityData),"La ficha de ciudad debe quedar debajo de las obras sin solaparse.");
-            Assert.AreEqual("Sin censo",cityData.Find("Valor 0").GetComponent<Text>().text);
+            Assert.AreEqual("10 / 20",cityData.Find("Valor 0").GetComponent<Text>().text);
             Assert.AreEqual("7 casillas",cityData.Find("Valor 1").GetComponent<Text>().text);
             Assert.IsTrue(campaign.GetComponent<CampaignCityMapView>().BlocksPointer(RectTransformUtility.WorldToScreenPoint(null,cityData.position)),"La ficha de datos debe bloquear la colocación sobre ella.");
             Assert.IsTrue(queue.Find("Fondo").GetComponent<Image>().sprite.texture.name=="panel_3","Las obras deben usar el arte de referencia, sin la madera antigua.");
             var legend=GameObject.Find("Beneficios").transform;
             Assert.IsNotNull(queue.GetComponent<Mask>());Assert.IsNotNull(legend.GetComponent<Mask>());
-            Assert.IsNotNull(GameObject.Find("Reservas del reino").GetComponent<Mask>());
+            var treasury=GameObject.Find("Reservas del reino").transform;
+            var left=treasury.Find("Remate izquierdo").GetComponent<RawImage>().rectTransform;
+            var center=treasury.Find("Madera y ribetes").GetComponent<RawImage>().rectTransform;
+            var right=treasury.Find("Remate derecho").GetComponent<RawImage>().rectTransform;
+            Assert.AreEqual(left.rect.width,center.anchoredPosition.x);
+            Assert.AreEqual(center.anchoredPosition.x+center.rect.width,right.anchoredPosition.x);
+            Assert.AreEqual(((RectTransform)treasury).rect.width,right.anchoredPosition.x+right.rect.width);
+            Assert.Greater(((RectTransform)treasury.Find("Grano")).anchoredPosition.x,center.anchoredPosition.x);
             Assert.GreaterOrEqual(((RectTransform)legend.Find("Rendimiento")).anchoredPosition.x,30,"Los textos deben dejar margen para el marco.");
             Assert.IsFalse(Overlaps((RectTransform)legend.Find("Detalle título"),(RectTransform)legend.Find("Rendimiento")),"La leyenda no debe solapar su título.");
             Assert.IsTrue(selection.ActivateTile(tile));
             Assert.IsFalse(campaign.TryPlaceCityTile(own.Id,tile.Cell,"house"));
             Assert.AreEqual(185,campaign.State.Resources.Wood);
+            yield return null;
+            Assert.IsFalse(campaign.GetComponent<CampaignTileBuildings>().HasBuildingAt(tile.Cell.Coordinates));
             Assert.IsTrue(campaign.CancelCityTile(own.Id,tile.Cell.Coordinates));
             Assert.AreEqual(200,campaign.State.Resources.Wood);
             Assert.IsTrue(campaign.TryPlaceCityTile(own.Id,tile.Cell,"farm"));
@@ -160,13 +167,23 @@ namespace Fulgor.Presentation.Tests.Map
             LogAssert.Expect(LogType.Warning,new Regex("No se pudo cargar"));
             Assert.IsFalse(campaign.TryLoadCampaignSnapshot(JsonUtility.ToJson(bad)));
             Assert.AreSame(before,campaign.State);
+            yield return null;
+            Assert.IsFalse(campaign.GetComponent<CampaignTileBuildings>().HasBuildingAt(tile.Cell.Coordinates));
             Assert.IsTrue(campaign.CancelCityTile(own.Id,tile.Cell.Coordinates));
             Assert.IsTrue(campaign.TryLoadCampaignSnapshot(json));
             Assert.AreEqual(1,campaign.TileCity(own.Id).Pending.Length);
+            yield return null;
+            var markerName = $"Obra {tile.Cell.Coordinates.Q},{tile.Cell.Coordinates.R}";
+            Assert.AreEqual("2",GameObject.Find(markerName).transform.Find("Turnos restantes/Número").GetComponent<Text>().text);
+            Assert.AreSame(farm.Find("Imagen").GetComponent<Image>().sprite,GameObject.Find(markerName).GetComponent<Image>().sprite);
             campaign.CompleteTurn();
             for(int i=0;i<300&&campaign.IsRivalPhaseActive;i++)yield return null;
+            yield return null;
+            Assert.AreEqual("1",GameObject.Find(markerName).transform.Find("Turnos restantes/Número").GetComponent<Text>().text);
+            Assert.IsFalse(models.HasBuildingAt(tile.Cell.Coordinates));
             campaign.CompleteTurn();
             for(int i=0;i<300&&campaign.IsRivalPhaseActive;i++)yield return null;
+            Assert.AreEqual(12,campaign.TileCity(own.Id).Population);
             Assert.AreEqual("farm",campaign.TileCity(own.Id).BuildingAt(tile.Cell.Coordinates));
             Assert.AreEqual(3,campaign.TileCity(own.Id).ActiveIncome.Grain);
             Assert.AreEqual(3,campaign.CityIncomePerTurn.Grain);
@@ -176,6 +193,9 @@ namespace Fulgor.Presentation.Tests.Map
             CaptureReviewIfRequested();
             var done=JsonUtility.ToJson(campaign.CaptureCampaignSnapshot());
             Assert.IsTrue(campaign.TryLoadCampaignSnapshot(done));
+            yield return null;
+            Assert.AreEqual(1,models.Placed.Count(model=>models.TryGetCell(model,out var cell)&&cell==tile.Cell.Coordinates&&model.GetComponentInChildren<MeshRenderer>()!=null));
+            Assert.AreEqual(12,campaign.TileCity(own.Id).Population);
             Assert.AreEqual("farm",campaign.TileCity(own.Id).BuildingAt(tile.Cell.Coordinates));
             Assert.AreEqual(3,campaign.CityIncomePerTurn.Grain);
             campaign.GetComponent<CampaignCityMapView>().BackButton.onClick.Invoke();

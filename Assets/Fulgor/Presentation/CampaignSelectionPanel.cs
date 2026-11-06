@@ -30,7 +30,7 @@ namespace Fulgor.Presentation.Map
         public void SetCityMapMode(bool enabled)
         {
             cityMode=enabled;
-            if(kingdomHeader!=null)kingdomHeader.gameObject.SetActive(!enabled);
+            // The kingdom banner belongs to both map and city.
             if(campaignNavigation!=null)campaignNavigation.gameObject.SetActive(!enabled);
             CloseDrawer();selectedFormation=-1;
             foreach(var rim in troopSelection)if(rim!=null)rim.SetActive(false);
@@ -384,7 +384,7 @@ namespace Fulgor.Presentation.Map
             FontStyle style = FontStyle.Normal)
         {
             var rect = CreateRect(name, parent, size, position);
-            var text = rect.gameObject.AddComponent<Text>();
+            var text = rect.gameObject.AddComponent<CampaignSharpText>();
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.fontSize = fontSize;
             text.fontStyle = style;

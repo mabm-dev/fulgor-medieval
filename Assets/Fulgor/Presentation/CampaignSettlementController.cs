@@ -259,7 +259,7 @@ namespace Fulgor.Presentation.Map
         }
         private static Text Label(string name,Transform parent,Vector2 position,Vector2 size,string text,int fontSize,Color color)
         {
-            var rect=Rect(name,parent,size,position);var label=rect.gameObject.AddComponent<Text>();label.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");label.text=text;label.fontSize=fontSize;label.color=color;label.raycastTarget=false;return label;
+            var rect=Rect(name,parent,size,position);var label=rect.gameObject.AddComponent<CampaignSharpText>();label.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");label.text=text;label.fontSize=fontSize;label.color=color;label.raycastTarget=false;return label;
         }
         private static void Release(UnityEngine.Object item){if(item==null)return;if(Application.isPlaying)Destroy(item);else DestroyImmediate(item);}
         private void Clear()
