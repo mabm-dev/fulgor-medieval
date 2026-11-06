@@ -20,6 +20,13 @@ namespace Fulgor.Presentation.Tests.Map
         {
             previousScene=EditorSceneManager.GetActiveScene().path;
             EditorSceneManager.OpenScene("Assets/Fulgor/Scenes/Playable/FulgorConquest.unity");
+            // Reserve a free first-ring tile for construction; the scene now showcases buildings on the entire ring.
+            var buildings=Object.FindAnyObjectByType<CampaignTileBuildings>();
+            var buildingData=new SerializedObject(buildings);
+            var entries=buildingData.FindProperty("entries");
+            for(int i=entries.arraySize-1;i>=0;i--)
+                if(entries.GetArrayElementAtIndex(i).FindPropertyRelative("cell").vector2IntValue!=new Vector2Int(12,9))entries.DeleteArrayElementAtIndex(i);
+            buildingData.ApplyModifiedPropertiesWithoutUndo();
             yield return new EnterPlayMode();
             for(int i=0;i<300;i++)
             {
@@ -90,7 +97,7 @@ namespace Fulgor.Presentation.Tests.Map
             Assert.IsFalse(campaign.GetComponent<CampaignArmyMarkerLayer>().CityPresentationVisible);
             Assert.IsFalse(campaign.GetComponent<CampaignSelectionPanel>().SaveButton.gameObject.activeInHierarchy);
             Assert.IsFalse(campaign.GetComponentsInChildren<MapCameraControls>(true).Any(c=>c.gameObject.activeInHierarchy),"La campaña no debe mostrar los botones de navegación.");
-            Assert.IsTrue(tile.HasColorOverride,"El territorio se tiñe en el propio suelo.");
+            Assert.IsTrue(settlements.Views[own.Position].GetComponentsInChildren<MeshFilter>().Any(m=>m.name=="Sombreado del territorio"&&m.sharedMesh==tile.GetComponent<MeshFilter>().sharedMesh&&Vector3.ProjectOnPlane(m.transform.position-tile.transform.position,Vector3.up).sqrMagnitude<.0001f),"El tinte debe seguir la malla del suelo sin afectar los edificios.");
             var mountain=campaign.GetComponentsInChildren<HexTileView>().First(t=>t.Cell.Coordinates.DistanceTo(own.Position)==1&&t.Cell.Terrain==TerrainType.Mountain);
             mountain.SetHovered(false);mountain.SetSelected(false);
             Assert.IsFalse(mountain.HasColorOverride,"La montaña conserva su material, sin relleno territorial.");

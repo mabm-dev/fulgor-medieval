@@ -25,6 +25,9 @@ namespace Fulgor.Presentation.Map
         private Vector2 lastGroundXZ;
         private static readonly HexCoordinates[] Directions={new(1,0),new(1,-1),new(0,-1),new(-1,0),new(-1,1),new(0,1)};
         private const float Speed = 2.5f, Clearance = .006f, BaseRadius = .325f;
+        // Un edificio ocupa hasta .54 desde el centro de la casilla y el grupo de soldados .325: a .8 queda delante sin meterse en la pared.
+        private const float InFrontOfBuilding = .8f;
+        private CampaignTileBuildings buildings;
         // El grupo gira hacia el rumbo de la marcha; el paso lo pone el esqueleto de los soldados.
         private const float GroupHeight = .12f, TurnSpeed = 540f, PipHeight = .72f;
         public float Facing => facing;
@@ -39,7 +42,7 @@ namespace Fulgor.Presentation.Map
 
         public void Initialize(CampaignBoardSelection selectionOwner)
         {
-            owner=selectionOwner; tiles.Clear(); surfaces.Clear(); anchors.Clear(); waypoints.Clear(); waypoint=0; destination=null;lastGroundMesh=null;
+            owner=selectionOwner; buildings=null; tiles.Clear(); surfaces.Clear(); anchors.Clear(); waypoints.Clear(); waypoint=0; destination=null;lastGroundMesh=null;
             if (owner != null)
                 foreach (var tile in owner.GetComponentsInChildren<HexTileView>())
                     if (tile.Owner == owner && tile.gameObject.activeInHierarchy) tiles[tile.Cell.Coordinates]=tile;
@@ -69,8 +72,20 @@ namespace Fulgor.Presentation.Map
             destination=army.Position; marker.SetActive(true); Ground();
         }
 
+        /// <summary>Los edificios se colocan después de las huestes: cuando aparece uno en la casilla de una hueste parada, esta se planta delante.</summary>
+        private void KeepClearOfBuilding()
+        {
+            if (marker == null || !marker.activeSelf || IsMoving || !destination.HasValue || !tiles.TryGetValue(destination.Value,out var tile) || tile == null) return;
+            var wanted=Anchor(tile);var current=marker.transform.position;
+            if (new Vector2(wanted.x-current.x,wanted.z-current.z).sqrMagnitude < 1e-6f) return;
+            marker.transform.position=new Vector3(wanted.x,current.y,wanted.z);
+            lastGroundMesh=null; // vuelve a posarse sobre el suelo en su sitio nuevo
+            Ground();
+        }
+
         private void Update()
         {
+            KeepClearOfBuilding();
             if (pip != null) {
                 if (Camera.main != null) pip.rotation=Camera.main.transform.rotation; // la insignia siempre mira a la cámara
                 pip.localPosition=new Vector3(0,PipHeight+Mathf.Sin(Time.realtimeSinceStartup*2f)*.012f,0); // y flota con suavidad
@@ -173,7 +188,18 @@ namespace Fulgor.Presentation.Map
             lastGroundMesh=currentMesh;lastGroundMatrix=matrix;lastGroundXZ=xz;
         }
 
+        /// <summary>Dónde se planta la hueste en una casilla. Si la casilla tiene un edificio, delante de él (hacia la cámara): dentro quedaría oculta tras sus paredes.</summary>
         private Vector3 Anchor(HexTileView tile)
+        {
+            var anchor=GroundAnchor(tile);
+            if(buildings==null&&owner!=null)buildings=owner.GetComponentInParent<CampaignTileBuildings>();
+            if(buildings==null||!buildings.HasBuildingAt(tile.Cell.Coordinates))return anchor;
+            var toCamera=Camera.main!=null?-Vector3.ProjectOnPlane(Camera.main.transform.forward,Vector3.up):Vector3.back;
+            if(toCamera.sqrMagnitude<1e-6f)toCamera=Vector3.back;
+            return anchor+toCamera.normalized*InFrontOfBuilding;
+        }
+
+        private Vector3 GroundAnchor(HexTileView tile)
         {
             var mesh=tile.GetComponent<MeshCollider>()?.sharedMesh;
             if(mesh==null)return tile.transform.position;

@@ -1,0 +1,130 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4759649882074483001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6996704207494998668}
+  - component: {fileID: 5166559198554598178}
+  m_Layer: 0
+  m_Name: PF_AldeaConcejil
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6996704207494998668
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759649882074483001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5230752729352887348}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5166559198554598178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759649882074483001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a3b771eb864c754bbf61e9b36d5ccf6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignBuildingFootprint
+  centre: {x: 0.0008074194, y: 0.0007183999}
+  halfSize: {x: 0.38667578, y: 0.37723082}
+  cornerRadius: 0.14406799
+  bottom: 0.00045248092
+  baseHeight: 0.009000001
+--- !u!1001 &5700964052227242975
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6996704207494998668}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 78.23719
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 78.23719
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 78.23719
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.000000030908616
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.00000003090862
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071067
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 793e82a00a1a9f0418f5a13bee9634f8, type: 2}
+    - target: {fileID: 919132149155446097, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+      propertyPath: m_Name
+      value: SM_AldeaConcejil
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+--- !u!4 &5230752729352887348 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3b938e4f5034f4c4f90eb24b2ba02bae, type: 3}
+  m_PrefabInstance: {fileID: 5700964052227242975}
+  m_PrefabAsset: {fileID: 0}
