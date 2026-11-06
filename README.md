@@ -38,9 +38,9 @@ enfrentar líderes de siglos distintos dentro de una cronología alternativa.
   volver, y guardado versionado (v11) que lee los formatos anteriores.
 - **Interfaz:** piel de madera y pergamino con iconos de recursos.
 - **Calidad:** núcleo C# sin `UnityEngine`, paridad del generador con el
-  prototipo web y más de 330 pruebas Edit Mode de reglas, presentación y
-  escenas. La integración continua las ejecuta cuando dispone de los secretos
-  de Unity.
+  prototipo web y varios cientos de pruebas Edit Mode de reglas, presentación
+  y escenas. La integración continua las ejecuta cuando dispone de los secretos
+  de Unity (ver [CONTRIBUTING.md](CONTRIBUTING.md#integración-continua)).
 
 Todavía faltan los héroes, la población, el mapa peninsular, las campañas de
 los otros once reinos y el tutorial.
