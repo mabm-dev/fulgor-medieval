@@ -4,6 +4,14 @@
 # clon limpio al terminar.
 #
 # Uso: Tools/ci/run-editmode-tests.sh [rama|commit]   (por defecto: origin/main)
+#
+# Modo gráfico (FULGOR_GRAPHICS): las pruebas de escena crean cámaras y RenderTexture,
+# y sin dispositivo gráfico Unity muere con SIGSEGV (139) y sin informe.
+#   auto     (por defecto) usa xvfb-run si está instalado y no hay pantalla ($DISPLAY);
+#            en otro caso -nographics, como antes
+#   xvfb     exige xvfb-run y ejecuta Unity en una pantalla virtual
+#   display  usa la pantalla actual ($DISPLAY), sin -nographics
+#   none     -nographics
 # Salida: 0 si todas las pruebas pasan; el código de Unity en otro caso
 #         (2 = alguna prueba falló, 1 = error del editor o de la licencia).
 set -euo pipefail
@@ -52,9 +60,27 @@ STAMP="$(date +%Y%m%d-%H%M%S)-$(git -C "$PROJECT_DIR" rev-parse --short "$COMMIT
 RESULTS="$RESULTS_DIR/editmode-$STAMP.xml"
 LOG="$RESULTS_DIR/editmode-$STAMP.log"
 
-echo "Pruebas Edit Mode de $REF ($(git -C "$PROJECT_DIR" log -1 --format='%h %s' "$COMMIT"))"
+GRAPHICS="${FULGOR_GRAPHICS:-auto}"
+case "$GRAPHICS" in
+  auto) if command -v xvfb-run >/dev/null 2>&1 && [ -z "${DISPLAY:-}" ]; then GRAPHICS=xvfb; else GRAPHICS=none; fi ;;
+  xvfb | display | none) ;;
+  *) fail "FULGOR_GRAPHICS debe ser auto, xvfb, display o none (recibido: $GRAPHICS)" ;;
+esac
+RUN=()
+FLAGS=(-batchmode)
+case "$GRAPHICS" in
+  xvfb)
+    command -v xvfb-run >/dev/null 2>&1 || fail "FULGOR_GRAPHICS=xvfb necesita xvfb-run (paquete xvfb)"
+    RUN=(xvfb-run -a -s "-screen 0 1280x720x24") ;;
+  display)
+    [ -n "${DISPLAY:-}" ] || fail "FULGOR_GRAPHICS=display necesita una pantalla (\$DISPLAY vacío)" ;;
+  none) FLAGS+=(-nographics) ;;
+esac
+
+echo "Pruebas Edit Mode de $REF ($(git -C "$PROJECT_DIR" log -1 --format='%h %s' "$COMMIT")) · modo gráfico: $GRAPHICS"
 set +e
-"$UNITY_EDITOR" -batchmode -nographics -projectPath "$PROJECT_DIR" \
+# ${RUN[@]+...}: con bash antiguo y set -u, un array vacío no debe fallar.
+${RUN[@]+"${RUN[@]}"} "$UNITY_EDITOR" "${FLAGS[@]}" -projectPath "$PROJECT_DIR" \
   -runTests -testPlatform EditMode -testResults "$RESULTS" -logFile "$LOG"
 CODE=$?
 set -e
