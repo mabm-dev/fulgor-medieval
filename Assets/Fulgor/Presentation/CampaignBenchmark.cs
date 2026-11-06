@@ -31,6 +31,11 @@ namespace Fulgor.Presentation.Map
         private Vector3 moveFocus, moveForward, moveRight, moveForwardFlat;
         private float moveDistance;
         private static BenchmarkOptions pending;
+        // línea de tiempo del arranque: cuánto tarda en cargar la escena, cuándo queda listo el tablero, cuándo se colocan los edificios y cada
+        // fotograma lento, también los del calentamiento (que no entran en las estadísticas)
+        private static float loadRequestedAt = -1f, sceneLoadedAt = -1f;
+        private readonly List<string> timeline = new();
+        private bool boardNoted, buildingsNoted, started, exploredApplied;
 
         /// <summary>Fotogramas por encima de este tiempo se cuentan como tirones en el informe.</summary>
         public const double SlowFrameMilliseconds = 50d;
@@ -45,12 +50,14 @@ namespace Fulgor.Presentation.Map
             // el build empieza en el menú: se carga la escena pedida y el benchmark arranca cuando aparece el tablero
             pending = parsed;
             SceneManager.sceneLoaded += OnSceneLoaded;
+            loadRequestedAt = Time.realtimeSinceStartup;
             SceneManager.LoadScene(parsed.Scene);
         }
 
         private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             if (FindAnyObjectByType<CampaignBoardPreview>() == null) return;
+            sceneLoadedAt = Time.realtimeSinceStartup;
             SceneManager.sceneLoaded -= OnSceneLoaded;
             Create(pending);
         }
@@ -73,7 +80,8 @@ namespace Fulgor.Presentation.Map
             benchmarkCamera=Camera.main;
             if(options.Offscreen&&benchmarkCamera!=null) {
                 previousTarget=benchmarkCamera.targetTexture;previousCameraEnabled=benchmarkCamera.enabled;
-                benchmarkTarget=new RenderTexture(Mathf.Max(64,Screen.width),Mathf.Max(64,Screen.height),24,RenderTextureFormat.ARGB32){name="Benchmark render target"};
+                // la imagen de revisión, como poco a 1600×1000 aunque la ventana salga pequeña
+                benchmarkTarget=new RenderTexture(Mathf.Max(1600,Screen.width),Mathf.Max(1000,Screen.height),24,RenderTextureFormat.ARGB32){name="Benchmark render target"};
                 benchmarkTarget.Create();benchmarkCamera.targetTexture=benchmarkTarget;benchmarkCamera.enabled=false;
                 renderRequest=new UnityEngine.Rendering.RenderPipeline.StandardRequest{destination=benchmarkTarget};
             }
@@ -82,6 +90,69 @@ namespace Fulgor.Presentation.Map
             classicPending = options.ClassicTerrain;
             Debug.Log($"Fulgor benchmark: {options.WarmupSeconds:F0} s de calentamiento, " +
                 $"{options.Seconds:F0} s de medición.");
+            Note(loadRequestedAt >= 0f && sceneLoadedAt >= loadRequestedAt
+                ? $"empieza; la escena tardó {sceneLoadedAt - loadRequestedAt:0.00} s en cargar"
+                : "empieza en la escena con la que arrancó el juego");
+        }
+
+        private void Note(string what)
+        {
+            var line = $"{Time.realtimeSinceStartup:0.00} s desde el arranque ({elapsed:0.00} s de benchmark): {what}";
+            timeline.Add(line);
+            Debug.Log("Fulgor benchmark: " + line);
+        }
+
+        // revisión de la niebla: se quita y las casillas cerca del centro de la cámara se marcan como exploradas, que es como las oscurece
+        private void ApplyExplored()
+        {
+            var appearance = FindAnyObjectByType<CampaignMapAppearance>();
+            if (appearance == null || !appearance.Ready || benchmarkCamera == null) return;
+            var fog = FindAnyObjectByType<CampaignFogMap>();
+            if (fog != null) { fog.ResetFog(); fog.enabled = false; }
+            var tiles = FindObjectsByType<HexTileView>(FindObjectsSortMode.None);
+            var ray = benchmarkCamera.ViewportPointToRay(new Vector3(.5f, .5f, 0f));
+            var focus = new Plane(Vector3.up, Vector3.up * CampaignMountainRelief.EdgeHeight).Raycast(ray, out float hit) ? ray.GetPoint(hit) : benchmarkCamera.transform.position;
+            HexTileView centre = null; float best = float.MaxValue;
+            foreach (var tile in tiles)
+            {
+                float d = Vector2.Distance(new Vector2(tile.transform.position.x, tile.transform.position.z), new Vector2(focus.x, focus.z));
+                if (d < best) { best = d; centre = tile; }
+            }
+            if (centre == null) return;
+            int count = 0;
+            foreach (var tile in tiles)
+                if (tile.Cell.Coordinates.DistanceTo(centre.Cell.Coordinates) <= options.ExploredRadius)
+                { tile.SetFogVisibility(Fulgor.Core.Campaign.CampaignVisibility.Explored); count++; }
+            exploredApplied = true;
+            Note($"sin niebla; {count} casillas exploradas alrededor de ({centre.Cell.Coordinates.Q},{centre.Cell.Coordinates.R})");
+        }
+
+        // apunta en la línea de tiempo los fotogramas lentos y los momentos en que quedan listos el tablero y los edificios
+        private void NoteStartup()
+        {
+            double frame = Time.unscaledDeltaTime * 1000d;
+            if (!started) Note($"primer fotograma tras la carga: {frame:0} ms desde el anterior (arranque del motor, escena y tablero; no cuenta)");
+            else if (frame > SlowFrameMilliseconds) Note($"fotograma de {frame:0} ms");
+            if (!boardNoted)
+            {
+                var appearance = FindAnyObjectByType<CampaignMapAppearance>();
+                if (appearance != null && appearance.Ready)
+                {
+                    boardNoted = true;
+                    var diagnostics = FindAnyObjectByType<CampaignBoardDiagnostics>();
+                    Note($"tablero listo ({(diagnostics != null && diagnostics.Completed ? diagnostics.Metrics.Milliseconds : -1d):0} ms)");
+                }
+            }
+            if (!buildingsNoted)
+            {
+                var buildings = FindAnyObjectByType<CampaignTileBuildings>();
+                if (buildings == null) buildingsNoted = true;
+                else if (buildings.Placed.Count > 0)
+                {
+                    buildingsNoted = true;
+                    Note($"{buildings.Placed.Count} edificios colocados ({buildings.PlaceMilliseconds:0} ms, de ellos mapa de huellas {buildings.GroundMapMilliseconds:0} ms)");
+                }
+            }
         }
 
         private void OnApplicationFocus(bool hasFocus)
@@ -103,11 +174,21 @@ namespace Fulgor.Presentation.Map
                 classicRegenerateMilliseconds = watch.Elapsed.TotalMilliseconds; classicPending = false; elapsed = 0f;
                 return;
             }
+            if (options.ExploredRadius >= 0 && !exploredApplied) ApplyExplored();
+            if (!started)
+            {
+                // el primer fotograma tras cargar la escena arrastra toda la espera de la carga (se midieron 5,7 s: 2,7 de arranque del motor y 3 de
+                // escena con el tablero); se apunta en la línea de tiempo, pero no cuenta para el calentamiento ni para las estadísticas
+                NoteStartup();
+                started = true;
+                return;
+            }
             if (options.MoveCamera) MoveCamera();
             if(benchmarkCamera!=null&&renderRequest!=null)
                 UnityEngine.Rendering.RenderPipeline.SubmitRenderRequest(benchmarkCamera,renderRequest);
             FrameTimingManager.CaptureFrameTimings();
             elapsed += Time.unscaledDeltaTime;
+            NoteStartup();
             if (elapsed <= options.WarmupSeconds) return;
 
             frameMilliseconds.Add(Time.unscaledDeltaTime * 1000d);
@@ -192,6 +273,7 @@ namespace Fulgor.Presentation.Map
                 cpuP95Milliseconds = cpu.P95Milliseconds,
                 gpuAverageMilliseconds = gpu.AverageMilliseconds,
                 gpuP95Milliseconds = gpu.P95Milliseconds,
+                timeline = timeline.ToArray(),
             };
 
             var path = ResolveOutputPath();
@@ -258,6 +340,7 @@ namespace Fulgor.Presentation.Map
             public double cpuP95Milliseconds;
             public double gpuAverageMilliseconds;
             public double gpuP95Milliseconds;
+            public string[] timeline;
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Fulgor.Presentation.Map
         public const float DefaultWarmupSeconds = 3f;
 
         public BenchmarkOptions(bool enabled, float seconds, float warmupSeconds, string label, string outputPath, bool offscreen = false,
-            string scene = null, bool moveCamera = false, bool classicTerrain = false)
+            string scene = null, bool moveCamera = false, bool classicTerrain = false, int exploredRadius = -1)
         {
             Enabled = enabled;
             Offscreen = offscreen;
@@ -20,6 +20,7 @@ namespace Fulgor.Presentation.Map
             Scene = scene;
             MoveCamera = moveCamera;
             ClassicTerrain = classicTerrain;
+            ExploredRadius = exploredRadius;
         }
 
         public bool Enabled { get; }
@@ -34,11 +35,16 @@ namespace Fulgor.Presentation.Map
         public bool MoveCamera { get; }
         /// <summary>Mide con las piezas fijas de terreno de antes, para comparar (<c>-benchmarkClassicTerrain</c>).</summary>
         public bool ClassicTerrain { get; }
+        /// <summary>
+        /// Revisión de la niebla: sin niebla, las casillas a esta distancia de la del centro de la cámara se ven como exploradas y no visibles
+        /// (<c>-benchmarkExplored N</c>); con <c>-benchmarkOffscreen</c> queda en el PNG. −1, sin tocar.
+        /// </summary>
+        public int ExploredRadius { get; }
 
         /// <summary>
         /// Admite <c>-benchmark</c>, <c>-benchmarkSeconds N</c>, <c>-benchmarkWarmup N</c>,
         /// <c>-benchmarkLabel texto</c>, <c>-benchmarkOutput ruta</c>, <c>-benchmarkScene escena</c>,
-        /// <c>-benchmarkMove</c> y <c>-benchmarkClassicTerrain</c>.
+        /// <c>-benchmarkMove</c>, <c>-benchmarkClassicTerrain</c> y <c>-benchmarkExplored N</c>.
         /// </summary>
         public static BenchmarkOptions Parse(string[] args)
         {
@@ -51,6 +57,7 @@ namespace Fulgor.Presentation.Map
             string scene = null;
             var move = false;
             var classic = false;
+            var explored = -1;
             if (args == null) return new BenchmarkOptions(false, seconds, warmup, label, null);
 
             for (var i = 0; i < args.Length; i++)
@@ -69,6 +76,10 @@ namespace Fulgor.Presentation.Map
                         break;
                     case "-benchmarkClassicTerrain":
                         classic = true;
+                        break;
+                    case "-benchmarkExplored" when int.TryParse(next, NumberStyles.Integer, CultureInfo.InvariantCulture, out var radius) && radius >= 0:
+                        explored = radius;
+                        i++;
                         break;
                     case "-benchmarkScene" when next != null:
                         scene = next;
@@ -93,7 +104,7 @@ namespace Fulgor.Presentation.Map
                 }
             }
 
-            return new BenchmarkOptions(enabled, seconds, warmup, label, output, offscreen, scene, move, classic);
+            return new BenchmarkOptions(enabled, seconds, warmup, label, output, offscreen, scene, move, classic, explored);
         }
 
         private static bool TryReadPositive(string text, out float value) =>
