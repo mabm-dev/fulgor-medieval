@@ -3,42 +3,19 @@ using UnityEngine.UI;
 
 namespace Fulgor.Presentation.Map
 {
-    /// <summary>Rasterizes dynamic glyphs at higher density while preserving the UI layout in canvas units.</summary>
+    /// <summary>Texto de interfaz con más peso y contraste para fondos ilustrados.</summary>
     public sealed class CampaignSharpText : Text
     {
-        private readonly UIVertex[] quad = new UIVertex[4];
-
-        protected override void OnPopulateMesh(VertexHelper mesh)
+        protected override void OnEnable()
         {
-            if (font == null || !font.dynamic)
-            {
-                base.OnPopulateMesh(mesh);
-                return;
-            }
+            base.OnEnable();
+            fontStyle = FontStyle.Bold;
+            alignByGeometry = true;
 
-            var settings = GetGenerationSettings(rectTransform.rect.size);
-            settings.scaleFactor = Mathf.Max(2f, settings.scaleFactor * 2f);
-            m_DisableFontTextureRebuiltCallback = true;
-            try
-            {
-                cachedTextGenerator.Populate(text, settings);
-                var vertices = cachedTextGenerator.verts;
-                mesh.Clear();
-                if (vertices.Count == 0) return;
-                Vector2 first = vertices[0].position / settings.scaleFactor;
-                Vector3 offset = PixelAdjustPoint(first) - first;
-                for (int i = 0; i < vertices.Count; i++)
-                {
-                    int corner = i & 3;
-                    quad[corner] = vertices[i];
-                    quad[corner].position = vertices[i].position / settings.scaleFactor + offset;
-                    if (corner == 3) mesh.AddUIVertexQuad(quad);
-                }
-            }
-            finally
-            {
-                m_DisableFontTextureRebuiltCallback = false;
-            }
+            var outline = GetComponent<Outline>() ?? gameObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0.025f, 0.018f, 0.012f, 0.88f);
+            outline.effectDistance = new Vector2(0.8f, -0.8f);
+            outline.useGraphicAlpha = true;
         }
     }
 }
