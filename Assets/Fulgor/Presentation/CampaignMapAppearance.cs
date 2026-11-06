@@ -11,6 +11,11 @@ namespace Fulgor.Presentation.Map
     public sealed class CampaignMapAppearance : MonoBehaviour
     {
         [SerializeField] private CampaignMapAppearanceSettings settings;
+        // semilla fija del ruido del relieve: el mismo mapa da siempre las mismas sierras
+        private const int ReliefSeed=1086;
+        private bool fixedPiecesOnly;
+        /// <summary>Solo para medir: la próxima generación usa las piezas fijas de antes (sin relieve generado ni sombreador del terreno).</summary>
+        public void UseFixedPiecesOnly()=>fixedPiecesOnly=true;
         private sealed class Land
         {
             public MeshFilter Filter;
@@ -44,15 +49,45 @@ namespace Fulgor.Presentation.Map
             for(int i=0;i<5;i++) {
                 var source=i==0?settings.WaterMaterial:settings.TerrainMaterial(i);
                 materials[i]=new Material(source){name=source.name+" · campaña",enableInstancing=true};
+                // el suelo cambia al sombreador del terreno conservando su textura; la variación sale de la posición en el mundo
+                if(i>0&&settings.TerrainShader!=null&&!fixedPiecesOnly) {
+                    materials[i].shader=settings.TerrainShader;materials[i].SetFloat("_FulgorGroundY",root.position.y+CampaignMountainRelief.EdgeHeight);
+                    if(settings.TerrainNoise!=null)materials[i].SetTexture("_FulgorNoise",settings.TerrainNoise);
+                    // la llanura es casi plana: la luz de su montículo dibujaba el panal; el suelo del bosque, a medias; la colina tiene relieve real
+                    materials[i].SetFloat("_FulgorFlatten",(TerrainType)i==TerrainType.Plain?.85f:(TerrainType)i==TerrainType.Forest?.6f:0f);
+                    GroundMark(materials[i],(TerrainType)i);
+                }
                 materials[i].SetColor("_BaseColor",CampaignVisualPalette.TerrainTint((TerrainType)i));ownedMaterials.Add(materials[i]);
             }
             var settlements=GetComponent<CampaignSettlementController>();var surfaces=new Dictionary<Mesh,TerrainGroundSurface>();
+            // relieve continuo de montaña: dos montañas vecinas forman una sierra en vez de dos picos sueltos
+            CampaignMountainRelief relief=null;Material reliefMaterial=null;
+            if(settings.ReliefMountainMaterial!=null&&!fixedPiecesOnly) {
+                bool Open(HexTileView t)=>settlements==null||!settlements.HasSettlementAt(t.Cell.Coordinates); // un asentamiento conserva su llano
+                // bajo un edificio de casilla el relieve se allana (CampaignTileBuildings lo coloca después, sobre ese llano)
+                var buildings=GetComponent<CampaignTileBuildings>();var built=buildings!=null?buildings.PlannedCells():null;
+                relief=new CampaignMountainRelief(tiles.Where(t=>t.Cell.Terrain==TerrainType.Mountain&&Open(t)).Select(t=>t.Cell.Coordinates),ReliefSeed,
+                    VisualScaleContract.HexOuterRadius,tiles.Where(t=>t.Cell.Terrain==TerrainType.Hill&&Open(t)).Select(t=>t.Cell.Coordinates),built);
+                reliefMaterial=new Material(settings.ReliefMountainMaterial){name=settings.ReliefMountainMaterial.name+" · campaña",enableInstancing=true};
+                reliefMaterial.SetFloat("_FulgorGroundY",root.position.y+CampaignMountainRelief.EdgeHeight);ownedMaterials.Add(reliefMaterial);
+                GroundMark(reliefMaterial,TerrainType.Hill); // el sombreador pasa a grava donde empieza la roca de la montaña
+                if(settings.TerrainNoise!=null)reliefMaterial.SetTexture("_FulgorNoise",settings.TerrainNoise);
+            }
+            // las mallas del relieve, todas a la vez y en paralelo, con sus tres niveles de detalle
+            var reliefTiles=relief!=null?relief.BuildTiles(tiles.Select(t=>t.Cell.Coordinates).Where(relief.IsHighland),settings.ReliefSubdivisions)
+                :new Dictionary<HexCoordinates,CampaignMountainRelief.TileLevels>();
             foreach(var tile in tiles) {
                 foreach(Transform child in tile.transform)
                     if(child.name.StartsWith("Transition ",StringComparison.Ordinal)||child.name.StartsWith("Junction ",StringComparison.Ordinal))child.gameObject.SetActive(false);
                 int index=(int)tile.Cell.Terrain;Mesh mesh;
-                var renderer=tile.GetComponent<MeshRenderer>();
-                if(index==0) {
+                var renderer=tile.GetComponent<MeshRenderer>();var material=materials[index];
+                if(relief!=null&&relief.IsHighland(tile.Cell.Coordinates)) {
+                    // sin giro: la malla sale de la función de todo el tablero, relativa al centro de la casilla
+                    tile.transform.localRotation=Quaternion.identity;var levels=reliefTiles[tile.Cell.Coordinates];
+                    mesh=levels.Full;var medium=levels.Medium;var distant=levels.Distant;
+                    ownedMeshes.Add(mesh);ownedMeshes.Add(medium);ownedMeshes.Add(distant);material=reliefMaterial;
+                    land.Add(new Land{Filter=tile.GetComponent<MeshFilter>(),Full=mesh,Medium=medium,Distant=distant});
+                } else if(index==0) {
                     // Uniform campaign resolution retains conforming neighbor edges at a lower mesh budget.
                     tile.transform.localRotation=Quaternion.identity;mesh=WaterLayout.BuildMesh(tile.transform.position,"Agua de campaña "+tile.Cell.Coordinates.Key,6,9);
                     ownedMeshes.Add(mesh);renderer.shadowCastingMode=ShadowCastingMode.Off;
@@ -62,7 +97,7 @@ namespace Fulgor.Presentation.Map
                     tile.transform.localRotation=Quaternion.Euler(0,60*((tile.Cell.Coordinates.Q*17+tile.Cell.Coordinates.R*31)%6),0);
                     land.Add(new Land{Filter=tile.GetComponent<MeshFilter>(),Full=mesh,Medium=settings.Medium(levelIndex),Distant=settings.Distant(levelIndex)});
                 }
-                tile.GetComponent<MeshFilter>().sharedMesh=mesh;tile.GetComponent<MeshCollider>().sharedMesh=mesh;renderer.sharedMaterial=materials[index];
+                tile.GetComponent<MeshFilter>().sharedMesh=mesh;tile.GetComponent<MeshCollider>().sharedMesh=mesh;renderer.sharedMaterial=material;
                 tile.Initialize(tile.Cell,tile.Owner,Color.white);
                 var gold=tile.transform.Find("Oro");
                 if(gold!=null) {
@@ -112,6 +147,12 @@ namespace Fulgor.Presentation.Map
         {
             Ready=false;generation=null;land.Clear();TileCount=0;WaterLayout=null;Array.Clear(LevelCounts,0,3);
             foreach(var mesh in ownedMeshes)Release(mesh);foreach(var material in ownedMaterials)Release(material);ownedMeshes.Clear();ownedMaterials.Clear();
+        }
+        // suelo pisado alrededor de los edificios de casilla: la tierra y la hierba que sobrevive según el terreno
+        private static void GroundMark(Material material,TerrainType terrain)
+        {
+            material.SetColor("_FulgorPisadoColor",CampaignVisualPalette.TrampledGround(terrain));
+            material.SetFloat("_FulgorMatas",CampaignVisualPalette.GroundTufts(terrain));material.SetFloat("_FulgorMatasLuz",CampaignVisualPalette.GroundTuftLight(terrain));
         }
         private static void Release(UnityEngine.Object value){if(value==null)return;if(Application.isPlaying)Destroy(value);else DestroyImmediate(value);}
         private void OnDestroy()=>ReleaseGeneration();
