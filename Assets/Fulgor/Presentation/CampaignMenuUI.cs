@@ -10,7 +10,7 @@ namespace Fulgor.Presentation.Map
         internal static GameObject Canvas(string name,Transform parent,int order)
         {
             var root=new GameObject(name,typeof(RectTransform),typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));root.transform.SetParent(parent,false);
-            var canvas=root.GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=order;
+            var canvas=root.GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=order;canvas.pixelPerfect=true;
             var scaler=root.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1920,1080);scaler.matchWidthOrHeight=.5f;
             return root;
         }
@@ -27,7 +27,7 @@ namespace Fulgor.Presentation.Map
         }
         internal static Text Text(string name,Transform parent,Vector2 anchor,Vector2 position,Vector2 size,string value,int fontSize,Color color)
         {
-            var rect=Rect(name,parent,anchor,position,size);var text=rect.gameObject.AddComponent<Text>();text.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var rect=Rect(name,parent,anchor,position,size);var text=rect.gameObject.AddComponent<CampaignSharpText>();text.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if(name.Contains("Title"))text.font=LegacyUI.Heading??text.font;
             text.text=value;text.fontSize=fontSize;text.color=color;text.raycastTarget=false;text.horizontalOverflow=HorizontalWrapMode.Wrap;text.verticalOverflow=VerticalWrapMode.Truncate;
             text.alignment=TextAnchor.MiddleCenter;return text;

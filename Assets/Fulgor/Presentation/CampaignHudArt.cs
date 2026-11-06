@@ -15,6 +15,15 @@ namespace Fulgor.Presentation.Map
             var sprite=Sprite.Create(texture,new Rect(uv.x*texture.width,uv.y*texture.height,uv.width*texture.width,uv.height*texture.height),new Vector2(.5f,.5f),100,0,SpriteMeshType.FullRect,border);
             sprites[key]=sprite;return sprite;
         }
+        internal static RectTransform KingdomBanner(Transform parent)
+        {
+            var banner=CampaignMenuUI.Rect("Campaign kingdom",parent,new Vector2(0,1),new Vector2(12,-8),new Vector2(490,175));
+            var crest=banner.gameObject.AddComponent<Image>();
+            crest.raycastTarget=false;
+            crest.preserveAspect=true;
+            crest.sprite=Slice("castilla-header","CityMap/castilla",new Rect(0,0,1,1));
+            return banner;
+        }
         internal static void Surface(RectTransform root,bool paper=false)
         {
             var clip=root.gameObject.AddComponent<CityPanelClip>();clip.Corner=12;
@@ -35,25 +44,45 @@ namespace Fulgor.Presentation.Map
             var rect=CampaignMenuUI.Rect(name,parent,Vector2.zero,Vector2.zero,Vector2.zero);
             rect.anchorMax=Vector2.one;rect.offsetMin=Vector2.one*inset;rect.offsetMax=-Vector2.one*inset;return rect;
         }
+        // A separate wash gives the surface feedback while illustrations keep their original colors.
+        internal static void AddButtonWash(Button button, RectTransform surface, float inset)
+        {
+            var rect = Stretch("Luz de latón", surface, inset);
+            var wash = rect.gameObject.AddComponent<Image>();
+            wash.raycastTarget = false;
+            button.targetGraphic = wash;
+            button.transition = Selectable.Transition.ColorTint;
+            var colors = ColorBlock.defaultColorBlock;
+            colors.normalColor = new Color(.88f,.53f,.22f,.10f);
+            colors.highlightedColor = new Color(1f,.73f,.32f,.26f);
+            colors.selectedColor = new Color(.96f,.66f,.28f,.17f);
+            colors.pressedColor = new Color(.62f,.28f,.10f,.33f);
+            colors.disabledColor = new Color(.45f,.40f,.33f,.12f);
+            colors.fadeDuration = .10f;
+            button.colors = colors;
+            wash.canvasRenderer.SetColor(button.interactable ? colors.normalColor : colors.disabledColor);
+        }
+
         internal static Button Button(string name,Transform parent,Vector2 position,Vector2 size,string text,UnityEngine.Events.UnityAction action)
         {
             var rect=CampaignMenuUI.Rect(name,parent,new Vector2(0,1),position,size);Surface(rect);
             var button=rect.gameObject.AddComponent<Button>();button.targetGraphic=rect.GetComponent<CityPanelClip>();
-            button.transition=Selectable.Transition.None;button.navigation=new Navigation{mode=Navigation.Mode.None};
+            AddButtonWash(button,rect,5);button.navigation=new Navigation{mode=Navigation.Mode.None};
             var label=CampaignMenuUI.Text("Label",rect,new Vector2(.5f,.5f),Vector2.zero,size-new Vector2(22,10),text,17,CampaignMenuUI.Paper);
             label.font=LegacyUI.Heading??label.font;
             var highlight=Stretch("Resalte interior",rect,5);highlight.gameObject.AddComponent<CitySelectionFrame>().raycastTarget=false;highlight.gameObject.SetActive(false);
             var hover=rect.gameObject.AddComponent<CampaignHudButtonFeedback>();hover.Configure(button,highlight.gameObject,label);
             if(action!=null)button.onClick.AddListener(action);return button;
         }
-        internal static void Resource(Transform parent,int index,Vector2 position,float size)
+        internal static Graphic Resource(Transform parent,int index,Vector2 position,float size)
         {
-            if(index==4){FulgorIcons.Create("Mano de obra",parent,FulgorIcon.Labor,position,size);return;}
+            if(index==0)return FulgorIcons.Create("Grano",parent,FulgorIcon.Grain,position,size);
+            if(index==4)return FulgorIcons.Create("Mano de obra",parent,FulgorIcon.Labor,position,size);
             // Source coordinates are normalized to the original 2172 x 724 reference.
             var source=new[]{new Rect(395,310,100,130),new Rect(762,320,140,113),new Rect(1178,322,129,109),new Rect(1607,322,130,107)}[index];
             var rect=CampaignMenuUI.Rect("Recurso "+index,parent,new Vector2(0,1),position,new Vector2(size,size));
             var image=rect.gameObject.AddComponent<KingdomPortraitGraphic>();image.texture=Resources.Load<Texture2D>("CityMap/resources_reference");
-            image.uvRect=new Rect(source.x/2172,source.y/724,source.width/2172,source.height/724);image.raycastTarget=false;
+            image.uvRect=new Rect(source.x/2172,source.y/724,source.width/2172,source.height/724);image.raycastTarget=false;return image;
         }
     }
     public sealed class CampaignHudButtonFeedback:MonoBehaviour,UnityEngine.EventSystems.IPointerEnterHandler,UnityEngine.EventSystems.IPointerExitHandler

@@ -27,7 +27,7 @@ namespace Fulgor.Presentation.Map
             var settlements = GetComponent<CampaignSettlementController>();
             if (State == null || IsCampaignFinished || HasPendingBattle || IsRivalPhaseActive || settlements == null ||
                 !settlements.CanManage(settlementId) || !SettlementState.TryGet(settlementId, out var city) ||
-                IsCityTileOccupied(tile.Coordinates) || !IsTileAssignedToCity(settlementId,tile.Coordinates) || incomeMap == null) return false;
+                VisibilityAt(tile.Coordinates)==CampaignVisibility.Unknown || IsCityTileOccupied(tile.Coordinates) || !IsTileAssignedToCity(settlementId,tile.Coordinates) || incomeMap == null) return false;
             bool actual = false;
             foreach (var cell in incomeMap.Cells) if (cell.Equals(tile)) { actual = true; break; }
             if (!actual) return false;
@@ -57,9 +57,39 @@ namespace Fulgor.Presentation.Map
             return true;
         }
 
+        public bool UsesCityPopulation => LogisticsEnabled && GetComponent<CampaignPlaySession>() != null;
+
+        public int LocalFood(string id)
+        {
+            int food = CityState(id).IncomePerTurn.Grain + (TileCity(id)?.ActiveIncome.Grain ?? 0) - CityState(id).UpkeepPerTurn.Grain;
+            if (incomeMap != null && SettlementState.TryGet(id, out var city))
+                foreach (var cell in incomeMap.Cells)
+                    if (VisibilityAt(cell.Coordinates)!=CampaignVisibility.Unknown && (city.Position.Equals(cell.Coordinates) || IsTileAssignedToCity(id, cell.Coordinates)))
+                        food += CityTileConstruction.Passive(cell).Grain;
+            return food;
+        }
+
+        private CampaignResources CivilUpkeep(CampaignSettlementRegistry owners, Dictionary<string, CityTileDevelopment> states)
+        {
+            int grain = 0;
+            if (UsesCityPopulation && owners != null)
+                foreach (var city in owners.Settlements)
+                    if (city.OwnerFactionId == incomeFaction)
+                        grain += CityTileDevelopment.FoodConsumption(states.TryGetValue(city.Id, out var town) ? town.Population : CityTileDevelopment.StartingPopulation);
+            return new CampaignResources(grain, 0, 0, 0, 0);
+        }
+
         private void ResetTileCities() { tileCities.Clear(); TileCityRevision++; }
         private void AdvanceTileCities()
         {
+            if (UsesCityPopulation && SettlementState != null)
+                foreach (var city in SettlementState.Settlements)
+                    if (city.OwnerFactionId == incomeFaction)
+                    {
+                        if (!tileCities.TryGetValue(city.Id, out var town))
+                            tileCities[city.Id] = town = new CityTileDevelopment();
+                        town.Grow(LocalFood(city.Id), CityState(city.Id).Houses);
+                    }
             foreach (var entry in tileCities)
                 if (SettlementState.TryGet(entry.Key, out var owner) && owner.OwnerFactionId == incomeFaction) entry.Value.Advance();
             TileCityRevision++;

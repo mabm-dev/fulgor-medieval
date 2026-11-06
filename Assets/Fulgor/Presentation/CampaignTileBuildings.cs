@@ -33,6 +33,7 @@ namespace Fulgor.Presentation.Map
             public Renderer[] renderers;
             public ShadowCastingMode[] shadows;
             public bool shown = true;
+            public string project;
         }
 
         /// <summary>La base de un edificio queda estos metros por debajo del suelo que hay bajo el borde de su huella: el borde no flota.</summary>
@@ -46,7 +47,7 @@ namespace Fulgor.Presentation.Map
         private Transform generation;
         private Texture2D groundTexture;
         public IReadOnlyList<GameObject> Placed => placed;
-        public bool Occupies(HexCoordinates cell) => HasBuildingAt(cell);
+        public bool Occupies(HexCoordinates cell) => slots.Exists(slot => slot.project == null && slot.cell.Equals(cell));
         /// <summary>Huellas publicadas para el suelo pisado del terreno; null sin edificios.</summary>
         public CampaignBuildingGroundMap GroundMap { get; private set; }
         /// <summary>Lo que tardó la última colocación (instanciar, asentar y publicar las huellas) y, de ello, el mapa de huellas.</summary>
@@ -70,6 +71,7 @@ namespace Fulgor.Presentation.Map
             var root = transform.Find("Generated Board");
             if (root == null || !root.gameObject.activeInHierarchy) { Clear(); return; }
             if (root != generation) Place(root);
+            SyncCityBuildings();
             ApplyFog();
         }
 
@@ -113,33 +115,81 @@ namespace Fulgor.Presentation.Map
             var watch = System.Diagnostics.Stopwatch.StartNew();
             Clear();
             generation = root;
-            var tiles = new Dictionary<HexCoordinates, HexTileView>();
+            tiles.Clear();
             foreach (var tile in root.GetComponentsInChildren<HexTileView>()) tiles[tile.Cell.Coordinates] = tile;
             foreach (var entry in entries)
             {
-                if (entry.prefab == null || !tiles.TryGetValue(new HexCoordinates(entry.cell.x, entry.cell.y), out var tile)) continue;
-                var collider = tile.GetComponent<MeshCollider>();
-                if (collider == null || collider.sharedMesh == null) continue;
-                var rotation = Quaternion.Euler(0f, YawForDoorMinute(entry.doorMinute), 0f);
-                var footprint = entry.prefab.GetComponent<CampaignBuildingFootprint>();
-                if (!TrySeat(collider, tile.transform.position, rotation, footprint, out var position)) continue;
-                var instance = Instantiate(entry.prefab, transform);
-                instance.name = string.IsNullOrEmpty(entry.label) ? entry.prefab.name : entry.label;
-                instance.transform.SetPositionAndRotation(position, rotation);
-                placed.Add(instance);
-                var renderers = instance.GetComponentsInChildren<Renderer>(true);
-                slots.Add(new Slot
-                {
-                    instance = instance, cell = new HexCoordinates(entry.cell.x, entry.cell.y), renderers = renderers,
-                    footprint = instance.GetComponent<CampaignBuildingFootprint>(), shadows = Array.ConvertAll(renderers, r => r.shadowCastingMode),
-                });
-                // la base del edificio toma la tierra pisada del terreno de su casilla (sombreador Fulgor/Terreno en modo edificio)
-                TakeGround(renderers, tile.Cell.Terrain, position.y + (footprint != null ? footprint.Bottom : 0f));
+                if (entry.prefab != null && tiles.TryGetValue(new HexCoordinates(entry.cell.x, entry.cell.y), out var tile))
+                    PlaceBuilding(tile, entry.prefab, entry.label, entry.doorMinute, null);
             }
             var mapWatch = System.Diagnostics.Stopwatch.StartNew();
             PublishGroundMap(tiles.Values);
             GroundMapMilliseconds = mapWatch.Elapsed.TotalMilliseconds;
             PlaceMilliseconds = watch.Elapsed.TotalMilliseconds;
+        }
+
+        private readonly Dictionary<HexCoordinates, HexTileView> tiles = new();
+        private int cityRevision = -1;
+
+        private void SyncCityBuildings()
+        {
+            var campaign = GetComponent<CampaignTurnController>();
+            if (campaign == null || campaign.SettlementState == null || cityRevision == campaign.TileCityRevision) return;
+            cityRevision = campaign.TileCityRevision;
+            var wanted = new Dictionary<HexCoordinates, string>();
+            foreach (var city in campaign.SettlementState.Settlements)
+            {
+                var state = campaign.TileCity(city.Id);
+                if (state == null) continue;
+                var data = state.Capture(city.Id);
+                foreach (var built in data.completed) wanted[new HexCoordinates(built.q, built.r)] = built.project;
+            }
+            bool changed = false;
+            for (int i = slots.Count - 1; i >= 0; i--)
+            {
+                var slot = slots[i];
+                if (slot.project == null || wanted.TryGetValue(slot.cell, out var project) && project == slot.project)
+                {
+                    wanted.Remove(slot.cell);
+                    continue;
+                }
+                slot.instance.SetActive(false);
+                placed.Remove(slot.instance);
+                Destroy(slot.instance);
+                slots.RemoveAt(i);
+                changed = true;
+            }
+            foreach (var entry in wanted)
+            {
+                string asset = entry.Value switch { "house" => "ViviendaSencilla", "farm" => "HuertoCampo", "lumber" => "Lenera", _ => null };
+                if (asset == null || !tiles.TryGetValue(entry.Key, out var tile)) continue;
+                var prefab = Resources.Load<GameObject>("Edificios/PF_" + asset);
+                if (prefab == null) continue;
+                PlaceBuilding(tile, prefab, asset, 30f, entry.Value);
+                changed = true;
+            }
+            if (changed) PublishGroundMap(tiles.Values);
+        }
+
+        private void PlaceBuilding(HexTileView tile, GameObject prefab, string label, float doorMinute, string project)
+        {
+            var collider = tile.GetComponent<MeshCollider>();
+            if (collider == null || collider.sharedMesh == null) return;
+            var rotation = Quaternion.Euler(0f, YawForDoorMinute(doorMinute), 0f);
+            var footprint = prefab.GetComponent<CampaignBuildingFootprint>();
+            if (!TrySeat(collider, tile.transform.position, rotation, footprint, out var position)) return;
+            var instance = Instantiate(prefab, transform);
+            instance.name = string.IsNullOrEmpty(label) ? prefab.name : label;
+            instance.transform.SetPositionAndRotation(position, rotation);
+            placed.Add(instance);
+            var renderers = instance.GetComponentsInChildren<Renderer>(true);
+            slots.Add(new Slot
+            {
+                project = project, instance = instance, cell = tile.Cell.Coordinates, renderers = renderers,
+                footprint = instance.GetComponent<CampaignBuildingFootprint>(), shadows = Array.ConvertAll(renderers, r => r.shadowCastingMode),
+            });
+            // la base del edificio toma la tierra pisada del terreno de su casilla (sombreador Fulgor/Terreno en modo edificio)
+            TakeGround(renderers, tile.Cell.Terrain, position.y + (footprint != null ? footprint.Bottom : 0f));
         }
 
         /// <summary>
@@ -238,6 +288,8 @@ namespace Fulgor.Presentation.Map
             placed.Clear();
             slots.Clear();
             generation = null;
+            tiles.Clear();
+            cityRevision = -1;
             ReleaseGroundMap();
         }
 

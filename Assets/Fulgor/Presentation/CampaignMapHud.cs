@@ -10,7 +10,7 @@ namespace Fulgor.Presentation.Map
     {
         private RectTransform kingdomHeader,campaignNavigation,campaignDrawer;
         private Text huesteTitle,huesteMovement,huesteTotals,formationDetails,orderNotice;
-        private Image kingdomCrest;
+        internal RectTransform KingdomHeader => kingdomHeader;
         private readonly Button[] troopCards=new Button[6];
         private readonly Text[] troopNames=new Text[6],troopCounts=new Text[6];
         private readonly RawImage[] troopPortraits=new RawImage[6];
@@ -41,9 +41,7 @@ namespace Fulgor.Presentation.Map
             focusAfterFrame=Time.frameCount+3;
             // Width based scaling keeps the two bottom panels and all resource slots disjoint at 4:3 and ultrawide.
             hudCanvas.GetComponent<CanvasScaler>().matchWidthOrHeight=0;
-            kingdomHeader=CreateRect("Campaign kingdom",canvas,new Vector2(490,175),new Vector2(12,-8));
-            kingdomCrest=kingdomHeader.gameObject.AddComponent<Image>();kingdomCrest.raycastTarget=false;kingdomCrest.preserveAspect=true;
-            kingdomCrest.sprite=CampaignHudArt.Slice("castilla-header","CityMap/castilla",new Rect(0,0,1,1));
+            kingdomHeader=CampaignHudArt.KingdomBanner(canvas);
 
             resourceBar=CreateRect("Campaign resource bar",canvas,new Vector2(1030,86),new Vector2(-225,-12));
             resourceBar.anchorMin=resourceBar.anchorMax=resourceBar.pivot=Vector2.one;
@@ -105,7 +103,7 @@ namespace Fulgor.Presentation.Map
             LocateObjectiveButton=CampaignHudArt.Button("Locate Objective",turnControls,new Vector2(24,-90),new Vector2(272,34),"VER OBJETIVO",ToggleObjective);
             EndTurnButton=CampaignHudArt.Button("End Turn",turnControls,new Vector2(24,-138),new Vector2(272,60),"FINALIZAR TURNO",null);
             EndTurnButton.GetComponentInChildren<Text>().fontSize=20;
-            EndTurnButton.transform.Find("Fondo").GetComponent<Image>().color=new Color(.75f,.34f,.29f);
+            EndTurnButton.transform.Find("Fondo").GetComponent<Image>().color=new Color(1f,.71f,.54f);
             missionSummary=HudText("Mission Summary",turnControls,Vector2.zero,Vector2.one,"",1);missionSummary.gameObject.SetActive(false);
             // Keep the established event API for save/load and diagnostics; these live exclusively in pause in a playable campaign.
             utilityPanel=CreateRect("Campaign tools",canvas,Vector2.one,Vector2.zero);
