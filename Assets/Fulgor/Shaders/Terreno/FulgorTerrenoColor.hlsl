@@ -150,6 +150,11 @@ void FulgorTerrainSurface(inout SurfaceData surfaceData, inout InputData inputDa
 #if defined(_FULGOR_EDIFICIO)
     FulgorBuildingBase(surfaceData, inputData.positionWS);
 #else
+    // Tinte de la casilla: la niebla (explorada, ×0,42), la selección o el paso del ratón llegan en _BaseColor con un MaterialPropertyBlock. El
+    // color del terreno se calcula con el color propio del material (_FulgorBaseTint) y el tinte se aplica al final, también a la hierba y a la
+    // roca que este sombreador pinta por su cuenta: sin esto, una casilla explorada dejaba la hierba a plena luz.
+    half3 tint = _BaseColor.rgb / max(_FulgorBaseTint.rgb, 0.001);
+    surfaceData.albedo /= max(tint, 0.001);
     #if defined(_FULGOR_MONTANA)
     surfaceData.albedo = FulgorMountainColor(inputData.positionWS, inputData.normalWS, vertexColor);
     surfaceData.smoothness = 0.12;
@@ -174,6 +179,7 @@ void FulgorTerrainSurface(inout SurfaceData surfaceData, inout InputData inputDa
         if (distance < 0.38)
             surfaceData.albedo = lerp(surfaceData.albedo, FulgorSueloPisado(surfaceData.albedo, inputData.positionWS, distance, earth, tufts), ground);
     }
+    surfaceData.albedo *= tint;
 #endif
 }
 

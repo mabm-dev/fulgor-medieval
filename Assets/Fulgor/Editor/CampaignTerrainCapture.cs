@@ -100,6 +100,14 @@ namespace Fulgor.Editor
                 }
                 var fortress = new HexCoordinates(13, 8);
                 if (tiles.TryGetValue(fortress, out var home)) views.Add(("fortaleza", home.transform.position, 6.5f, 52f));
+                // -fulgorExplorado <radio>: las casillas a esa distancia de la fortaleza se ven como exploradas y no visibles (la niebla las oscurece)
+                if (int.TryParse(ReadArgument("-fulgorExplorado"), out int explored))
+                {
+                    foreach (var pair in tiles)
+                        if (pair.Key.DistanceTo(fortress) <= explored && pair.Key.DistanceTo(fortress) > 0)
+                            pair.Value.SetFogVisibility(Fulgor.Core.Campaign.CampaignVisibility.Explored);
+                    report.AppendLine($"Casillas exploradas hasta {explored} de la fortaleza");
+                }
                 var plain = tiles.Values.Where(t => t.Cell.Terrain == TerrainType.Plain)
                     .OrderByDescending(t => Neighbours(t.Cell.Coordinates).Count(n => tiles.TryGetValue(n, out var x) && x.Cell.Terrain == TerrainType.Plain))
                     .ThenBy(t => t.Cell.Coordinates.Q).ThenBy(t => t.Cell.Coordinates.R).FirstOrDefault();
@@ -116,6 +124,12 @@ namespace Fulgor.Editor
                 SessionState.SetInt(Stage, 2); EditorApplication.isPlaying = false;
             }
             catch (Exception e) { Debug.LogException(e); SessionState.SetBool(Running, false); EditorApplication.Exit(1); }
+        }
+
+        static string ReadArgument(string name)
+        {
+            var args = Environment.GetCommandLineArgs(); int at = Array.IndexOf(args, name);
+            return at >= 0 && at + 1 < args.Length ? args[at + 1] : null;
         }
 
         static readonly HexCoordinates[] Directions = { new(1, 0), new(1, -1), new(0, -1), new(-1, 0), new(-1, 1), new(0, 1) };

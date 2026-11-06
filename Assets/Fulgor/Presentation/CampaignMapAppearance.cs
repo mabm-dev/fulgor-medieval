@@ -47,11 +47,15 @@ namespace Fulgor.Presentation.Map
             WaterLayout=new ConnectedWaterLayout(centers,water);
             var materials=new Material[5];
             for(int i=0;i<5;i++) {
-                var source=i==0?settings.WaterMaterial:settings.TerrainMaterial(i);
+                bool shaded=i>0&&settings.TerrainShader!=null&&!fixedPiecesOnly;
+                // el suelo usa el material ya preparado con el sombreador del terreno (sus variantes van en la build); si no lo hay, se cambia aquí
+                var source=i==0?settings.WaterMaterial:shaded&&settings.TerrainShaderMaterial(i)!=null?settings.TerrainShaderMaterial(i):settings.TerrainMaterial(i);
                 materials[i]=new Material(source){name=source.name+" · campaña",enableInstancing=true};
                 // el suelo cambia al sombreador del terreno conservando su textura; la variación sale de la posición en el mundo
-                if(i>0&&settings.TerrainShader!=null&&!fixedPiecesOnly) {
-                    materials[i].shader=settings.TerrainShader;materials[i].SetFloat("_FulgorGroundY",root.position.y+CampaignMountainRelief.EdgeHeight);
+                if(shaded) {
+                    if(materials[i].shader!=settings.TerrainShader)materials[i].shader=settings.TerrainShader;
+                    materials[i].SetFloat("_FulgorGroundY",root.position.y+CampaignMountainRelief.EdgeHeight);
+                    materials[i].SetColor("_FulgorBaseTint",CampaignVisualPalette.TerrainTint((TerrainType)i));
                     if(settings.TerrainNoise!=null)materials[i].SetTexture("_FulgorNoise",settings.TerrainNoise);
                     // la llanura es casi plana: la luz de su montículo dibujaba el panal; el suelo del bosque, a medias; la colina tiene relieve real
                     materials[i].SetFloat("_FulgorFlatten",(TerrainType)i==TerrainType.Plain?.85f:(TerrainType)i==TerrainType.Forest?.6f:0f);
