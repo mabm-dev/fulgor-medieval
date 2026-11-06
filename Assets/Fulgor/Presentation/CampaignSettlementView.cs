@@ -94,7 +94,7 @@ namespace Fulgor.Presentation.Map
             var template=Resources.Load<Material>("Hueste/M_Territorio");
             if(template==null)return;
             if(shadeMaterial==null)shadeMaterial=new Material(template);
-            color.a=.30f;shadeMaterial.SetColor("_BaseColor",color);
+            color.a=.22f;shadeMaterial.SetColor("_BaseColor",color); // un velo: con .30 el rojo tapaba el suelo
             foreach(var coordinate in set)
             {
                 if(!tiles.TryGetValue(coordinate,out var tile)||tile==null||tile.Cell.Terrain==TerrainType.Mountain)continue;
@@ -125,8 +125,24 @@ namespace Fulgor.Presentation.Map
                 if(source==null||copy==null)continue;
                 if(copy.sharedMesh!=source.sharedMesh)copy.sharedMesh=source.sharedMesh;
                 Follow(copy.transform,source.transform);
+                Darken(copy,source.GetComponent<HexTileView>());
             }
         }
+        /// <summary>
+        /// En una casilla explorada y no visible el suelo se oscurece (×0,42, CampaignFogMap/HexTileView): el sombreado del territorio también,
+        /// o el rojo queda intenso sobre un suelo casi negro.
+        /// </summary>
+        private void Darken(MeshFilter copy,HexTileView tile)
+        {
+            bool dark=tile!=null&&tile.FogVisibility!=Fulgor.Core.Campaign.CampaignVisibility.Visible;
+            var renderer=copy.GetComponent<MeshRenderer>();
+            if(renderer==null||shadeMaterial==null||renderer.HasPropertyBlock()==dark)return;
+            if(!dark){renderer.SetPropertyBlock(null);return;}
+            shadeBlock??=new MaterialPropertyBlock();
+            var color=shadeMaterial.GetColor("_BaseColor");shadeBlock.SetColor("_BaseColor",new Color(color.r*.42f,color.g*.42f,color.b*.42f,color.a));
+            renderer.SetPropertyBlock(shadeBlock);
+        }
+        private MaterialPropertyBlock shadeBlock;
         private static Vector3 Corner(float degrees,float radius){float a=degrees*Mathf.Deg2Rad;return new Vector3(Mathf.Cos(a),0,Mathf.Sin(a))*radius;}
         private static Vector2Int Key(Vector3 point)=>new(Mathf.RoundToInt(point.x*20),Mathf.RoundToInt(point.z*20));
         private static Vector3 OnGround(System.Collections.Generic.List<MeshCollider> colliders,Vector3 point,float lift=.16f)

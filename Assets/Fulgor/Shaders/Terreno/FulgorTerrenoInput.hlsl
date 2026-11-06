@@ -43,6 +43,7 @@ half _FulgorPieceLuma;
 half _FulgorFlatten;
 half _FulgorSinRuido;
 float _FulgorGroundY;
+half4 _FulgorBaseTint;
 half _FulgorMontana;
 half4 _FulgorRockColor;
 half4 _FulgorRockDark;

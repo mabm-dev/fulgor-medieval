@@ -188,6 +188,31 @@ namespace Fulgor.Editor
             var settings = AssetDatabase.LoadAssetAtPath<CampaignMapAppearanceSettings>(SettingsPath)
                 ?? throw new InvalidOperationException("Falta " + SettingsPath);
             var data = new SerializedObject(settings);
+
+            // Llanura, bosque, colina y montaña fija con el sombreador del terreno, guardados como recursos. Antes se cambiaba el sombreador al
+            // jugar y la build no llevaba esas variantes (_NORMALMAP y _METALLICSPECGLOSSMAP sin modo montaña): las casillas salían negras.
+            var lit = data.FindProperty("terrainMaterials"); var prepared = data.FindProperty("terrainShaderMaterials");
+            prepared.arraySize = lit.arraySize;
+            for (int i = 0; i < lit.arraySize; i++)
+            {
+                var source = lit.GetArrayElementAtIndex(i).objectReferenceValue as Material;
+                if (i == 0 || source == null) { prepared.GetArrayElementAtIndex(i).objectReferenceValue = null; continue; } // 0: el agua tiene el suyo
+                string path = $"{Folder}/{source.name}_Fulgor.mat";
+                var land = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (land == null) { land = new Material(source); AssetDatabase.CreateAsset(land, path); }
+                else { land.shader = source.shader; land.CopyPropertiesFromMaterial(source); }
+                land.shader = shader;
+                land.shaderKeywords = source.shaderKeywords;
+                ResetTerrainDefaults(land, shader);
+                land.SetFloat("_FulgorMontana", 0f); land.SetFloat("_FulgorEdificio", 0f);
+                land.DisableKeyword("_FULGOR_MONTANA"); land.DisableKeyword("_FULGOR_EDIFICIO");
+                land.SetTexture("_FulgorNoise", noise);
+                land.SetFloat("_FulgorFlatten", i == 1 ? .85f : i == 2 ? .6f : 0f); // llanura, bosque; la colina y la montaña tienen relieve real
+                land.enableInstancing = true;
+                EditorUtility.SetDirty(land);
+                prepared.GetArrayElementAtIndex(i).objectReferenceValue = land;
+                Debug.Log($"Suelo preparado: {path} ({string.Join(" ", land.shaderKeywords)})");
+            }
             data.FindProperty("terrainShader").objectReferenceValue = shader;
             data.FindProperty("reliefMountainMaterial").objectReferenceValue = material;
             data.FindProperty("reliefSubdivisions").intValue = 32;

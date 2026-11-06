@@ -20,6 +20,7 @@ Shader "Fulgor/Terreno"
         _FulgorFlatten("Aplanar la luz del suelo", Range(0, 1)) = 0
         [HideInInspector] _FulgorSinRuido("Medición: sin ruido", Float) = 0
         _FulgorGroundY("Altura del suelo en el mundo", Float) = 0.12
+        [HideInInspector] _FulgorBaseTint("Color base propio del material (sin niebla ni selección)", Color) = (1, 1, 1, 1)
         [Toggle(_FULGOR_MONTANA)] _FulgorMontana("Montaña generada", Float) = 0
         _FulgorRockColor("Roca clara", Color) = (0.70, 0.65, 0.56, 1)
         _FulgorRockDark("Roca oscura", Color) = (0.31, 0.28, 0.25, 1)

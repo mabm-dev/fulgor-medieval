@@ -20,6 +20,8 @@ namespace Fulgor.Presentation.Map
         private bool selectionOutline;
         private Fulgor.Core.Campaign.CampaignVisibility visibility=Fulgor.Core.Campaign.CampaignVisibility.Visible;
         public void SetFogVisibility(Fulgor.Core.Campaign.CampaignVisibility value){if(visibility==value)return;visibility=value;ApplyColor();}
+        /// <summary>Visibilidad de la casilla según la niebla, la misma con la que se oscurece su color.</summary>
+        public Fulgor.Core.Campaign.CampaignVisibility FogVisibility=>visibility;
         public void UseSelectionOutline(bool value){selectionOutline=value;ApplyColor();}
 
         public MapCell Cell { get; private set; }
