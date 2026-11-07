@@ -546,6 +546,14 @@ MonoBehaviour:
     cell: {x: 14, y: 10}
     prefab: {fileID: 108795028662442658, guid: fc69086af888f34468223aaf2e765bf9, type: 3}
     doorMinute: 38.184437
+  - label: Cerca reforzada
+    cell: {x: 15, y: 9}
+    prefab: {fileID: 8625979482083555375, guid: 17334e7f92d6c7d44b6b466a5a6909f1, type: 3}
+    doorMinute: 41.815567
+  - label: Casa de aldea
+    cell: {x: 14, y: 8}
+    prefab: {fileID: 863635122655164261, guid: c730bc255f193b64ab8fed49b564cc9c, type: 3}
+    doorMinute: 45
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0

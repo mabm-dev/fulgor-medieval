@@ -1,0 +1,130 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &863635122655164261
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8675897255056652927}
+  - component: {fileID: 4691211733677509934}
+  m_Layer: 0
+  m_Name: PF_CasaAldea
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8675897255056652927
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 863635122655164261}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 269651394903657778}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4691211733677509934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 863635122655164261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a3b771eb864c754bbf61e9b36d5ccf6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignBuildingFootprint
+  centre: {x: -0.00004145503, y: 0.0021579117}
+  halfSize: {x: 0.31846532, y: 0.4406724}
+  cornerRadius: 0.061450645
+  bottom: -0.000000011120306
+  baseHeight: 0.049000002
+--- !u!1001 &303790658950703833
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 8675897255056652927}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 89.44342
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 89.44342
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 89.44342
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.000000030908616
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.00000003090862
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071067
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 29cd7ddf52be24f4e9e1a4f49408ae2d, type: 2}
+    - target: {fileID: 919132149155446097, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+      propertyPath: m_Name
+      value: SM_CasaAldea
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+--- !u!4 &269651394903657778 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3f875dfdb66a747458e4b421a81fb4b1, type: 3}
+  m_PrefabInstance: {fileID: 303790658950703833}
+  m_PrefabAsset: {fileID: 0}

@@ -52,6 +52,9 @@ namespace Fulgor.Editor
             new("PatioMesnadas", "Patio de mesnadas", new Vector2Int(12, 8), -1f), // colina junto a la fortaleza: en llanura no queda casilla visible
             new("Empalizada", "Empalizada", new Vector2Int(11, 10), -1f),
             new("HuertoCampo", "Huerto o campo", new Vector2Int(14, 10), -1f),
+            // edad 02; Tripo la entregó ya con textura y UV (modo directo del script de Blender), sin pasar por TRELLIS
+            new("CercaReforzada", "Cerca reforzada", new Vector2Int(15, 9), -1f), // colina: las llanuras visibles ya están ocupadas
+            new("CasaAldea", "Casa de aldea", new Vector2Int(14, 8), -1f), // colina con oro junto a la fortaleza: lo único visible que queda libre
         };
 
         [MenuItem("Fulgor/Arte/Preparar edificios de casilla")]
