@@ -208,8 +208,19 @@ namespace Fulgor.Presentation.Map
             if (details == null) return;
             details.text = cell.HasValue
                 ? $"{TerrainName(cell.Value.Terrain)}  ·  {cell.Value.Coordinates.Key}\n" +
-                  (cell.Value.Terrain==TerrainType.Mountain ? "Montaña · sin recursos" : cell.Value.HasGold ? "Veta de oro presente" : "Sin veta de oro")
+                  (cell.Value.Terrain==TerrainType.Mountain ? "Montaña · sin recursos" : ResourceLine(cell.Value.Coordinates))
                 : "Selecciona una casilla del mapa.\nLas ciudades abren su gestión con un clic.";
+        }
+
+        // el yacimiento de la casilla (ResourceDepositLayout) y, si ya la tiene, la mina construida encima
+        private string ResourceLine(HexCoordinates cell)
+        {
+            var campaign = GetComponent<CampaignTurnController>();
+            var deposit = campaign != null ? campaign.DepositAt(cell) : ResourceDepositKind.None;
+            var built = campaign != null ? campaign.CityTileBuildingAt(cell) : null;
+            if (built == "goldmine") return "Mina de oro";
+            if (built == "quarry") return "Cantera";
+            return deposit == ResourceDepositKind.Gold ? "Yacimiento de oro" : deposit == ResourceDepositKind.Stone ? "Yacimiento de piedra" : "Sin yacimiento";
         }
 
         public void SetFogMode(bool enabled){if(diagnostics!=null)diagnostics.gameObject.SetActive(!enabled);}

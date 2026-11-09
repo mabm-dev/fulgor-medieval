@@ -27,7 +27,8 @@ namespace Fulgor.Core.Campaign
 
         public Dictionary<string, CityTileDevelopment> Restore(
             IReadOnlyDictionary<string, HexCoordinates> centers,
-            IReadOnlyDictionary<HexCoordinates, MapCell> map)
+            IReadOnlyDictionary<HexCoordinates, MapCell> map,
+            IReadOnlyDictionary<HexCoordinates, ResourceDepositKind> deposits = null)
         {
             if (centers == null || map == null) throw new ArgumentNullException();
             if (schemaVersion != 1 || cities == null) throw new ArgumentException("Bloque de construcciones incompatible.");
@@ -38,7 +39,7 @@ namespace Fulgor.Core.Campaign
                 if (data == null || string.IsNullOrWhiteSpace(data.settlementId) ||
                     !centers.TryGetValue(data.settlementId, out var center) || restored.ContainsKey(data.settlementId))
                     throw new ArgumentException("Ciudad desconocida o repetida.");
-                var state = CityTileDevelopment.Restore(center, data, map);
+                var state = CityTileDevelopment.Restore(center, data, map, deposits);
                 foreach (var item in data.completed)
                     if (!occupied.Add(new HexCoordinates(item.q, item.r))) throw new ArgumentException("Casilla asignada a dos ciudades.");
                 foreach (var item in data.pending)

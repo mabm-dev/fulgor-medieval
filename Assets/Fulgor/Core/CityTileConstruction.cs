@@ -7,7 +7,11 @@ namespace Fulgor.Core.Campaign
     /// <summary>Reglas provisionales de colocación; no modifica la economía ni el guardado existente.</summary>
     public static class CityTileConstruction
     {
-        public static bool IsAssigned(CampaignSettlementRegistry settlements, string id, HexCoordinates tile)
+        /// <summary>La mina y la cantera llegan a los yacimientos de su ciudad hasta esta distancia; el resto de obras, solo al primer anillo.</summary>
+        public const int MineReach = 3;
+        public static int ReachOf(string project) => project == "goldmine" || project == "quarry" ? MineReach : 1;
+
+        public static bool IsAssigned(CampaignSettlementRegistry settlements, string id, HexCoordinates tile, int reach = 1)
         {
             if (settlements == null) return false;
             CampaignSettlement nearest = null; var distance = int.MaxValue;
@@ -16,12 +20,25 @@ namespace Fulgor.Core.Campaign
                 var next = city.Position.DistanceTo(tile);
                 if (next < distance || next == distance && string.CompareOrdinal(city.Id, nearest?.Id) < 0) { distance = next; nearest = city; }
             }
-            return nearest != null && nearest.Id == id && distance == 1;
+            return nearest != null && nearest.Id == id && distance >= 1 && distance <= reach;
         }
-        public static bool CanPlace(HexCoordinates city, MapCell cell, string project, bool occupied)
+        /// <summary>Obra que encaja en un yacimiento: la mina de oro o la cantera; null sin yacimiento.</summary>
+        public static string MineFor(ResourceDepositKind deposit) => deposit switch {
+            ResourceDepositKind.Gold => "goldmine",
+            ResourceDepositKind.Stone => "quarry",
+            _ => null
+        };
+
+        public static bool CanPlace(HexCoordinates city, MapCell cell, string project, bool occupied, ResourceDepositKind deposit = ResourceDepositKind.None)
         {
-            if (occupied || city.DistanceTo(cell.Coordinates) != 1) return false;
+            if (occupied) return false;
+            var distance = city.DistanceTo(cell.Coordinates);
+            if (distance < 1 || distance > ReachOf(project)) return false;
             return project switch {
+                // la mina de oro y la cantera solo sobre su yacimiento; un yacimiento queda reservado para su mina
+                "goldmine" => deposit == ResourceDepositKind.Gold && ResourceDepositLayout.IsEligible(cell.Terrain),
+                "quarry" => deposit == ResourceDepositKind.Stone && ResourceDepositLayout.IsEligible(cell.Terrain),
+                _ when deposit != ResourceDepositKind.None => false,
                 "house" => cell.Terrain == TerrainType.Plain || cell.Terrain == TerrainType.Hill,
                 "farm" => cell.Terrain == TerrainType.Plain,
                 "lumber" => cell.Terrain == TerrainType.Forest,
@@ -36,16 +53,20 @@ namespace Fulgor.Core.Campaign
             _ => default
         };
 
-        public static CampaignResources Passive(MapCell cell)
+        // La marca de oro del generador (MapCell.HasGold) ya no produce: el oro sale de los yacimientos (ResourceDepositLayout).
+        public static CampaignResources Passive(MapCell cell, ResourceDepositKind deposit = ResourceDepositKind.None)
         {
             if(cell.Terrain==TerrainType.Mountain)return default;
             var terrain = Passive(cell.Terrain);
-            return terrain.Add(new CampaignResources(0, 0, 0, cell.HasGold ? 1 : 0, cell.Terrain == TerrainType.Water ? 0 : 1));
+            return terrain.Add(new CampaignResources(0, 0, 0, 0, cell.Terrain == TerrainType.Water ? 0 : 1)).Add(ResourceDepositLayout.Yield(deposit));
         }
 
         public static CampaignResources Active(string project) => project switch {
             "farm" => new CampaignResources(3, 0, 0, 0, 0),
             "lumber" => new CampaignResources(0, 3, 0, 0, 0),
+            // sobre el +1 del yacimiento: con la mina, +3 de oro o de piedra por turno
+            "goldmine" => new CampaignResources(0, 0, 0, 2, 0),
+            "quarry" => new CampaignResources(0, 0, 2, 0, 0),
             // La población todavía no se simula; no se inventa un ingreso de mano de obra.
             _ => default
         };
@@ -54,6 +75,8 @@ namespace Fulgor.Core.Campaign
             "house" => new CampaignResources(0, 10, 0, 0, 5),
             "farm" => new CampaignResources(0, 15, 0, 0, 10),
             "lumber" => new CampaignResources(0, 5, 0, 0, 6),
+            "goldmine" => new CampaignResources(0, 20, 10, 0, 10),
+            "quarry" => new CampaignResources(0, 15, 0, 0, 8),
             _ => throw new ArgumentException("Edificio desconocido.", nameof(project))
         };
     }
@@ -73,9 +96,12 @@ namespace Fulgor.Core.Campaign
 
         public bool Contains(HexCoordinates tile) => orders.Exists(o => o.q == tile.Q && o.r == tile.R);
 
-        public bool TryAdd(HexCoordinates city, MapCell tile, string project, bool alreadyBuilt)
+        internal static ResourceDepositKind DepositAt(IReadOnlyDictionary<HexCoordinates, ResourceDepositKind> deposits, HexCoordinates tile) =>
+            deposits != null && deposits.TryGetValue(tile, out var kind) ? kind : ResourceDepositKind.None;
+
+        public bool TryAdd(HexCoordinates city, MapCell tile, string project, bool alreadyBuilt, ResourceDepositKind deposit = ResourceDepositKind.None)
         {
-            if (!CityTileConstruction.CanPlace(city, tile, project, alreadyBuilt || Contains(tile.Coordinates))) return false;
+            if (!CityTileConstruction.CanPlace(city, tile, project, alreadyBuilt || Contains(tile.Coordinates), deposit)) return false;
             orders.Add(new CityTileOrderData { q = tile.Coordinates.Q, r = tile.Coordinates.R, project = project, turnsRemaining = 2 });
             return true;
         }
@@ -107,7 +133,8 @@ namespace Fulgor.Core.Campaign
             return first;
         }
 
-        public static CityTileQueue Restore(HexCoordinates city, CityTileOrderData[] data, IReadOnlyDictionary<HexCoordinates, MapCell> map)
+        public static CityTileQueue Restore(HexCoordinates city, CityTileOrderData[] data, IReadOnlyDictionary<HexCoordinates, MapCell> map,
+            IReadOnlyDictionary<HexCoordinates, ResourceDepositKind> deposits = null)
         {
             if (data == null || map == null) throw new ArgumentNullException();
             var restored = new CityTileQueue();
@@ -117,7 +144,7 @@ namespace Fulgor.Core.Campaign
                 if (item == null || item.turnsRemaining < 1 || item.turnsRemaining > 2 || (i > 0 && item.turnsRemaining != 2))
                     throw new ArgumentException("Obra inválida.");
                 var position = new HexCoordinates(item.q, item.r);
-                if (!map.TryGetValue(position, out var cell) || !restored.TryAdd(city, cell, item.project, false))
+                if (!map.TryGetValue(position, out var cell) || !restored.TryAdd(city, cell, item.project, false, DepositAt(deposits, position)))
                     throw new ArgumentException("Casilla o edificio inválido.");
                 restored.orders[i].turnsRemaining = item.turnsRemaining;
             }
@@ -158,8 +185,8 @@ namespace Fulgor.Core.Campaign
         public bool IsOccupied(HexCoordinates position) => completed.ContainsKey(position) || queue.Contains(position);
         public string BuildingAt(HexCoordinates position) => completed.TryGetValue(position, out var project) ? project : null;
 
-        public bool TryAdd(HexCoordinates city, MapCell tile, string project) =>
-            queue.TryAdd(city, tile, project, completed.ContainsKey(tile.Coordinates));
+        public bool TryAdd(HexCoordinates city, MapCell tile, string project, ResourceDepositKind deposit = ResourceDepositKind.None) =>
+            queue.TryAdd(city, tile, project, completed.ContainsKey(tile.Coordinates), deposit);
 
         public bool Cancel(HexCoordinates position) => queue.Cancel(position);
 
@@ -189,7 +216,8 @@ namespace Fulgor.Core.Campaign
             return new CityTileDevelopmentData { population = Population, settlementId = settlementId, pending = queue.Capture(), completed = built.ToArray() };
         }
 
-        public static CityTileDevelopment Restore(HexCoordinates city, CityTileDevelopmentData data, IReadOnlyDictionary<HexCoordinates, MapCell> map)
+        public static CityTileDevelopment Restore(HexCoordinates city, CityTileDevelopmentData data, IReadOnlyDictionary<HexCoordinates, MapCell> map,
+            IReadOnlyDictionary<HexCoordinates, ResourceDepositKind> deposits = null)
         {
             if (data == null || string.IsNullOrWhiteSpace(data.settlementId) || data.pending == null || data.completed == null || map == null)
                 throw new ArgumentException("Estado de ciudad inválido.");
@@ -199,11 +227,12 @@ namespace Fulgor.Core.Campaign
             {
                 if (item == null || item.turnsRemaining != 0) throw new ArgumentException("Edificio inválido.");
                 var position = new HexCoordinates(item.q, item.r);
-                if (!map.TryGetValue(position, out var cell) || !CityTileConstruction.CanPlace(city, cell, item.project, result.IsOccupied(position)))
+                if (!map.TryGetValue(position, out var cell) ||
+                    !CityTileConstruction.CanPlace(city, cell, item.project, result.IsOccupied(position), CityTileQueue.DepositAt(deposits, position)))
                     throw new ArgumentException("Casilla o edificio inválido.");
                 result.completed.Add(position, item.project);
             }
-            result.queue = CityTileQueue.Restore(city, data.pending, map);
+            result.queue = CityTileQueue.Restore(city, data.pending, map, deposits);
             foreach (var item in result.queue.Capture())
                 if (result.completed.ContainsKey(new HexCoordinates(item.q, item.r))) throw new ArgumentException("Casilla duplicada.");
             return result;

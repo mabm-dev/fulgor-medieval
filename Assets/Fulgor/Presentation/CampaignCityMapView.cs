@@ -32,6 +32,24 @@ namespace Fulgor.Presentation.Map
         private Sprite ringSprite, turnBadgeSprite;
         private Texture2D turnBadgeTexture;
         private readonly Sprite[] buildingIcons = new Sprite[Projects.Length];
+        // minas sobre yacimiento: no ocupan hueco en la barra; una casilla con yacimiento ofrece directamente la suya
+        private readonly Dictionary<string, Sprite> mineIcons = new();
+        private static string MineName(string project) => project == "goldmine" ? "Mina de oro" : project == "quarry" ? "Cantera" : null;
+        private string ProjectFor(HexTileView tile) =>
+            (tile != null ? CityTileConstruction.MineFor(campaign.DepositAt(tile.Cell.Coordinates)) : null) ?? Projects[selected];
+        private bool InReach(HexTileView tile, string project) =>
+            campaign.IsTileAssignedToCity(city.Id, tile.Cell.Coordinates, CityTileConstruction.ReachOf(project));
+        private Sprite IconFor(string project)
+        {
+            int index = System.Array.IndexOf(Projects, project);
+            if (index >= 0) return buildingIcons[index];
+            if (mineIcons.TryGetValue(project, out var sprite)) return sprite;
+            var texture = Resources.Load<Texture2D>("CityMap/" + project);
+            sprite = texture != null ? Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f)) : null;
+            if (sprite != null) ownedSprites.Add(sprite);
+            mineIcons[project] = sprite;
+            return sprite;
+        }
         private int selected = 1, revision = -1, closedFrame = -1;
         public bool IsOpen => root != null && root.activeSelf;
         public bool ClosedThisFrame => closedFrame == Time.frameCount;
@@ -244,12 +262,15 @@ namespace Fulgor.Presentation.Map
             legendTitle.text=Names[selected];
             legendIcon.sprite=buildingIcons[selected];
             bool unknown=tile!=null && campaign.VisibilityAt(tile.Cell.Coordinates)==CampaignVisibility.Unknown;
-            if(tile==null||unknown){legendTerrain.text="";description.color=CampaignMenuUI.Paper;description.text=unknown?"Territorio sin explorar.":"Señala una casilla del primer anillo.";for(int i=0;i<4;i++)SetRow(i,default);return;}
+            if(tile==null||unknown){legendTerrain.text="";description.color=CampaignMenuUI.Paper;description.text=unknown?"Territorio sin explorar.":"Señala una casilla del primer anillo o un yacimiento cercano.";for(int i=0;i<4;i++)SetRow(i,default);return;}
             bool occupied=campaign.IsCityTileOccupied(tile.Cell.Coordinates);
-            bool valid=campaign.IsTileAssignedToCity(city.Id,tile.Cell.Coordinates)&&CityTileConstruction.CanPlace(city.Position,tile.Cell,Projects[selected],occupied);
-            var passive=CityTileConstruction.Passive(tile.Cell);var active=valid?CityTileConstruction.Active(Projects[selected]):default;
-            var cost=CityTileConstruction.Cost(Projects[selected]);
+            var deposit=campaign.DepositAt(tile.Cell.Coordinates);var project=ProjectFor(tile);
+            if(MineName(project)!=null){legendTitle.text=MineName(project);legendIcon.sprite=IconFor(project);}
+            bool valid=InReach(tile,project)&&CityTileConstruction.CanPlace(city.Position,tile.Cell,project,occupied,deposit);
+            var passive=CityTileConstruction.Passive(tile.Cell,deposit);var active=valid?CityTileConstruction.Active(project):default;
+            var cost=CityTileConstruction.Cost(project);
             string terrain=tile.Cell.Terrain switch {TerrainType.Plain=>"Llanura",TerrainType.Forest=>"Bosque",TerrainType.Hill=>"Colina",TerrainType.Mountain=>"Montaña",_=>"Agua"};
+            if(deposit!=ResourceDepositKind.None)terrain+=deposit==ResourceDepositKind.Gold?" · yacimiento de oro":" · yacimiento de piedra";
             legendTerrain.text=terrain+"  ·  "+tile.Cell.Coordinates.Key;
             SetRow(0,passive);SetRow(1,active);SetRow(2,passive.Add(active));SetRow(3,cost);
             var development=campaign.TileCity(city.Id);var existing=development?.BuildingAt(tile.Cell.Coordinates);
@@ -273,15 +294,16 @@ namespace Fulgor.Presentation.Map
             else if(!valid)
             {
                 description.color=new Color(1f,.68f,.60f);
-                description.text=!campaign.IsTileAssignedToCity(city.Id,tile.Cell.Coordinates)
+                description.text=!InReach(tile,project)
                     ? "Fuera del territorio de esta ciudad."
-                    : "Terreno no válido\n"+(selected==0?"La vivienda necesita llanura o colina.":selected==1?"El huerto necesita llanura.":"La leñera necesita bosque.");
+                    : "Terreno no válido\n"+(MineName(project)!=null?"El yacimiento no admite esta obra.":selected==0?"La vivienda necesita llanura o colina.":selected==1?"El huerto necesita llanura.":"La leñera necesita bosque.");
             }
             else
             {
                 description.color=affordable?new Color(.76f,.93f,.67f):new Color(1f,.70f,.56f);
                 description.text=affordable?"Terreno válido · obra de 2 turnos\nClic izquierdo para construir.":"Faltan recursos\nConsulta el coste inicial.";
-                if(affordable && selected==0)description.text+="  +10 plazas";
+                if(affordable && project=="house")description.text+="  +10 plazas";
+                if(MineName(project)!=null)description.text=(affordable?"Yacimiento · obra de 2 turnos\nClic izquierdo para construir ":"Faltan recursos para ")+MineName(project).ToLowerInvariant()+".";
             }
         }
         private void SetRow(int row,CampaignResources values)
@@ -305,7 +327,7 @@ namespace Fulgor.Presentation.Map
         public bool Place(HexTileView tile)
         {
             if(!IsOpen||tile==null)return false;
-            bool placed=campaign.TryPlaceCityTile(city.Id,tile.Cell,Projects[selected]);
+            bool placed=campaign.TryPlaceCityTile(city.Id,tile.Cell,ProjectFor(tile));
             Refresh();Inspect(tile);
             return placed;
         }
@@ -355,11 +377,16 @@ namespace Fulgor.Presentation.Map
             if(buildings!=null)finished=buildings.completed.Length;
             foreach(var tile in GetComponentsInChildren<HexTileView>())
             {
-                if(campaign.VisibilityAt(tile.Cell.Coordinates)==CampaignVisibility.Unknown || !campaign.IsTileAssignedToCity(city.Id,tile.Cell.Coordinates))continue;
-                territory++;
+                if(campaign.VisibilityAt(tile.Cell.Coordinates)==CampaignVisibility.Unknown)continue;
+                var deposit=campaign.DepositAt(tile.Cell.Coordinates);var mine=CityTileConstruction.MineFor(deposit);
+                // el territorio es el primer anillo; a un yacimiento cercano solo llega su mina
+                bool ring=campaign.IsTileAssignedToCity(city.Id,tile.Cell.Coordinates);
+                if(!ring&&(mine==null||!InReach(tile,mine)))continue;
+                if(ring)territory++;
                 bool occupied=campaign.IsCityTileOccupied(tile.Cell.Coordinates);
-                if(GetComponent<CampaignTileBuildings>()?.Occupies(tile.Cell.Coordinates)==true)finished++;
-                if(!occupied)foreach(var project in Projects)if(CityTileConstruction.CanPlace(city.Position,tile.Cell,project,false)){available++;break;}
+                if(ring&&GetComponent<CampaignTileBuildings>()?.Occupies(tile.Cell.Coordinates)==true)finished++;
+                if(!occupied&&mine!=null){if(CityTileConstruction.CanPlace(city.Position,tile.Cell,mine,false,deposit))available++;}
+                else if(!occupied)foreach(var project in Projects)if(CityTileConstruction.CanPlace(city.Position,tile.Cell,project,false)){available++;break;}
             }
             var town = state ?? new CityTileDevelopment();
             cityValues[0].text = town.Population + " / " + town.HousingCapacity(campaign.CityState(city.Id).Houses);
@@ -374,7 +401,11 @@ namespace Fulgor.Presentation.Map
             for(int i=0;i<amounts.Length;i++)cityProduction[i].text="+"+amounts[i];
             EnsureRingSprite();
             foreach(var tile in GetComponentsInChildren<HexTileView>())
-                if(campaign.VisibilityAt(tile.Cell.Coordinates)!=CampaignVisibility.Unknown && tile.Cell.Coordinates.DistanceTo(city.Position)==1&&tile.Cell.Terrain!=TerrainType.Mountain&&tile.Cell.Terrain!=TerrainType.Water&&campaign.IsTileAssignedToCity(city.Id,tile.Cell.Coordinates)&&!campaign.IsCityTileOccupied(tile.Cell.Coordinates))AddRing(tile);
+            {
+                if(campaign.VisibilityAt(tile.Cell.Coordinates)==CampaignVisibility.Unknown||campaign.IsCityTileOccupied(tile.Cell.Coordinates))continue;
+                var mine=CityTileConstruction.MineFor(campaign.DepositAt(tile.Cell.Coordinates));
+                if(mine!=null?InReach(tile,mine):tile.Cell.Terrain!=TerrainType.Mountain&&tile.Cell.Terrain!=TerrainType.Water&&campaign.IsTileAssignedToCity(city.Id,tile.Cell.Coordinates))AddRing(tile);
+            }
             if(state==null)return;
             var snapshot=state.Capture(city.Id);
             int remaining = 0;
@@ -384,7 +415,7 @@ namespace Fulgor.Presentation.Map
                 if(campaign.VisibilityAt(new HexCoordinates(work.q,work.r))!=CampaignVisibility.Unknown) AddMarker(work, remaining);
             }
         }
-        private static string Display(string id){for(int i=0;i<Projects.Length;i++)if(Projects[i]==id)return Names[i];return id;}
+        private static string Display(string id){for(int i=0;i<Projects.Length;i++)if(Projects[i]==id)return Names[i];return MineName(id)??id;}
         private void EnsureRingSprite()
         {
             if(ringSprite==null)
@@ -421,7 +452,7 @@ namespace Fulgor.Presentation.Map
             if(tile==null)return;
             var rect=CampaignMenuUI.Rect("Obra "+data.q+","+data.r,canvas,new Vector2(.5f,.5f),Vector2.zero,new Vector2(64,64));
             var icon = rect.gameObject.AddComponent<Image>();
-            icon.sprite = buildingIcons[System.Array.IndexOf(Projects,data.project)];
+            icon.sprite = IconFor(data.project);
             icon.preserveAspect = true;
             icon.raycastTarget = false;
             var badge=CampaignMenuUI.Rect("Turnos restantes",rect,new Vector2(1,1),new Vector2(8,12),new Vector2(29,29));
