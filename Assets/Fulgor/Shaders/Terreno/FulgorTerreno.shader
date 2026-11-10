@@ -27,6 +27,10 @@ Shader "Fulgor/Terreno"
         _FulgorCapColor("Cumbres", Color) = (0.84, 0.81, 0.75, 1)
         _FulgorGrassColor("Hierba media", Color) = (0.45, 0.54, 0.26, 1)
         _FulgorStrata("Estratos por metro", Float) = 9
+        _FulgorEarthColor("Tierra de las calvas y las cuestas", Color) = (0.52, 0.43, 0.30, 1)
+        _FulgorSandColor("Arena de la orilla", Color) = (0.72, 0.65, 0.48, 1)
+        _FulgorLitterColor("Hojarasca del bosque", Color) = (0.34, 0.27, 0.17, 1)
+        _FulgorRelieveFino("Relieve fino del suelo", Range(0, 2)) = 1
         [Header(Suelo pisado junto a los edificios)]
         _FulgorPisadoColor("Tierra pisada", Color) = (0.56, 0.47, 0.34, 1)
         _FulgorPisadoAncho("Ancho de lo pisado", Float) = 0.2
@@ -34,6 +38,7 @@ Shader "Fulgor/Terreno"
         _FulgorMatas("Hierba que sobrevive", Range(0, 1)) = 0.7
         _FulgorMatasLuz("Luz de esa hierba", Range(0, 1.5)) = 1
         [Toggle(_FULGOR_EDIFICIO)] _FulgorEdificio("Base de edificio", Float) = 0
+        [Toggle(_FULGOR_ARBOL)] _FulgorArbol("Árbol (color de vértice)", Float) = 0
         _FulgorBaseY("Altura de la base en el mundo", Float) = 0
         _FulgorBaseAlto("Alto de la base que toma el suelo", Float) = 0.03
 
@@ -215,7 +220,7 @@ Shader "Fulgor/Terreno"
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
 
             #include "FulgorTerrenoInput.hlsl"
-            #pragma shader_feature_local_fragment _ _FULGOR_MONTANA _FULGOR_EDIFICIO
+            #pragma shader_feature_local_fragment _ _FULGOR_MONTANA _FULGOR_EDIFICIO _FULGOR_ARBOL
             #include "FulgorTerrenoForwardPass.hlsl"
             ENDHLSL
         }

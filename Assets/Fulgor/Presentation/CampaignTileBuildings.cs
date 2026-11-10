@@ -39,6 +39,12 @@ namespace Fulgor.Presentation.Map
 
         /// <summary>La base de un edificio queda estos metros por debajo del suelo que hay bajo el borde de su huella: el borde no flota.</summary>
         public const float SeatDepth = .004f;
+        /// <summary>
+        /// Cuánto se hunde un edificio con su huella: además de <see cref="SeatDepth"/>, casi toda su losa (hasta 2,5 cm), que queda a ras del
+        /// suelo con medio centímetro fuera. Así el canto recto de la losa no asoma y el sombreador funde su borde con la tierra de la casilla.
+        /// </summary>
+        public static float SeatDepthFor(CampaignBuildingFootprint footprint) =>
+            SeatDepth + (footprint != null ? Mathf.Clamp(footprint.BaseHeight - .005f, 0f, .025f) : 0f);
         private static readonly int GroundMapId = Shader.PropertyToID("_FulgorHuellas"), GroundMapUv = Shader.PropertyToID("_FulgorHuellasST"),
             GroundMapOn = Shader.PropertyToID("_FulgorHuellasActivas"), BaseY = Shader.PropertyToID("_FulgorBaseY"),
             TrampledColor = Shader.PropertyToID("_FulgorPisadoColor"), Tufts = Shader.PropertyToID("_FulgorMatas"), TuftLight = Shader.PropertyToID("_FulgorMatasLuz");
@@ -244,7 +250,7 @@ namespace Fulgor.Presentation.Map
             }
             heights.Sort();
             float seat = heights.Count > 0 ? heights[heights.Count / 2] : middle;
-            position = new Vector3(centre.x, seat - SeatDepth - footprint.Bottom, centre.z);
+            position = new Vector3(centre.x, seat - SeatDepthFor(footprint) - footprint.Bottom, centre.z);
             return true;
         }
 
@@ -296,6 +302,12 @@ namespace Fulgor.Presentation.Map
                 if (slot.footprint != null && slot.instance.activeSelf)
                     map.Add(slot.instance.transform.worldToLocalMatrix, slot.footprint.Centre, slot.footprint.HalfSize, slot.footprint.CornerRadius,
                         GroundBandScale(slot.footprint));
+            // la explanada de cada asentamiento también pisa el suelo
+            var settlements = GetComponent<CampaignSettlementController>();
+            if (settlements != null)
+                foreach (var tile in this.tiles.Values)
+                    if (settlements.HasSettlementAt(tile.Cell.Coordinates))
+                        map.AddGround(Matrix4x4.Translate(-tile.transform.position), Vector2.zero, new Vector2(.5f, .5f), .22f);
             groundTexture = new Texture2D(map.Width, map.Height, TextureFormat.R8, true, true)
             {
                 name = "Huellas de los edificios", wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear,

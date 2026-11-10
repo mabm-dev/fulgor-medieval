@@ -150,7 +150,8 @@ namespace Fulgor.Presentation.Tests.Map
                 float baseY = building.transform.position.y + footprint.Bottom;
                 var edge = Enumerable.Range(0, 16).Select(k => footprint.Outline(k * Mathf.PI / 8f))
                     .Select(p => Ground(collider, building.transform.TransformPoint(new Vector3(p.x, 0f, p.y)))).OrderBy(y => y).ToArray();
-                Assert.AreEqual(CampaignTileBuildings.SeatDepth, edge[8] - baseY, 1e-3f, building.name + ": la base queda apenas por debajo del suelo de su borde.");
+                Assert.AreEqual(CampaignTileBuildings.SeatDepthFor(footprint), edge[8] - baseY, 1e-3f, building.name + ": la base queda bajo el suelo de su borde, con la losa a ras.");
+                Assert.That(CampaignTileBuildings.SeatDepthFor(footprint), Is.InRange(CampaignTileBuildings.SeatDepth, CampaignTileBuildings.SeatDepth + .025f));
                 // el suelo apenas cambia bajo el borde (la llanura es plana y la colina se allana): la losa no deja rendijas
                 Assert.Less(edge[12] - edge[4], .015f, building.name + ": suelo llano bajo el borde.");
                 var centre = building.transform.position;

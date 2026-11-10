@@ -101,6 +101,7 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
+    - _FulgorArbol: 0
     - _FulgorBaseAlto: 0.03
     - _FulgorBaseY: 0
     - _FulgorDryStrength: 0.55
@@ -115,6 +116,7 @@ Material:
     - _FulgorPieceLuma: 0.21
     - _FulgorPisadoAncho: 0.2
     - _FulgorPisadoFuerza: 0.9
+    - _FulgorRelieveFino: 1
     - _FulgorSaturation: 0.9
     - _FulgorSinRuido: 0
     - _FulgorStrata: 9
@@ -145,11 +147,14 @@ Material:
     - _FulgorBaseTint: {r: 1, g: 1, b: 1, a: 1}
     - _FulgorCapColor: {r: 0.84, g: 0.81, b: 0.75, a: 1}
     - _FulgorDryColor: {r: 0.7, g: 0.62, b: 0.38, a: 1}
+    - _FulgorEarthColor: {r: 0.52, g: 0.43, b: 0.3, a: 1}
     - _FulgorGrassColor: {r: 0.45, g: 0.54, b: 0.26, a: 1}
+    - _FulgorLitterColor: {r: 0.34, g: 0.27, b: 0.17, a: 1}
     - _FulgorLushColor: {r: 0.33, g: 0.46, b: 0.2, a: 1}
     - _FulgorPisadoColor: {r: 0.56, g: 0.47, b: 0.34, a: 1}
     - _FulgorRockColor: {r: 0.7, g: 0.65, b: 0.56, a: 1}
     - _FulgorRockDark: {r: 0.31, g: 0.28, b: 0.25, a: 1}
+    - _FulgorSandColor: {r: 0.72, g: 0.65, b: 0.48, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
