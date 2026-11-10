@@ -12,7 +12,9 @@ Uso:
   blender -b --python edificio_trellis_a_fbx.py -- <glb> <carpeta_de_trabajo> <Nombre> juego <vista_de_la_puerta -Y|+X|+Y|-X> [triangulos]
 
 La vista de la puerta es la del renderizado en la que se ve la fachada principal: la cámara está en ese lado mirando al edificio.
-Variables: VOXEL (arista del remallado en metros por metro de huella, 0.004 por defecto), SUAVIZADO (pasadas, 6), TEX (resolución de los mapas, 2048).
+Variables: VOXEL (arista del remallado en metros por metro de huella, 0.004 por defecto), SUAVIZADO (pasadas, 6), TEX (resolución de los mapas, 2048),
+NIVELAR_BASE=1 (modo directo: deja a una misma altura el borde de una base que Tripo entrega en cuesta),
+TRIS_OBJETIVO (modo directo: decima a esos triángulos un modelo que se repite mucho en el mapa; en los yacimientos, 18000 apenas se nota y 9000 abre grietas).
 Salida en <carpeta_de_trabajo>/<Nombre>/: SM_<Nombre>.fbx, T_<Nombre>_BaseColor.png, T_<Nombre>_Normal.png, informe.json,
 <Nombre>_juego.blend y vistas de revisión.
 """
@@ -146,9 +148,39 @@ if MODE == "vistas":
     print("VISTAS_OK", json.dumps(report, ensure_ascii=False))
     sys.exit(0)
 
+
+def nivelar_base(mesh):
+    """Cizalla vertical que lleva el borde de la base a un plano horizontal: z cambia según (x, y), así que lo vertical sigue vertical."""
+    v = np.empty(len(mesh.vertices) * 3, dtype=np.float64)
+    mesh.vertices.foreach_get("co", v)
+    v = v.reshape(-1, 3)
+    x, y = v[:, 0] - (v[:, 0].max() + v[:, 0].min()) / 2, v[:, 1] - (v[:, 1].max() + v[:, 1].min()) / 2
+    radio, sector = np.hypot(x, y), ((np.arctan2(y, x) + math.pi) / (2 * math.pi) * 36).astype(int) % 36
+    borde = []
+    for s in range(36):
+        en_sector = sector == s
+        if en_sector.sum() >= 5:
+            exterior = radio[en_sector] >= np.percentile(radio[en_sector], 85)
+            borde.append(np.median(v[en_sector][exterior], axis=0))
+    borde = np.array(borde)
+    (a_x, a_y, a_0), *_ = np.linalg.lstsq(np.c_[borde[:, 0], borde[:, 1], np.ones(len(borde))], borde[:, 2], rcond=None)
+    v[:, 2] -= a_x * v[:, 0] + a_y * v[:, 1] + a_0
+    v[:, 2] -= v[:, 2].min()
+    mesh.vertices.foreach_set("co", v.ravel())
+    mesh.update()
+    report["base_nivelada_pendiente_grados"] = round(math.degrees(math.atan(math.hypot(a_x, a_y))), 2)
+
+
 if MODE == "directo":
     # El GLB ya viene aligerado, con UV propias y color y normales horneados (TRELLIS.2 con el decimado a pocos triángulos):
     # se sacan los PNG a la resolución pedida y se exporta la malla tal cual.
+    if os.environ.get("NIVELAR_BASE"):
+        nivelar_base(high.data)
+    if int(os.environ.get("TRIS_OBJETIVO", "0")) > 0:
+        decimar = high.modifiers.new("decimar", "DECIMATE")
+        decimar.ratio = int(os.environ["TRIS_OBJETIVO"]) / report["tris_alta"]
+        select_only(high)
+        bpy.ops.object.modifier_apply(modifier=decimar.name)
     mat = high.data.materials[0]
     principled = next(n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
 
@@ -172,7 +204,8 @@ if MODE == "directo":
         report["textura_" + sufijo] = list(img.size)
     high.name = "SM_" + NAME
     high.data.name = high.name
-    report["tris_baja"] = report["tris_alta"]
+    high.data.calc_loop_triangles()
+    report["tris_baja"] = len(high.data.loop_triangles)
     select_only(high)
     bpy.ops.export_scene.fbx(filepath=os.path.join(OUT, "SM_%s.fbx" % NAME), use_selection=True, object_types={"MESH"},
                              axis_forward="-Z", axis_up="Y", global_scale=1.0, apply_unit_scale=True,

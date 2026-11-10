@@ -54,11 +54,11 @@ namespace Fulgor.Presentation.Tests.Map
             added.FindPropertyRelative("prefab").objectReferenceValue = prefab;
             data.ApplyModifiedPropertiesWithoutUndo();
             board.RegenerateBoard();
-            for (int i = 0; i < 90 && buildings.Placed.Count < count + 1; i++) yield return null;
+            for (int i = 0; i < 90 && Buildings(buildings) < count + 1; i++) yield return null;
             yield return null;
             yield return null;
 
-            Assert.AreEqual(count + 1, buildings.Placed.Count, "Todos los edificios deberían haberse colocado.");
+            Assert.AreEqual(count + 1, Buildings(buildings), "Todos los edificios deberían haberse colocado.");
             var distant = buildings.Placed.Single(b => b.name == "Lejano");
             Assert.AreEqual(CampaignVisibility.Unknown, campaign.VisibilityAt(far));
             Assert.IsTrue(distant.GetComponentsInChildren<Renderer>(true).All(r => r.forceRenderingOff), "Sobre terreno sin explorar no debe dibujarse.");
@@ -163,6 +163,9 @@ namespace Fulgor.Presentation.Tests.Map
             }
             Assert.IsTrue(onHill, "El patio de mesnadas de prueba está en una colina: comprueba el llano del relieve.");
         }
+
+        // sin contar los yacimientos, que salen del mapa y no de la lista de edificios
+        private static int Buildings(CampaignTileBuildings layer) => layer.Placed.Count(b => !b.name.StartsWith("Yacimiento"));
 
         private static float Ground(MeshCollider collider, Vector3 world)
         {

@@ -17,9 +17,23 @@ namespace Fulgor.Presentation.Map
             foreach (var entry in tileCities) if (entry.Value.IsOccupied(tile)) return true;
             return false;
         }
-        public bool IsTileAssignedToCity(string id, HexCoordinates tile)
+        public bool IsTileAssignedToCity(string id, HexCoordinates tile, int reach = 1)
         {
-            return CityTileConstruction.IsAssigned(SettlementState,id,tile);
+            return CityTileConstruction.IsAssigned(SettlementState,id,tile,reach);
+        }
+
+        /// <summary>Yacimiento de la casilla en el mapa de la campaña (ResourceDepositLayout); ninguno antes de empezar.</summary>
+        public ResourceDepositKind DepositAt(HexCoordinates tile) => incomeMap != null ? ResourceDepositLayout.At(incomeMap, tile) : ResourceDepositKind.None;
+
+        /// <summary>Obra terminada en una casilla, de cualquier ciudad (por ejemplo la mina sobre un yacimiento); null si no hay.</summary>
+        public string CityTileBuildingAt(HexCoordinates tile)
+        {
+            foreach (var entry in tileCities)
+            {
+                var building = entry.Value.BuildingAt(tile);
+                if (building != null) return building;
+            }
+            return null;
         }
 
         public bool TryPlaceCityTile(string settlementId, MapCell tile, string project)
@@ -27,16 +41,17 @@ namespace Fulgor.Presentation.Map
             var settlements = GetComponent<CampaignSettlementController>();
             if (State == null || IsCampaignFinished || HasPendingBattle || IsRivalPhaseActive || settlements == null ||
                 !settlements.CanManage(settlementId) || !SettlementState.TryGet(settlementId, out var city) ||
-                VisibilityAt(tile.Coordinates)==CampaignVisibility.Unknown || IsCityTileOccupied(tile.Coordinates) || !IsTileAssignedToCity(settlementId,tile.Coordinates) || incomeMap == null) return false;
+                VisibilityAt(tile.Coordinates)==CampaignVisibility.Unknown || IsCityTileOccupied(tile.Coordinates) || !IsTileAssignedToCity(settlementId,tile.Coordinates,CityTileConstruction.ReachOf(project)) || incomeMap == null) return false;
             bool actual = false;
             foreach (var cell in incomeMap.Cells) if (cell.Equals(tile)) { actual = true; break; }
             if (!actual) return false;
             foreach (var entry in tileCities) if (entry.Value.IsOccupied(tile.Coordinates)) return false;
-            if (!CityTileConstruction.CanPlace(city.Position, tile, project, false)) return false;
+            var deposit = DepositAt(tile.Coordinates);
+            if (!CityTileConstruction.CanPlace(city.Position, tile, project, false, deposit)) return false;
             var cost = CityTileConstruction.Cost(project);
             if (!State.Resources.TrySpend(cost, out var remaining)) return false;
             if (!tileCities.TryGetValue(settlementId, out var development)) development = new CityTileDevelopment();
-            if (!development.TryAdd(city.Position, tile, project)) return false;
+            if (!development.TryAdd(city.Position, tile, project, deposit)) return false;
             tileCities[settlementId] = development;
             State = new CampaignTurnState(State.Turn, remaining, State.IncomePerTurn, State.ExpensesPerTurn);
             TileCityRevision++; panel?.SetTurnState(State);
@@ -65,7 +80,7 @@ namespace Fulgor.Presentation.Map
             if (incomeMap != null && SettlementState.TryGet(id, out var city))
                 foreach (var cell in incomeMap.Cells)
                     if (VisibilityAt(cell.Coordinates)!=CampaignVisibility.Unknown && (city.Position.Equals(cell.Coordinates) || IsTileAssignedToCity(id, cell.Coordinates)))
-                        food += CityTileConstruction.Passive(cell).Grain;
+                        food += CityTileConstruction.Passive(cell, DepositAt(cell.Coordinates)).Grain;
             return food;
         }
 

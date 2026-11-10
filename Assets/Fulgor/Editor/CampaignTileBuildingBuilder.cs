@@ -39,7 +39,7 @@ namespace Fulgor.Editor
         static readonly Building[] Buildings =
         {
             new("CentroAprovisionamiento", "Centro de aprovisionamiento", new Vector2Int(12, 9), 25f),
-            new("Almacen", "Almacén", new Vector2Int(13, 7), 35f), // de espaldas a la fortaleza
+            new("Almacen", "Almacén", new Vector2Int(14, 11), 35f), // lejos de la fortaleza: (13,7) es la llanura libre de su primer anillo
             // hechos con TRELLIS.2 desde los sprites de la edad 01; puerta hacia la fortaleza hasta que el usuario diga otra cosa
             new("ViviendaSencilla", "Vivienda sencilla", new Vector2Int(13, 9), -1f),
             new("Pozo", "Pozo", new Vector2Int(12, 10), -1f, .5f), // el usuario: "es un pozo, no un edificio", al menos un 50 % más pequeño
@@ -57,6 +57,24 @@ namespace Fulgor.Editor
             new("CasaAldea", "Casa de aldea", new Vector2Int(14, 8), -1f), // colina con oro junto a la fortaleza: lo único visible que queda libre
         };
 
+        // Yacimientos y sus obras, sin casilla de prueba: CampaignTileBuildings pone el yacimiento donde diga el mapa y lo cambia por la mina o la
+        // cantera cuando la ciudad la termina. Tripo los entregó con textura y UV (modo directo del script de Blender).
+        static readonly Building[] ResourceModels =
+        {
+            new("YacimientoOro", "Yacimiento de oro", default, 30f),
+            new("YacimientoPiedra", "Yacimiento de piedra", default, 30f),
+            new("MinaOro", "Mina de oro", default, 30f),
+            new("CanteraPiedra", "Cantera de piedra", default, 30f),
+        };
+
+        [MenuItem("Fulgor/Arte/Preparar yacimientos y minas")]
+        public static void PrepareResourceModels() => Run(() =>
+        {
+            Directory.CreateDirectory(Folder);
+            foreach (var model in ResourceModels) BuildPrefab(model);
+            AssetDatabase.SaveAssets();
+        });
+
         [MenuItem("Fulgor/Arte/Preparar edificios de casilla")]
         public static void BuildPrefab() => Run(BuildAllPrefabs);
 
@@ -73,7 +91,7 @@ namespace Fulgor.Editor
         static void BuildAllPrefabs()
         {
             Directory.CreateDirectory(Folder);
-            foreach (var building in Buildings) BuildPrefab(building);
+            foreach (var building in Buildings.Concat(ResourceModels)) BuildPrefab(building);
             AssetDatabase.SaveAssets();
         }
 
@@ -227,11 +245,13 @@ namespace Fulgor.Editor
                     ?? throw new InvalidOperationException("El tablero no tiene escenario.");
                 var map = ProceduralMapGenerator.Generate(scenario.Width, scenario.Height, scenario.Seed);
                 var terrain = map.Cells.ToDictionary(c => c.Coordinates);
+                var deposits = ResourceDepositLayout.For(map);
+                string Deposit(HexCoordinates c) => deposits.TryGetValue(c, out var kind) ? $" con yacimiento de {(kind == ResourceDepositKind.Gold ? "oro" : "piedra")}" : "";
                 var center = new HexCoordinates(FortressCell.x, FortressCell.y);
                 var lines = new System.Text.StringBuilder("Terreno junto a la fortaleza:\n");
                 foreach (var cell in center.CellsInRadius(3).OrderBy(c => center.DistanceTo(c)).ThenBy(c => c.Q).ThenBy(c => c.R))
                     lines.AppendLine(terrain.TryGetValue(cell, out var data)
-                        ? $"({cell.Q},{cell.R}) a {center.DistanceTo(cell)}: {data.Terrain}{(data.HasGold ? " con oro" : "")}"
+                        ? $"({cell.Q},{cell.R}) a {center.DistanceTo(cell)}: {data.Terrain}{Deposit(cell)}"
                         : $"({cell.Q},{cell.R}) a {center.DistanceTo(cell)}: fuera del mapa");
                 Debug.Log(lines.ToString());
             }

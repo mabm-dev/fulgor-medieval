@@ -34,6 +34,7 @@ namespace Fulgor.Presentation.Map
             public ShadowCastingMode[] shadows;
             public bool shown = true;
             public string project;
+            public ResourceDepositKind deposit;
         }
 
         /// <summary>La base de un edificio queda estos metros por debajo del suelo que hay bajo el borde de su huella: el borde no flota.</summary>
@@ -47,19 +48,31 @@ namespace Fulgor.Presentation.Map
         private Transform generation;
         private Texture2D groundTexture;
         public IReadOnlyList<GameObject> Placed => placed;
-        public bool Occupies(HexCoordinates cell) => slots.Exists(slot => slot.project == null && slot.cell.Equals(cell));
+        // un yacimiento no ocupa la casilla: encima se construye su mina
+        public bool Occupies(HexCoordinates cell) => slots.Exists(slot => slot.project == null && slot.deposit == ResourceDepositKind.None && slot.cell.Equals(cell));
         /// <summary>Huellas publicadas para el suelo pisado del terreno; null sin edificios.</summary>
         public CampaignBuildingGroundMap GroundMap { get; private set; }
         /// <summary>Lo que tardó la última colocación (instanciar, asentar y publicar las huellas) y, de ello, el mapa de huellas.</summary>
         public double PlaceMilliseconds { get; private set; }
         public double GroundMapMilliseconds { get; private set; }
 
-        /// <summary>Casillas en las que se colocan edificios: el relieve de colinas y montañas se allana en ellas antes de colocarlos.</summary>
+        /// <summary>Casillas en las que se colocan edificios o yacimientos: el relieve de colinas y montañas se allana en ellas antes de colocarlos.</summary>
         public IEnumerable<HexCoordinates> PlannedCells()
         {
             foreach (var entry in entries)
                 if (entry.prefab != null) yield return new HexCoordinates(entry.cell.x, entry.cell.y);
+            foreach (var deposit in MapDeposits()) yield return deposit.Key;
         }
+
+        private IReadOnlyDictionary<HexCoordinates, ResourceDepositKind> MapDeposits()
+        {
+            var board = GetComponent<CampaignBoardPreview>();
+            return board != null && board.ShowsGold && board.CurrentMap != null ? ResourceDepositLayout.For(board.CurrentMap) : NoDeposits;
+        }
+        private static readonly IReadOnlyDictionary<HexCoordinates, ResourceDepositKind> NoDeposits = new Dictionary<HexCoordinates, ResourceDepositKind>();
+
+        // Giro de un yacimiento, como minutero: fijo para cada casilla y distinto de una a otra, para que los diecisiete de un recurso no parezcan copias.
+        private static float DepositMinute(HexCoordinates cell) => ((uint)(cell.Q * 73856093) ^ (uint)(cell.R * 19349663)) % 60u;
 
         public static float YawForDoorMinute(float minute) => (minute - DoorMinuteAtZeroYaw) * 6f;
 
@@ -122,10 +135,25 @@ namespace Fulgor.Presentation.Map
                 if (entry.prefab != null && tiles.TryGetValue(new HexCoordinates(entry.cell.x, entry.cell.y), out var tile))
                     PlaceBuilding(tile, entry.prefab, entry.label, entry.doorMinute, null);
             }
+            PlaceDeposits();
             var mapWatch = System.Diagnostics.Stopwatch.StartNew();
             PublishGroundMap(tiles.Values);
             GroundMapMilliseconds = mapWatch.Elapsed.TotalMilliseconds;
             PlaceMilliseconds = watch.Elapsed.TotalMilliseconds;
+        }
+
+        // Los yacimientos vírgenes; bajo un edificio de prueba o una ciudad no se dibujan.
+        private void PlaceDeposits()
+        {
+            var settlements = GetComponent<CampaignSettlementController>();
+            foreach (var deposit in MapDeposits())
+            {
+                if (!tiles.TryGetValue(deposit.Key, out var tile) || HasBuildingAt(deposit.Key) || settlements != null && settlements.HasSettlementAt(deposit.Key)) continue;
+                bool gold = deposit.Value == ResourceDepositKind.Gold;
+                var prefab = Resources.Load<GameObject>("Edificios/PF_" + (gold ? "YacimientoOro" : "YacimientoPiedra"));
+                if (prefab == null) continue;
+                PlaceBuilding(tile, prefab, $"Yacimiento de {(gold ? "oro" : "piedra")} {deposit.Key.Q},{deposit.Key.R}", DepositMinute(deposit.Key), null, deposit.Value);
+            }
         }
 
         private readonly Dictionary<HexCoordinates, HexTileView> tiles = new();
@@ -145,9 +173,16 @@ namespace Fulgor.Presentation.Map
                 foreach (var built in data.completed) wanted[new HexCoordinates(built.q, built.r)] = built.project;
             }
             bool changed = false;
+            var worked = new HashSet<HexCoordinates>(wanted.Keys);
             for (int i = slots.Count - 1; i >= 0; i--)
             {
                 var slot = slots[i];
+                if (slot.deposit != ResourceDepositKind.None)
+                {
+                    // la mina o la cantera terminada sustituye al yacimiento; si desaparece, vuelve la roca
+                    if (slot.instance.activeSelf == worked.Contains(slot.cell)) { slot.instance.SetActive(!worked.Contains(slot.cell)); changed = true; }
+                    continue;
+                }
                 if (slot.project == null || wanted.TryGetValue(slot.cell, out var project) && project == slot.project)
                 {
                     wanted.Remove(slot.cell);
@@ -161,7 +196,7 @@ namespace Fulgor.Presentation.Map
             }
             foreach (var entry in wanted)
             {
-                string asset = entry.Value switch { "house" => "ViviendaSencilla", "farm" => "HuertoCampo", "lumber" => "Lenera", _ => null };
+                string asset = entry.Value switch { "house" => "ViviendaSencilla", "farm" => "HuertoCampo", "lumber" => "Lenera", "goldmine" => "MinaOro", "quarry" => "CanteraPiedra", _ => null };
                 if (asset == null || !tiles.TryGetValue(entry.Key, out var tile)) continue;
                 var prefab = Resources.Load<GameObject>("Edificios/PF_" + asset);
                 if (prefab == null) continue;
@@ -171,7 +206,7 @@ namespace Fulgor.Presentation.Map
             if (changed) PublishGroundMap(tiles.Values);
         }
 
-        private void PlaceBuilding(HexTileView tile, GameObject prefab, string label, float doorMinute, string project)
+        private void PlaceBuilding(HexTileView tile, GameObject prefab, string label, float doorMinute, string project, ResourceDepositKind deposit = ResourceDepositKind.None)
         {
             var collider = tile.GetComponent<MeshCollider>();
             if (collider == null || collider.sharedMesh == null) return;
@@ -185,7 +220,7 @@ namespace Fulgor.Presentation.Map
             var renderers = instance.GetComponentsInChildren<Renderer>(true);
             slots.Add(new Slot
             {
-                project = project, instance = instance, cell = tile.Cell.Coordinates, renderers = renderers,
+                project = project, deposit = deposit, instance = instance, cell = tile.Cell.Coordinates, renderers = renderers,
                 footprint = instance.GetComponent<CampaignBuildingFootprint>(), shadows = Array.ConvertAll(renderers, r => r.shadowCastingMode),
             });
             // la base del edificio toma la tierra pisada del terreno de su casilla (sombreador Fulgor/Terreno en modo edificio)
@@ -258,7 +293,7 @@ namespace Fulgor.Presentation.Map
             float margin = VisualScaleContract.HexOuterRadius;
             var map = new CampaignBuildingGroundMap(Rect.MinMaxRect(minX - margin, minZ - margin, maxX + margin, maxZ + margin));
             foreach (var slot in slots)
-                if (slot.footprint != null)
+                if (slot.footprint != null && slot.instance.activeSelf)
                     map.Add(slot.instance.transform.worldToLocalMatrix, slot.footprint.Centre, slot.footprint.HalfSize, slot.footprint.CornerRadius,
                         GroundBandScale(slot.footprint));
             groundTexture = new Texture2D(map.Width, map.Height, TextureFormat.R8, true, true)

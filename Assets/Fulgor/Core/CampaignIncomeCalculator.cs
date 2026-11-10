@@ -10,15 +10,16 @@ namespace Fulgor.Core.Campaign
         public static CampaignResources FromMap(GeneratedMap map)
         {
             if (map == null) throw new System.ArgumentNullException(nameof(map));
-            return FromCells(map.Cells);
+            return FromCells(map.Cells, ResourceDepositLayout.For(map));
         }
 
-        private static CampaignResources FromCells(IEnumerable<MapCell> cells)
+        // El oro y la piedra de yacimiento salen de ResourceDepositLayout; la marca de oro del generador (MapCell.HasGold) ya no produce: solo
+        // se conserva para la huella de las partidas guardadas. La colina sigue dando su piedra.
+        private static CampaignResources FromCells(IEnumerable<MapCell> cells, IReadOnlyDictionary<HexCoordinates, ResourceDepositKind> deposits)
         {
             var grain = 0; var wood = 0; var stone = 0; var gold = 0; var labor = 0;
             foreach (var cell in cells)
             {
-                // Historical map fingerprints can retain gold flags on mountains; they are inert.
                 if(cell.Terrain==TerrainType.Mountain)continue;
                 switch (cell.Terrain)
                 {
@@ -27,7 +28,11 @@ namespace Fulgor.Core.Campaign
                     case TerrainType.Hill: stone++; break;
                 }
                 if (cell.Terrain != TerrainType.Water) labor++;
-                if (cell.HasGold) gold++;
+                if (deposits.TryGetValue(cell.Coordinates, out var deposit))
+                {
+                    var extra = ResourceDepositLayout.Yield(deposit);
+                    stone += extra.Stone; gold += extra.Gold;
+                }
             }
             return new CampaignResources(grain, wood, stone, gold, labor);
         }
@@ -49,7 +54,7 @@ namespace Fulgor.Core.Campaign
                 }
                 if(nearest.OwnerFactionId==faction)controlled.Add(cell);
             }
-            return FromCells(controlled);
+            return FromCells(controlled, ResourceDepositLayout.For(map));
         }
     }
 }

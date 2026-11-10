@@ -43,6 +43,76 @@ namespace Fulgor.Tests.EditMode
         }
 
         [Test]
+        public void AMineNeedsItsDepositAndReachesThreeTiles()
+        {
+            var near = new MapCell(new HexCoordinates(5, 4), TerrainType.Hill, false);
+            var far = new MapCell(new HexCoordinates(7, 4), TerrainType.Plain, false);
+            var tooFar = new MapCell(new HexCoordinates(8, 4), TerrainType.Plain, false);
+            Assert.AreEqual(3, City.DistanceTo(far.Coordinates));
+            Assert.IsTrue(CityTileConstruction.CanPlace(City, near, "goldmine", false, ResourceDepositKind.Gold));
+            Assert.IsTrue(CityTileConstruction.CanPlace(City, far, "quarry", false, ResourceDepositKind.Stone));
+            Assert.IsFalse(CityTileConstruction.CanPlace(City, tooFar, "goldmine", false, ResourceDepositKind.Gold));
+            Assert.IsFalse(CityTileConstruction.CanPlace(City, near, "goldmine", false, ResourceDepositKind.Stone));
+            Assert.IsFalse(CityTileConstruction.CanPlace(City, near, "goldmine", false));
+            Assert.IsFalse(CityTileConstruction.CanPlace(City, near, "quarry", true, ResourceDepositKind.Stone));
+            Assert.IsFalse(CityTileConstruction.CanPlace(City, new MapCell(City, TerrainType.Plain, false), "goldmine", false, ResourceDepositKind.Gold));
+        }
+
+        [Test]
+        public void OtherWorksStayInTheFirstRingAndADepositIsReservedForItsMine()
+        {
+            var plain = new MapCell(new HexCoordinates(5, 4), TerrainType.Plain, false);
+            Assert.IsFalse(CityTileConstruction.CanPlace(City, plain, "farm", false, ResourceDepositKind.Gold));
+            Assert.IsFalse(CityTileConstruction.CanPlace(City, plain, "house", false, ResourceDepositKind.Stone));
+            Assert.IsFalse(CityTileConstruction.CanPlace(City, new MapCell(new HexCoordinates(6, 4), TerrainType.Plain, false), "farm", false));
+        }
+
+        [Test]
+        public void ADepositGivesOneAloneAndThreeWithItsMine()
+        {
+            var gold = CityTileConstruction.Passive(new MapCell(new HexCoordinates(5, 4), TerrainType.Hill, false), ResourceDepositKind.Gold);
+            Assert.AreEqual(1, gold.Gold);
+            Assert.AreEqual(3, gold.Add(CityTileConstruction.Active("goldmine")).Gold);
+            var stone = CityTileConstruction.Passive(new MapCell(new HexCoordinates(5, 4), TerrainType.Plain, false), ResourceDepositKind.Stone);
+            Assert.AreEqual(1, stone.Stone);
+            Assert.AreEqual(3, stone.Add(CityTileConstruction.Active("quarry")).Stone);
+            Assert.AreEqual(0, CityTileConstruction.Passive(new MapCell(new HexCoordinates(5, 4), TerrainType.Plain, true)).Gold, "La marca de oro del generador ya no produce.");
+        }
+
+        [Test]
+        public void AssignedTilesReachAsFarAsTheProjectAndStayWithTheNearestCity()
+        {
+            var cells = new[] { new MapCell(new HexCoordinates(0, 0), TerrainType.Plain, false), new MapCell(new HexCoordinates(1, 0), TerrainType.Plain, false),
+                new MapCell(new HexCoordinates(2, 0), TerrainType.Plain, false), new MapCell(new HexCoordinates(3, 0), TerrainType.Plain, false),
+                new MapCell(new HexCoordinates(4, 0), TerrainType.Plain, false), new MapCell(new HexCoordinates(5, 0), TerrainType.Plain, false) };
+            var map = new GeneratedMap(6, 1, 1, cells);
+            var cities = new CampaignSettlementRegistry(new MapRouteGraph(map), new[] {
+                new CampaignSettlement("a", "A", "castilla", cells[0].Coordinates), new CampaignSettlement("b", "B", "rival", cells[5].Coordinates) });
+            int mine = CityTileConstruction.ReachOf("goldmine");
+            Assert.AreEqual(1, CityTileConstruction.ReachOf("farm"));
+            Assert.IsFalse(CityTileConstruction.IsAssigned(cities, "a", cells[2].Coordinates), "Un huerto no llega a la segunda casilla.");
+            Assert.IsTrue(CityTileConstruction.IsAssigned(cities, "a", cells[2].Coordinates, mine));
+            Assert.IsFalse(CityTileConstruction.IsAssigned(cities, "a", cells[3].Coordinates, mine), "Esa casilla está más cerca de la otra ciudad.");
+            Assert.IsTrue(CityTileConstruction.IsAssigned(cities, "b", cells[3].Coordinates, mine));
+            Assert.IsFalse(CityTileConstruction.IsAssigned(cities, "a", cells[0].Coordinates, mine), "La ciudad no es casilla de obra.");
+        }
+
+        [Test]
+        public void RestoreChecksMinesAgainstTheDeposits()
+        {
+            var cell = new MapCell(new HexCoordinates(6, 4), TerrainType.Hill, false);
+            var map = new Dictionary<HexCoordinates, MapCell> { [cell.Coordinates] = cell };
+            var deposits = new Dictionary<HexCoordinates, ResourceDepositKind> { [cell.Coordinates] = ResourceDepositKind.Gold };
+            var city = new CityTileDevelopment();
+            Assert.IsTrue(city.TryAdd(City, cell, "goldmine", ResourceDepositKind.Gold));
+            city.Advance(); city.Advance();
+            Assert.AreEqual(2, city.ActiveIncome.Gold);
+            var data = city.Capture("castilla");
+            Assert.AreEqual("goldmine", CityTileDevelopment.Restore(City, data, map, deposits).BuildingAt(cell.Coordinates));
+            Assert.Throws<ArgumentException>(() => CityTileDevelopment.Restore(City, data, map), "Sin yacimiento no vale la mina.");
+        }
+
+        [Test]
         public void QueueAdvancesInOrderAndRejectsDuplicateTiles()
         {
             var queue = new CityTileQueue();
