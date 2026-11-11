@@ -142,7 +142,7 @@ manifest['density_match']={'existing_strands':old_strand_count,'existing_weighte
                            'new_weighted_area_m2':acc,'target_strands_per_m2':root_density,'new_attempts':attempts}
 (SOURCE/'extension_manifest.json').write_text(json.dumps(manifest,indent=2),encoding='utf8')
 text=bpy.data.texts.get('LEEME_EXTENSION_V05') or bpy.data.texts.new('LEEME_EXTENSION_V05')
-text.write('V05: solo se amplia la barba por debajo de la mandibula hasta la parte alta del cuello.\nObjetos, UV, posicion de cabeza, pelo, mirada y barba superior de V04 se conservan.\nFuente V04 fijada por SHA-256; modificacion local de SkinTreatment y tres curvas nuevas.\nSigue siendo estudio de alta densidad sin aprobacion artistica ni exportacion Unity.\n')
+text.write('V05: solo se amplia la barba por debajo de la mandibula hasta la parte alta del cuello.\nObjetos, UV, posicion de cabeza, pelo, mirada y barba superior de V04 se conservan.\nFuente V04 fijada por SHA-256; modificacion local de SkinTreatment y tres curvas nuevas.\nSigue siendo estudio de alta densidad sin revision artistica ni exportacion Unity.\n')
 blend=SOURCE/'Rodrigo_escultura_v05.blend'
 bpy.ops.wm.save_as_mainfile(filepath=str(blend))
 cameras={'Frente_tres_cuartos':'CAM_3Q','Espalda':'CAM_Espalda','Rostro':'CAM_Rostro','Perfil_cuello':'CAM_Perfil_Cuello'}

@@ -1,7 +1,7 @@
 # Repertorio natural V02
 
-Revisión de los ocho modelos de V01 solicitada por el usuario al considerar
-el acabado demasiado parecido a Lego. Se conserva V01 como referencia y
+Revisión de los ocho modelos de V01, por un acabado demasiado parecido a
+Lego. Se conserva V01 como referencia y
 se rehacen las formas de personajes, caballo y superficies de arquitectura.
 
 ## Cambios visuales
@@ -97,7 +97,7 @@ Se necesita retopología/reducción y horneado del detalle para la integración.
 Siguen pendientes rig, poses y expresiones más variadas, animación, refinamiento
 de caras/manos, variantes de facción, identidad de líderes concretos, materiales
 y prefabs Unity, colisiones y medición en juego. Las poses actuales son estáticas.
-La aceptación visual del usuario está pendiente. No se han ejecutado pruebas
+La revisión visual está pendiente. No se han ejecutado pruebas
 de juego ni se ha sustituido el arte de la escena de campaña.
 
 Modelado, materiales y herramientas propios, sin recursos externos descargados.

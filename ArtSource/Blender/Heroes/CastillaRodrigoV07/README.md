@@ -19,6 +19,6 @@ El generador reconstruye V07 desde V06, con semilla fija. No depende de los reto
 
 ## Límites
 
-Sigue siendo fuente de alta densidad. No tiene retopología, rig, LOD, bake ni exportación Unity. El rostro, barba, ojos y broche siguen siendo los de V06, no los de la imagen mejorada con IA. La nueva organización y sombreado del pelo no equivalen por sí solos a fotorealismo ni a semejanza aprobada. No se han ejecutado pruebas de juego ni modificado el proyecto abierto de Unity.
+Sigue siendo fuente de alta densidad. No tiene retopología, rig, LOD, bake ni exportación Unity. El rostro, barba, ojos y broche siguen siendo los de V06, no los de la imagen de referencia. La nueva organización y sombreado del pelo no equivalen por sí solos a fotorealismo ni a semejanza definitiva. No se han ejecutado pruebas de juego ni modificado el proyecto abierto de Unity.
 
 Renders: `Builds/ArtPreview/RodrigoCastillaV07/`.

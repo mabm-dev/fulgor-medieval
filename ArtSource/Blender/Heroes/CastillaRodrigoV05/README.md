@@ -1,8 +1,8 @@
 # Rodrigo — continuidad de barba hacia el cuello V05
 
-El usuario indicó que la parte superior estaba bien, pero que la barba no
+La parte superior estaba bien, pero la barba no
 bajaba al cuello. V05 modifica únicamente su continuidad bajo la mandíbula
-hacia la parte alta del cuello. No implica aprobación del personaje completo.
+hacia la parte alta del cuello. No cierra el personaje completo.
 
 ## Alcance
 
@@ -33,7 +33,7 @@ Resultado en `verificacion_v05.json`.
 
 Cuatro renders en `Builds/ArtPreview/RodrigoCastillaV05/`: cuerpo, espalda,
 rostro y perfil. Se inspeccionan frente y perfil para valorar la continuidad;
-la comprobación técnica no certifica naturalidad ni aceptación artística.
+la comprobación técnica no certifica naturalidad ni revisión artística.
 
 Se conserva la condición de estudio denso: pendientes semejanza y acabado
 final, retopología, atlas/bake, rig, animación, LOD y exportación a escala del

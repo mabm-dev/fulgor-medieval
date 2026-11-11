@@ -1,7 +1,7 @@
 # Rodrigo — corrección de cuello y barba V04
 
-Motivo: el usuario señaló que V03 no se veía bien, especialmente cuello y barba.
-V03 no queda aprobada. V04 es una nueva propuesta pendiente de revisión visual.
+Motivo: V03 no se veía bien, especialmente cuello y barba.
+V03 se descarta. V04 es una nueva versión pendiente de revisión visual.
 El retrato actual sigue siendo la referencia de identidad, sin modificarlo.
 
 ## Corrección
@@ -37,7 +37,7 @@ Mide en la geometría guardada la distancia entre una muestra de puntos de barba
 y la piel: umbral 1,5 mm. Verifica por SHA-256 las fuentes externas y los doce
 retratos originales. Resultado en `verificacion_v04.json`.
 
-La verificación técnica no demuestra naturalidad ni semejanza aprobada. Quedan
+La verificación técnica no demuestra naturalidad ni semejanza definitiva. Quedan
 pendientes el parecido facial, un acabado más natural de pelo/barba y las
 mejoras de ropa, manos y postura. Fuente densa a escala humana aproximada de
 1,80 m, sin retopología, bake/atlas final, rig, LOD ni exportación a Unity.
@@ -46,7 +46,7 @@ No se ejecutan pruebas de juego ni se publica la revisión en GitHub.
 
 ## Continuidad hacia el cuello: V05
 
-El usuario indicó que lo de arriba estaba bien, pero la barba no bajaba hasta
+Lo de arriba estaba bien, pero la barba no bajaba hasta
 el cuello. V05 conserva esta base, incluida la barba superior, y amplía solo
-la continuidad bajo la mandíbula hacia el cuello alto. La aceptación es parcial;
-no tratar todo el personaje como aprobado. Véase ../CastillaRodrigoV05/.
+la continuidad bajo la mandíbula hacia el cuello alto. El resultado es parcial;
+no tratar todo el personaje como definitivo. Véase ../CastillaRodrigoV05/.

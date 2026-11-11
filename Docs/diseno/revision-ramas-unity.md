@@ -8,7 +8,7 @@ Consulta de GitHub de 30 de octubre de 2026. Revisión de referencias, catálogo
 |---|---|---|
 | `main` | `6f302d6` | Base principal Unity con tablero, cámara, selección, turno y recursos de prototipo; incluye retratos de héroes. Su README contiene afirmaciones antiguas que no reflejan todos los cambios posteriores de la rama. |
 | `perf/bloque-color-casillas-v0.7` | `ae236a0` | Continúa desde `main` con nueve commits adicionales, incluida campaña, gestión, combate y selección visual de doce reinos. |
-| `claude/friendly-faraday-q7i3tj` | `2f684b0` | Continúa desde la rama `perf` con tres commits adicionales: iconos, corrección de cámara y estilo de madera y pergamino en interfaz. |
+| Prototipo con interfaz de madera y pergamino | `2f684b0` | Continúa desde la rama `perf` con tres commits adicionales: iconos, corrección de cámara y estilo de madera y pergamino en interfaz. |
 | `legacy/web` | `884ec55` | Prototipo web histórico React/TypeScript. No describe por sí solo los sistemas actuales de Unity. |
 
 Hay referencias remotas antiguas conservadas localmente para ramas que ya no figuraban en la consulta de ramas publicadas; no se han borrado. La carpeta compartida está en `legacy/web` y tiene cambios locales y archivos sin seguimiento, incluidos los documentos de diseño recientes. No se han cambiado ni fusionado ramas.

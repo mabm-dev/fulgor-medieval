@@ -39,7 +39,7 @@ necesita su propia prueba jugable, visual o de rendimiento además de Edit Mode.
    Bosque, colina y montaña cuentan también con primeros modelos cálidos,
    FBX y una composición de revisión junto a la llanura. Aún no sustituyen el
    blockout de la escena de campaña.
-   La montaña natural v02 recibe aceptación visual del usuario. Se añaden
+   La montaña natural v02 se da por buena. Se añaden
    bosque, colina y llanura de acabado natural con atlas de color/normal y un
    material por casilla. La integración, los LOD y la medición siguen pendientes.
    Agua, costa, lago, río, cereal y tres piezas de camino cuentan con estudios
@@ -104,12 +104,12 @@ La entrega no cierra los hitos jugables ni sustituye las pruebas del juego.
 
 ### Revisión natural del repertorio V02
 
-El usuario considera V01 demasiado parecido a Lego. La nueva propuesta
+V01 resulta demasiado parecido a Lego. La nueva versión
 [Repertorio V02](../../ArtSource/Blender/RepertorioV02/README.md) revisa los ocho
 modelos con anatomía más proporcionada, superficies continuas, telas con caída,
 caballo remallado, escudos convexos y piedra con biseles y cursos alternos.
 Conserva V01 para comparar. Fuentes, FBX y mapas están verificados como archivos.
 
-Son estudios densos pendientes de aceptación visual, retopología/reducción,
+Son estudios densos pendientes de revisión visual, retopología/reducción,
 LOD, rig, animación e integración. Esta revisión no cierra los hitos jugables
 ni certifica rendimiento. Las caras y poses aún requieren refinamiento.

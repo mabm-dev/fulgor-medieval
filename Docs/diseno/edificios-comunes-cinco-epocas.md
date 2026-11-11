@@ -2,7 +2,7 @@
 
 Esqueleto para debatir de los tres grupos de juego: cristianos peninsulares, andalusíes y poderes extranjeros. Cada grupo comparte las funciones comunes; sus nombres y modelos pueden cambiar por cultura y escenario. Los edificios propios de cada facción se añaden a estos y se diseñan aparte. Los quince reinos, las cinco etapas, los costes, los requisitos y buena parte de estas construcciones aún no están implementados en Unity.
 
-Una **mejora** es una propuesta de evolución de un edificio anterior, no un requisito ya aprobado ni una conversión gratuita o automática. Sus costes, efectos exactos y conservación tras la conquista quedan por definir. No es obligatorio construir todos los edificios para ascender; faltan por concretar las alternativas y los requisitos generales. El comercio básico y los contactos diplomáticos están disponibles desde la primera etapa según las condiciones del escenario.
+Una **mejora** es una propuesta de evolución de un edificio anterior, no un requisito ya fijado ni una conversión gratuita o automática. Sus costes, efectos exactos y conservación tras la conquista quedan por definir. No es obligatorio construir todos los edificios para ascender; faltan por concretar las alternativas y los requisitos generales. El comercio básico y los contactos diplomáticos están disponibles desde la primera etapa según las condiciones del escenario.
 
 ## I. Migraciones: asentamiento inicial
 

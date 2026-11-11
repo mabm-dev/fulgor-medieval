@@ -434,7 +434,7 @@ scene['authoring_height_m']=1.813
 for p in [ROOT/scene['reference_portrait'],ROOT/scene['reference_sheet']]:
     im=bpy.data.images.load(str(p));im.pack();im.use_fake_user=True
 txt=bpy.data.texts.new('LEEME_ESTUDIO')
-txt.write('Modelo geometrico editable de Rodrigo. Referencias actuales empaquetadas SOLO en datablocks, ninguna imagen se usa como personaje.\nEstudio procedural de volumen y vestuario, no escultura final realista ni semejanza facial aprobada.\nAltura humana de autor, NO escala de exportacion del tablero. Retopologia, UV, bake, rig y LOD pendientes.\n')
+txt.write('Modelo geometrico editable de Rodrigo. Referencias actuales empaquetadas SOLO en datablocks, ninguna imagen se usa como personaje.\nEstudio procedural de volumen y vestuario, no escultura final realista ni semejanza facial definitiva.\nAltura humana de autor, NO escala de exportacion del tablero. Retopologia, UV, bake, rig y LOD pendientes.\n')
 # Evaluate counts and validity without creating any game exports.
 deps=bpy.context.evaluated_depsgraph_get();manifest={'status':'geometry_study_not_game_ready','objects':{},'warnings':['Facial likeness requires visual approval','Back/lower body inferred','No UV/rig/LOD/bake/export','Dense geometric mail and hair require retopology/baking']}
 minv=[float('inf')]*3;maxv=[-float('inf')]*3;tris=0

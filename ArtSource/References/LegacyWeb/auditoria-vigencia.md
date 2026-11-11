@@ -18,7 +18,7 @@ Fecha de revisión: 22 de octubre de 2026.
 - Docs/diseno/facciones-y-lideres.md describe doce líderes, con nombres distintos
   del reparto de cinco héroes de la web.
 - No se ha generado una lámina de Castilla ni alterado un personaje tras
-  la advertencia del usuario.
+  la advertencia.
 
 ## Resultado
 

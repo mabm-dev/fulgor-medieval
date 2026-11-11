@@ -111,6 +111,6 @@ antes de publicar estos binarios.
 
 ## Revisión visual posterior
 
-El usuario considera este acabado demasiado parecido a Lego. La propuesta
+Este acabado resulta demasiado parecido a Lego. La versión
 actual de formas más naturales está en [Repertorio V02](../RepertorioV02/README.md).
-V01 se conserva como referencia de comparación y no se presenta como arte aprobado.
+V01 se conserva como referencia de comparación y no se presenta como arte definitivo.

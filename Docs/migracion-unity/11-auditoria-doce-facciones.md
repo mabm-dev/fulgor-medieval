@@ -53,8 +53,8 @@ Zaragoza conserva un héroe visual provisional.
 El lore separa crónicas históricas y modo Leyendas. Las doce facciones no
 coexistieron necesariamente; reunirlas requiere presentarlo como Leyendas.
 El documento anterior de primera entrega limita la campaña a seis facciones
-(Castilla, León, Aragón, Navarra, Portugal y Granada). La petición actual del
-usuario amplía el repertorio que se debe integrar a doce; no se debe usar
+(Castilla, León, Aragón, Navarra, Portugal y Granada). La petición actual
+amplía el repertorio que se debe integrar a doce; no se debe usar
 esa limitación anterior para descartar siete facciones del trabajo.
 
 ## Siguiente implementación
@@ -65,7 +65,7 @@ esa limitación anterior para descartar siete facciones del trabajo.
    a los doce como una misma campaña histórica.
 3. Definir despliegues, asentamientos, tesoros y relaciones iniciales para
    las doce; no tratar los valores de cinco reinos del legacy como datos
-   aprobados de los siete restantes.
+   definitivos de los siete restantes.
 4. Conectar catálogo, nombres visibles, diplomacia y persistencia. Mantener
    lectores de los escenarios guardados existentes.
 5. Verificar inicio y continuación con cada facción, IA entre los participantes,

@@ -54,7 +54,7 @@ report={'base_v05_sha256':before,'back_edge_world_y':LIMIT,'edge_feather_m':.001
  'head_geometry_unchanged':True,'upper_treatment_unchanged_above_z':1.638,
  'rear_neck_beard_roots_remaining':0,'game_ready':False}
 (DEST/'verificacion_v06.json').write_text(json.dumps(report,indent=2),encoding='utf8')
-(DEST/'README.md').write_text('# Rodrigo V06: borde de barba bajo la oreja\n\nRevisión de V05 solicitada por el usuario: borde descendente bajo el lóbulo y retirada del exceso posterior sobre el cuello, de forma simétrica. Se retiran fibras y pigmento de raíz; la cabeza, pelo, ojos, ropa y cámaras se conservan. Borde suavizado en 1,5 mm.\n\nFuente de alta densidad, pendiente de aprobación artística y adaptación para Unity. V05 se conserva. Ver `verificacion_v06.json`.\n',encoding='utf8')
+(DEST/'README.md').write_text('# Rodrigo V06: borde de barba bajo la oreja\n\nRevisión de V05: borde descendente bajo el lóbulo y retirada del exceso posterior sobre el cuello, de forma simétrica. Se retiran fibras y pigmento de raíz; la cabeza, pelo, ojos, ropa y cámaras se conservan. Borde suavizado en 1,5 mm.\n\nFuente de alta densidad, pendiente de revisión artística y adaptación para Unity. V05 se conserva. Ver `verificacion_v06.json`.\n',encoding='utf8')
 blend=DEST/'Rodrigo_escultura_v06.blend'
 scene.camera=bpy.data.objects['CAM_3Q'];bpy.ops.wm.save_as_mainfile(filepath=str(blend))
 for label,cam in [('Perfil_cuello','CAM_Perfil_Cuello'),('Rostro','CAM_Rostro')]:
