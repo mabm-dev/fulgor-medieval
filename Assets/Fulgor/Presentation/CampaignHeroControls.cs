@@ -116,14 +116,28 @@ namespace Fulgor.Presentation.Map
         /// <summary>El héroe seleccionado recibe al batallón de la casilla elegida, o el batallón seleccionado se une al héroe.</summary>
         public bool TryAttachAtSelection(out string message)
         {
-            message = "Selecciona un batallón propio contiguo al héroe.";
-            if (!CanGiveHeroOrders || selection?.SelectedCell == null || !registry.TryGetArmy(selectedArmyId, out var own) ||
-                !registry.TryGetOccupant(selection.SelectedCell.Value.Coordinates, out var other) || other.Army.FactionId != playerFaction)
+            message = "Selecciona un héroe o un batallón propio contiguo a él.";
+            if (!CanGiveHeroOrders || !registry.TryGetArmy(selectedArmyId, out var own) || own.Army.FactionId != playerFaction)
                 return false;
-            var leader = own.Army.HeroId != null ? own : other;
-            var battalion = leader == own ? other : own;
-            if (!registry.TryAttach(leader.Army.Id, battalion.Army.Id, out var next, out var failure))
-            { message = HeroOrderText(failure); return false; }
+            // Pulsar una casilla selecciona su hueste, así que héroe y batallón no pueden estar elegidos a la vez:
+            // se une la hueste seleccionada con la contigua propia que le haga falta, la de la casilla elegida primero.
+            var chosen = selection?.SelectedCell?.Coordinates;
+            var neighbours = registry.Armies
+                .Where(a => a.Army.FactionId == playerFaction && a.Movement.Position.DistanceTo(own.Movement.Position) == 1 &&
+                            (own.Army.HeroId != null ? a.Army.HeroId == null : a.Army.HeroId != null))
+                .OrderBy(a => a.Movement.Position.Equals(chosen) ? 0 : 1).ThenBy(a => a.Army.Id, StringComparer.Ordinal).ToList();
+            if (neighbours.Count == 0)
+            { message = own.Army.HeroId != null ? "No hay un batallón propio contiguo al héroe." : "No hay un héroe propio contiguo a este batallón."; return false; }
+            CampaignArmyOnMap leader = null, battalion = null;
+            CampaignArmyRegistry next = null;
+            var failure = HeroOrderFailure.None;
+            foreach (var candidate in neighbours)
+            {
+                leader = own.Army.HeroId != null ? own : candidate;
+                battalion = leader == own ? candidate : own;
+                if (registry.TryAttach(leader.Army.Id, battalion.Army.Id, out next, out failure)) { failure = HeroOrderFailure.None; break; }
+            }
+            if (failure != HeroOrderFailure.None) { message = HeroOrderText(failure); return false; }
             registry = next; selectedArmyId = leader.Army.Id;
             marchOrders = marchOrders.Cancel(battalion.Army.Id).Cancel(leader.Army.Id);
             message = $"{battalion.Army.Id} se une a {leader.Army.Hero.Name}.";
@@ -134,12 +148,19 @@ namespace Fulgor.Presentation.Map
         /// <summary>Separa el último batallón del héroe seleccionado hacia la casilla contigua elegida.</summary>
         public bool TryDetachToSelection(out string message)
         {
-            message = "Selecciona una casilla libre contigua al héroe.";
-            if (!CanGiveHeroOrders || selection?.SelectedCell == null || !registry.TryGetArmy(selectedArmyId, out var own) ||
+            message = "Selecciona un héroe con batallones.";
+            if (!CanGiveHeroOrders || !registry.TryGetArmy(selectedArmyId, out var own) ||
                 own.Army.HeroId == null || own.Army.Formations.Count == 0) return false;
             var formation = own.Army.Formations.OrderBy(f => f.Id, StringComparer.Ordinal).Last();
-            if (!registry.TryDetach(own.Army.Id, formation.Id, selection.SelectedCell.Value.Coordinates, out var next, out var failure))
-            { message = HeroOrderText(failure); return false; }
+            // La casilla elegida es la del propio héroe: el batallón sale a la contigua libre, la elegida primero si lo está.
+            var chosen = selection?.SelectedCell?.Coordinates;
+            var destinations = own.Movement.Position.Neighbors()
+                .OrderBy(c => c.Equals(chosen) ? 0 : 1).ToList();
+            CampaignArmyRegistry next = null;
+            var failure = HeroOrderFailure.Occupied;
+            foreach (var destination in destinations)
+                if (registry.TryDetach(own.Army.Id, formation.Id, destination, out next, out failure)) { failure = HeroOrderFailure.None; break; }
+            if (failure != HeroOrderFailure.None) { message = HeroOrderText(failure); return false; }
             registry = next; marchOrders = marchOrders.Cancel(own.Army.Id);
             message = $"{formation.Id} se separa de {own.Army.Hero.Name}.";
             armyMarkers?.Initialize(selection, registry, playerFaction); RefreshArmy();

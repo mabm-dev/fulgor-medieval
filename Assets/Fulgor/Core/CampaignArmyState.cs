@@ -128,8 +128,13 @@ namespace Fulgor.Core.Campaign
                 if (!formationBindings.TryGetValue(result.Slot.Id, out var id) || id == null ||
                     !current.TryGetValue(id, out var previous) || !seen.Add(id))
                     throw new ArgumentException("Formation bindings do not match this army.", nameof(formationBindings));
+                // Las órdenes del héroe (curar, reanimar) pueden dejar a un batallón por encima de como entró: hasta
+                // su vida completa y hasta 100 de moral. Sin héroe, un batallón nunca termina mejor de lo que empezó.
+                long healthLimit = HeroId == null ? previous.Health :
+                    Math.Max(previous.Health, (long)previous.Quantity * previous.Attributes.HealthPerMember);
+                int moraleLimit = HeroId == null ? previous.Morale : Math.Max(previous.Morale, 100);
                 if (previous.Kind != result.Slot.Kind || previous.Quantity != result.InitialQuantity || previous.Attributes.HealthPerMember != result.Attributes.HealthPerMember ||
-                    result.TotalHealth > previous.Health || result.Morale > previous.Morale)
+                    result.TotalHealth > healthLimit || result.Morale > moraleLimit)
                     throw new ArgumentException("Battle result does not match the army's initial survivors.", nameof(report));
                 if (!result.IsDestroyed)
                     survivors.Add(new CampaignFormationState(id, previous.Attributes, result.TotalHealth, result.Morale, previous.Kind));

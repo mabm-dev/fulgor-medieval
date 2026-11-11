@@ -248,5 +248,30 @@ namespace Fulgor.Core.Tests.Campaign
             cloned.armies.Single(a => a.id == "hero/granada/1").heroId = Rodrigo;
             Assert.Throws<ArgumentException>(() => CampaignArmyRegistry.Restore(cloned, initial), "A hero cannot lead two armies.");
         }
+
+        [TestCase(HeroAbility.Regroup)]
+        [TestCase(HeroAbility.HoldTheLine)]
+        public void HeroMoraleAndHealingGainsSurviveTheBattleReport(HeroAbility order)
+        {
+            // Un batallón herido de entrada (una baja a medias) que el héroe cura o reanima por encima de sus valores iniciales.
+            var wounded = new CampaignFormationState("a-1", Spears.Attributes, 20L * Spears.Attributes.HealthPerMember - 3,
+                Spears.Attributes.Morale);
+            var attacker = new CampaignArmyState("a", "leon", new[] { wounded }, "leon/1");
+            var defender = new CampaignArmyState("d", "granada", new[] { Unit("d-1") });
+            var encounter = new CampaignEncounter("enc", attacker, defender, 7);
+            var roster = encounter.Roster;
+            var ally = roster.FormationIds.First(id => roster.GetFormation(id).Slot.Side == BattleSide.Attacker);
+            var enemy = roster.FormationIds.First(id => roster.GetFormation(id).Slot.Side == BattleSide.Defender);
+            Assert.That(encounter.AttackerHero.TryUse(order, ally, roster, out var result, out _), Is.True);
+            Assert.That(result.Healed + result.MoraleChange, Is.GreaterThan(0));
+            roster.TryApplyResolvedDamage(enemy, roster.GetFormation(enemy).TotalHealth, out _);
+            Assert.That(roster.Outcome, Is.Not.EqualTo(BattleOutcome.InProgress));
+
+            var resolved = encounter.Resolve(attacker, defender);
+
+            Assert.That(resolved.Attacker.Formations.Single().Health + resolved.Attacker.Formations.Single().Morale,
+                Is.GreaterThan(wounded.Health + wounded.Morale));
+            Assert.That(resolved.Attacker.HeroId, Is.EqualTo("leon/1"));
+        }
     }
 }
