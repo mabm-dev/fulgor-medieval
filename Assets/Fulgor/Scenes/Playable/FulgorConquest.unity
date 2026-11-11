@@ -498,6 +498,62 @@ MonoBehaviour:
     cell: {x: 12, y: 9}
     prefab: {fileID: 2446743674152260061, guid: d41a2d479b42c4b43807e2897a94a722, type: 3}
     doorMinute: 25
+  - label: "Almac\xE9n"
+    cell: {x: 14, y: 11}
+    prefab: {fileID: 8676142402838224046, guid: ba4cf1785ac23f84bb18fdab6b9cdcc7, type: 3}
+    doorMinute: 35
+  - label: Vivienda sencilla
+    cell: {x: 13, y: 9}
+    prefab: {fileID: 7948313351597087366, guid: cd37628a9f128eb45b127191bcdb237c, type: 3}
+    doorMinute: 35
+  - label: Pozo
+    cell: {x: 12, y: 10}
+    prefab: {fileID: 3101762169224748137, guid: 65dc2f0812fef4f459a5e3bd730fd10b, type: 3}
+    doorMinute: 30.000002
+  - label: "Le\xF1era"
+    cell: {x: 11, y: 9}
+    prefab: {fileID: 5960812610176235917, guid: 95fa1633189cc154ea0abd188084c257, type: 3}
+    doorMinute: 20
+  - label: Puesto de intercambio
+    cell: {x: 13, y: 10}
+    prefab: {fileID: 9164443822045256276, guid: 20fbef13e4ffaa94d97e10d2257c05bd, type: 3}
+    doorMinute: 35
+  - label: Casa de conocimiento
+    cell: {x: 14, y: 9}
+    prefab: {fileID: 8248297266375896023, guid: dc96af6eebbb3cb40a643129f72d1060, type: 3}
+    doorMinute: 40
+  - label: Campo de milicias
+    cell: {x: 13, y: 6}
+    prefab: {fileID: 7392307427331094804, guid: cb16c0ef214f014458f8eb059cd6811d, type: 3}
+    doorMinute: 4.999998
+  - label: Cantera sencilla
+    cell: {x: 15, y: 6}
+    prefab: {fileID: 2032473960742830275, guid: 6e92805b1a7c6ab4488624262172aee4, type: 3}
+    doorMinute: 54.999996
+  - label: Aldea concejil
+    cell: {x: 12, y: 11}
+    prefab: {fileID: 4759649882074483001, guid: 0e96004bb34b3524a9e92957c1f2f3eb, type: 3}
+    doorMinute: 31.815565
+  - label: Patio de mesnadas
+    cell: {x: 12, y: 8}
+    prefab: {fileID: 7696227072771919289, guid: 82bad5fc10684954689fbc62a6e68de5, type: 3}
+    doorMinute: 15.000001
+  - label: Empalizada
+    cell: {x: 11, y: 10}
+    prefab: {fileID: 2094122453199347635, guid: dbf33e756ed1c244797e3aaf153dc0bd, type: 3}
+    doorMinute: 25.000002
+  - label: Huerto o campo
+    cell: {x: 14, y: 10}
+    prefab: {fileID: 108795028662442658, guid: fc69086af888f34468223aaf2e765bf9, type: 3}
+    doorMinute: 38.184437
+  - label: Cerca reforzada
+    cell: {x: 15, y: 9}
+    prefab: {fileID: 8625979482083555375, guid: 17334e7f92d6c7d44b6b466a5a6909f1, type: 3}
+    doorMinute: 41.815567
+  - label: Casa de aldea
+    cell: {x: 14, y: 8}
+    prefab: {fileID: 863635122655164261, guid: c730bc255f193b64ab8fed49b564cc9c, type: 3}
+    doorMinute: 45
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0

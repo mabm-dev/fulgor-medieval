@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace Fulgor.Presentation.Map
 {
-    public sealed class CampaignSelectionPanel : MonoBehaviour
+    public sealed partial class CampaignSelectionPanel : MonoBehaviour
     {
         private RectTransform panel;
         private RectTransform turnPanel;
@@ -27,6 +27,25 @@ namespace Fulgor.Presentation.Map
         private Text saveStatus;
 
         public bool IsVisible => panel != null && panel.gameObject.activeInHierarchy;
+        public void SetCityMapMode(bool enabled)
+        {
+            cityMode=enabled;
+            // The kingdom banner belongs to both map and city.
+            if(campaignNavigation!=null)campaignNavigation.gameObject.SetActive(!enabled);
+            CloseDrawer();selectedFormation=-1;
+            foreach(var rim in troopSelection)if(rim!=null)rim.SetActive(false);
+            RefreshAlertsVisibility();
+            foreach(var banner in cityBanners.Values)banner.gameObject.SetActive(false);
+            if(panel!=null)panel.gameObject.SetActive(!enabled);
+            if(turnPanel!=null)turnPanel.gameObject.SetActive(!enabled);
+            if(resourceBar!=null)resourceBar.gameObject.SetActive(!enabled);
+        }
+        public bool BlocksCityMapPointer(Vector2 point)
+        {
+            return resourceBar!=null&&resourceBar.gameObject.activeInHierarchy&&RectTransformUtility.RectangleContainsScreenPoint(resourceBar,point)||
+                turnControls!=null&&turnControls.gameObject.activeInHierarchy&&RectTransformUtility.RectangleContainsScreenPoint(turnControls,point)||
+                utilityPanel!=null&&utilityPanel.gameObject.activeInHierarchy&&RectTransformUtility.RectangleContainsScreenPoint(utilityPanel,point);
+        }
         public RectTransform PanelRectTransform => panel;
         public Button EndTurnButton { get; private set; }
         public Button MoveArmyButton { get; private set; }
@@ -44,6 +63,17 @@ namespace Fulgor.Presentation.Map
         {
             var canvasObject = CampaignMenuUI.Canvas("Campaign HUD", transform, 20);
             hudCanvas = canvasObject.GetComponent<Canvas>();
+            if(GetComponent<CampaignPlaySession>()!=null)
+            {
+                BuildCampaignHud(canvasObject.transform);
+                if(FindAnyObjectByType<EventSystem>()==null)
+                {
+                    var events=new GameObject("Campaign Event System",typeof(EventSystem),typeof(InputSystemUIInputModule));
+                    events.transform.SetParent(transform,false);
+                    events.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
+                }
+                return;
+            }
 
             resourceBar = CreateRect("Campaign resource bar", canvasObject.transform,
                 new Vector2(0, 104), Vector2.zero);
@@ -116,10 +146,13 @@ namespace Fulgor.Presentation.Map
             saveStatus = CreateText("Save Status", utilityPanel, new Vector2(16, -60), new Vector2(292, 32), "", 13, Muted);
             NewGameButton = Action("New Game", "REINICIAR", utilityPanel, new Vector2(16, -108), new Vector2(140, 34));
             BattleLabButton = Action("Battle Lab", "LAB. COMBATE", utilityPanel, new Vector2(168, -108), new Vector2(140, 34));
+            // Las campañas jugables tienen su propio menú de pausa y guardado.
+            if(GetComponent<CampaignPlaySession>()!=null)utilityPanel.gameObject.SetActive(false);
 
             CampaignCameraController CameraControls() => Camera.main?.GetComponent<CampaignCameraController>();
             cameraControls = MapCameraControls.Create(canvasObject.transform, new Vector2(.5f, 0), new Vector2(0, 20),
                 d => CameraControls()?.PanView(d), d => CameraControls()?.ZoomView(d), () => CameraControls()?.ResetView(), () => CameraControls()?.CanNavigate == true);
+            if(GetComponent<CampaignPlaySession>()!=null)cameraControls.gameObject.SetActive(false);
 
             if (FindAnyObjectByType<EventSystem>() == null)
             {
@@ -171,11 +204,23 @@ namespace Fulgor.Presentation.Map
 
         public void SetCell(MapCell? cell)
         {
+            RefreshAlertsVisibility();
             if (details == null) return;
             details.text = cell.HasValue
                 ? $"{TerrainName(cell.Value.Terrain)}  ·  {cell.Value.Coordinates.Key}\n" +
-                  (cell.Value.HasGold ? "Veta de oro presente" : "Sin veta de oro")
+                  (cell.Value.Terrain==TerrainType.Mountain ? "Montaña · sin recursos" : ResourceLine(cell.Value.Coordinates))
                 : "Selecciona una casilla del mapa.\nLas ciudades abren su gestión con un clic.";
+        }
+
+        // el yacimiento de la casilla (ResourceDepositLayout) y, si ya la tiene, la mina construida encima
+        private string ResourceLine(HexCoordinates cell)
+        {
+            var campaign = GetComponent<CampaignTurnController>();
+            var deposit = campaign != null ? campaign.DepositAt(cell) : ResourceDepositKind.None;
+            var built = campaign != null ? campaign.CityTileBuildingAt(cell) : null;
+            if (built == "goldmine") return "Mina de oro";
+            if (built == "quarry") return "Cantera";
+            return deposit == ResourceDepositKind.Gold ? "Yacimiento de oro" : deposit == ResourceDepositKind.Stone ? "Yacimiento de piedra" : "Sin yacimiento";
         }
 
         public void SetFogMode(bool enabled){if(diagnostics!=null)diagnostics.gameObject.SetActive(!enabled);}
@@ -241,6 +286,11 @@ namespace Fulgor.Presentation.Map
 
         public void SetArmyActionLabel(string label)
         {
+            if(HasCampaignHud)label=label switch {
+                "MOVER HUESTE SELECCIONADA"=>"MOVER", "ATACAR HUESTE ENEMIGA"=>"ATACAR",
+                "ATACAR GUARNICIÓN"=>"ASALTAR", "OCUPAR FORTALEZA"=>"OCUPAR",
+                "VOLVER A LA BATALLA"=>"BATALLA", "MARCHAR A TERRENO EXPLORADO"=>"MARCHAR",
+                "TERRITORIO SIN EXPLORAR"=>"SIN EXPLORAR", _=>label};
             if (MoveArmyButton != null) MoveArmyButton.GetComponentInChildren<Text>().text = label;
         }
 
@@ -259,7 +309,7 @@ namespace Fulgor.Presentation.Map
         public void SetMissionControls(bool hasArmy, bool hasObjective, bool canRestart)
         {
             if (LocateArmyButton != null) LocateArmyButton.interactable = hasArmy;
-            if (LocateObjectiveButton != null) LocateObjectiveButton.interactable = hasObjective;
+            if (LocateObjectiveButton != null) LocateObjectiveButton.interactable = hasObjective||HasCampaignHud;
             if (NewGameButton != null) NewGameButton.interactable = canRestart;
         }
 
@@ -314,12 +364,14 @@ namespace Fulgor.Presentation.Map
             if (movementFill != null)
                 movementFill.sizeDelta = new Vector2(302 * (army == null || army.MovementPerTurn <= 0 ? 0 : Mathf.Clamp01((float)army.RemainingMovement / army.MovementPerTurn)), 5);
             if (MoveArmyButton != null) MoveArmyButton.interactable = canMove;
+            if(kingdomHeader!=null){armySummary.text=orderStatus;RefreshCampaignArmy(army);}
         }
 
         public bool ContainsScreenPoint(Vector2 screenPosition) => hudCanvas != null && hudCanvas.enabled &&
             (Contains(cameraControls, screenPosition) || Contains(resourceBar, screenPosition) ||
              Contains(panel, screenPosition) || Contains(turnPanel, screenPosition) ||
-             Contains(turnControls, screenPosition) || Contains(utilityPanel, screenPosition));
+             Contains(turnControls, screenPosition) || Contains(utilityPanel, screenPosition) ||
+             Contains(kingdomHeader,screenPosition)||Contains(campaignNavigation,screenPosition)||Contains(campaignDrawer,screenPosition)||CampaignExtrasContain(screenPosition));
 
         private static bool Contains(RectTransform rect, Vector2 point) =>
             rect != null && rect.gameObject.activeInHierarchy && RectTransformUtility.RectangleContainsScreenPoint(rect, point);
@@ -343,7 +395,7 @@ namespace Fulgor.Presentation.Map
             FontStyle style = FontStyle.Normal)
         {
             var rect = CreateRect(name, parent, size, position);
-            var text = rect.gameObject.AddComponent<Text>();
+            var text = rect.gameObject.AddComponent<CampaignSharpText>();
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.fontSize = fontSize;
             text.fontStyle = style;

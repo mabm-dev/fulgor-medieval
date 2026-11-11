@@ -14,7 +14,9 @@ namespace Fulgor.Presentation.Tests.Map
             {
                 var sprite = FulgorIcons.Get(icon);
                 Assert.That(sprite, Is.Not.Null, FulgorIcons.File(icon));
-                Assert.That(sprite.rect.width, Is.EqualTo(128f), FulgorIcons.File(icon));
+                // cuadrado y con detalle suficiente: el grano y la mano de obra ya son más grandes que los 128 px del resto
+                Assert.That(sprite.rect.width, Is.EqualTo(sprite.rect.height), FulgorIcons.File(icon));
+                Assert.That(sprite.rect.width, Is.GreaterThanOrEqualTo(128f), FulgorIcons.File(icon));
             }
         }
 

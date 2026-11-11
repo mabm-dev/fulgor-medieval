@@ -49,6 +49,9 @@ namespace Fulgor.Presentation.Map
         [SerializeField] private bool enableHeroes;
         public bool EnableHeroes=>enableHeroes;
         [SerializeField] private CampaignObjectiveKind objectiveKind;
+        [SerializeField, Min(0)] private int startingWood;
+        [SerializeField, Min(0)] private int startingLabor;
+        public CampaignResources StartingResources => new(0,Math.Max(0,startingWood),0,0,Math.Max(0,startingLabor));
         public CampaignObjectiveKind ObjectiveKind=>objectiveKind;
         [SerializeField] private ScenarioArmy[] armies = Array.Empty<ScenarioArmy>();
 

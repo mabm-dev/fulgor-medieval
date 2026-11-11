@@ -39,3 +39,13 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 865f8d8ded55c594b82138bb706519db, type: 2}
   waterMaterial: {fileID: 2100000, guid: ae81926a3ff1c87439ba433594b4cffa, type: 2}
   selectionShader: {fileID: 4800000, guid: 650dd9526735d5b46b79224bc6e94025, type: 3}
+  terrainShader: {fileID: 4800000, guid: 95fdebfa2a788e44d83fe9d672bd7192, type: 3}
+  reliefMountainMaterial: {fileID: 2100000, guid: 6f0163fe565829b4d8b120063508acb6, type: 2}
+  terrainNoise: {fileID: 2800000, guid: e08df53ff8639b147a59affc37524f3e, type: 3}
+  terrainShaderMaterials:
+  - {fileID: 0}
+  - {fileID: 2100000, guid: 0235ecf91a6e2074e8b7578c2f60e848, type: 2}
+  - {fileID: 2100000, guid: 08729c352f383b54a8fb0864ec25884f, type: 2}
+  - {fileID: 2100000, guid: 72ce587096b2b18448ed1f8c7ea3cd55, type: 2}
+  - {fileID: 2100000, guid: 3eea63d80de5c7344bb7ec7ed8a62855, type: 2}
+  reliefSubdivisions: 32

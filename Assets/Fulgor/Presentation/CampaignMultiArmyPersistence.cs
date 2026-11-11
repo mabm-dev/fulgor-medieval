@@ -38,6 +38,7 @@ namespace Fulgor.Presentation.Map
             {
                 var payload = JsonUtility.FromJson<CampaignSaveData>(json);
                 if (payload == null) throw new ArgumentException("Empty save.");
+                var restoredTiles=payload.RestoreTileCities(initialSettlements,incomeMap);
                 payload.RestoreCampaignRules(ObjectiveKind);payload.RestoreLogistics(LogisticsEnabled);
                 var restoredOwners=RestoreOwners(payload);
                 var restoredRivals=payload.RestoreRivals(rivalsConfigured,RivalFactions());
@@ -51,7 +52,7 @@ namespace Fulgor.Presentation.Map
                 var restoredFog=payload.RestoreFog(FogEnabled,incomeMap,KnownFactions(),restoredRegistry,restoredOwners);restoredFog?.ValidateOrders(restoredMarches,restoredRegistry,playerFaction,activeRoutes);
                 if(payload.missionWon&&restoredMarches.Count!=0)throw new ArgumentException("Completed mission has pending marches.");
                 var restoredCities = RestoreCities(payload);
-                restoredState = WithCityEconomy(restoredState, restoredCities,restoredOwners,restoredRegistry,restoredMilitary);
+                restoredState = WithCityEconomy(restoredState, restoredCities,restoredOwners,restoredRegistry,restoredMilitary,restoredTiles);
                 var restoredMission = initialMission;
                 if (payload.missionWon)
                 {
@@ -68,6 +69,7 @@ namespace Fulgor.Presentation.Map
                 Fog=restoredFog;InvalidateFog();LastLogisticsReport=null;State = restoredState; registry = restoredRegistry;Military=restoredMilitary;marchOrders=restoredMarches;Rivals=restoredRivals;Diplomacy=restoredDiplomacy;Heroes=restoredHeroes;
                 CommitOwnership(restoredOwners,restoredState,null);
                 cities = restoredCities; CityRevision++; cityCompletions.Clear();
+                tileCities = restoredTiles; TileCityRevision++;
                 selectedArmyId = payload.selectedArmyId;
                 Mission = restoredMission; MarchDestination = null;LastRetreats=Array.Empty<CampaignRetreatResult>();UpdateConclusion();
                 // Drop any visual route still interpolating from the replaced game.

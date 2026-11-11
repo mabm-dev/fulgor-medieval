@@ -82,6 +82,19 @@ namespace Fulgor.Presentation.Tests.Map
             Assert.That(marker.IsMoving,Is.False);Assert.That(marker.VisualPosition.x,Is.EqualTo(HexWorldLayout.ToWorld(next.Position).x).Within(.001));
             Assert.That(initial.Position,Is.EqualTo(new HexCoordinates(0,0)));Assert.That(next.RemainingMovement,Is.EqualTo(4));
         }
+        [Test] public void SoldiersTurnTowardsTheMarchAndWalkWithTheirSkeleton()
+        {
+            var (marker,graph)=Army();var initial=new ArmyMovementState(graph,new HexCoordinates(0,0),6);marker.SetArmy(initial);
+            var soldiers=marker.transform.Find("Hueste provisional/Batallón");Assert.That(soldiers,Is.Not.Null);
+            var walker=soldiers.GetComponentInChildren<CampaignSoldierWalk>();Assert.That(walker,Is.Not.Null);Assert.That(walker.Clip,Is.Not.Null,"los soldados traen la animación de marcha");
+            Assert.That(walker.Walking,Is.False);
+            initial.TryMove(new HexCoordinates(2,0),out var next,out var path,out _);marker.SetArmy(next,path.Cells);
+            marker.AdvanceVisual(.1f);marker.AdvanceVisual(.1f); // el giro de 90° tarda 1/6 s
+            Assert.That(marker.Facing,Is.EqualTo(90f).Within(.01f),"marcha hacia +X: el grupo mira al este");
+            Assert.That(walker.Walking,Is.True,"mientras marcha, los soldados caminan");
+            marker.AdvanceVisual(10);marker.AdvanceVisual(1);
+            Assert.That(walker.Walking,Is.False,"parada la hueste, los soldados vuelven a la pose neutra");
+        }
         [Test] public void RapidConsecutiveOrdersQueueTheirAcceptedRoutes()
         {
             var (marker,graph)=Army();var first=new ArmyMovementState(graph,new HexCoordinates(0,0),6);marker.SetArmy(first);

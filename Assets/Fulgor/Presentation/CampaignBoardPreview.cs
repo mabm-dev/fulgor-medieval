@@ -30,6 +30,9 @@ namespace Fulgor.Presentation.Map
 
         public Material BoardBaseMaterial => boardBaseMaterial;
         public CampaignArmyRegistry InitialArmyRegistry { get; private set; }
+        /// <summary>Mapa del tablero actual, del que salen los yacimientos que dibuja CampaignTileBuildings; null sin tablero.</summary>
+        public GeneratedMap CurrentMap { get; private set; }
+        public bool ShowsGold => showGold;
 
         private void Awake()
         {
@@ -70,6 +73,7 @@ namespace Fulgor.Presentation.Map
             ClearGeneratedBoard();
             try
             {
+                CurrentMap = map;
                 BuildBoard(map, routes, mission, armyRegistry);
                 InitialArmyRegistry = armyRegistry;
                 ConfigureCamera(map);
@@ -96,6 +100,7 @@ namespace Fulgor.Presentation.Map
         {
             GetComponent<CampaignMapAppearance>()?.ReleaseGeneration();
             InitialArmyRegistry = null;
+            CurrentMap = null;
             var selection = GetComponent<CampaignBoardSelection>();
             if (selection != null) selection.ResetBoard();
             if (generatedBoardRoot != null)
@@ -187,6 +192,8 @@ namespace Fulgor.Presentation.Map
             var cellsByCoordinates = new Dictionary<HexCoordinates, MapCell>(map.Cells.Count);
             foreach (var cell in map.Cells) cellsByCoordinates.Add(cell.Coordinates, cell);
             var waterKinds = WaterVisualClassifier.Classify(map);
+            // con edificios de casilla los yacimientos son modelos; las escenas sin esa capa marcan el oro con la pieza amarilla
+            bool depositModels = GetComponent<CampaignTileBuildings>() != null;
 
             foreach (var cell in map.Cells)
             {
@@ -203,7 +210,7 @@ namespace Fulgor.Presentation.Map
                 tile.AddComponent<MeshCollider>().sharedMesh = tileMesh;
                 tile.AddComponent<HexTileView>().Initialize(cell, boardSelection, style.Color);
 
-                if (showGold && cell.HasGold)
+                if (showGold && !depositModels && ResourceDepositLayout.At(map, cell.Coordinates) == ResourceDepositKind.Gold)
                 {
                     CreateGoldMarker(tile.transform, style.Height);
                     goldCount++;
@@ -228,7 +235,7 @@ namespace Fulgor.Presentation.Map
             selectionPanel.SetDiagnostics(metrics);
             var turnController = GetComponent<CampaignTurnController>();
             if (turnController == null) turnController = gameObject.AddComponent<CampaignTurnController>();
-            turnController.Initialize(selectionPanel, map, mission, armyRegistry, scenario != null ? scenario.PlayerFactionId : null,scenario!=null&&scenario.EnableStrategicRivals,scenario!=null?scenario.ObjectiveKind:CampaignObjectiveKind.ReachDestination,scenario!=null&&scenario.EnableMilitaryLogistics,scenario!=null&&scenario.EnableFogOfWar,scenario!=null&&scenario.EnableHeroes);
+            turnController.Initialize(selectionPanel, map, mission, armyRegistry, scenario != null ? scenario.PlayerFactionId : null,scenario!=null&&scenario.EnableStrategicRivals,scenario!=null?scenario.ObjectiveKind:CampaignObjectiveKind.ReachDestination,scenario!=null&&scenario.EnableMilitaryLogistics,scenario!=null&&scenario.EnableFogOfWar,scenario!=null?scenario.StartingResources:default,heroes:scenario!=null&&scenario.EnableHeroes);
         }
 
         private int CreateTransitions(Transform tile, MapCell cell,

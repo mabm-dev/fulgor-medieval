@@ -1,3 +1,14 @@
+# Dónde se trabaja con Painter
+
+Substance Painter se usa solo en local, en la torre. Los proyectos `.spp` (cientos de MB) no se suben a git: ni los de la fortaleza bruta ni los de Castilla. Lo que sí está en el repositorio son los scripts de esta carpeta y los PNG que se exportan a Unity.
+
+Qué se ha aplicado y dónde:
+
+- **Fortaleza bruta (primera pasada, Painter 12.0.0):** color y normal originales, capa cálida al 6 %, tinte rojo al 30 % con máscara por color y capas de piedra, madera, humedad y polvo con máscara negra, sin pintar. No se exportó a Unity.
+- **Fortaleza de Castilla (Tripo + retoques de Blender):** `preparar_castilla.py` crea un proyecto con un Texture Set por material del FBX y hornea mapas desde la propia malla. Se pinta a mano; `exportar_castilla_unity.py` deja los PNG en la carpeta `Painter` junto al FBX de Castilla3, que es lo que usa la escena de revisión.
+
+Para seguir en otro equipo hay que copiar el `.spp` a mano o repetir `preparar_castilla.py` sobre el FBX del repositorio.
+
 # Preparar la fortaleza bruta en Substance Painter
 
 El script usa el FBX y texturas originales importados para la revisión de Unity en `Assets/Fulgor/Art/RawFortress`. Se ejecuta dentro de Painter, no desde Blender ni desde Python del sistema. Usa la API pública layerstack de versiones recientes de Painter; comprueba la documentación de scripting de tu versión.
@@ -8,14 +19,14 @@ El script usa el FBX y texturas originales importados para la revisión de Unity
 
 ```python
 import runpy
-runpy.run_path(r'D:\Proyectos\fulgor-medieval-unity\.worktrees\facciones\Tools\Painter\preparar_fortaleza.py', run_name='__main__')
+runpy.run_path(r'<ruta del repositorio>\Tools\Painter\preparar_fortaleza.py', run_name='__main__')
 ```
 
 Se crea un proyecto nuevo `.spp`, con nombre fechado, dentro de `ArtSource/Substance/Fortaleza`. Usa 2048 píxeles, las UV existentes y normal OpenGL. La capa inferior restaura color y normal originales. Las capas superiores proponen piedra, madera, tela castellana, oro, humedad y polvo. Cada una empieza con máscara negra: selecciona esa máscara y pinta en blanco en las zonas que deben recibir el acabado. Puedes cambiar el color y la opacidad del relleno sin volver a pintar la máscara. Las capas están pensadas para zonas diferentes; si superpones máscaras, la capa superior puede sustituir la rugosidad de la inferior.
 
 El modelo bruto tiene un solo material. El script no identifica automáticamente dónde están piedra, madera o banderas. No incluye generación automática de suciedad por curvatura ni horneado de mapas. Los canales no asignados en la capa original quedan con sus valores de proyecto; el mapa MetallicSmoothness de Unity no se usa como roughness. Antes de exportar, revisar roughness y metallic, y exportar a una carpeta nueva con el preset compatible con la versión de Unity URP usada por el proyecto.
 
-Se ha ejecutado una primera pasada en Painter 12.0.0 (API 0.3.5), usando `aplicar_fortaleza_abierta.py` sobre la fortaleza abierta. Se corrigió la compatibilidad de canales: esta versión usa la propiedad `active_channels`. El proyecto guardado es `ArtSource/Substance/Fortaleza/Fortaleza_Castilla_Color_20261031_041918.spp`.
+Se ha ejecutado una primera pasada en Painter 12.0.0 (API 0.3.5), usando `aplicar_fortaleza_abierta.py` sobre la fortaleza abierta. Se corrigió la compatibilidad de canales: esta versión usa la propiedad `active_channels`. El proyecto resultante se queda en la torre.
 
 La pasada aplicada conserva color y normal originales, incorpora una capa cálida al 6% y un tinte rojo al 30% limitado por una máscara derivada de los rojos de la textura. Es una selección por color, no una identificación semántica garantizada de todas las banderas. Las capas de piedra, madera, humedad y polvo tienen máscaras negras y todavía requieren trabajo por zonas. No se han horneado mapas de curvatura ni exportado estas modificaciones a Unity. Se dejó Painter abierto con el modelo encuadrado.
 

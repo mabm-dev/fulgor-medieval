@@ -17,7 +17,7 @@ namespace Fulgor.Core.Tests.Campaign
             });
 
             Assert.That(CampaignIncomeCalculator.FromMap(map),
-                Is.EqualTo(new CampaignResources(1, 0, 2, 1, 2)));
+                Is.EqualTo(new CampaignResources(1, 0, 0, 0, 1)));
         }
 
         [Test]

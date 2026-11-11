@@ -15,11 +15,14 @@ namespace Fulgor.Presentation.Tests.Map
     public sealed class CampaignLaunchSceneTests
     {
         private bool hadSave;private string oldSave,oldScene;
+        private string[] oldSlots;private bool[] hadSlots;
         private CampaignLaunchMenu Menu=>Object.FindAnyObjectByType<CampaignLaunchMenu>();
         private CampaignTurnController Campaign=>Object.FindAnyObjectByType<CampaignTurnController>();
         private CampaignPlaySession Session=>Object.FindAnyObjectByType<CampaignPlaySession>();
         [UnitySetUp]public IEnumerator Setup()
         {
+            oldSlots=new string[CampaignSaveSlots.Count];hadSlots=new bool[CampaignSaveSlots.Count];
+            for(int i=0;i<CampaignSaveSlots.Count;i++){hadSlots[i]=PlayerPrefs.HasKey(CampaignSaveSlots.Key(i));oldSlots[i]=PlayerPrefs.GetString(CampaignSaveSlots.Key(i)," ");PlayerPrefs.DeleteKey(CampaignSaveSlots.Key(i));}
             hadSave=PlayerPrefs.HasKey(CampaignTurnController.LocalSaveKey);oldSave=PlayerPrefs.GetString(CampaignTurnController.LocalSaveKey,"");
             oldScene=EditorSceneManager.GetActiveScene().path;PlayerPrefs.DeleteKey(CampaignTurnController.LocalSaveKey);PlayerPrefs.Save();
             EditorSceneManager.OpenScene("Assets/Fulgor/Scenes/Playable/FulgorStart.unity");yield return new EnterPlayMode();yield return null;yield return null;
@@ -27,6 +30,7 @@ namespace Fulgor.Presentation.Tests.Map
         [UnityTearDown]public IEnumerator Cleanup()
         {
             if(EditorApplication.isPlaying)yield return new ExitPlayMode();
+            for(int i=0;i<CampaignSaveSlots.Count;i++){if(hadSlots[i])PlayerPrefs.SetString(CampaignSaveSlots.Key(i),oldSlots[i]);else PlayerPrefs.DeleteKey(CampaignSaveSlots.Key(i));}
             if(hadSave)PlayerPrefs.SetString(CampaignTurnController.LocalSaveKey,oldSave);else PlayerPrefs.DeleteKey(CampaignTurnController.LocalSaveKey);PlayerPrefs.Save();
             if(!string.IsNullOrEmpty(oldScene))EditorSceneManager.OpenScene(oldScene);
         }
@@ -68,6 +72,25 @@ namespace Fulgor.Presentation.Tests.Map
             Campaign.CompleteTurn();Campaign.CompleteTurn();Session.Open();Assert.That(Session.DiscardAndReturn(),Is.True);yield return Ready(true);
             Assert.That(PlayerPrefs.GetString(CampaignTurnController.LocalSaveKey)==before,Is.True);Assert.That(Menu.ContinueButton.interactable,Is.True);
             Menu.ContinueCampaign();yield return Ready();Assert.That(Campaign.State.Turn,Is.EqualTo(1));
+        }
+        [UnityTest]public IEnumerator PauseOffersSeparateSlotsAndLoadsTheChosenTurn()
+        {
+            Menu.StartCampaign("castilla-mission");yield return Ready();
+            Session.TogglePause();Assert.IsTrue(Session.IsOpen);
+            Assert.IsNotNull(Session.SaveButton);Assert.IsNotNull(Session.LoadButton);
+            Session.LoadButton.onClick.Invoke();Assert.IsTrue(Session.IsChoosingSlot);
+            Assert.IsFalse(GameObject.Find("Ranura 1").GetComponent<UnityEngine.UI.Button>().interactable);
+            Session.TogglePause();Assert.IsFalse(Session.IsChoosingSlot);Assert.IsTrue(Session.IsOpen);
+            Session.SaveButton.onClick.Invoke();Assert.IsTrue(Session.IsChoosingSlot);
+            Assert.IsTrue(Session.SaveSlot(0));var first=CampaignSaveSlots.Read(0).snapshot;
+            Session.Resume();Campaign.CompleteTurn();
+            Session.TogglePause();Assert.IsTrue(Session.SaveSlot(1));
+            Assert.AreEqual(first,CampaignSaveSlots.Read(0).snapshot,"Guardar otra ranura debe conservar la primera.");
+            Assert.AreEqual(2,Campaign.State.Turn);
+            Session.LoadButton.onClick.Invoke();Assert.IsTrue(Session.IsChoosingSlot);
+            Assert.IsTrue(Session.LoadSlot(0));Assert.IsFalse(Session.IsOpen);Assert.AreEqual(1,Campaign.State.Turn);
+            Session.TogglePause();Assert.IsTrue(Session.LoadSlot(1));Assert.AreEqual(2,Campaign.State.Turn);
+            Assert.IsFalse(Session.LoadSlot(3));
         }
         [UnityTest]public IEnumerator PendingBattleCannotBeDiscardedOrSavedThroughTheSessionMenu()
         {
