@@ -34,6 +34,7 @@ namespace Fulgor.Core.Campaign
             if(HasActiveEncounters)return CampaignAttackFailure.ArmyInBattle;
             if(attacker.Movement.Position.DistanceTo(position)!=1)return CampaignAttackFailure.NotAdjacent;
             if(attacker.Movement.RemainingMovement<1)return CampaignAttackFailure.NoMovement;
+            if(attacker.Army.Formations.Count==0)return CampaignAttackFailure.NoTroops;
             if(TryGetOccupant(position,out var field)&&field.Army.FactionId!=guard.FactionId)return CampaignAttackFailure.ArmyInBattle;
             return CampaignAttackFailure.None;
         }
@@ -48,7 +49,7 @@ namespace Fulgor.Core.Campaign
             if(field==null&&armies.ContainsKey(defenderId))throw new ArgumentException("Reserved garrison ID collision.");
             var history=new HashSet<string>(guard.CaptureEncounterHistory(),StringComparer.Ordinal);
             if(field!=null)history.UnionWith(field.Army.CaptureEncounterHistory());
-            var composite=CampaignArmyState.RestoreSurvivors(defenderId,guard.FactionId,formations,history);
+            var composite=CampaignArmyState.RestoreSurvivors(defenderId,guard.FactionId,formations,history,field?.Army.HeroId);
             var prepared=new CampaignArmyRegistry(this);
             prepared.armies[defenderId]=new CampaignArmyOnMap(composite,field?.Movement??ArmyMovementState.Restore(graph,position,1,0));
             if(!prepared.TryBeginAttack(id,attackerId,defenderId,seed,out next,out failure))return false;
@@ -65,7 +66,7 @@ namespace Fulgor.Core.Campaign
             var history=new HashSet<string>(defender?.Army.CaptureEncounterHistory()??data.Garrison.CaptureEncounterHistory(),StringComparer.Ordinal){id};
             guardSurvivors=CampaignArmyState.RestoreSurvivors(data.Garrison.Id,data.Garrison.FactionId,survivors.Where(f=>guardIds.Contains(f.Id)),history);
             if(data.FieldArmy==null)next.armies.Remove(encounter.DefenderId);
-            else if(defender!=null)next.UpdateSurvivors(CampaignArmyState.RestoreSurvivors(data.FieldArmy.Id,data.FieldArmy.FactionId,survivors.Where(f=>!guardIds.Contains(f.Id)),history),defender.Movement);
+            else if(defender!=null)next.UpdateSurvivors(CampaignArmyState.RestoreSurvivors(data.FieldArmy.Id,data.FieldArmy.FactionId,survivors.Where(f=>!guardIds.Contains(f.Id)),history,defender.Army.HeroId),defender.Movement);
             if(report.Outcome==BattleOutcome.AttackerVictory&&guardSurvivors.IsDissolved&&!next.TryGetOccupant(data.Position,out _)&&next.TryGetArmy(encounter.AttackerId,out var attacker))
                 next.armies[attacker.Army.Id]=new CampaignArmyOnMap(attacker.Army,ArmyMovementState.Restore(graph,data.Position,attacker.Movement.MovementPerTurn,attacker.Movement.RemainingMovement));
             return next;

@@ -8,6 +8,8 @@ namespace Fulgor.Presentation.Map
     public sealed class CampaignArmyMarkerLayer : MonoBehaviour
     {
         private readonly Dictionary<string, CampaignArmyMarker> markers = new();
+        private CampaignBoardSelection owner;
+        private string playerFaction;
         private bool cityVisible = true;
         public bool CityPresentationVisible => cityVisible;
         public void SetCityVisible(bool visible)
@@ -18,20 +20,25 @@ namespace Fulgor.Presentation.Map
         public void Initialize(CampaignBoardSelection owner, CampaignArmyRegistry registry, string playerFaction)
         {
             Clear();
-            foreach (var unit in registry.Armies)
-            {
-                var root = new GameObject("Hueste " + unit.Army.Id);
-                root.transform.SetParent(transform, false);
-                var marker = root.AddComponent<CampaignArmyMarker>();
-                marker.Initialize(owner);
-                marker.SetCityVisible(cityVisible);
-                marker.SetColor(unit.Army.FactionId == playerFaction ? new Color(.08f, .38f, .88f) : new Color(.85f, .16f, .12f));
-                marker.SetArmy(unit.Movement); markers.Add(unit.Army.Id, marker);
-                marker.SetFogVisible(unit.Army.FactionId==playerFaction||GetComponent<CampaignTurnController>()?.CanObserve(unit.Movement.Position)!=false);
-            }
+            this.owner = owner; this.playerFaction = playerFaction;
+            foreach (var unit in registry.Armies) AddMarker(unit);
+        }
+        private void AddMarker(CampaignArmyOnMap unit)
+        {
+            var root = new GameObject("Hueste " + unit.Army.Id);
+            root.transform.SetParent(transform, false);
+            var marker = root.AddComponent<CampaignArmyMarker>();
+            marker.Initialize(owner);
+            marker.SetCityVisible(cityVisible);
+            marker.SetColor(unit.Army.FactionId == playerFaction ? new Color(.08f, .38f, .88f) : new Color(.85f, .16f, .12f));
+            marker.SetArmy(unit.Movement); markers.Add(unit.Army.Id, marker);
+            marker.SetFogVisible(unit.Army.FactionId==playerFaction||GetComponent<CampaignTurnController>()?.CanObserve(unit.Movement.Position)!=false);
         }
         public void SetRegistry(CampaignArmyRegistry registry, string movingArmyId = null, IReadOnlyList<HexCoordinates> route = null)
         {
+            // Las huestes nacidas después de Initialize (héroe inicial, Separar, Contratar) aún no tienen marcador.
+            foreach (var unit in registry.Armies)
+                if (!markers.ContainsKey(unit.Army.Id)) AddMarker(unit);
             foreach (var pair in markers)
             {
                 registry.TryGetArmy(pair.Key,out var unit);var campaign=GetComponent<CampaignTurnController>();

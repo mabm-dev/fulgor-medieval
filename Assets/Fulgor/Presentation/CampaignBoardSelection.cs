@@ -117,7 +117,14 @@ namespace Fulgor.Presentation.Map
         {
             return isActiveAndEnabled && ((GetComponent<CampaignCityMapView>()?.IsOpen==true&&panel!=null&&panel.BlocksCityMapPointer(screenPosition)) || (panel != null && panel.IsVisible &&
                 panel.ContainsScreenPoint(screenPosition)) ||
-                GetComponent<CampaignSettlementController>()?.BlocksPointer(screenPosition) == true);
+                GetComponent<CampaignSettlementController>()?.BlocksPointer(screenPosition) == true ||
+                HeroPanelBlocks(screenPosition));
+        }
+
+        private bool HeroPanelBlocks(Vector2 screenPosition)
+        {
+            var heroes = GetComponent<CampaignHeroPanel>();
+            return heroes != null && heroes.BlocksPointer(screenPosition);
         }
 
         public HexTileView ResolveHit(Collider collider)

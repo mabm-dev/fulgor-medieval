@@ -24,10 +24,10 @@ namespace Fulgor.Core.Campaign
         public int Morale { get; }
         public int Quantity => checked((int)((Health - 1) / Attributes.HealthPerMember + 1));
 
-        public BattleFormationState Deploy(BattleFormationSlot slot)
+        public BattleFormationState Deploy(BattleFormationSlot slot, HeroDefinition hero = null)
         {
             if (slot.Kind != Kind) throw new ArgumentException("Deployment must preserve troop kind.", nameof(slot));
-            return BattleFormationState.FromSurvivors(slot, Attributes, Quantity, Health, Morale);
+            return BattleFormationState.FromSurvivors(slot, BattleHeroCommand.Empower(Attributes, hero), Quantity, Health, Morale);
         }
 
         internal bool Matches(CampaignFormationState other)
@@ -41,15 +41,18 @@ namespace Fulgor.Core.Campaign
         }
     }
 
-    /// <summary>Immutable army roster and encounter application history.</summary>
+    /// <summary>
+    /// Immutable army roster and encounter application history. An army may be led by a hero; a hero
+    /// without formations is a lone hero and the army survives while either remains.
+    /// </summary>
     public sealed class CampaignArmyState
     {
         private readonly HashSet<string> appliedEncounters;
-        public CampaignArmyState(string id, string factionId, IEnumerable<CampaignFormationState> formations)
-            : this(id, factionId, formations, new HashSet<string>(StringComparer.Ordinal)) { }
+        public CampaignArmyState(string id, string factionId, IEnumerable<CampaignFormationState> formations, string heroId = null)
+            : this(id, factionId, formations, new HashSet<string>(StringComparer.Ordinal), heroId) { }
 
         private CampaignArmyState(string id, string factionId, IEnumerable<CampaignFormationState> formations,
-            HashSet<string> appliedEncounters)
+            HashSet<string> appliedEncounters, string heroId)
         {
             if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Missing army ID.", nameof(id));
             if (string.IsNullOrWhiteSpace(factionId)) throw new ArgumentException("Missing faction ID.", nameof(factionId));
@@ -62,18 +65,26 @@ namespace Fulgor.Core.Campaign
                 copy.Add(formation);
             }
             if (copy.Count > 6) throw new ArgumentException("Army supports at most six formations.", nameof(formations));
-            Id = id; FactionId = factionId; Formations = copy.AsReadOnly();
+            if (heroId != null && HeroCatalog.Find(heroId)?.FactionId != factionId)
+                throw new ArgumentException("The hero must belong to the army's faction.", nameof(heroId));
+            Id = id; FactionId = factionId; Formations = copy.AsReadOnly(); HeroId = heroId;
             this.appliedEncounters = new HashSet<string>(appliedEncounters, StringComparer.Ordinal);
         }
 
         public string Id { get; }
         public string FactionId { get; }
         public IReadOnlyList<CampaignFormationState> Formations { get; }
-        public bool IsDissolved => Formations.Count == 0;
+        public string HeroId { get; }
+        public HeroDefinition Hero => HeroId == null ? null : HeroCatalog.Find(HeroId);
+        public bool IsLoneHero => Formations.Count == 0 && HeroId != null;
+        public bool IsDissolved => Formations.Count == 0 && HeroId == null;
         public bool HasAppliedEncounter(string encounterId) => encounterId != null && appliedEncounters.Contains(encounterId);
 
         public CampaignArmyState WithFormations(IEnumerable<CampaignFormationState> formations) =>
-            new CampaignArmyState(Id,FactionId,formations,appliedEncounters);
+            new CampaignArmyState(Id,FactionId,formations,appliedEncounters,HeroId);
+
+        public CampaignArmyState WithHero(string heroId) =>
+            new CampaignArmyState(Id,FactionId,Formations,appliedEncounters,heroId);
 
         internal string[] CaptureEncounterHistory()
         {
@@ -83,12 +94,12 @@ namespace Fulgor.Core.Campaign
         }
 
         internal static CampaignArmyState RestoreSurvivors(string id, string factionId,
-            IEnumerable<CampaignFormationState> formations, HashSet<string> appliedEncounters) =>
-            new CampaignArmyState(id, factionId, formations, appliedEncounters);
+            IEnumerable<CampaignFormationState> formations, HashSet<string> appliedEncounters, string heroId = null) =>
+            new CampaignArmyState(id, factionId, formations, appliedEncounters, heroId);
 
         internal bool MatchesSnapshot(CampaignArmyState other)
         {
-            if (Id != other.Id || FactionId != other.FactionId || Formations.Count != other.Formations.Count ||
+            if (Id != other.Id || FactionId != other.FactionId || HeroId != other.HeroId || Formations.Count != other.Formations.Count ||
                 !appliedEncounters.SetEquals(other.appliedEncounters)) return false;
             var byId = new Dictionary<string, CampaignFormationState>(StringComparer.Ordinal);
             foreach (var formation in other.Formations) byId.Add(formation.Id, formation);
@@ -117,8 +128,13 @@ namespace Fulgor.Core.Campaign
                 if (!formationBindings.TryGetValue(result.Slot.Id, out var id) || id == null ||
                     !current.TryGetValue(id, out var previous) || !seen.Add(id))
                     throw new ArgumentException("Formation bindings do not match this army.", nameof(formationBindings));
+                // Las órdenes del héroe (curar, reanimar) pueden dejar a un batallón por encima de como entró: hasta
+                // su vida completa y hasta 100 de moral. Sin héroe, un batallón nunca termina mejor de lo que empezó.
+                long healthLimit = HeroId == null ? previous.Health :
+                    Math.Max(previous.Health, (long)previous.Quantity * previous.Attributes.HealthPerMember);
+                int moraleLimit = HeroId == null ? previous.Morale : Math.Max(previous.Morale, 100);
                 if (previous.Kind != result.Slot.Kind || previous.Quantity != result.InitialQuantity || previous.Attributes.HealthPerMember != result.Attributes.HealthPerMember ||
-                    result.TotalHealth > previous.Health || result.Morale > previous.Morale)
+                    result.TotalHealth > healthLimit || result.Morale > moraleLimit)
                     throw new ArgumentException("Battle result does not match the army's initial survivors.", nameof(report));
                 if (!result.IsDestroyed)
                     survivors.Add(new CampaignFormationState(id, previous.Attributes, result.TotalHealth, result.Morale, previous.Kind));
@@ -126,7 +142,8 @@ namespace Fulgor.Core.Campaign
             if (count != Formations.Count || formationBindings.Count != count)
                 throw new ArgumentException("The whole army and only that army must be bound to the report.", nameof(formationBindings));
             var history = new HashSet<string>(appliedEncounters, StringComparer.Ordinal) { encounterId };
-            return new CampaignArmyState(Id, FactionId, survivors, history);
+            // A destroyed army loses its hero: the victor then decides the hero's fate.
+            return new CampaignArmyState(Id, FactionId, survivors, history, survivors.Count == 0 ? null : HeroId);
         }
     }
 }

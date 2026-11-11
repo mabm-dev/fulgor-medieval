@@ -45,6 +45,9 @@ namespace Fulgor.Presentation.Map
         public bool EnableFogOfWar=>enableFogOfWar;
         [SerializeField] private bool enableMilitaryLogistics;
         public bool EnableMilitaryLogistics=>enableMilitaryLogistics;
+        [Tooltip("Cada reino empieza con su héroe principal; requiere despliegue de huestes.")]
+        [SerializeField] private bool enableHeroes;
+        public bool EnableHeroes=>enableHeroes;
         [SerializeField] private CampaignObjectiveKind objectiveKind;
         [SerializeField, Min(0)] private int startingWood;
         [SerializeField, Min(0)] private int startingLabor;

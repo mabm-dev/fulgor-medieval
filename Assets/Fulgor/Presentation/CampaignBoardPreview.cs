@@ -235,7 +235,7 @@ namespace Fulgor.Presentation.Map
             selectionPanel.SetDiagnostics(metrics);
             var turnController = GetComponent<CampaignTurnController>();
             if (turnController == null) turnController = gameObject.AddComponent<CampaignTurnController>();
-            turnController.Initialize(selectionPanel, map, mission, armyRegistry, scenario != null ? scenario.PlayerFactionId : null,scenario!=null&&scenario.EnableStrategicRivals,scenario!=null?scenario.ObjectiveKind:CampaignObjectiveKind.ReachDestination,scenario!=null&&scenario.EnableMilitaryLogistics,scenario!=null&&scenario.EnableFogOfWar,scenario!=null?scenario.StartingResources:default);
+            turnController.Initialize(selectionPanel, map, mission, armyRegistry, scenario != null ? scenario.PlayerFactionId : null,scenario!=null&&scenario.EnableStrategicRivals,scenario!=null?scenario.ObjectiveKind:CampaignObjectiveKind.ReachDestination,scenario!=null&&scenario.EnableMilitaryLogistics,scenario!=null&&scenario.EnableFogOfWar,scenario!=null?scenario.StartingResources:default,heroes:scenario!=null&&scenario.EnableHeroes);
         }
 
         private int CreateTransitions(Transform tile, MapCell cell,

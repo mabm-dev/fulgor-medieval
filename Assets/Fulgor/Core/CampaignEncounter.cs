@@ -17,8 +17,8 @@ namespace Fulgor.Core.Campaign
             initialDefender = defender ?? throw new ArgumentNullException(nameof(defender));
             if (attacker.Id == defender.Id || attacker.FactionId == defender.FactionId)
                 throw new ArgumentException("Encounter requires opposing armies.");
-            if (attacker.IsDissolved || defender.IsDissolved)
-                throw new ArgumentException("Dissolved armies cannot start a battle.");
+            if (attacker.Formations.Count == 0 || defender.Formations.Count == 0)
+                throw new ArgumentException("Dissolved armies and lone heroes cannot start a battle.");
             if (attacker.HasAppliedEncounter(id) || defender.HasAppliedEncounter(id))
                 throw new ArgumentException("Encounter ID has already been used.", nameof(id));
             Id = id; Seed = seed;
@@ -28,12 +28,18 @@ namespace Fulgor.Core.Campaign
             Deploy(defender, BattleSide.Defender, formations, positions, defenderBindings);
             var field = TacticalBattlefield.Generate(seed);
             Roster = new BattleRoster(formations);
+            AttackerHero = attacker.Hero == null ? null : new BattleHeroCommand(attacker.Hero, BattleSide.Attacker);
+            DefenderHero = defender.Hero == null ? null : new BattleHeroCommand(defender.Hero, BattleSide.Defender);
             Commands = new BattleAttackResolver(Roster, positions, field.Cells, field.RandomState);
         }
         public string Id { get; }
         public long Seed { get; }
         public BattleRoster Roster { get; }
         public BattleAttackResolver Commands { get; }
+        /// <summary>Mando del héroe de cada bando, o null si la hueste no lleva héroe.</summary>
+        public BattleHeroCommand AttackerHero { get; }
+        public BattleHeroCommand DefenderHero { get; }
+        public BattleHeroCommand HeroOf(BattleSide side) => side == BattleSide.Attacker ? AttackerHero : DefenderHero;
         public BattleReport CreateReport() => BattleReport.Create(Roster);
 
         public CampaignEncounterResult Resolve(CampaignArmyState currentAttacker, CampaignArmyState currentDefender)
@@ -58,7 +64,7 @@ namespace Fulgor.Core.Campaign
             {
                 int id = formations.Count, q = side == BattleSide.Attacker ? 1 : 11;
                 int r = source.Count == 1 ? 4 : 1 + i * 6 / (source.Count - 1);
-                formations.Add(source[i].Deploy(new BattleFormationSlot(id, side, source[i].Kind, r, q)));
+                formations.Add(source[i].Deploy(new BattleFormationSlot(id, side, source[i].Kind, r, q), army.Hero));
                 positions.Add(id, new HexCoordinates(q, r)); bindings.Add(id, source[i].Id);
             }
         }

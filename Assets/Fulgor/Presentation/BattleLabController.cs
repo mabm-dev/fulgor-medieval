@@ -65,6 +65,8 @@ namespace Fulgor.Presentation.Map
             { running = false; Record("Límite automático alcanzado. Batalla pendiente."); return; }
             try
             {
+                // El héroe actúa desde fuera del campo antes de la orden del batallón activo.
+                if (TryAutomaticHero() && Roster.Outcome != BattleOutcome.InProgress) { running = false; return; }
                 var choice = automatic.ChooseOrder();
                 if (!choice.HasValue) { running = false; return; }
                 var order = choice.Value;

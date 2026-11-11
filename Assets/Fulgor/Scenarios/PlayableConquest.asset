@@ -26,6 +26,7 @@ MonoBehaviour:
   enableStrategicRivals: 1
   enableFogOfWar: 1
   enableMilitaryLogistics: 1
+  enableHeroes: 1
   objectiveKind: 1
   startingWood: 25
   startingLabor: 15

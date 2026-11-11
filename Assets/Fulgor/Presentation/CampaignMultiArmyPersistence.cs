@@ -47,6 +47,7 @@ namespace Fulgor.Presentation.Map
                 payload.RestoreMultiple(ExpectedSaveContext(payload), initialArmyRegistry, playerFaction, TerritoryIncome,
                     out var restoredState, out var restoredRegistry,restoredMilitary);
                 restoredMilitary.ValidateDeployment(restoredRegistry);
+                var restoredHeroes=RestoreHeroRoster(payload,ref restoredRegistry);
                 var restoredMarches=payload.RestoreMarches(restoredRegistry,playerFaction);
                 var restoredFog=payload.RestoreFog(FogEnabled,incomeMap,KnownFactions(),restoredRegistry,restoredOwners);restoredFog?.ValidateOrders(restoredMarches,restoredRegistry,playerFaction,activeRoutes);
                 if(payload.missionWon&&restoredMarches.Count!=0)throw new ArgumentException("Completed mission has pending marches.");
@@ -65,7 +66,7 @@ namespace Fulgor.Presentation.Map
                 var restoredConclusion=CampaignConclusionRules.Evaluate(ObjectiveKind,restoredRegistry,restoredOwners,playerFaction,restoredMission?.IsWon==true);
                 if(restoredConclusion!=CampaignConclusion.InProgress&&restoredMarches.Count!=0)throw new ArgumentException("Finished campaign has pending marches.");
                 // Publish only after all army, city and economic validation succeeds.
-                Fog=restoredFog;InvalidateFog();LastLogisticsReport=null;State = restoredState; registry = restoredRegistry;Military=restoredMilitary;marchOrders=restoredMarches;Rivals=restoredRivals;Diplomacy=restoredDiplomacy;
+                Fog=restoredFog;InvalidateFog();LastLogisticsReport=null;State = restoredState; registry = restoredRegistry;Military=restoredMilitary;marchOrders=restoredMarches;Rivals=restoredRivals;Diplomacy=restoredDiplomacy;Heroes=restoredHeroes;
                 CommitOwnership(restoredOwners,restoredState,null);
                 cities = restoredCities; CityRevision++; cityCompletions.Clear();
                 tileCities = restoredTiles; TileCityRevision++;

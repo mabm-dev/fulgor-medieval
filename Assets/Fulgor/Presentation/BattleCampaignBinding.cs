@@ -91,6 +91,65 @@ namespace Fulgor.Presentation.Map
             return true;
         }
 
+        internal BattleHeroCommand PlayerHero => campaignEncounter?.HeroOf(playerBattleSide);
+        internal BattleHeroCommand RivalHero => campaignEncounter?.HeroOf(playerBattleSide == BattleSide.Attacker ? BattleSide.Defender : BattleSide.Attacker);
+
+        /// <summary>
+        /// El héroe del bando activo actúa por su cuenta cuando juega la IA o el combate automático.
+        /// Devuelve true si ha usado una orden.
+        /// </summary>
+        private bool TryAutomaticHero()
+        {
+            if (campaignEncounter == null || Roster.Outcome != BattleOutcome.InProgress || !Roster.ActiveSide.HasValue) return false;
+            var side = Roster.ActiveSide.Value;
+            if (side == playerBattleSide && !running) return false;
+            var hero = campaignEncounter.HeroOf(side);
+            if (hero == null || !hero.TryActAutomatically(Roster, out var result)) return false;
+            campaignOrderCount++; Record(HeroResultText(hero, result));
+            return true;
+        }
+
+        /// <summary>El jugador usa una orden de su héroe. Si necesita objetivo y no hay uno válido, se elige solo.</summary>
+        internal bool TryUsePlayerHero(HeroAbility ability, int? preferredTarget, out string message)
+        {
+            var hero = PlayerHero;
+            message = "Tu hueste no lleva héroe.";
+            if (!IsOpen || hero == null || Roster.Outcome != BattleOutcome.InProgress) return false;
+            var kind = HeroCatalog.Ability(ability).Target;
+            int? target = null;
+            if (kind == HeroAbilityTarget.Enemy || kind == HeroAbilityTarget.Ally)
+            {
+                bool enemy = kind == HeroAbilityTarget.Enemy;
+                bool Valid(int id) { var f = Roster.GetFormation(id); return f.IsInBattle && (f.Slot.Side != playerBattleSide) == enemy; }
+                if (preferredTarget.HasValue && System.Linq.Enumerable.Contains(Roster.FormationIds, preferredTarget.Value) && Valid(preferredTarget.Value))
+                    target = preferredTarget;
+                else
+                    foreach (var id in Roster.FormationIds)
+                        if (Valid(id) && (!target.HasValue || (enemy ? Roster.GetFormation(id).Quantity > Roster.GetFormation(target.Value).Quantity :
+                            Roster.GetFormation(id).Morale < Roster.GetFormation(target.Value).Morale))) target = id;
+            }
+            if (!hero.TryUse(ability, target, Roster, out var result, out var failure))
+            {
+                message = failure switch {
+                    HeroCommandFailure.AlreadyActedThisRound => "Tu héroe ya ha actuado esta ronda.",
+                    HeroCommandFailure.NotEnoughPoints => "No quedan puntos de mando suficientes.",
+                    HeroCommandFailure.InvalidTarget => "No hay un objetivo válido.",
+                    _ => "Orden de héroe no disponible." };
+                Record(message); return false;
+            }
+            campaignOrderCount++; message = HeroResultText(hero, result); Record(message);
+            return true;
+        }
+
+        private static string HeroResultText(BattleHeroCommand hero, HeroCommandResult result)
+        {
+            var text = $"{hero.Hero.Name}: {HeroCatalog.Ability(result.Ability).Name}";
+            if (result.Damage > 0) text += $" · {result.Damage} de daño, {result.Casualties} bajas";
+            if (result.Healed > 0) text += $" · cura {result.Healed}";
+            if (result.MoraleChange != 0) text += $" · moral {result.MoraleChange:+0;-0}";
+            return text + $" · quedan {result.PointsLeft} puntos de mando";
+        }
+
         public void ResetEncounterView()
         {
             if (campaignEncounter == null) return;
