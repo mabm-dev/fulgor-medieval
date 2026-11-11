@@ -57,6 +57,8 @@ namespace Fulgor.Presentation.Map
         private int closedFrame=-1;
         public CityPanelKind Panel { get; private set; }
         public Camera PreviewCamera=>previewCamera;
+        /// <summary>Si la cámara de la vista de ciudad dibuja. Las pruebas la apagan: sin GPU, dibujar cada fotograma a 1728×1200 con antialiasing ×4 y sombras supera el límite de tiempo; la cámara sigue sirviendo para proyectar puntos.</summary>
+        public static bool RenderPreview{get;set;}=true;
         public RawImage Viewport=>viewport;
         public string BodyText=>body!=null?body.text:"";
         public Button PrimaryButton=>primary;
@@ -90,7 +92,7 @@ namespace Fulgor.Presentation.Map
                 var cameraObject=new GameObject("Camara de ciudad");cameraObject.transform.SetParent(stage.transform,false);previewCamera=cameraObject.AddComponent<Camera>();
                 previewCamera.orthographic=false;previewCamera.fieldOfView=42;previewCamera.cullingMask=1<<PreviewLayer;previewCamera.nearClipPlane=.1f;previewCamera.farClipPlane=80;previewCamera.clearFlags=CameraClearFlags.SolidColor;previewCamera.backgroundColor=new Color(.11f,.15f,.15f);
                 previewCamera.allowHDR=false;previewCamera.allowMSAA=true;
-                target=new RenderTexture(1728,1200,24,RenderTextureFormat.ARGB32){name="Vista de ciudad",antiAliasing=4};target.Create();previewCamera.targetTexture=target;
+                target=new RenderTexture(1728,1200,24,RenderTextureFormat.ARGB32){name="Vista de ciudad",antiAliasing=4};target.Create();previewCamera.targetTexture=target;previewCamera.enabled=RenderPreview;
                 UpdateCamera();BuildUI();SelectPanel(CityPanelKind.Overview);return true;
             }catch {Close();throw;}
         }
