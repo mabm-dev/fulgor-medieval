@@ -1,6 +1,6 @@
 # Propuesta de campañas y facciones tempranas
 
-Documento de propuesta de escenarios y reglas, pendiente de equilibrio. Visigodos, suevos y Bizancio ya están aprobados para el repertorio de diseño como poderes extranjeros; Barcelona continúa como candidata. Las fechas son puntos de partida para preparar escenarios, no límites fijados para las edades del juego. Una facción de campaña necesita una identidad jugable propia; un pueblo o población no tiene por qué ser un Estado unificado.
+Documento de propuesta de escenarios y reglas, pendiente de equilibrio. Visigodos, suevos y Bizancio ya forman parte del repertorio de diseño como poderes extranjeros; Barcelona continúa como candidata. Las fechas son puntos de partida para preparar escenarios, no límites fijados para las edades del juego. Una facción de campaña necesita una identidad jugable propia; un pueblo o población no tiene por qué ser un Estado unificado.
 
 ## Nuevas facciones prioritarias
 

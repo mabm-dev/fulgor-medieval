@@ -1,4 +1,4 @@
-"""Versión ligera de una fortaleza generada con IA (TRELLIS, Tripo...) para el mapa de campaña.
+"""Versión ligera de una fortaleza de alta densidad (TRELLIS, Tripo...) para el mapa de campaña.
 
 Uso:
   blender -b --python Tools/Blender/fortaleza_mapa_ligera.py -- modelo.glb --salida=Tripo [--tris=60000] [--res=4096] [--limpiar-base]

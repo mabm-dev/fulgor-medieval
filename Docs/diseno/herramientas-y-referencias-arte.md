@@ -1,11 +1,11 @@
 # Herramientas y referencias de arte
 
-Revisión: 22 de octubre de 2026. El usuario declara Adobe Creative Cloud Pro,
-Google AI Pro y GitHub Student Developer Pack. Se ha comprobado la instalación
+Revisión: 22 de octubre de 2026. Se dispone de Adobe Creative Cloud Pro
+y GitHub Student Developer Pack. Se ha comprobado la instalación
 de Blender 5.2, Photoshop 2026, Substance Painter 12.1.5 y Designer 16.0.6.
 No se ha consultado la cuenta para verificar activaciones, licencias ni créditos.
 
-## Decisión de trabajo propuesta
+## Decisión de trabajo
 
 | Prioridad | Herramienta | Uso en Fulgor Medieval |
 |---|---|---|
@@ -13,9 +13,8 @@ No se ha consultado la cuenta para verificar activaciones, licencias ni crédito
 | Principal | Photoshop | Preparar retratos originales, máscaras, detalles y referencias coherentes |
 | Principal | Illustrator, incluido en Creative Cloud Pro | Emblemas, escudos, banderas e iconos vectoriales editables |
 | Principal si la licencia lo permite | Substance 3D Painter | Pintar tela, piel, cuero, metal y piedra sobre la malla final |
-| Apoyo | Gemini/Google Flow con Google AI Pro | Vistas de referencia, variantes y detalles a partir del retrato original; revisión humana de identidad |
 | Posterior | Substance 3D Designer | Materiales reutilizables de piedra, terreno, madera y tejido |
-| Desarrollo | Beneficios GitHub Student | Copilot para programación, GitKraken para Git y recursos de diseño como Icons8 según la oferta activada |
+| Desarrollo | Beneficios GitHub Student | GitKraken para Git y recursos de diseño como Icons8 según la oferta activada |
 | Posterior | Premiere y After Effects | Tráiler y presentación; no resuelven la anatomía o la escultura |
 
 Son recomendaciones de flujo. Tener una aplicación instalada no confirma
@@ -32,19 +31,10 @@ No hace falta cambiar de motor ni comprar ZBrush para validar este flujo.
   educativa se describe para uso personal/no comercial. Painter y Designer
   están instalados, pero falta conocer el derecho de uso concreto de la cuenta.
   El trabajo de producción con ellos sigue condicionado a la licencia adecuada.
-- [Google AI Pro](https://one.google.com/about/google-ai-plans/):
-  ofrece mayor acceso a generación de imágenes y Google Flow. Utilizarlo para
-  referencias y exploración, sin confundir una imagen con una malla 3D lista
-  para Unity. No se han verificado los límites particulares de esta cuenta.
 - [GitHub Student Developer Pack](https://education.github.com/pack):
-  el catálogo consultado recoge Copilot Student, JetBrains, GitKraken e Icons8,
+  el catálogo consultado recoge JetBrains, GitKraken e Icons8,
   entre otros. Ver el beneficio efectivamente activado y sus condiciones antes
   de incorporarlo. Su papel aquí es desarrollo y apoyo de diseño.
-- [Google Flow](https://support.google.com/flow/answer/16353333?hl=en):
-  herramienta de creación visual. Las herramientas de Whisk se trasladaron
-  a Flow según el
-  [anuncio oficial](https://workspaceupdates.googleblog.com/2026/03/whisk-is-moving-to-flow-on-april-30-2026.html);
-  priorizar la documentación y la interfaz actuales.
 
 Consulta del catálogo público; no supone que todos los beneficios estén
 reclamados ni que la cuenta tenga todas las ofertas.
@@ -88,7 +78,7 @@ la representación del personaje en el mapa, con detalle proporcional al tamaño
 
 ## Corrección de vigencia de las referencias
 
-El usuario advierte que las imágenes consultadas pueden ser de la versión
+Las imágenes consultadas pueden ser de la versión
 web anterior. Se confirma que proceden de `origin/legacy/web` y de la copia
 local de esa rama. No está confirmado que sean los diseños de la versión
 actual. La decisión previa de tratarlas como referencia principal queda

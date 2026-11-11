@@ -21,7 +21,7 @@ No se ha introducido una fórmula alternativa de victoria por fuerza agregada. E
 
 ## Verificación pendiente
 
-Compilación externa de Core y Presentation correcta, cero errores. Pruebas de comportamiento aplazadas por indicación del usuario. Al retomarlas: orden independiente del orden de entrada, espera por ronda, espera siendo el último del bando, duración de defensa al cambiar de ronda, retirada/destrucción activa y pendiente, eliminación del último integrante de un bando y bloqueo de órdenes después del resultado.
+Compilación externa de Core y Presentation correcta, cero errores. Pruebas de comportamiento aplazadas. Al retomarlas: orden independiente del orden de entrada, espera por ronda, espera siendo el último del bando, duración de defensa al cambiar de ronda, retirada/destrucción activa y pendiente, eliminación del último integrante de un bando y bloqueo de órdenes después del resultado.
 
 ## Estado de formaciones, salud y bajas
 
@@ -47,7 +47,7 @@ Diferencia deliberada respecto al cálculo antiguo de bajas: se conserva salud a
 
 El azar Mulberry32 usa una única semilla por resolutor. Una orden rechazada no avanza su estado ni la cola. Un ataque válido consume la activación, incluso con daño cero. Una destrucción cierra inmediatamente la batalla si ya no quedan enemigos. BattleAttackResult expone tirada, bonus de terreno y defensa, daño, bajas, estado de azar y resultado. No está integrado en el guardado de campaña.
 
-Compilación externa correcta (cero errores). Pruebas aplazadas por indicación del usuario. Pendientes: mismos comandos/semilla producen mismos resultados, ataques rechazados no alteran azar ni activación, límites de alcance, protección del terreno y defender, daño cero, muerte del último enemigo y persistencia de heridas. Las posiciones son las del despliegue; falta implementar órdenes de movimiento táctico y actualizar ocupación durante la batalla antes de construir la interfaz.
+Compilación externa correcta (cero errores). Pruebas aplazadas. Pendientes: mismos comandos/semilla producen mismos resultados, ataques rechazados no alteran azar ni activación, límites de alcance, protección del terreno y defender, daño cero, muerte del último enemigo y persistencia de heridas. Las posiciones son las del despliegue; falta implementar órdenes de movimiento táctico y actualizar ocupación durante la batalla antes de construir la interfaz.
 
 ## Movimiento táctico y ocupación
 
@@ -83,7 +83,7 @@ Controles: atacar al ID indicado, mover a Q/R, esperar, defender y retirar el ba
 
 Cerrar conserva la batalla en memoria y pausa la ejecución; reiniciar crea la misma fixture. No hay tablero gráfico, selección con clic sobre casillas ni persistencia del laboratorio entre sesiones. Los resultados no se aplican a recursos, hueste, objetivo ni guardado de campaña.
 
-Verificado únicamente por compilación externa: cero errores y siete avisos de campos serializados. Se adaptó el ID de ventana a GetEntityId de la versión Unity instalada. Pruebas de interfaz y comportamiento aplazadas por indicación del usuario. Pendientes: abrir/cerrar sin entradas de campaña, campos numéricos, victoria durante una orden, retirada, automático/pausa/límite, reinicio, tamaños de pantalla y regreso al HUD.
+Verificado únicamente por compilación externa: cero errores y siete avisos de campos serializados. Se adaptó el ID de ventana a GetEntityId de la versión Unity instalada. Pruebas de interfaz y comportamiento aplazadas. Pendientes: abrir/cerrar sin entradas de campaña, campos numéricos, victoria durante una orden, retirada, automático/pausa/límite, reinicio, tamaños de pantalla y regreso al HUD.
 
 ## Tablero esquemático del laboratorio
 

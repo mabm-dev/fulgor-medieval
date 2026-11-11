@@ -69,7 +69,7 @@ Faltan por decidir: control de sucesores, aparición de nuevas facciones, influe
 ## Orden de producción
 
 1. Inventariar en la rama Unity avanzada los datos y recursos de las doce fichas y la campaña de prueba; separar arte presente, conectado y pendiente.
-2. Aprobar repertorio histórico y candidatos adicionales; fijar una fecha y un escenario inicial verificables.
+2. Fijar el repertorio histórico y los candidatos adicionales; fijar una fecha y un escenario inicial verificables.
 3. Completar dos fichas jugables (Castilla y rival identificado): árbol de edificios, levas, atributos, pasiva y aspecto. Mantener el equilibrio inicial medible.
 4. Implementar y guardar una transición de etapa con una construcción y una unidad desbloqueadas para cada bando; comprobar que el rival también puede avanzar.
 5. Extender progresivamente al resto de etapas, catálogo de reinos y recursos visuales. Verificar cargas, conquistas y migración de guardados antes de añadir los capítulos históricos.

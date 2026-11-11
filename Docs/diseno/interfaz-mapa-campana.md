@@ -1,6 +1,6 @@
 # Interfaz del mapa general de campaña
 
-La propuesta aprobada se lleva al mapa 3D existente, sin sustituirlo por una captura. La cabecera de Castilla, los marcos y las texturas proceden del arte disponible; los retratos de tropas proceden de las referencias individuales de Castilla. El recorte y los marcos se componen como UI nativa, con cifras y etiquetas independientes.
+El diseño se lleva al mapa 3D existente, sin sustituirlo por una captura. La cabecera de Castilla, los marcos y las texturas proceden del arte disponible; los retratos de tropas proceden de las referencias individuales de Castilla. El recorte y los marcos se componen como UI nativa, con cifras y etiquetas independientes.
 
 ## Distribución y acciones
 

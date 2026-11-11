@@ -1,6 +1,6 @@
 # Rodrigo de Castilla — estudio geométrico V01
 
-Estado: **borrador de volumen y vestuario; semejanza y realismo no aprobados**.
+Estado: **borrador de volumen y vestuario; semejanza y realismo por revisar**.
 No sustituye el retrato vigente ni es un héroe terminado para Unity.
 
 ## Archivos
@@ -54,7 +54,7 @@ estilizado frente al objetivo naturalista.** No debe marcarse como arte acabado.
    rig, animaciones, LOD y exportación a escala estratégica. No se ha añadido
    ningún FBX ni prefab Unity de este estudio.
 
-No hay aprobación visual del usuario ni pruebas en Unity. La comprobación
+No hay revisión visual ni pruebas en Unity. La comprobación
 técnica de archivos no demuestra calidad artística, rendimiento ni rig válido.
 No se ha publicado este archivo en GitHub; revisar la política de binarios/LFS
 antes de añadir la fuente densa a Git.

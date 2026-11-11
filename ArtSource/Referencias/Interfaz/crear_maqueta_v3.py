@@ -4,10 +4,10 @@ import base64, json
 folder=Path(__file__).parent
 html=(folder/'Maqueta_mapa_castilla_v2.html').read_text(encoding='utf-8')
 files={
- 'realm':r'C:\Users\tarif\AppData\Local\Temp\codex-clipboard-3b3fb781-78a2-48a6-afbd-0ea1b2b15ccb.png',
- 'resources':r'C:\Users\tarif\AppData\Local\Temp\codex-clipboard-5f40a38e-7c8a-4ccd-a556-d6e16656cbd9.png',
- 'legend':r'C:\Users\tarif\AppData\Local\Temp\codex-clipboard-3f4ae946-803f-4991-8e24-6c80c6fe2898.png',
- 'bar':r'C:\Users\tarif\AppData\Local\Temp\codex-clipboard-a1722e59-7964-4ea2-801d-0cef1c8c5206.png'}
+ 'realm':r'C:\Users\tarif\AppData\Local\Temp\portapapeles-3b3fb781-78a2-48a6-afbd-0ea1b2b15ccb.png',
+ 'resources':r'C:\Users\tarif\AppData\Local\Temp\portapapeles-5f40a38e-7c8a-4ccd-a556-d6e16656cbd9.png',
+ 'legend':r'C:\Users\tarif\AppData\Local\Temp\portapapeles-3f4ae946-803f-4991-8e24-6c80c6fe2898.png',
+ 'bar':r'C:\Users\tarif\AppData\Local\Temp\portapapeles-a1722e59-7964-4ea2-801d-0cef1c8c5206.png'}
 assets={k:'data:image/png;base64,'+base64.b64encode(Path(v).read_bytes()).decode() for k,v in files.items()}
 style='''<style>
 .realm,.resources{display:none!important}.reference-top{position:absolute;inset:0 0 auto;display:flex;justify-content:space-between;pointer-events:none;align-items:flex-start}.reference-top img{display:block;max-width:100%;height:auto}.realm-art{width:26%}.resource-art{width:42%}

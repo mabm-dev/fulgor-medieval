@@ -1,7 +1,6 @@
 # Capitán — referencia visual natural V01
 
-Lámina generada con la herramienta integrada de generación de imágenes de
-OpenAI para estudiar un acabado más natural que los modelos procedurales.
+Lámina para estudiar un acabado más natural que los modelos procedurales.
 La imagen es una referencia 2D, no un modelo Blender ni una captura de Unity.
 
 - Imagen: [Capitan_referencia_natural_v01.png](Capitan_referencia_natural_v01.png).
@@ -11,7 +10,7 @@ La imagen es una referencia 2D, no un modelo Blender ni una captura de Unity.
   cuero y madera con desgaste localizado.
 - No representa a un personaje histórico concreto ni certifica reconstrucción
   de equipo de un periodo. Los detalles pueden variar entre vistas.
-- Pendiente de aceptación visual del usuario.
+- Pendiente de revisión visual.
 - No usar la lámina como textura PBR directa: contiene perspectiva, luz y sombras.
   El modelo, UV, materiales y mapas de juego se prepararán aparte.
 

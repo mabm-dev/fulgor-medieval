@@ -1,7 +1,7 @@
 # Rodrigo — rostro y peinado V03
 
 Referencia: retrato actual `ArtSource/Portraits/Heroes/heroe_rodrigo_diaz_castilla.png`.
-Estudio de alta densidad, todavía sin aprobación de semejanza ni acabado final.
+Estudio de alta densidad, todavía sin revisión de semejanza ni acabado final.
 V01/V02 se conservan para comparación.
 
 ## Cambios respecto a V02
@@ -50,8 +50,8 @@ estratégica pendientes. No hay exportación FBX/prefab ni pruebas en Unity.
 No se ha publicado esta revisión en GitHub.
 
 
-## Revisión posterior del usuario
+## Revisión posterior
 
-El usuario indicó que V03 no se veía bien, especialmente el cuello y la barba.
-No debe considerarse aprobada. La propuesta de corrección está en
+V03 no se veía bien, especialmente el cuello y la barba.
+Se descarta. La corrección está en
 ../CastillaRodrigoV04/; V03 se conserva para comparación.

@@ -61,7 +61,7 @@ de rutas del escenario ni resolución de cruces. No cambia las reglas de juego.
 ## Bosque, colina y montaña — primer prototipo cálido
 
 `Biomas_color_v01.blend` contiene dos escenas: una galería de las tres casillas
-y una composición con la llanura cálida aprobada como primer prototipo.
+y una composición con la llanura cálida adoptada como primer prototipo.
 El script propio `crear_biomas_color_v01.py` genera geometría y materiales
 originales, sin recursos externos. Para reconstruir la composición necesita
 `Llanura_v02_color.blend`, generado por el comando anterior.
@@ -93,7 +93,7 @@ se han integrado en la escena de campaña ni validado en Unity.
 
 ## Montaña natural v02
 
-Revisión solicitada porque las primeras montañas parecían dibujos animados.
+Revisión porque las primeras montañas parecían dibujos animados.
 `Montana_natural_v02.blend` conserva la comparación anterior/nueva y una escena
 con los otros terrenos. La nueva malla es una superficie continua con crestas,
 estribaciones y cortes de erosión. Los colores de roca y hierba se mezclan según
@@ -126,7 +126,7 @@ Los otros terrenos todavía tienen el acabado del prototipo anterior.
 
 `Bosque_colina_natural_v02.blend` contiene una galería de bosque/colina y una
 escena con los cuatro terrenos de dirección natural. La montaña procede de la
-v02 aprobada; bosque, colina y llanura son nuevas revisiones. Se conservan las
+v02 adoptada; bosque, colina y llanura son nuevas revisiones. Se conservan las
 fuentes anteriores para comparar.
 
 ```powershell
@@ -221,7 +221,7 @@ Láminas en `Builds/ArtPreview/`: `Aguas_costas_naturales_v01.png`,
 ## Agua y paisaje rural: revisión natural v02
 
 `Agua_cereal_caminos_natural_v02.blend` revisa los ocho modelos del estudio v01.
-Usa agua azul por preferencia posterior del usuario y conserva la paleta cálida
+Usa agua azul por una preferencia posterior y conserva la paleta cálida
 del terreno. Las playas tienen perfiles irregulares,
 el lago es asimétrico y el cauce varía de ancho. Piedras y juncos se agrupan;
 el cereal tiene más densidad, alturas, inclinaciones y pequeños claros. Los
@@ -264,8 +264,8 @@ Láminas: `Aguas_costas_naturales_v02.png`, `Cereal_caminos_naturales_v02.png` y
 ## Conexiones de agua azul v03
 
 `Conexiones_agua_v03.blend` contiene una galería de siete piezas y una
-desembocadura compuesta por diez hexágonos. La paleta azul conserva la elección
-del usuario. La geometría, los colores y los mapas son propios.
+desembocadura compuesta por diez hexágonos. La paleta azul se mantiene.
+La geometría, los colores y los mapas son propios.
 
 ```powershell
 & 'D:/Program Files/Blender Foundation/Blender 5.2/blender.exe' --background --factory-startup --python ArtSource/Blender/Terrain/crear_conexiones_agua_v03.py

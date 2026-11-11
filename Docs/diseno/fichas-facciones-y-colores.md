@@ -4,7 +4,7 @@ Propuesta para diseño y pruebas, no contenido implementado ni equilibrio valida
 
 ## Reglas comunes de la propuesta
 
-Recursos y costes: **grano / madera / piedra / oro / mano de obra**. Los edificios característicos de las doce facciones y sus cifras están en [su catálogo](edificios-caracteristicos.md). Una construcción propia por ciudad, terminada para aplicar efectos; requisitos y conquista se rigen por ese catálogo. Estos edificios se proponen disponibles en Alta Edad Media; las identidades históricas tardías necesitan adaptar su disponibilidad al escenario.
+Recursos y costes: **grano / madera / piedra / oro / mano de obra**. Los edificios característicos de las doce facciones y sus cifras están en [su catálogo](edificios-caracteristicos.md). Una construcción propia por ciudad, terminada para aplicar efectos; requisitos y conquista se rigen por ese catálogo. Estos edificios quedan disponibles en Alta Edad Media; las identidades históricas tardías necesitan adaptar su disponibilidad al escenario.
 
 Las cuatro clases siguientes son una base numérica de prueba para modo libre. Cada facción utiliza las clases indicadas en su ficha, con nombre y aspecto propios; no se afirma que la unidad histórica fuera igual. Los valores de combate utilizan la escala del prototipo, pero deben comprobarse en el motor antes de implementarlos. Ataque y defensa son atributos, daño y salud son por soldado; movimiento, iniciativa y alcance son tácticos. La disciplina empieza en 70. La leva aparece en guarnición; una formación ocupa una plaza.
 
@@ -69,7 +69,7 @@ Para una campaña histórica se fijan etapa inicial y contenido según fecha y f
 
 ## Contratos pendientes antes de implementación
 
-1. Elegir condiciones, costes y duración de cada ascenso; definir reglas de IA y guardado. Los nombres de edificios comunes que habilitan unidades aún no existen como requisitos aprobados.
+1. Elegir condiciones, costes y duración de cada ascenso; definir reglas de IA y guardado. Los nombres de edificios comunes que habilitan unidades aún no existen como requisitos definitivos.
 2. Decidir cómo se combina el máximo de +1 defensa de edificio con otros bonos de facción; el modificador de edificio y el pasivo de facción son fuentes distintas y por defecto se suman una vez cada uno.
 3. Definir comportamiento tras conquista: una construcción característica capturada conserva su efecto de edificio para el nuevo dueño, pero no concede pasiva o unidad exclusiva de su antiguo reino; revisar equilibrio antes de adoptarlo.
 4. Comprobar contraste de colores sobre el mapa y accesibilidad: acompañar color con emblema, forma y etiqueta; seleccionar estado y propietario deben distinguirse de forma independiente.

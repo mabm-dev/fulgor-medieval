@@ -2,7 +2,7 @@
 
 Referencia de identidad: retrato actual de Rodrigo en `ArtSource/Portraits/Heroes/`.
 Conserva V01 para comparación. Es una mejora del estudio de personaje, no arte
-final aprobado ni un modelo listo para Unity.
+final definitivo ni un modelo listo para Unity.
 
 ## Cambios verificables
 
@@ -39,7 +39,7 @@ trabajo propio del proyecto. Las referencias 2D actuales se conservan intactas.
 `verificar_rodrigo_v02.py` reabre la fuente y comprueba la UV de cabeza,
 ausencia de simuladores temporales, originales y assets externos mediante
 hashes, tres renders y límites de altura. Resultado en `verificacion_v02.json`.
-Esto verifica archivos y estructura, no una aprobación de calidad artística.
+Esto verifica archivos y estructura, no una revisión de calidad artística.
 
 ## Límites reales
 

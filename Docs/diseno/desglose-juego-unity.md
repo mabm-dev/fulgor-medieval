@@ -107,7 +107,7 @@ Para la primera prueba usar una victoria sencilla por dominio con objetivo visib
 
 ## 12. Orden de implementación y aceptación
 
-**0. Inventario real de Unity.** La carpeta de trabajo está en `legacy/web`. La revisión de GitHub localizó en `claude/friendly-faraday-q7i3tj` el prototipo Unity más avanzado: campaña de dos facciones, economía, obras, levas, combate, logística, diplomacia y guardado, además del selector visual de doce reinos. Las edades, los privilegios de reino y el ascenso de héroes siguen pendientes según su auditoría. El informe de revisión está en [revisión de ramas](revision-ramas-unity.md). No cambiar de rama sobre los archivos existentes sin proteger los cambios locales.
+**0. Inventario real de Unity.** La carpeta de trabajo está en `legacy/web`. La revisión de GitHub localizó, en la rama del prototipo con interfaz de madera y pergamino, el prototipo Unity más avanzado: campaña de dos facciones, economía, obras, levas, combate, logística, diplomacia y guardado, además del selector visual de doce reinos. Las edades, los privilegios de reino y el ascenso de héroes siguen pendientes según su auditoría. El informe de revisión está en [revisión de ramas](revision-ramas-unity.md). No cambiar de rama sobre los archivos existentes sin proteger los cambios locales.
 
 **1. Partida básica de dos reinos.** Crear partida, seleccionar ciudad, mover hueste, resolver encuentro, aplicar bajas, ocupar, finalizar turno y guardar/cargar. Aceptación: el estado permanece coherente y se puede completar una partida sencilla.
 

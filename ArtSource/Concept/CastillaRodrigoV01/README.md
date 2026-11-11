@@ -3,9 +3,8 @@
 Referencia principal: `ArtSource/Portraits/Heroes/heroe_rodrigo_diaz_castilla.png`,
 aportada por el propietario e incorporada en el commit `6f302d6`.
 
-Lámina derivada: `Rodrigo_castilla_vistas_v01.png`, generada con la herramienta
-integrada de imágenes de OpenAI utilizando ese retrato como referencia de
-identidad. Prompt completo en `prompt.txt`. No se modifica el retrato original.
+Lámina derivada: `Rodrigo_castilla_vistas_v01.png`, con ese retrato como
+referencia de identidad. Prompt completo en `prompt.txt`. No se modifica el retrato original.
 
 ## Qué se conserva como objetivo
 
@@ -24,7 +23,7 @@ de coincidencia exacta del rostro. La posición de la espada y los detalles
 del broche/correajes requieren revisión comparada con el original.
 
 Esta lámina no es una malla, una textura PBR ni una captura de Unity.
-Pendiente de aceptación visual del usuario y de una escultura naturalista del personaje. Existe ya un primer estudio geométrico, todavía estilizado, en `ArtSource/Blender/Heroes/CastillaRodrigoV01/Rodrigo_escultura_v01.blend`; no resuelve aún la semejanza facial ni es arte final.
+Pendiente de revisión visual y de una escultura naturalista del personaje. Existe ya un primer estudio geométrico, todavía estilizado, en `ArtSource/Blender/Heroes/CastillaRodrigoV01/Rodrigo_escultura_v01.blend`; no resuelve aún la semejanza facial ni es arte final.
 Los estudios genéricos RepertorioV01/V02 no pasan a representar a Rodrigo.
 
 Escena de preparación:

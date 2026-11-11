@@ -1,6 +1,6 @@
 # Ciudad compacta: dirección visual y primer acabado
 
-La referencia visual es [la reconstrucción de Roma de CityEons](https://www.youtube.com/watch?v=50dWQdlHmYI), por su arquitectura, acabados, materiales, terreno y presentación. El usuario ha concretado una escala pequeña e icónica: la fortaleza y su villa deben caber en la pantalla actual, con sus dimensiones y límites de cámara existentes. La expansión histórica extensa del vídeo no forma parte del objetivo.
+La referencia visual es [la reconstrucción de Roma de CityEons](https://www.youtube.com/watch?v=50dWQdlHmYI), por su arquitectura, acabados, materiales, terreno y presentación. Se concreta una escala pequeña e icónica: la fortaleza y su villa deben caber en la pantalla actual, con sus dimensiones y límites de cámara existentes. La expansión histórica extensa del vídeo no forma parte del objetivo.
 
 ## Primera pasada de materiales y luz
 

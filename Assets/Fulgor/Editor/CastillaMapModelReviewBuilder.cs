@@ -17,7 +17,7 @@ namespace Fulgor.Editor
     [InitializeOnLoad]
     public static class CastillaMapModelReviewBuilder
     {
-        // Variante a revisar: "Mapa" (construida en Blender) o "Tripo" (reducida desde un modelo de IA); se elige
+        // Variante a revisar: "Mapa" (construida en Blender) o "Tripo" (reducida desde un modelo externo); se elige
         // con -fulgorModelo <nombre> en la línea de comandos y corresponde a la carpeta FortalezaCastilla<nombre>.
         static string Variant
         {

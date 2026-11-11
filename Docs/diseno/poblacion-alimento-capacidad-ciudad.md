@@ -54,7 +54,7 @@ No son cifras del mapa actual ni estadísticas verificadas. Se usan para mostrar
 
 Si se amplía la vivienda a 300, el techo sostenible alimentario del ejemplo sigue en 260; construir más barrios no crea alimento. Si el territorio dispone de más tierra y trabajadores, se puede aumentar la producción; si no, hace falta un suministro exterior sostenible u otra estrategia. Las cifras y la escala de habitantes, unidades de alimento y duración de turnos deben ajustarse conjuntamente.
 
-## Validación antes de aprobar valores
+## Validación antes de fijar valores
 
 - Identificar el mapa y posiciones reales de las dos ciudades y medir el primer anillo y posibles expansiones por terreno para varias semillas y configuraciones sin agua.
 - Probar inicio, una ciudad desarrollada y una ciudad máxima en terreno favorable, medio y desfavorable; contar casillas disponibles para agricultura, viviendas, industria y defensa.

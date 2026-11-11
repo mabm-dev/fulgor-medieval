@@ -10,7 +10,7 @@ Age of Empires IV también presenta campañas como misiones históricas narrativ
 
 ## Propuesta para Fulgor Medieval
 
-La intención del usuario es una campaña que evolucione en el tiempo. Se propone un mapa de campaña persistente con capítulos históricos y cinco etapas de desarrollo, sujeto a la decisión sobre quién se controla en cada capítulo. La progresión por edades y el paso histórico entre capítulos son dos decisiones de diseño distintas.
+La intención es una campaña que evolucione en el tiempo. Se propone un mapa de campaña persistente con capítulos históricos y cinco etapas de desarrollo, sujeto a la decisión sobre quién se controla en cada capítulo. La progresión por edades y el paso histórico entre capítulos son dos decisiones de diseño distintas.
 
 - **Campaña histórica**: elegir una crónica inicial; cada capítulo establece fecha aproximada, facciones disponibles, gobernantes y objetivos. El paso de un capítulo al siguiente debe explicar qué ocurre con territorios, ciudades, recursos, huestes y héroes. Las sucesiones y nuevas facciones necesitan eventos explícitos, no un cambio automático de reino al avanzar de edad.
 - **Modo libre**: elegir cualquiera de los reinos disponibles al inicio y mantener su identidad mientras evoluciona por las cinco etapas acordadas. Los rivales también evolucionan; requisitos, costes y desbloqueos siguen pendientes.

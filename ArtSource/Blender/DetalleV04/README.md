@@ -16,7 +16,7 @@ la plantilla técnica de escala ni rehace las variantes históricas descartadas.
 | Molino | 2 | Remaches en rueda y puerta, extremos de vigas, enredadera y variación de materiales |
 
 La paleta conserva verdes vivos, piedra cálida, cereal dorado y terracota.
-El agua mantiene el azul elegido por el usuario. Se recalculan las normales
+El agua mantiene el azul elegido. Se recalculan las normales
 de la geometría añadida; el bosque usa 45 grupos de helechos para evitar
 la densidad y el moteado de la primera prueba.
 
@@ -84,7 +84,7 @@ agua/camino de puente conserva radio 1: su normalización queda pendiente al
 integrar. Las vistas de arquitectura usan el río V03 original como contexto.
 
 Modelado, materiales y herramientas propios; no se han descargado recursos
-externos. Pendientes la aceptación visual del usuario y la política de Git LFS
+externos. Pendientes la revisión visual y la política de Git LFS
 antes de publicar los binarios. Las versiones anteriores se conservan.
 
 ## Verificación de esta entrega

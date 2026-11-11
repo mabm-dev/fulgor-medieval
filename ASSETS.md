@@ -16,12 +16,12 @@
 | `ArtSource/Blender/Terrain/Llanura_v01.blend` | Estudio editable de pastizal, cereal y senda | Geometría y materiales propios generados con bpy; propuesta v01 |
 | `ArtSource/Blender/Terrain/crear_llanura_v01.py` | Reconstruye modelos, FBX y lámina de revisión | Herramienta propia reproducible, sin recursos externos |
 | `Assets/Fulgor/Art/Terrain/SM_Llanura_{A,B,C}_LOD0.fbx` | Tres variantes exportadas, 328/454/271 triángulos | Pendientes de integración y revisión visual en Unity |
-| `ArtSource/Blender/Terrain/Llanura_v02_color.blend` | Revisión cálida y con más color de las tres llanuras | Dirección visual actual solicitada por el usuario; fuente propia |
+| `ArtSource/Blender/Terrain/Llanura_v02_color.blend` | Revisión cálida y con más color de las tres llanuras | Dirección visual actual; fuente propia |
 | `Assets/Fulgor/Art/Terrain/ColorV02/SM_Llanura_{A,B,C}_LOD0.fbx` | FBX con paleta cálida; misma geometría que v01 | Pendientes de materiales URP e integración |
 | `ArtSource/Blender/Terrain/Biomas_color_v01.blend` | Bosque, colina, montaña y composición con llanura | Fuente propia; primer estudio cálido |
 | `ArtSource/Blender/Terrain/crear_biomas_color_v01.py` | Genera los tres biomas y dos láminas de revisión | Herramienta propia reproducible; sin recursos externos |
 | `Assets/Fulgor/Art/Terrain/BiomasColorV01/SM_{Bosque,Colina,Montana}_A_LOD0.fbx` | Mallas de 422/242/217 triángulos | Pendientes de integración, materiales URP y transiciones |
-| `ArtSource/Blender/Terrain/Montana_natural_v02.blend` | Revisión de montaña con cresta continua y barrancos | Fuente propia; estudio menos caricaturesco solicitado por el usuario |
+| `ArtSource/Blender/Terrain/Montana_natural_v02.blend` | Revisión de montaña con cresta continua y barrancos | Fuente propia; estudio menos caricaturesco |
 | `ArtSource/Blender/Terrain/crear_montana_natural_v02.py` | Genera malla, atlas de color, normal y comparativas | Herramienta propia reproducible; sin recursos externos |
 | `Assets/Fulgor/Art/Terrain/MontanaNaturalV02/` | FBX de 5566 triángulos, un material y dos mapas de 1024 px | Prototipo con detalle; integración, LOD y rendimiento pendientes |
 | `ArtSource/Blender/Terrain/Bosque_colina_natural_v02.blend` | Revisión de bosque, colina y llanura junto a la montaña natural | Fuente propia; pendientes revisión visual e integración |
@@ -45,7 +45,7 @@
 | `Assets/Fulgor/Art/RepertorioV01/` | Ocho FBX, 32 mapas y manifiestos | Verificados como archivos; pendientes rig, animación, LOD y materiales/prefabs Unity |
 | `ArtSource/Blender/RepertorioV02/` | Revisión natural de fortaleza, tropas, héroes y hueste; cuatro fuentes y herramientas propias | Sustituye V01 como propuesta visual; V01 queda para comparación |
 | `Assets/Fulgor/Art/RepertorioV02/` | Ocho FBX y 32 mapas PBR; anatomía, caballo y piedra revisados | Estudios densos verificados; pendientes retopología/LOD, rig, animación e integración |
-| ArtSource/Concept/CapitanNaturalV01/ | Lámina 2D generada con la herramienta integrada de OpenAI; prompt incluido | Referencia de anatomía, ropa y materiales; pendiente de aceptación, no es modelo ni textura PBR final |
+| ArtSource/Concept/CapitanNaturalV01/ | Lámina 2D; prompt incluido | Referencia de anatomía, ropa y materiales; pendiente de aceptación, no es modelo ni textura PBR final |
 | ArtSource/References/LegacyWeb/ | 23 imágenes heredadas y referencias de reinos/heráldica, copiadas sin cambios y con hashes verificados | Archivo histórico de legacy/web; vigencia actual y procedencia de permisos pendientes de confirmar |
 | ArtSource/Concept/CastillaRodrigoV01/ | Lámina de vistas generada a partir del Rodrigo vigente de Portraits/Heroes; prompt y límites incluidos | Referencia 2D derivada; ampliaciones de cuerpo/espalda pendientes de revisión |
 | ArtSource/Blender/Heroes/CastillaRodrigoV01/ | Referencias y primer estudio geométrico editable de Rodrigo, con generador y verificación propios | Fuente densa de volumen/vestuario; resultado aún estilizado, pendiente de escultura naturalista, aprobación, retopología, UV, rig y LOD; sin exportar a Unity |
@@ -56,11 +56,11 @@
 | ArtSource/ThirdParty/MakeHumanToigoBronze/ y MakeHumanAkselSkin/ | Color UV Toigo Bronze (MargaretToigo) y normal/especular Aksel (Mindfront); CC0, originales y procedencia con hashes | Mapas seleccionados del pack oficial Skins02. Albedo Aksel con hematoma descartado y no usado |
 | ArtSource/Blender/Heroes/CastillaRodrigoV03/ | Revisión de mirada, proporciones, iris curvados, pelo por ondas, barba y piel UV | Fuente densa verificada; semejanza y acabado naturalista pendientes. Conserva V02; sin exportación Unity |
 
-| ArtSource/Blender/Heroes/CastillaRodrigoV04/ | Corrección de cuello y barba tras revisión del usuario: cabeza bajada, garganta/nuca revisadas, fibras faciales ajustadas a piel y perfil adicional | Nueva propuesta pendiente de aceptación visual; conserva V03 rechazada en cuello/barba. Fuente densa sin exportación Unity |
+| ArtSource/Blender/Heroes/CastillaRodrigoV04/ | Corrección de cuello y barba tras revisión: cabeza bajada, garganta/nuca revisadas, fibras faciales ajustadas a piel y perfil adicional | Nueva propuesta pendiente de revisión visual; conserva V03 rechazada en cuello/barba. Fuente densa sin exportación Unity |
 
 | ArtSource/Blender/Heroes/CastillaRodrigoV05/ | Ampliación de barba bajo mandíbula hasta cuello alto; conserva geometría, fibras y parte superior de V04 por hashes | Responde a la petición de bajar la barba al cuello manteniendo lo de arriba. Propuesta pendiente de aceptación; sin exportación Unity |
 | ArtSource/Blender/Heroes/CastillaRodrigoV06/ | Recorte del borde posterior de barba bajo el lóbulo; se retira la prolongación hacia la nuca | Fuente conservada como base de V07; sin exportación Unity |
-| ArtSource/Blender/Heroes/CastillaRodrigoV07/ | Pelo rehecho con curvas nativas, guías onduladas, material de pelo y raíces con cobertura gradual | Estudio denso pendiente de aprobación artística; cabeza, barba y vestuario de V06 conservados por firmas; sin exportación Unity |
+| ArtSource/Blender/Heroes/CastillaRodrigoV07/ | Pelo rehecho con curvas nativas, guías onduladas, material de pelo y raíces con cobertura gradual | Estudio denso pendiente de revisión artística; cabeza, barba y vestuario de V06 conservados por firmas; sin exportación Unity |
 
 | `Assets/Fulgor/Art/Buildings/CastillaV11MapReview/`, `Assets/Fulgor/Prefabs/ArtReview/` y `Assets/Fulgor/Scenes/ArtReview/CastillaV11MapReview.unity` | Fortaleza V11 propia con desgaste, variante sin base de estudio, materiales URP y muestra sobre el tablero | Revision en Play Mode; texturas 2048/1024, radio 0.675 y escala de prefab unitaria. Malla densa: simplificacion y LOD pendientes. Fuente editable conservada en la entrega externa de arte, fuera del repositorio |
 | `Assets/Fulgor/Art/Buildings/CastillaV11LODReview/` y escena `CastillaV11LODReview` | Fortaleza propia con dos niveles: 14.797 / 5.553 triángulos; atlas propios y transición LOD | Revisión en Unity; pendiente medir rendimiento en build |

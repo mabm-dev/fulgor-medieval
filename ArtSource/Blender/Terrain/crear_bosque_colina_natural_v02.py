@@ -240,7 +240,7 @@ patch.collection.objects.link(plain)
 camera = stage(patch,(0,.6,.10),7.8,PREVIEW/'Biomas_naturales_conjunto_v02.png')
 caption(camera,'FULGOR MEDIEVAL',-3.45,1.93,.16,gold)
 caption(camera,'PAISAJES CON VIDA',-3.45,1.54,.29)
-caption(camera,'Llanura, bosque y colina revisados junto a la sierra aprobada',-3.45,1.23,.12,gold)
+caption(camera,'Llanura, bosque y colina revisados junto a la sierra adoptada',-3.45,1.23,.12,gold)
 caption(camera,'COLOR CALIDO  /  Estudio de conjunto  /  Integracion y transiciones pendientes',
         -3.45,-1.98,.11,gold)
 bpy.ops.render.render(write_still=True)

@@ -1,6 +1,6 @@
 # Identidad visual heredada del juego
 
-> **Estado corregido tras la revisión del usuario:** estas imágenes pertenecen
+> **Estado corregido tras la revisión:** estas imágenes pertenecen
 > a la versión web archivada. Su vigencia para la versión actual NO está
 > confirmada. Conservar como histórico; no tomarlas como identidad definitiva
 > ni generar/modelar nuevos héroes a partir de ellas hasta localizar la fuente vigente.
@@ -42,7 +42,7 @@ también aparecen dentro de los retratos y sus vestimentas.
 Si se confirma su vigencia, usar estos retratos como referencia de rostro, peinado, ropa, armas,
 símbolos y paleta. Los arquetipos genéricos creados en RepertorioV01/V02 y la
 lámina generada de capitán son pruebas técnicas/de estilo, no sustituciones
-aprobadas de estos héroes.
+definitivas de estos héroes.
 
 Las nuevas vistas generadas deben preservar la identidad del retrato de origen.
 Revisar la consistencia entre vistas antes de modelar. Escudos y banderas se

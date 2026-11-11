@@ -20,7 +20,7 @@ Se ha reducido el vuelo de los remates superiores, diferenciado discretamente la
 
 La piedra de presentación combina crema, arena y ocre con grano fino. La madera es oscura y rugosa; el hierro tiene una respuesta mate. La tela utiliza rojo, castillo dorado, aberturas azules y líneas oscuras de mampostería. El dibujo existe como SVG editable y PNG.
 
-Estos materiales y los renders se han creado en Blender. No se han realizado dentro de Substance Painter, Designer ni Sampler. No existe todavía proyecto SPP ni texturizado final aprobado.
+Estos materiales y los renders se han creado en Blender. No se han realizado dentro de Substance Painter, Designer ni Sampler. No existe todavía proyecto SPP ni texturizado final definitivo.
 
 ## Archivos y verificación
 
