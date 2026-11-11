@@ -40,11 +40,11 @@ namespace Fulgor.Editor
         {
             new("CentroAprovisionamiento", "Centro de aprovisionamiento", new Vector2Int(12, 9), 25f),
             new("Almacen", "Almacén", new Vector2Int(14, 11), 35f), // lejos de la fortaleza: (13,7) es la llanura libre de su primer anillo
-            // hechos con TRELLIS.2 desde los sprites de la edad 01; puerta hacia la fortaleza hasta que el usuario diga otra cosa
+            // hechos con TRELLIS.2 desde los sprites de la edad 01; puerta hacia la fortaleza hasta que se indique otra
             // Tamaños: todos llenaban la casilla por igual, así que una vivienda de una planta, un puesto o una leñera abultaban como la casa de
             // conocimiento, y el tejadillo del pozo llegaba a la altura de un tejado. Lo pequeño va más pequeño y el patio, que salía corto, más grande.
             new("ViviendaSencilla", "Vivienda sencilla", new Vector2Int(13, 9), -1f, .84f),
-            new("Pozo", "Pozo", new Vector2Int(12, 10), -1f, .38f), // el usuario: "es un pozo, no un edificio"
+            new("Pozo", "Pozo", new Vector2Int(12, 10), -1f, .38f), // un pozo no es un edificio: va más pequeño que el resto
             new("Lenera", "Leñera", new Vector2Int(11, 9), -1f, .8f),
             new("PuestoIntercambio", "Puesto de intercambio", new Vector2Int(13, 10), -1f, .8f),
             new("CasaConocimiento", "Casa de conocimiento", new Vector2Int(14, 9), -1f),
