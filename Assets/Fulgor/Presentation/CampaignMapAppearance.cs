@@ -33,6 +33,8 @@ namespace Fulgor.Presentation.Map
         private long managedBytes;
         public bool Ready { get; private set; }
         public int TileCount { get; private set; }
+        /// <summary>Árboles y matas plantados en el tablero actual.</summary>
+        public int TreeCount { get; private set; }
         public int[] LevelCounts { get; }=new int[3];
         public ConnectedWaterLayout WaterLayout { get; private set; }
         public void ApplyTo(Transform root)
@@ -67,11 +69,16 @@ namespace Fulgor.Presentation.Map
             // relieve continuo de montaña: dos montañas vecinas forman una sierra en vez de dos picos sueltos
             CampaignMountainRelief relief=null;Material reliefMaterial=null;
             if(settings.ReliefMountainMaterial!=null&&!fixedPiecesOnly) {
-                bool Open(HexTileView t)=>settlements==null||!settlements.HasSettlementAt(t.Cell.Coordinates); // un asentamiento conserva su llano
+                bool Open(HexTileView t)=>true; // toda la tierra sale del relieve; bajo un asentamiento se allana, como bajo un edificio
                 // bajo un edificio de casilla el relieve se allana (CampaignTileBuildings lo coloca después, sobre ese llano)
-                var buildings=GetComponent<CampaignTileBuildings>();var built=buildings!=null?buildings.PlannedCells():null;
+                var buildings=GetComponent<CampaignTileBuildings>();
+                var built=(buildings!=null?buildings.PlannedCells():Enumerable.Empty<HexCoordinates>())
+                    .Concat(tiles.Where(t=>settlements!=null&&settlements.HasSettlementAt(t.Cell.Coordinates)).Select(t=>t.Cell.Coordinates)).ToList();
                 relief=new CampaignMountainRelief(tiles.Where(t=>t.Cell.Terrain==TerrainType.Mountain&&Open(t)).Select(t=>t.Cell.Coordinates),ReliefSeed,
-                    VisualScaleContract.HexOuterRadius,tiles.Where(t=>t.Cell.Terrain==TerrainType.Hill&&Open(t)).Select(t=>t.Cell.Coordinates),built);
+                    VisualScaleContract.HexOuterRadius,tiles.Where(t=>t.Cell.Terrain==TerrainType.Hill&&Open(t)).Select(t=>t.Cell.Coordinates),built,
+                    // la llanura y el bosque salen del mismo relieve: toda la tierra es una sola superficie, sin escalón entre casillas
+                    tiles.Where(t=>(t.Cell.Terrain==TerrainType.Plain||t.Cell.Terrain==TerrainType.Forest)&&Open(t)).Select(t=>t.Cell.Coordinates),
+                    tiles.Where(t=>t.Cell.Terrain==TerrainType.Forest&&Open(t)).Select(t=>t.Cell.Coordinates),water);
                 reliefMaterial=new Material(settings.ReliefMountainMaterial){name=settings.ReliefMountainMaterial.name+" · campaña",enableInstancing=true};
                 reliefMaterial.SetFloat("_FulgorGroundY",root.position.y+CampaignMountainRelief.EdgeHeight);ownedMaterials.Add(reliefMaterial);
                 GroundMark(reliefMaterial,TerrainType.Hill); // el sombreador pasa a grava donde empieza la roca de la montaña
@@ -80,12 +87,15 @@ namespace Fulgor.Presentation.Map
             // las mallas del relieve, todas a la vez y en paralelo, con sus tres niveles de detalle
             var reliefTiles=relief!=null?relief.BuildTiles(tiles.Select(t=>t.Cell.Coordinates).Where(relief.IsHighland),settings.ReliefSubdivisions)
                 :new Dictionary<HexCoordinates,CampaignMountainRelief.TileLevels>();
+            // la tierra baja ondula poco: le basta la mitad de detalle (el faldón tapa la junta con una vecina más fina)
+            if(relief!=null)foreach(var pair in relief.BuildTiles(tiles.Select(t=>t.Cell.Coordinates).Where(c=>relief.IsGenerated(c)&&!relief.IsHighland(c)),Mathf.Max(4,settings.ReliefSubdivisions/2)))
+                reliefTiles.Add(pair.Key,pair.Value);
             foreach(var tile in tiles) {
                 foreach(Transform child in tile.transform)
                     if(child.name.StartsWith("Transition ",StringComparison.Ordinal)||child.name.StartsWith("Junction ",StringComparison.Ordinal))child.gameObject.SetActive(false);
                 int index=(int)tile.Cell.Terrain;Mesh mesh;
                 var renderer=tile.GetComponent<MeshRenderer>();var material=materials[index];
-                if(relief!=null&&relief.IsHighland(tile.Cell.Coordinates)) {
+                if(relief!=null&&relief.IsGenerated(tile.Cell.Coordinates)) {
                     // sin giro: la malla sale de la función de todo el tablero, relativa al centro de la casilla
                     tile.transform.localRotation=Quaternion.identity;var levels=reliefTiles[tile.Cell.Coordinates];
                     mesh=levels.Full;var medium=levels.Medium;var distant=levels.Distant;
@@ -108,6 +118,12 @@ namespace Fulgor.Presentation.Map
                     if(!surfaces.TryGetValue(mesh,out var surface)){surface=new TerrainGroundSurface(mesh);surfaces.Add(mesh,surface);}
                     if(surface.TrySample(tile.transform,tile.transform.position,out var point,out _,out _))gold.position=point+Vector3.up*.045f;
                 }
+            }
+            // árboles sobre el relieve continuo; junto a un edificio o un asentamiento dejan sitio
+            if(relief!=null&&relief.IsContinuous) {
+                var cleared=tiles.Where(t=>relief.IsLevelled(t.Cell.Coordinates)).ToDictionary(t=>t.Cell.Coordinates,
+                    t=>settlements!=null&&settlements.HasSettlementAt(t.Cell.Coordinates)?1.1f:CampaignForest.BuiltClearing);
+                TreeCount=CampaignForest.Plant(tiles,relief,cleared,ownedMeshes);
             }
             Physics.SyncTransforms();TileCount=tiles.Length;Ready=true;
             var sun=FindObjectsByType<Light>(FindObjectsSortMode.None).FirstOrDefault(l=>l.type==LightType.Directional);
@@ -139,7 +155,7 @@ namespace Fulgor.Presentation.Map
         {
             var renderers=generation.GetComponentsInChildren<MeshRenderer>();var filters=generation.GetComponentsInChildren<MeshFilter>();
             var metrics=new BoardBuildMetrics(milliseconds,managedBytes,TileCount,0,0,baseMetrics.GoldMarkers,
-                filters.Select(f=>f.sharedMesh).Distinct().Count(),renderers.SelectMany(r=>r.sharedMaterials).Distinct().Count());
+                filters.Select(f=>f.sharedMesh).Distinct().Count(),renderers.SelectMany(r=>r.sharedMaterials).Distinct().Count(),renderers.Count(r=>r.name==CampaignForest.GroupName));
             GetComponent<CampaignBoardDiagnostics>().Record(metrics);GetComponent<CampaignSelectionPanel>().SetDiagnostics(metrics);
         }
         private void LateUpdate()

@@ -40,16 +40,18 @@ namespace Fulgor.Editor
         {
             new("CentroAprovisionamiento", "Centro de aprovisionamiento", new Vector2Int(12, 9), 25f),
             new("Almacen", "Almacén", new Vector2Int(14, 11), 35f), // lejos de la fortaleza: (13,7) es la llanura libre de su primer anillo
-            // hechos con TRELLIS.2 desde los sprites de la edad 01; puerta hacia la fortaleza hasta que el usuario diga otra cosa
-            new("ViviendaSencilla", "Vivienda sencilla", new Vector2Int(13, 9), -1f),
-            new("Pozo", "Pozo", new Vector2Int(12, 10), -1f, .5f), // el usuario: "es un pozo, no un edificio", al menos un 50 % más pequeño
-            new("Lenera", "Leñera", new Vector2Int(11, 9), -1f),
-            new("PuestoIntercambio", "Puesto de intercambio", new Vector2Int(13, 10), -1f),
+            // hechos con TRELLIS.2 desde los sprites de la edad 01; puerta hacia la fortaleza hasta que se indique otra
+            // Tamaños: todos llenaban la casilla por igual, así que una vivienda de una planta, un puesto o una leñera abultaban como la casa de
+            // conocimiento, y el tejadillo del pozo llegaba a la altura de un tejado. Lo pequeño va más pequeño y el patio, que salía corto, más grande.
+            new("ViviendaSencilla", "Vivienda sencilla", new Vector2Int(13, 9), -1f, .84f),
+            new("Pozo", "Pozo", new Vector2Int(12, 10), -1f, .38f), // un pozo no es un edificio: va más pequeño que el resto
+            new("Lenera", "Leñera", new Vector2Int(11, 9), -1f, .8f),
+            new("PuestoIntercambio", "Puesto de intercambio", new Vector2Int(13, 10), -1f, .8f),
             new("CasaConocimiento", "Casa de conocimiento", new Vector2Int(14, 9), -1f),
             new("CampoMilicias", "Campo de milicias", new Vector2Int(13, 6), -1f),
             new("CanteraSencilla", "Cantera sencilla", new Vector2Int(15, 6), -1f),
             new("AldeaConcejil", "Aldea concejil", new Vector2Int(12, 11), -1f),
-            new("PatioMesnadas", "Patio de mesnadas", new Vector2Int(12, 8), -1f), // colina junto a la fortaleza: en llanura no queda casilla visible
+            new("PatioMesnadas", "Patio de mesnadas", new Vector2Int(12, 8), -1f, 1.18f), // colina junto a la fortaleza: en llanura no queda casilla visible
             new("Empalizada", "Empalizada", new Vector2Int(11, 10), -1f),
             new("HuertoCampo", "Huerto o campo", new Vector2Int(14, 10), -1f),
             // edad 02; Tripo la entregó ya con textura y UV (modo directo del script de Blender), sin pasar por TRELLIS
@@ -102,7 +104,10 @@ namespace Fulgor.Editor
             if (AssetImporter.GetAtPath(texturePath) is TextureImporter importer)
             {
                 // la cámara mira el edificio en oblicuo: filtrado anisótropo y compresión de calidad para que las paredes no se vean borrosas
-                importer.sRGBTexture = true; importer.maxTextureSize = 4096; importer.mipmapEnabled = true; importer.anisoLevel = 8;
+                importer.sRGBTexture = true; importer.maxTextureSize = 4096; importer.mipmapEnabled = true; importer.anisoLevel = 16;
+                // un edificio ocupa en pantalla mucho menos que su textura: se lee un nivel de detalle algo más fino del que tocaría (más nítido;
+                // el suavizado de bordes del render y el filtro anisótropo contienen el centelleo) y los niveles se reducen con un filtro que no emborrona
+                importer.mipMapBias = -.6f; importer.mipmapFilter = TextureImporterMipFilter.KaiserFilter;
                 importer.textureCompression = TextureImporterCompression.CompressedHQ; importer.compressionQuality = 100; importer.SaveAndReimport();
             }
             string materialPath = $"{Folder}/M_{building.Name}.mat";

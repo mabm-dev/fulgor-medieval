@@ -31,7 +31,17 @@ namespace Fulgor.Presentation.Map
         public const float FlatBlend = .8f;
         private static readonly HexCoordinates[] Directions = { new(1, 0), new(1, -1), new(0, -1), new(-1, 0), new(-1, 1), new(0, 1) };
         private readonly float radius, apothem, bucketSize;
-        private readonly HashSet<HexCoordinates> mountains, highlands;
+        private readonly HashSet<HexCoordinates> mountains, highlands, generated, forests;
+        // Relieve continuo: también la llanura y el bosque salen de esta función (ver el constructor)
+        private readonly bool continuous;
+        private readonly List<Vector4> anchorSegments = new(), forestSegments = new(), shoreSegments = new();
+        private readonly Dictionary<Vector2Int, List<int>> anchorBuckets = new(), forestBuckets = new(), shoreBuckets = new();
+        /// <summary>Cuánto sube el pie de una montaña antes de llegar a su casilla, y desde qué distancia (en radios).</summary>
+        public const float FootRise = .07f, FootReach = .55f;
+        /// <summary>Desde qué distancia de una colina (en radios) empieza a subir la llanura vecina.</summary>
+        public const float HillReach = .45f;
+        /// <summary>Distancia (en radios) a una casilla que no se genera (agua, asentamiento, borde del mapa) en la que el relieve vuelve a su altura.</summary>
+        public const float AnchorFade = .7f;
         private readonly List<Vector4> highlandSegments = new();
         private readonly Dictionary<Vector2Int, List<int>> highlandBuckets = new();
         private readonly List<Vector4> segments = new();
@@ -41,7 +51,8 @@ namespace Fulgor.Presentation.Map
         private readonly float offsetX, offsetZ;
 
         public CampaignMountainRelief(IEnumerable<HexCoordinates> mountainCells, int seed, float outerRadius = VisualScaleContract.HexOuterRadius,
-            IEnumerable<HexCoordinates> hillCells = null, IEnumerable<HexCoordinates> builtCells = null)
+            IEnumerable<HexCoordinates> hillCells = null, IEnumerable<HexCoordinates> builtCells = null,
+            IEnumerable<HexCoordinates> lowlandCells = null, IEnumerable<HexCoordinates> forestCells = null, IEnumerable<HexCoordinates> waterCells = null)
         {
             if (outerRadius <= 0f) throw new ArgumentOutOfRangeException(nameof(outerRadius));
             radius = outerRadius; apothem = outerRadius * Mathf.Sqrt(3f) * .5f; bucketSize = 2f * outerRadius;
@@ -52,9 +63,29 @@ namespace Fulgor.Presentation.Map
             offsetX = (float)random.NextDouble() * 512f; offsetZ = (float)random.NextDouble() * 512f;
             AddEdges(mountains, segments, buckets);
             AddEdges(highlands, highlandSegments, highlandBuckets);
+            // Con tierra baja (llanura y bosque) el relieve es continuo: una sola función para toda la tierra, sin escalón en el borde de cada
+            // casilla. El pie de las montañas y de las colinas empieza en la casilla vecina, la llanura ondula, y solo junto a lo que no se
+            // genera (agua, asentamientos, borde del mapa) vuelve a EdgeHeight. Sin tierra baja, el relieve de siempre: 0,12 en el borde.
+            generated = new HashSet<HexCoordinates>(highlands);
+            forests = new HashSet<HexCoordinates>();
+            if (lowlandCells != null) generated.UnionWith(lowlandCells);
+            continuous = generated.Count > highlands.Count;
+            if (continuous)
+            {
+                AddEdges(generated, anchorSegments, anchorBuckets);
+                if (forestCells != null) forests.UnionWith(forestCells.Where(generated.Contains));
+                AddEdges(forests, forestSegments, forestBuckets);
+                if (waterCells != null)
+                {
+                    var water = new HashSet<HexCoordinates>(waterCells);
+                    foreach (var cell in generated)
+                        foreach (var direction in Directions)
+                            if (water.Contains(cell.Add(direction))) AddEdge(cell, cell.Add(direction), shoreSegments, shoreBuckets);
+                }
+            }
             if (builtCells != null)
                 foreach (var cell in builtCells)
-                    if (highlands.Contains(cell) && !flats.ContainsKey(cell)) flats.Add(cell, MeanNaturalHeight(cell));
+                    if (generated.Contains(cell) && !flats.ContainsKey(cell)) flats.Add(cell, MeanNaturalHeight(cell));
         }
 
         // altura media del relieve sin allanar en el círculo del llano: el edificio queda en una terraza, medio cortada en la loma y medio rellena
@@ -76,22 +107,31 @@ namespace Fulgor.Presentation.Map
         {
             foreach (var cell in cells)
             {
-                var centre = Centre(cell);
                 foreach (var direction in Directions)
                 {
                     var neighbour = cell.Add(direction);
                     if (cells.Contains(neighbour)) continue;
-                    var towards = Centre(neighbour) - centre;
-                    var middle = centre + towards * .5f;
-                    var along = new Vector2(-towards.y, towards.x).normalized * (radius * .5f);
-                    AddSegment(middle - along, middle + along, segs, bks);
+                    AddEdge(cell, neighbour, segs, bks);
                 }
             }
+        }
+
+        private void AddEdge(HexCoordinates cell, HexCoordinates neighbour, List<Vector4> segs, Dictionary<Vector2Int, List<int>> bks)
+        {
+            var centre = Centre(cell);
+            var towards = Centre(neighbour) - centre;
+            var middle = centre + towards * .5f;
+            var along = new Vector2(-towards.y, towards.x).normalized * (radius * .5f);
+            AddSegment(middle - along, middle + along, segs, bks);
         }
 
         public bool IsMountain(HexCoordinates cell) => mountains.Contains(cell);
         /// <summary>Colina o montaña: casillas cuya malla sale de este relieve.</summary>
         public bool IsHighland(HexCoordinates cell) => highlands.Contains(cell);
+        /// <summary>Casilla cuya malla sale de este relieve: colinas y montañas y, con relieve continuo, también llanura y bosque.</summary>
+        public bool IsGenerated(HexCoordinates cell) => generated.Contains(cell);
+        /// <summary>Toda la tierra sale de una sola función, sin escalón en el borde de las casillas.</summary>
+        public bool IsContinuous => continuous;
         /// <summary>Casilla de colina o montaña con un edificio: el relieve se allana bajo su huella.</summary>
         public bool IsLevelled(HexCoordinates cell) => flats.ContainsKey(cell);
         public int BoundarySegments => segments.Count;
@@ -115,10 +155,11 @@ namespace Fulgor.Presentation.Map
         /// <summary>Distancia a la tierra baja: al tramo de borde más cercano con una casilla que no es colina ni montaña.</summary>
         public float DistanceToLowland(Vector2 p) => DistanceTo(p, highlandSegments, highlandBuckets);
 
-        private float DistanceTo(Vector2 p, List<Vector4> segs, Dictionary<Vector2Int, List<int>> bks)
+        private float DistanceTo(Vector2 p, List<Vector4> segs, Dictionary<Vector2Int, List<int>> bks, int maxReach = 4)
         {
+            if (segs.Count == 0) return 4f * bucketSize;
             var home = Bucket(p);
-            for (int reach = 1; reach <= 4; reach++)
+            for (int reach = 1; reach <= maxReach; reach++)
             {
                 float best = float.MaxValue;
                 for (int x = -reach; x <= reach; x++)
@@ -144,8 +185,43 @@ namespace Fulgor.Presentation.Map
         }
 
         /// <summary>Cuánto de "montaña" tiene un punto: 0 en el pie, 1 a la altura de la cumbre de una montaña suelta.</summary>
-        public float Rise(Vector2 p) =>
-            mountains.Contains(HexWorldLayout.FromWorld(new Vector3(p.x, 0f, p.y), radius)) ? Mathf.Clamp01(Profile(DistanceToFoot(p))) : 0f;
+        public float Rise(Vector2 p) => continuous
+            ? Mathf.Clamp01(Profile(Mathf.Max(0f, Signed(Warped(p), mountains, segments, buckets))))
+            : mountains.Contains(HexWorldLayout.FromWorld(new Vector3(p.x, 0f, p.y), radius)) ? Mathf.Clamp01(Profile(DistanceToFoot(p))) : 0f;
+
+        private HexCoordinates CellAt(Vector2 p) => HexWorldLayout.FromWorld(new Vector3(p.x, 0f, p.y), radius);
+
+        // distancia al borde de un conjunto de casillas: positiva dentro, negativa fuera (fuera solo interesa cerca: se busca a un cubo)
+        private float Signed(Vector2 q, HashSet<HexCoordinates> cells, List<Vector4> segs, Dictionary<Vector2Int, List<int>> bks)
+        {
+            bool inside = cells.Contains(CellAt(q));
+            float d = DistanceTo(q, segs, bks, inside ? 4 : 1);
+            return inside ? d : -d;
+        }
+
+        // el punto, movido por un ruido suave: los pies de montañas, colinas y bosques dejan de seguir el hexágono
+        private Vector2 Warped(Vector2 p, float amount = .22f, float shift = 0f) =>
+            p + new Vector2(Noise(p.x * .9f + offsetX + shift, p.y * .9f + offsetZ) - .5f,
+                Noise(p.x * .9f + offsetZ + 37f, p.y * .9f + offsetX + 11f + shift) - .5f) * (2f * amount * radius);
+
+        /// <summary>
+        /// Lo que el sombreador necesita saber de un punto, además de la altura. Relieve de siempre: r = cuánto de montaña. Relieve continuo:
+        /// r = montaña (de 0 a 0,5 el pie que se acerca desde fuera, de 0,5 a 1 la subida a la cumbre), b = cuánto de bosque, a = cuánto de orilla.
+        /// g = altura sobre el borde, normalizada.
+        /// </summary>
+        /// <summary>Lo que hay en un punto: r montaña (más de 0,5, roca), g altura, b bosque, a orilla. Para plantar árboles donde toca.</summary>
+        public Color SurfaceAt(Vector2 p) => Attributes(p, Height(p));
+
+        private Color Attributes(Vector2 p, float h)
+        {
+            float g = Mathf.Clamp01((h - EdgeHeight) / 1.3f);
+            if (!continuous) return new Color(Rise(p), g, 0f, 1f);
+            float dm = Signed(Warped(p), mountains, segments, buckets);
+            float m = dm >= 0f ? .5f + .5f * Mathf.Clamp01(Profile(dm)) : .5f * Smooth((dm + FootReach * radius) / (FootReach * radius));
+            float forest = forests.Count == 0 ? 0f : Smooth(.5f + Signed(Warped(p, .3f, 53f), forests, forestSegments, forestBuckets) / (.5f * radius));
+            float shore = 1f - Smooth(DistanceTo(p, shoreSegments, shoreBuckets, 1) / (.55f * radius));
+            return new Color(m, g, forest, shore);
+        }
 
         /// <summary>
         /// Rejilla triangular común a todas las montañas: con radio 1 y esta división, las esquinas y los centros de todas las casillas caen en sus
@@ -180,7 +256,7 @@ namespace Fulgor.Presentation.Map
         /// </summary>
         public Mesh BuildTile(HexCoordinates cell, int subdivisions, string name)
         {
-            if (!highlands.Contains(cell)) throw new ArgumentException("La casilla no es de colina ni de montaña.", nameof(cell));
+            if (!generated.Contains(cell)) throw new ArgumentException("La casilla no es de colina ni de montaña.", nameof(cell));
             if (subdivisions < 1) throw new ArgumentOutOfRangeException(nameof(subdivisions));
             var centre = Centre(cell);
             var corners = new Vector2[6];
@@ -195,7 +271,7 @@ namespace Fulgor.Presentation.Map
                 float h = Height(p);
                 positions.Add(new Vector3(p.x - centre.x, h, p.y - centre.y));
                 normals.Add(LatticeNormal(p));
-                colors.Add(new Color(Rise(p), Mathf.Clamp01((h - EdgeHeight) / 1.3f), 0f, 1f));
+                colors.Add(Attributes(p, h));
                 uvs.Add(p);
                 index.Add(key, positions.Count - 1);
                 return positions.Count - 1;
@@ -264,7 +340,7 @@ namespace Fulgor.Presentation.Map
         {
             var list = cells.Distinct().ToList();
             foreach (var cell in list)
-                if (!highlands.Contains(cell)) throw new ArgumentException($"La casilla {cell.Key} no es de colina ni de montaña.", nameof(cells));
+                if (!generated.Contains(cell)) throw new ArgumentException($"La casilla {cell.Key} no es de colina ni de montaña.", nameof(cells));
             int medium = MediumSubdivisions(subdivisions), distant = DistantSubdivisions(subdivisions);
             var result = new Dictionary<HexCoordinates, TileLevels>(list.Count);
             if (subdivisions < 1 || NormalLattice % subdivisions != 0 || NormalLattice % medium != 0 || NormalLattice % distant != 0)
@@ -321,8 +397,8 @@ namespace Fulgor.Presentation.Map
             for (int a = -Ring; a <= Ring; a++)
             for (int b = -Ring; b <= Ring; b++)
                 if (Math.Abs(a + b) <= Ring) heights[At(a, b)] = Compute(LatticePoint(a0 + a, b0 + b));
-            var rise = new float[Width * Width];
-            for (int i = 0; i < rise.Length; i++) rise[i] = float.NaN;
+            var attributes = new Color[Width * Width];
+            var known = new bool[Width * Width];
             var centre = Centre(cell);
             float twice = 2f * radius / N;
 
@@ -344,8 +420,8 @@ namespace Fulgor.Presentation.Map
                     // la normal de la rejilla, como LatticeNormal: diferencias a lo largo de e1 (a) y e2 (b)
                     float d1 = (heights[At(a + 1, b)] - heights[At(a - 1, b)]) / twice, gz = (heights[At(a, b + 1)] - heights[At(a, b - 1)]) / twice;
                     mesh.Normals.Add(new Vector3(-(d1 - .5f * gz) / .8660254f, 1f, -gz).normalized);
-                    if (float.IsNaN(rise[key])) rise[key] = Rise(p);
-                    mesh.Colors.Add(new Color(rise[key], Mathf.Clamp01((h - EdgeHeight) / 1.3f), 0f, 1f));
+                    if (!known[key]) { attributes[key] = Attributes(p, h); known[key] = true; }
+                    mesh.Colors.Add(attributes[key]);
                     mesh.Uvs.Add(p);
                     index[key] = mesh.Positions.Count - 1;
                     return index[key];
@@ -394,15 +470,51 @@ namespace Fulgor.Presentation.Map
         private float Compute(Vector2 p)
         {
             var cell = HexWorldLayout.FromWorld(new Vector3(p.x, 0f, p.y), radius);
-            if (!highlands.Contains(cell)) return EdgeHeight;
+            if (!generated.Contains(cell)) return EdgeHeight;
             float natural = Natural(p, cell);
             if (!flats.TryGetValue(cell, out var flat)) return natural;
             float level = 1f - Smooth(((p - Centre(cell)).magnitude - FlatRadius * radius) / ((FlatBlend - FlatRadius) * radius));
             return Mathf.Lerp(natural, flat, level);
         }
 
+        // Toda la tierra de una vez. Las distancias a montañas y colinas llevan signo (negativas fuera) y se miden desde el punto movido por el
+        // ruido, así que el pie empieza antes de la casilla y no dibuja su hexágono.
+        private float NaturalContinuous(Vector2 p)
+        {
+            float fade = Smooth(DistanceTo(p, anchorSegments, anchorBuckets, 1) / (AnchorFade * radius));
+            if (fade <= 0f) return EdgeHeight;
+            var q = Warped(p);
+            // la llanura ondula: vaguadas y lomas anchas, y un grano fino
+            float h = .10f * Fbm(p.x * .45f + offsetX, p.y * .45f + offsetZ) + .03f * (Fbm(p.x * 2.1f + offsetZ, p.y * 2.1f + offsetX) - .5f)
+                + .008f * (Fbm(p.x * 9f + offsetX, p.y * 9f + offsetZ) - .5f);
+            float dh = Signed(q, highlands, highlandSegments, highlandBuckets);
+            float reach = HillReach * radius;
+            if (dh > -reach)
+            {
+                float swell = Smooth((dh + reach) / (apothem * 1.15f + reach));
+                h += HillRise * swell * (.75f + .5f * Fbm(p.x * 1.3f + offsetZ, p.y * 1.3f + offsetX));
+            }
+            float dm = Signed(q, mountains, segments, buckets);
+            float foot = FootReach * radius;
+            if (dm > -foot)
+            {
+                if (dm < 0f) { float t = Smooth((dm + foot) / foot); h += FootRise * t * t; }
+                else
+                {
+                    float s = Smooth(dm / (.35f * radius));
+                    float profile = Profile(dm);
+                    float ridges = Ridged(p.x * 2.2f + offsetX, p.y * 2.2f + offsetZ);
+                    float erosion = Ridged(p.x * 6.5f + offsetZ, p.y * 6.5f + offsetX) - .35f;
+                    float detail = Fbm(p.x * 13f + offsetZ, p.y * 13f + offsetX) - .5f;
+                    h += FootRise + PeakRise * profile * (.62f + .6f * ridges) + .11f * erosion * Mathf.Clamp01(profile) * s + .025f * detail * s;
+                }
+            }
+            return EdgeHeight + fade * h;
+        }
+
         private float Natural(Vector2 p, HexCoordinates cell)
         {
+            if (continuous) return NaturalContinuous(p);
             float height = EdgeHeight;
             // lomas: colinas y montañas forman una tierra alta ondulada que baja hasta la tierra baja
             float toLowland = DistanceToLowland(p);

@@ -45,11 +45,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a3b771eb864c754bbf61e9b36d5ccf6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fulgor.Presentation::Fulgor.Presentation.Map.CampaignBuildingFootprint
-  centre: {x: -0.00042814016, y: 0.012896314}
-  halfSize: {x: 0.3948229, y: 0.3466614}
-  cornerRadius: 0.15987608
-  bottom: 0.0003697517
-  baseHeight: 0.019000001
+  centre: {x: -0.00041379035, y: 0.010220066}
+  halfSize: {x: 0.31577826, y: 0.27656645}
+  cornerRadius: 0.12972718
+  bottom: 0.0002958014
+  baseHeight: 0.015000001
 --- !u!1001 &157450278704032877
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -60,15 +60,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 30f64244afc37f748980a76c2f8de27b, type: 3}
       propertyPath: m_LocalScale.x
-      value: 82.929276
+      value: 66.34343
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 30f64244afc37f748980a76c2f8de27b, type: 3}
       propertyPath: m_LocalScale.y
-      value: 82.929276
+      value: 66.34343
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 30f64244afc37f748980a76c2f8de27b, type: 3}
       propertyPath: m_LocalScale.z
-      value: 82.929276
+      value: 66.34343
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 30f64244afc37f748980a76c2f8de27b, type: 3}
       propertyPath: m_LocalPosition.x

@@ -87,8 +87,10 @@ namespace Fulgor.Presentation.Tests.Map
             Assert.That(settings.SelectionShader,Is.Not.Null);Assert.That(settings.SelectionShader.name,Is.EqualTo("Universal Render Pipeline/Unlit"));
             var source=settings.TerrainMaterial((int)TerrainType.Plain);string before=EditorJsonUtility.ToJson(source);
             var tiles=board.transform.Find("Generated Board").GetComponentsInChildren<HexTileView>();var plain=tiles.First(t=>t.Cell.Terrain==TerrainType.Plain).GetComponent<MeshRenderer>().sharedMaterial;
-            Assert.That(plain,Is.Not.SameAs(source));Assert.That(plain.GetTexture("_BaseMap"),Is.SameAs(source.GetTexture("_BaseMap")));
-            Assert.That(Vector4.Distance(plain.GetColor("_BaseColor"),CampaignVisualPalette.TerrainTint(TerrainType.Plain)),Is.LessThan(.00001f));
+            // la llanura ya no es la pieza fija con su textura: sale del relieve continuo, con una copia propia del material del relieve
+            Assert.That(plain,Is.Not.SameAs(source));Assert.That(plain,Is.Not.SameAs(settings.ReliefMountainMaterial));
+            Assert.That(plain.shader.name,Is.EqualTo("Fulgor/Terreno"));Assert.That(plain.IsKeywordEnabled("_FULGOR_MONTANA"),Is.True);
+            Assert.That(plain,Is.SameAs(tiles.First(t=>t.Cell.Terrain==TerrainType.Mountain).GetComponent<MeshRenderer>().sharedMaterial),"Toda la tierra, un material.");
             var settlements=board.GetComponent<CampaignSettlementController>();var castle=settlements.Views.Values.Single();
             // La fortaleza del mapa es la de Tripo retocada en Blender (PF_FortalezaCastilla): su atlas es propio y no lleva el tinte de la V11,
             // que sigue usando la vista de ciudad mientras no se retire.

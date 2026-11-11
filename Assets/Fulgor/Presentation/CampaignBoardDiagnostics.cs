@@ -6,8 +6,9 @@ namespace Fulgor.Presentation.Map
     {
         public BoardBuildMetrics(double milliseconds, long managedBytes, int tiles,
             int transitionInstances, int junctionInstances, int goldMarkers,
-            int uniqueMeshes, int sharedMaterials)
+            int uniqueMeshes, int sharedMaterials, int treeGroups = 0)
         {
+            TreeGroups = treeGroups;
             Milliseconds = milliseconds;
             ManagedBytes = managedBytes;
             Tiles = tiles;
@@ -26,7 +27,9 @@ namespace Fulgor.Presentation.Map
         public int GoldMarkers { get; }
         public int UniqueMeshes { get; }
         public int SharedMaterials { get; }
-        public int Renderers => Tiles + TransitionInstances + JunctionInstances + GoldMarkers;
+        /// <summary>Casillas con árboles: los de cada una van fundidos en una malla hija, con su propio renderer.</summary>
+        public int TreeGroups { get; }
+        public int Renderers => Tiles + TransitionInstances + JunctionInstances + GoldMarkers + TreeGroups;
         public int Colliders => Tiles;
     }
 

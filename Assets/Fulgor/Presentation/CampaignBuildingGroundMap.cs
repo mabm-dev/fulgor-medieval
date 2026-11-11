@@ -72,6 +72,13 @@ namespace Fulgor.Presentation.Map
             Buildings++;
         }
 
+        /// <summary>Suelo pisado que no es de un edificio de casilla (la explanada de un asentamiento): marca el suelo igual, sin contar como edificio.</summary>
+        public void AddGround(Matrix4x4 worldToLocal, Vector2 centre, Vector2 halfSize, float cornerRadius)
+        {
+            Add(worldToLocal, centre, halfSize, cornerRadius);
+            Buildings--;
+        }
+
         /// <summary>Distancia guardada en el texel que contiene un punto (x, z del mundo); fuera del mapa, <see cref="Far"/>.</summary>
         public float DistanceAt(Vector2 world)
         {

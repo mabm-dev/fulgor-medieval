@@ -154,7 +154,7 @@ namespace Fulgor.Editor
 
         static void Capture(Camera camera, string path)
         {
-            var target = new RenderTexture(Width, Height, 24, RenderTextureFormat.ARGB32);
+            var target = new RenderTexture(Width, Height, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 }; // como la partida, con suavizado de bordes
             var image = new Texture2D(Width, Height, TextureFormat.RGBA32, false);
             var previous = RenderTexture.active;
             try
