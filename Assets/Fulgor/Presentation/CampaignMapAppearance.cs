@@ -13,6 +13,8 @@ namespace Fulgor.Presentation.Map
         [SerializeField] private CampaignMapAppearanceSettings settings;
         // semilla fija del ruido del relieve: el mismo mapa da siempre las mismas sierras
         private const int ReliefSeed=1086;
+        /// <summary>Tramos por radio del relieve en lugar de los del ajuste (0 = los del ajuste). Lo usan las pruebas que no miran la forma del terreno: el cálculo escala con el detalle.</summary>
+        public static int ReliefSubdivisionsOverride{get;set;}
         private bool fixedPiecesOnly;
         /// <summary>Solo para medir: la próxima generación usa las piezas fijas de antes (sin relieve generado ni sombreador del terreno).</summary>
         public void UseFixedPiecesOnly()=>fixedPiecesOnly=true;
@@ -85,11 +87,16 @@ namespace Fulgor.Presentation.Map
                 if(settings.TerrainNoise!=null)reliefMaterial.SetTexture("_FulgorNoise",settings.TerrainNoise);
             }
             // las mallas del relieve, todas a la vez y en paralelo, con sus tres niveles de detalle
-            var reliefTiles=relief!=null?relief.BuildTiles(tiles.Select(t=>t.Cell.Coordinates).Where(relief.IsHighland),settings.ReliefSubdivisions)
+            int detail=ReliefSubdivisionsOverride>0?ReliefSubdivisionsOverride:settings.ReliefSubdivisions;
+            var reliefTiles=relief!=null?relief.BuildTiles(tiles.Select(t=>t.Cell.Coordinates).Where(relief.IsHighland),detail)
                 :new Dictionary<HexCoordinates,CampaignMountainRelief.TileLevels>();
             // la tierra baja ondula poco: le basta la mitad de detalle (el faldón tapa la junta con una vecina más fina)
-            if(relief!=null)foreach(var pair in relief.BuildTiles(tiles.Select(t=>t.Cell.Coordinates).Where(c=>relief.IsGenerated(c)&&!relief.IsHighland(c)),Mathf.Max(4,settings.ReliefSubdivisions/2)))
+            if(relief!=null)foreach(var pair in relief.BuildTiles(tiles.Select(t=>t.Cell.Coordinates).Where(c=>relief.IsGenerated(c)&&!relief.IsHighland(c)),Mathf.Max(4,detail/2)))
                 reliefTiles.Add(pair.Key,pair.Value);
+            // el agua también en paralelo: cada casilla calcula su malla sola y las Mesh se crean después, en el hilo principal
+            var waterTiles=tiles.Where(t=>(int)t.Cell.Terrain==0&&!(relief!=null&&relief.IsGenerated(t.Cell.Coordinates))).ToList();
+            var waterData=WaterLayout.BuildMeshData(waterTiles.Select(t=>t.transform.position).ToList(),6,9);
+            var waterIndex=new Dictionary<HexTileView,int>();for(int i=0;i<waterTiles.Count;i++)waterIndex.Add(waterTiles[i],i);
             foreach(var tile in tiles) {
                 foreach(Transform child in tile.transform)
                     if(child.name.StartsWith("Transition ",StringComparison.Ordinal)||child.name.StartsWith("Junction ",StringComparison.Ordinal))child.gameObject.SetActive(false);
@@ -103,7 +110,7 @@ namespace Fulgor.Presentation.Map
                     land.Add(new Land{Filter=tile.GetComponent<MeshFilter>(),Full=mesh,Medium=medium,Distant=distant});
                 } else if(index==0) {
                     // Uniform campaign resolution retains conforming neighbor edges at a lower mesh budget.
-                    tile.transform.localRotation=Quaternion.identity;mesh=WaterLayout.BuildMesh(tile.transform.position,"Agua de campaña "+tile.Cell.Coordinates.Key,6,9);
+                    tile.transform.localRotation=Quaternion.identity;mesh=waterData[waterIndex[tile]].ToMesh("Agua de campaña "+tile.Cell.Coordinates.Key);
                     ownedMeshes.Add(mesh);renderer.shadowCastingMode=ShadowCastingMode.Off;
                 } else {
                     bool cleared=settlements!=null&&settlements.HasSettlementAt(tile.Cell.Coordinates);
