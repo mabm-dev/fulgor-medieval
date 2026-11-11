@@ -28,9 +28,12 @@ namespace Fulgor.Presentation.Tests.Map
             yield return new EnterPlayMode();yield return null;yield return null;
             settlements=Object.FindFirstObjectByType<CampaignSettlementController>();selection=settlements.GetComponent<CampaignBoardSelection>();campaign=settlements.GetComponent<CampaignTurnController>();
             Assert.That(settlements.Ready,Is.True);
+            // Ninguna prueba de esta clase mira píxeles: la cámara de la ciudad solo proyecta puntos, así que no hace falta que dibuje.
+            CityManagementView.RenderPreview=false;
         }
         [UnityTearDown]public IEnumerator Cleanup()
         {
+            CityManagementView.RenderPreview=true;
             if(EditorApplication.isPlaying){if(City!=null)City.Close();yield return new ExitPlayMode();}
             if(hadSave)PlayerPrefs.SetString(SaveKey,previousSave);else PlayerPrefs.DeleteKey(SaveKey);PlayerPrefs.Save();
             if(clonedDefinition!=null)Object.DestroyImmediate(clonedDefinition);
