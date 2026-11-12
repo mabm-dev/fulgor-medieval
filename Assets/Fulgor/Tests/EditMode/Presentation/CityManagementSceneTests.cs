@@ -31,6 +31,10 @@ namespace Fulgor.Presentation.Tests.Map
             // Ninguna prueba de esta clase mira píxeles: la cámara de la ciudad solo proyecta puntos, así que no hace falta que dibuje.
             CityManagementView.RenderPreview=false;
         }
+        // La gestión de ciudad no depende de la forma del terreno: con menos detalle el tablero se calcula en una fracción del tiempo
+        // (en el CI cada tablero con el detalle completo tarda unos 21 s y esta clase lo genera una o dos veces por prueba).
+        [OneTimeSetUp]public void LowReliefDetail()=>CampaignMapAppearance.ReliefSubdivisionsOverride=8;
+        [OneTimeTearDown]public void RestoreReliefDetail()=>CampaignMapAppearance.ReliefSubdivisionsOverride=0;
         [UnityTearDown]public IEnumerator Cleanup()
         {
             CityManagementView.RenderPreview=true;

@@ -184,7 +184,7 @@ namespace Fulgor.Presentation.Map
             color = color.linear; color.a = 1 - Smooth(-.025f, .08f, distance); return color;
         }
 
-        public Mesh BuildMesh(Vector3 center, string name, int segmentsPerEdge = 12, int rings = 18)
+        public MeshData BuildMeshData(Vector3 center, int segmentsPerEdge = 12, int rings = 18)
         {
             int count = segmentsPerEdge * 6;
             var vertices = new Vector3[1 + count * rings]; var normals = new Vector3[vertices.Length];
@@ -252,9 +252,35 @@ namespace Fulgor.Presentation.Map
                 }
                 triangles = refined;
             }
-            var mesh = new Mesh { name = name };
-            mesh.vertices = points.ToArray(); mesh.normals = normalList.ToArray(); mesh.colors = colorList.ToArray(); mesh.uv = uvList.ToArray();
-            mesh.SetTriangles(triangles, 0); mesh.RecalculateBounds(); return mesh;
+            return new MeshData(points.ToArray(), normalList.ToArray(), colorList.ToArray(), uvList.ToArray(), triangles);
+        }
+
+        /// <summary>Geometría de una malla de agua ya calculada; crear la <see cref="Mesh"/> es lo único que exige el hilo principal.</summary>
+        public sealed class MeshData
+        {
+            private readonly Vector3[] vertices, normals; private readonly Color[] colors; private readonly Vector2[] uv; private readonly List<int> triangles;
+            public MeshData(Vector3[] vertices, Vector3[] normals, Color[] colors, Vector2[] uv, List<int> triangles)
+            { this.vertices = vertices; this.normals = normals; this.colors = colors; this.uv = uv; this.triangles = triangles; }
+            public Mesh ToMesh(string name)
+            {
+                var mesh = new Mesh { name = name };
+                mesh.vertices = vertices; mesh.normals = normals; mesh.colors = colors; mesh.uv = uv;
+                mesh.SetTriangles(triangles, 0); mesh.RecalculateBounds(); return mesh;
+            }
+        }
+
+        public Mesh BuildMesh(Vector3 center, string name, int segmentsPerEdge = 12, int rings = 18) => BuildMeshData(center, segmentsPerEdge, rings).ToMesh(name);
+
+        /// <summary>
+        /// Las geometrías de varias casillas de agua a la vez y en paralelo: el cálculo solo lee el campo de la orilla, así que no necesita el
+        /// hilo principal (en el tablero de campaña son casi todas las casillas de agua y eran unos 2,5 s seguidos). Mismo resultado que <see cref="BuildMesh"/>.
+        /// </summary>
+        public MeshData[] BuildMeshData(IReadOnlyList<Vector3> centers, int segmentsPerEdge = 12, int rings = 18)
+        {
+            var result = new MeshData[centers.Count];
+            if (Application.platform == RuntimePlatform.WebGLPlayer) for (int i = 0; i < result.Length; i++) result[i] = BuildMeshData(centers[i], segmentsPerEdge, rings);
+            else System.Threading.Tasks.Parallel.For(0, result.Length, i => result[i] = BuildMeshData(centers[i], segmentsPerEdge, rings));
+            return result;
         }
     }
 }
