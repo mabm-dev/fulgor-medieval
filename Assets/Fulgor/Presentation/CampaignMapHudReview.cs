@@ -90,8 +90,13 @@ namespace Fulgor.Presentation.Map
             Capture(Path.Combine(output, "mapa-ciudad.png"), new Vector2Int(1920, 1080), campaign);
             Require(towns.VisitButton.interactable, "City management unavailable after locate.");
             towns.VisitButton.onClick.Invoke(); yield return null;
-            Require(campaign.GetComponent<CityManagementView>()?.IsOpen == true && selection.IsInteractionSuspended, "City did not suspend map input.");
-            campaign.GetComponent<CityManagementView>().Close(); yield return null;
+            // la ciudad se abre sobre sus casillas (CampaignCityMapView) o, sin ellas, en la gestión clásica
+            var cityMap = campaign.GetComponent<CampaignCityMapView>(); var cityView = campaign.GetComponent<CityManagementView>();
+            Require(cityMap?.IsOpen == true || cityView?.IsOpen == true && selection.IsInteractionSuspended, "City did not open.");
+            yield return new WaitForSecondsRealtime(.4f);
+            Capture(Path.Combine(output, "ciudad.png"), new Vector2Int(1920, 1080), campaign);
+            if (cityMap?.IsOpen == true) cityMap.Close(); else cityView.Close();
+            yield return null;
 
             var diplomacy = campaign.GetComponent<CampaignDiplomacyView>();
             diplomacy.Open(); yield return null;

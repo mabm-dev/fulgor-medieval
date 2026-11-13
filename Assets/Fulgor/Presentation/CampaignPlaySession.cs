@@ -35,19 +35,31 @@ namespace Fulgor.Presentation.Map
             {
                 ui.GetComponent<CanvasScaler>().matchWidthOrHeight=0;
                 var original=MenuButton.gameObject;original.SetActive(false);Destroy(original);
-                var holder=CampaignMenuUI.Rect("Menu anchor",ui.transform,new Vector2(1,1),new Vector2(-20,-23),new Vector2(180,60));
-                MenuButton=CampaignHudArt.Button("Session menu",holder,Vector2.zero,new Vector2(180,60),"MENÚ / PAUSA",()=>Open());
+                var holder=menuHolder=CampaignMenuUI.Rect("Menu anchor",ui.transform,new Vector2(1,1),new Vector2(-10,-6),new Vector2(320,52));
+                MenuButton=CampaignHudArt.Button("Session menu",holder,Vector2.zero,new Vector2(320,52),"MENÚ / PAUSA",()=>Open());
             }
             yield return null;yield return null;
             string json=CampaignNavigation.ConsumeSnapshot(SceneManager.GetActiveScene().name);
             if(json!=null&&!campaign.TryLoadCampaignSnapshot(json))CampaignNavigation.ReturnToMenu(catalog.MenuSceneName);
+        }
+        private RectTransform menuHolder;
+        // Sobre el mapa el menú corona la columna derecha; en la ciudad vuelve a su tamaño corto, junto al acceso a la diplomacia.
+        private void FitMenuButton()
+        {
+            if(menuHolder==null)return;
+            bool city=GetComponent<CampaignCityMapView>()?.IsOpen==true;
+            var size=city?new Vector2(156,52):new Vector2(320,52);
+            if(menuHolder.sizeDelta==size)return;
+            menuHolder.sizeDelta=size;menuHolder.anchoredPosition=new Vector2(-10,-6);
+            ((RectTransform)MenuButton.transform).sizeDelta=size;
+            MenuButton.GetComponentInChildren<Text>().rectTransform.sizeDelta=size-new Vector2(22,10);
         }
         private bool CanLeave()=>campaign?.State!=null&&!campaign.HasPendingBattle&&!campaign.IsRivalPhaseActive&&!CampaignNavigation.IsTransitioning;
         private void Update()
         {
             if(MenuButton==null)return;
             bool modal=GetComponent<CampaignRecruitmentView>()?.IsOpen==true||GetComponent<CityManagementView>()?.IsOpen==true||GetComponent<BattleLabController>()?.IsOpen==true;
-            MenuButton.gameObject.SetActive(!modal);MenuButton.interactable=CanLeave();
+            MenuButton.gameObject.SetActive(!modal);MenuButton.interactable=CanLeave();FitMenuButton();
             var recruitment=GetComponent<CampaignRecruitmentView>();
             if(recruitment?.IsOpen==true)
             {

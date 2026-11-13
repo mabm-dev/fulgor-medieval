@@ -295,5 +295,34 @@ namespace Fulgor.Core.Tests.Campaign
                 new BattleFormationState(new BattleFormationSlot(0, BattleSide.Attacker, FormationKind.Infantry, 4, 1), infantry.Attributes, 40),
                 new BattleFormationState(new BattleFormationSlot(1, BattleSide.Defender, FormationKind.Infantry, 4, 11), infantry.Attributes, 40) });
         }
+        [Test]
+        public void RansomGrowsWithCommandAndCaptivesAreListedByOwnerAndCaptor()
+        {
+            var roster = CampaignHeroRoster.Start(Factions).CaptureUndefended("castilla/1", "granada");
+            Assert.That(roster.TryGet("castilla/1", out var rodrigo), Is.True);
+            Assert.That(CampaignHeroRoster.RansomGold(rodrigo), Is.EqualTo(60 + 20 * rodrigo.Definition.Command));
+            Assert.That(roster.CaptivesOf("castilla").Select(h => h.HeroId), Is.EqualTo(new[] { "castilla/1" }));
+            Assert.That(roster.HeldBy("granada").Select(h => h.HeroId), Is.EqualTo(new[] { "castilla/1" }));
+            Assert.That(roster.CaptivesOf("granada"), Is.Empty);
+            Assert.That(roster.HeldBy("castilla"), Is.Empty);
+        }
+
+        [Test]
+        public void ExchangeNeedsCrossedCaptivesAndFreesBoth()
+        {
+            var roster = CampaignHeroRoster.Start(new[] { "castilla", "granada", "leon" })
+                .CaptureUndefended("castilla/1", "granada").CaptureUndefended("granada/1", "castilla");
+            Assert.That(roster.CanExchange("castilla/1", "granada/1"), Is.True);
+            Assert.That(roster.CanExchange("granada/1", "castilla/1"), Is.True);
+            var exchanged = roster.Exchange("castilla/1", "granada/1");
+            Assert.That(exchanged.TryGet("castilla/1", out var rodrigo) && rodrigo.Status == HeroStatus.Active && rodrigo.CaptorFactionId == null, Is.True);
+            Assert.That(exchanged.TryGet("granada/1", out var zahir) && zahir.Status == HeroStatus.Active && zahir.CaptorFactionId == null, Is.True);
+            // Un cautivo de un tercer reino no sirve de canje: León no retiene a nadie de Castilla.
+            var uneven = CampaignHeroRoster.Start(new[] { "castilla", "granada", "leon" })
+                .CaptureUndefended("castilla/1", "granada").CaptureUndefended("leon/1", "castilla");
+            Assert.That(uneven.CanExchange("castilla/1", "leon/1"), Is.False);
+            Assert.Throws<InvalidOperationException>(() => uneven.Exchange("castilla/1", "leon/1"));
+            Assert.That(CampaignHeroRoster.Start(Factions).CanExchange("castilla/1", "granada/1"), Is.False, "Dos héroes libres no se canjean.");
+        }
     }
 }

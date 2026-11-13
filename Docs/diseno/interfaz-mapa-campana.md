@@ -21,3 +21,17 @@ La nueva presentación se aplica a campañas jugables con `CampaignPlaySession`.
 ## Verificación
 
 La prueba de integración `CampaignHudUsesLiveRosterAndCityNavigation` comprueba composición real, cambio de hueste, consulta de atributos, separación de paneles, entrada/salida de ciudad y apertura de diplomacia. Se conserva la prueba de construir, cancelar, guardar y completar sobre casillas reales.
+
+## Distribución de columna (noviembre de 2026)
+
+La disposición combina la barra superior de un 4X con la columna de mando de un juego de héroes. Las medidas toman 1920 de ancho como referencia.
+
+- **Barra superior:** estandarte del reino compacto a la izquierda y los cinco recursos con su variación al cierre en una sola línea.
+- **Columna derecha (320):** menú y pausa, minimapa, huestes del reino, consejo (ciudades, diplomacia, objetivos, ciencia), avisos, itinerario de la casilla y cierre de turno. Todo lo que es del reino está en la columna; el mapa queda libre a su izquierda.
+- **Minimapa:** terreno conocido, asentamientos y huestes a la vista. Lo desconocido queda en negro y lo explorado, apagado. Un clic o un arrastre lleva la cámara a ese punto; un recuadro marca dónde mira.
+- **Huestes del reino:** hasta cinco retratos. El héroe muestra su retrato; una hueste sin héroe, su rótulo. La cifra va en oro cuando la hueste tiene movimiento y no tiene marcha ordenada. Pulsar un retrato elige la hueste y centra la cámara.
+- **Barra inferior:** solo la hueste elegida: retrato, efectivos, moral, movimiento, seis formaciones y las órdenes en rejilla de 2 × 2.
+- **Izquierda:** el asentamiento elegido bajo la barra superior y, sobre la barra de la hueste, el panel de héroes.
+- **Ciudad:** al entrar, el estandarte recupera su tamaño de cabecera, el menú vuelve a su tamaño corto y la columna se oculta.
+
+`ColumnListsOwnArmiesSelectsThemAndMinimapShowsKnownLand` comprueba la lista de huestes, la selección desde la columna, el minimapa y la pertenencia de los paneles a la columna. `-fulgorMapHudReview` guarda además `ciudad.png`.

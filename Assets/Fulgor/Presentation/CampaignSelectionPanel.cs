@@ -29,7 +29,7 @@ namespace Fulgor.Presentation.Map
         public bool IsVisible => panel != null && panel.gameObject.activeInHierarchy;
         public void SetCityMapMode(bool enabled)
         {
-            cityMode=enabled;
+            cityMode=enabled;if(armyStrip!=null){minimapPanel.gameObject.SetActive(!enabled);armyStrip.gameObject.SetActive(!enabled);}
             // The kingdom banner belongs to both map and city.
             if(campaignNavigation!=null)campaignNavigation.gameObject.SetActive(!enabled);
             CloseDrawer();selectedFormation=-1;
@@ -39,7 +39,7 @@ namespace Fulgor.Presentation.Map
             foreach(var badge in presenceBadges.Values)if(badge!=null)badge.gameObject.SetActive(false);
             if(panel!=null)panel.gameObject.SetActive(!enabled);
             if(turnPanel!=null)turnPanel.gameObject.SetActive(!enabled);
-            if(resourceBar!=null)resourceBar.gameObject.SetActive(!enabled);
+            // la barra de recursos del reino sigue a la vista en la ciudad
         }
         public bool BlocksCityMapPointer(Vector2 point)
         {
@@ -372,7 +372,7 @@ namespace Fulgor.Presentation.Map
             (Contains(cameraControls, screenPosition) || Contains(resourceBar, screenPosition) ||
              Contains(panel, screenPosition) || Contains(turnPanel, screenPosition) ||
              Contains(turnControls, screenPosition) || Contains(utilityPanel, screenPosition) ||
-             Contains(kingdomHeader,screenPosition)||Contains(campaignNavigation,screenPosition)||Contains(campaignDrawer,screenPosition)||CampaignExtrasContain(screenPosition));
+             Contains(kingdomHeader,screenPosition)||Contains(campaignNavigation,screenPosition)||Contains(campaignDrawer,screenPosition)||ColumnContains(screenPosition)||CampaignExtrasContain(screenPosition));
 
         private static bool Contains(RectTransform rect, Vector2 point) =>
             rect != null && rect.gameObject.activeInHierarchy && RectTransformUtility.RectangleContainsScreenPoint(rect, point);

@@ -194,6 +194,30 @@ namespace Fulgor.Core.Campaign
             return next;
         }
 
+        /// <summary>Oro que cuesta rescatar a un cautivo. Cifra provisional: crece con el mando del héroe.</summary>
+        public static int RansomGold(CampaignHero hero) => 60 + 20 * (hero?.Definition?.Command ?? 1);
+
+        /// <summary>Héroes de un reino que otro retiene.</summary>
+        public IReadOnlyList<CampaignHero> CaptivesOf(string factionId) =>
+            Heroes.Where(h => h.Status == HeroStatus.Captive && h.FactionId == factionId).ToList().AsReadOnly();
+
+        /// <summary>Héroes ajenos que un reino retiene.</summary>
+        public IReadOnlyList<CampaignHero> HeldBy(string factionId) =>
+            Heroes.Where(h => h.Status == HeroStatus.Captive && h.CaptorFactionId == factionId).ToList().AsReadOnly();
+
+        /// <summary>Un intercambio exige dos cautivos cruzados: cada reino retiene al héroe del otro.</summary>
+        public bool CanExchange(string heroId, string otherHeroId) =>
+            TryGet(heroId, out var first) && TryGet(otherHeroId, out var second) &&
+            first.Status == HeroStatus.Captive && second.Status == HeroStatus.Captive &&
+            first.CaptorFactionId == second.FactionId && second.CaptorFactionId == first.FactionId;
+
+        /// <summary>Intercambio de cautivos: los dos vuelven activos con su reino.</summary>
+        public CampaignHeroRoster Exchange(string heroId, string otherHeroId)
+        {
+            if (!CanExchange(heroId, otherHeroId)) throw new InvalidOperationException("Only crossed captives can be exchanged.");
+            return Release(heroId).Release(otherHeroId);
+        }
+
         public CampaignHeroRosterData Capture() => new() {
             heroes = Heroes.Select(h => new CampaignHeroData {
                 heroId = h.HeroId, status = h.Status, captorFactionId = h.CaptorFactionId, hiredTurn = h.HiredTurn }).ToArray(),
@@ -202,11 +226,13 @@ namespace Fulgor.Core.Campaign
                 .Select(h => new HeroHireCountData { factionId = h.Key, count = h.Value }).ToArray() };
 
         /// <summary>Reconstruye el registro validando héroes, reinos, cautivos y decisiones pendientes.</summary>
-        public static CampaignHeroRoster Restore(CampaignHeroRosterData data, IEnumerable<string> factionIds)
+        /// <param name="captorFactionIds">Reinos que pueden retener o vencer a un héroe aunque no tengan héroes propios; por omisión, los de <paramref name="factionIds"/>.</param>
+        public static CampaignHeroRoster Restore(CampaignHeroRosterData data, IEnumerable<string> factionIds, IEnumerable<string> captorFactionIds = null)
         {
             if (data?.heroes == null || data.pending == null || data.hired == null || factionIds == null)
                 throw new ArgumentException("Missing hero state.");
             var factions = new HashSet<string>(factionIds, StringComparer.Ordinal);
+            var captors = new HashSet<string>(captorFactionIds ?? factions, StringComparer.Ordinal); captors.UnionWith(factions);
             var heroes = new Dictionary<string, CampaignHero>(StringComparer.Ordinal);
             foreach (var saved in data.heroes)
             {
@@ -214,7 +240,7 @@ namespace Fulgor.Core.Campaign
                 if (definition == null || !factions.Contains(definition.FactionId) || heroes.ContainsKey(definition.Id) ||
                     !Enum.IsDefined(typeof(HeroStatus), saved.status) || saved.hiredTurn < 1 ||
                     (saved.status == HeroStatus.Captive) != (saved.Captor != null) ||
-                    saved.Captor != null && (saved.Captor == definition.FactionId || !factions.Contains(saved.Captor)))
+                    saved.Captor != null && (saved.Captor == definition.FactionId || !captors.Contains(saved.Captor)))
                     throw new ArgumentException("Invalid saved hero.");
                 heroes.Add(definition.Id, new CampaignHero(definition.Id, definition.FactionId, saved.status, saved.Captor, saved.hiredTurn));
             }
@@ -229,7 +255,7 @@ namespace Fulgor.Core.Campaign
             var pending = new Dictionary<string, PendingHeroFate>(StringComparer.Ordinal);
             foreach (var fate in data.pending)
                 if (fate == null || !heroes.TryGetValue(fate.heroId ?? "", out var hero) || hero.Status != HeroStatus.Active ||
-                    fate.victorFactionId == hero.FactionId || !factions.Contains(fate.victorFactionId) ||
+                    fate.victorFactionId == hero.FactionId || !captors.Contains(fate.victorFactionId) ||
                     !pending.TryAdd(hero.HeroId, new PendingHeroFate(hero.HeroId, fate.victorFactionId)))
                     throw new ArgumentException("Invalid pending hero decision.");
             return new CampaignHeroRoster(heroes, pending, hired);
@@ -271,11 +297,11 @@ namespace Fulgor.Core.Campaign
         public int heroesVersion; public CampaignHeroRosterData heroes;
         public void IncludeHeroes(CampaignHeroRoster roster)
         { if (roster == null) throw new ArgumentNullException(nameof(roster)); heroesVersion = 1; heroes = roster.Capture(); }
-        public CampaignHeroRoster RestoreHeroes(IEnumerable<string> factions)
+        public CampaignHeroRoster RestoreHeroes(IEnumerable<string> factions, IEnumerable<string> captors = null)
         {
             if (heroesVersion == 0) return CampaignHeroRoster.Start(factions);
             if (heroesVersion != 1 || heroes == null) throw new ArgumentException("Missing or unsupported hero state.");
-            return CampaignHeroRoster.Restore(heroes, factions);
+            return CampaignHeroRoster.Restore(heroes, factions, captors);
         }
     }
 }

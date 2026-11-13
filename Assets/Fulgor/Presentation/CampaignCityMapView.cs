@@ -96,7 +96,10 @@ namespace Fulgor.Presentation.Map
                 treasuryValues[i]=CampaignMenuUI.Text("Reserva "+i,treasury,new Vector2(0,1),new Vector2(x+48,-14),new Vector2(105,28),"",22,CampaignMenuUI.Paper);treasuryValues[i].alignment=TextAnchor.MiddleLeft;
                 treasuryIncome[i]=CampaignMenuUI.Text("Ingreso "+i,treasury,new Vector2(0,1),new Vector2(x+48,-43),new Vector2(105,22),"",15,new Color(.86f,.91f,.76f));treasuryIncome[i].alignment=TextAnchor.MiddleLeft;
             }
-            toolbar=CampaignMenuUI.Rect("Edificios",canvas,new Vector2(.5f,0),new Vector2(0,12),new Vector2(850,185));
+            // La ciudad comparte la distribución del mapa: la barra superior del reino sigue a la vista (las reservas propias se ocultan),
+            // la ficha de la ciudad y su cola de obras van en la columna derecha, la casilla señalada a la izquierda y los edificios abajo.
+            if(GetComponent<CampaignSelectionPanel>()?.HasCampaignHud==true){treasury.gameObject.SetActive(false);treasury.sizeDelta=Vector2.zero;}
+            toolbar=CampaignMenuUI.Rect("Edificios",canvas,new Vector2(.5f,0),new Vector2(-165,12),new Vector2(850,185));
             CampaignMenuUI.Background(toolbar,new Color(.16f,.11f,.07f,.96f));
             LegacyUI.Panel(toolbar);
             if(!campaign.IsProjectUnlocked(Projects[selected]))selected=1;
@@ -136,16 +139,18 @@ namespace Fulgor.Presentation.Map
                 }
                 var label=CampaignMenuUI.Text("Nombre",button.transform,new Vector2(.5f,0),new Vector2(0,8),new Vector2(size.x-8,40),Names[i],16,CampaignMenuUI.Paper);label.raycastTarget=false;
             }
-            BackButton=CampaignHudArt.Button("Volver al mapa",canvas,new Vector2(20,-200),new Vector2(185,44),"VOLVER AL MAPA",Close);
+            var cityActions=CampaignMenuUI.Rect("Acciones de ciudad",canvas,new Vector2(1,1),new Vector2(-15,-68),new Vector2(310,46));
+            BackButton=CampaignHudArt.Button("Volver al mapa",cityActions,Vector2.zero,new Vector2(170,46),"VOLVER AL MAPA",Close);
+            BackButton.GetComponentInChildren<Text>().fontSize=14;
             backArea=(RectTransform)BackButton.transform;
-            recruitArea=(RectTransform)CampaignHudArt.Button("Reclutar en ciudad",canvas,new Vector2(217,-200),new Vector2(150,44),"RECLUTAR",()=>{
+            recruitArea=(RectTransform)CampaignHudArt.Button("Reclutar en ciudad",cityActions,new Vector2(178,0),new Vector2(132,46),"RECLUTAR",()=>{
                 var location=city.Position;
                 var settlements=GetComponent<CampaignSettlementController>();
                 Close();
                 settlements.OpenRecruitmentAt(location);
             }).transform;
-            leftColumn=CampaignMenuUI.Rect("Columna de ciudad",canvas,new Vector2(0,1),new Vector2(20,-260),new Vector2(310,653));
-            queue=Panel("Cola",new Vector2(0,1),Vector2.zero,new Vector2(310,260),false,leftColumn);
+            leftColumn=CampaignMenuUI.Rect("Columna de ciudad",canvas,new Vector2(1,1),new Vector2(-15,-124),new Vector2(310,653));
+            queue=Panel("Cola",new Vector2(0,1),new Vector2(0,-385),new Vector2(310,260),false,leftColumn);
             CampaignMenuUI.Text("Title",queue,new Vector2(.5f,1),new Vector2(0,-17),new Vector2(274,28),"OBRAS DE LA CIUDAD",18,CampaignMenuUI.Gold);
             Rule(queue,44);
             queueText=CampaignMenuUI.Text("Cola texto",queue,new Vector2(0,1),new Vector2(22,-64),new Vector2(264,90),"",16,CampaignMenuUI.Paper);queueText.alignment=TextAnchor.UpperLeft;
@@ -157,7 +162,7 @@ namespace Fulgor.Presentation.Map
                 workTurns[i]=CampaignMenuUI.Text("Turnos de obra",queue,new Vector2(0,1),new Vector2(249,y),new Vector2(40,25),"",16,CampaignMenuUI.Gold);workTurns[i].alignment=TextAnchor.MiddleRight;
             }
             CampaignMenuUI.Text("Ayuda de cola",queue,new Vector2(.5f,0),new Vector2(0,14),new Vector2(274,22),"Plazo total · una obra activa",15,new Color(.74f,.65f,.48f));
-            cityDetails=Panel("Datos de la ciudad",new Vector2(0,1),new Vector2(0,-276),new Vector2(310,377),false,leftColumn);
+            cityDetails=Panel("Datos de la ciudad",new Vector2(0,1),Vector2.zero,new Vector2(310,377),false,leftColumn);
             var cityTitle=CampaignMenuUI.Text("Title",cityDetails,new Vector2(.5f,1),new Vector2(0,-17),new Vector2(274,28),city.Name,18,CampaignMenuUI.Gold);
             Rule(cityDetails,44);
             string[] cityLabels={"Población", "Territorio", "Suelo disponible", "Edificios terminados", "Grano local / turno", "Consumo civil", "Crecimiento"};
@@ -174,7 +179,7 @@ namespace Fulgor.Presentation.Map
                 CampaignHudArt.Resource(cityDetails,i,new Vector2(20+i*54,-312),31);
                 cityProduction[i]=CampaignMenuUI.Text("Producción "+i,cityDetails,new Vector2(0,1),new Vector2(18+i*54,-344),new Vector2(36,22),"0",15,CampaignMenuUI.Paper);
             }
-            legend=Panel("Beneficios",new Vector2(1,.5f),new Vector2(-20,0),new Vector2(460,410),true);
+            legend=Panel("Beneficios",new Vector2(0,1),new Vector2(10,-92),new Vector2(460,410),true);
             LegendBand("Cabecera",27,60);
             var emblem=CampaignMenuUI.Rect("Edificio seleccionado",legend,new Vector2(0,1),new Vector2(38,-30),new Vector2(54,54));
             legendIcon=emblem.gameObject.AddComponent<Image>();

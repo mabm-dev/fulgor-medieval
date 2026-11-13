@@ -43,7 +43,7 @@ namespace Fulgor.Presentation.Map
         private CampaignHeroRoster RestoreHeroRoster(CampaignSaveData payload, ref CampaignArmyRegistry restored)
         {
             if (Heroes == null) return null;
-            var roster = payload.RestoreHeroes(HeroFactions());
+            var roster = payload.RestoreHeroes(HeroFactions(), KnownFactions()); // un reino sin héroes propios también puede retener a uno
             var pending = new HashSet<string>(roster.PendingFates.Select(p => p.HeroId), StringComparer.Ordinal);
             foreach (var unit in restored.Armies)
                 if (unit.Army.HeroId != null && (!roster.TryGet(unit.Army.HeroId, out var hero) ||
