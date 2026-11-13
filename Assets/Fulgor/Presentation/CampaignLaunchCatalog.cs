@@ -36,6 +36,7 @@ namespace Fulgor.Presentation.Map
                 var initial=scenario.CreateArmyRegistry(routes);var mission=scenario.CreateMission(map,routes,initial);
                 var towns=new CampaignSettlementRegistry(routes,settlements.Select(s=>s.Create()));string faction=scenario.PlayerFactionId;
                 data.RestoreTileCities(towns,map);
+                data.RestoreResearch();
                 var factions=new HashSet<string>(towns.Settlements.Select(c=>c.OwnerFactionId),StringComparer.Ordinal){faction};
                 if(initial!=null)foreach(var army in initial.Armies)factions.Add(army.Army.FactionId);
                 string context=CampaignSaveData.ScenarioSignature(map,routes,mission);

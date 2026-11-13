@@ -9,13 +9,13 @@ namespace Fulgor.Presentation.Map
     /// <summary>Gestión inicial de Castilla sobre los hexágonos reales de campaña.</summary>
     public sealed class CampaignCityMapView : MonoBehaviour
     {
-        private static readonly string[] Projects = { "house", "farm", "lumber" };
-        private static readonly string[] Names = { "Vivienda", "Huerto", "Leñera" };
+        private static readonly string[] Projects = { "house", "farm", "lumber", "market_stall", "militia_camp", "knowledge_house", "simple_quarry" };
+        private static readonly string[] Names = { "Vivienda", "Huerto", "Leñera", "Puesto de intercambio", "Campo de milicias", "Casa de conocimiento", "Cantera sencilla" };
         private static readonly FulgorIcon[] Icons = { FulgorIcon.Population, FulgorIcon.Grain, FulgorIcon.Wood };
         private CampaignTurnController campaign;
         private CampaignSettlement city;
         private GameObject root;
-        private RectTransform canvas, toolbar, legend, queue, heading, backArea, leftColumn, cityDetails, treasury;
+        private RectTransform canvas, toolbar, legend, queue, heading, backArea, recruitArea, leftColumn, cityDetails, treasury;
         private readonly Text[] treasuryValues=new Text[5], treasuryIncome=new Text[5];
         private readonly Text[] workNames=new Text[6], workTurns=new Text[6], cityValues=new Text[7], cityProduction=new Text[5];
         private readonly Image[] workClocks=new Image[6];
@@ -26,7 +26,7 @@ namespace Fulgor.Presentation.Map
         private readonly List<(RectTransform rect, HexTileView tile)> markers = new();
         private readonly List<GameObject> markerObjects = new();
         private readonly List<Sprite> ownedSprites = new();
-        private readonly List<GameObject> selectionBorders = new();
+        private readonly GameObject[] selectionBorders = new GameObject[Projects.Length];
         private readonly List<RectTransform> rings = new();
         private Texture2D ringTexture;
         private Sprite ringSprite, turnBadgeSprite;
@@ -97,40 +97,53 @@ namespace Fulgor.Presentation.Map
                 treasuryIncome[i]=CampaignMenuUI.Text("Ingreso "+i,treasury,new Vector2(0,1),new Vector2(x+48,-43),new Vector2(105,22),"",15,new Color(.86f,.91f,.76f));treasuryIncome[i].alignment=TextAnchor.MiddleLeft;
             }
             toolbar=CampaignMenuUI.Rect("Edificios",canvas,new Vector2(.5f,0),new Vector2(0,12),new Vector2(850,185));
-            var frameTexture=Resources.Load<Texture2D>("CityMap/panel_3");
-            if(frameTexture!=null)
-            {
-                var frame=toolbar.gameObject.AddComponent<Image>();frame.raycastTarget=false;
-                frame.sprite=Sprite.Create(frameTexture,new Rect(frameTexture.width*.014f,frameTexture.height*.24f,frameTexture.width*.97f,frameTexture.height*.52f),new Vector2(.5f,.5f));ownedSprites.Add(frame.sprite);
-            }
-            else {CampaignMenuUI.Background(toolbar,new Color(.16f,.11f,.07f,.96f));LegacyUI.Panel(toolbar);}
+            CampaignMenuUI.Background(toolbar,new Color(.16f,.11f,.07f,.96f));
+            LegacyUI.Panel(toolbar);
+            if(!campaign.IsProjectUnlocked(Projects[selected]))selected=1;
+            float step=820f/System.Array.FindAll(Projects,campaign.IsProjectUnlocked).Length;
+            int column=0;
             for(int i=0;i<Projects.Length;i++)
             {
+                if(!campaign.IsProjectUnlocked(Projects[i]))continue;
                 int index=i;
-                // Slot bounds measured in the original 2172 × 724 artwork. The gaps are not uniform.
-                var source=new Rect(new[]{267f,823f,1379f}[i],231f,528f,265f);
-                var crop=new Rect(2172*.014f,724*.24f,2172*.97f,724*.52f);
-                var size=new Vector2(source.width/crop.width*850,source.height/crop.height*185);
-                var position=new Vector2((source.x-crop.x)/crop.width*850,(source.center.y-crop.center.y)/crop.height*185);
+                var size=new Vector2(step-8,140);
+                var position=new Vector2(15+step*column++,0);
                 var button=CampaignMenuUI.Button(Names[i],toolbar,new Vector2(0,.5f),position,size,"",()=>SelectProject(index));
                 var background=button.GetComponent<Image>();background.sprite=null;background.color=new Color(0,0,0,.01f);
+                {
+                    var frame=CampaignHudArt.Stretch("Marco de obra",button.transform);
+                    frame.SetAsFirstSibling();
+                    CampaignHudArt.Surface(frame);
+                }
                 CampaignHudArt.AddButtonWash(button,(RectTransform)button.transform,5);
                 var oldOutline=button.GetComponent<Outline>();if(oldOutline!=null)oldOutline.enabled=false;
                 var selectionRect=CampaignMenuUI.Rect("Selección",button.transform,new Vector2(.5f,.5f),Vector2.zero,size-Vector2.one*2);
                 selectionRect.gameObject.AddComponent<CitySelectionFrame>().raycastTarget=false;
-                selectionRect.gameObject.SetActive(i==selected);selectionBorders.Add(selectionRect.gameObject);
+                selectionRect.gameObject.SetActive(i==selected);selectionBorders[i]=selectionRect.gameObject;
                 var texture=Resources.Load<Texture2D>("CityMap/"+Projects[i]+"_clean")??Resources.Load<Texture2D>("CityMap/"+Projects[i]);
                 if(texture!=null)
                 {
-                    var imageRect=CampaignMenuUI.Rect("Imagen",button.transform,new Vector2(.5f,.5f),new Vector2(0,14),new Vector2(180,110));
+                    var imageRect=CampaignMenuUI.Rect("Imagen",button.transform,new Vector2(.5f,.5f),new Vector2(0,14),new Vector2(size.x-10,110));
                     var image=imageRect.gameObject.AddComponent<Image>();image.raycastTarget=false;image.preserveAspect=true;
                     image.sprite=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f));ownedSprites.Add(image.sprite);
                     buildingIcons[i] = image.sprite;
                 }
-                var label=CampaignMenuUI.Text("Nombre",button.transform,new Vector2(.5f,0),new Vector2(0,16),new Vector2(170,26),Names[i],17,CampaignMenuUI.Paper);label.raycastTarget=false;
+                if(Projects[i]=="simple_quarry")
+                {
+                    var stone=CampaignMenuUI.Rect("Piedra",button.transform,new Vector2(.5f,.5f),new Vector2(0,14),new Vector2(85,70)).gameObject.AddComponent<Image>();
+                    stone.sprite=CampaignHudArt.Slice("stone-project","CityMap/resources_reference",new Rect(1178f/2172,322f/724,129f/2172,109f/724));
+                    stone.preserveAspect=true;stone.raycastTarget=false;buildingIcons[i]=stone.sprite;
+                }
+                var label=CampaignMenuUI.Text("Nombre",button.transform,new Vector2(.5f,0),new Vector2(0,8),new Vector2(size.x-8,40),Names[i],16,CampaignMenuUI.Paper);label.raycastTarget=false;
             }
             BackButton=CampaignHudArt.Button("Volver al mapa",canvas,new Vector2(20,-200),new Vector2(185,44),"VOLVER AL MAPA",Close);
             backArea=(RectTransform)BackButton.transform;
+            recruitArea=(RectTransform)CampaignHudArt.Button("Reclutar en ciudad",canvas,new Vector2(217,-200),new Vector2(150,44),"RECLUTAR",()=>{
+                var location=city.Position;
+                var settlements=GetComponent<CampaignSettlementController>();
+                Close();
+                settlements.OpenRecruitmentAt(location);
+            }).transform;
             leftColumn=CampaignMenuUI.Rect("Columna de ciudad",canvas,new Vector2(0,1),new Vector2(20,-260),new Vector2(310,653));
             queue=Panel("Cola",new Vector2(0,1),Vector2.zero,new Vector2(310,260),false,leftColumn);
             CampaignMenuUI.Text("Title",queue,new Vector2(.5f,1),new Vector2(0,-17),new Vector2(274,28),"OBRAS DE LA CIUDAD",18,CampaignMenuUI.Gold);
@@ -203,7 +216,7 @@ namespace Fulgor.Presentation.Map
         private void SelectProject(int index)
         {
             selected=index;
-            for(int i=0;i<selectionBorders.Count;i++)if(selectionBorders[i]!=null)selectionBorders[i].SetActive(i==index);
+            for(int i=0;i<selectionBorders.Length;i++)if(selectionBorders[i]!=null)selectionBorders[i].SetActive(i==index);
             Inspect(null);
         }
 
@@ -252,7 +265,7 @@ namespace Fulgor.Presentation.Map
         public bool BlocksPointer(Vector2 position)
         {
             if(!IsOpen)return false;
-            return RectTransformUtility.RectangleContainsScreenPoint(toolbar,position)||RectTransformUtility.RectangleContainsScreenPoint(heading,position)||RectTransformUtility.RectangleContainsScreenPoint(backArea,position)||
+            return RectTransformUtility.RectangleContainsScreenPoint(toolbar,position)||RectTransformUtility.RectangleContainsScreenPoint(heading,position)||RectTransformUtility.RectangleContainsScreenPoint(backArea,position)||RectTransformUtility.RectangleContainsScreenPoint(recruitArea,position)||
                 RectTransformUtility.RectangleContainsScreenPoint(legend,position)||RectTransformUtility.RectangleContainsScreenPoint(queue,position)||RectTransformUtility.RectangleContainsScreenPoint(cityDetails,position)||RectTransformUtility.RectangleContainsScreenPoint(treasury,position);
         }
 
@@ -266,8 +279,8 @@ namespace Fulgor.Presentation.Map
             bool occupied=campaign.IsCityTileOccupied(tile.Cell.Coordinates);
             var deposit=campaign.DepositAt(tile.Cell.Coordinates);var project=ProjectFor(tile);
             if(MineName(project)!=null){legendTitle.text=MineName(project);legendIcon.sprite=IconFor(project);}
-            bool valid=InReach(tile,project)&&CityTileConstruction.CanPlace(city.Position,tile.Cell,project,occupied,deposit);
-            var passive=CityTileConstruction.Passive(tile.Cell,deposit);var active=valid?CityTileConstruction.Active(project):default;
+            bool valid=InReach(tile,project)&&campaign.IsProjectUnlocked(project)&&CityTileConstruction.CanPlace(city.Position,tile.Cell,project,occupied,deposit);
+            var passive=CityTileConstruction.Passive(tile.Cell,deposit);var active=valid?CityTileConstruction.Active(project,campaign.ResearchEnabled ? campaign.Research : null):default;
             var cost=CityTileConstruction.Cost(project);
             string terrain=tile.Cell.Terrain switch {TerrainType.Plain=>"Llanura",TerrainType.Forest=>"Bosque",TerrainType.Hill=>"Colina",TerrainType.Mountain=>"Montaña",_=>"Agua"};
             if(deposit!=ResourceDepositKind.None)terrain+=deposit==ResourceDepositKind.Gold?" · yacimiento de oro":" · yacimiento de piedra";
@@ -296,12 +309,20 @@ namespace Fulgor.Presentation.Map
                 description.color=new Color(1f,.68f,.60f);
                 description.text=!InReach(tile,project)
                     ? "Fuera del territorio de esta ciudad."
-                    : "Terreno no válido\n"+(MineName(project)!=null?"El yacimiento no admite esta obra.":selected==0?"La vivienda necesita llanura o colina.":selected==1?"El huerto necesita llanura.":"La leñera necesita bosque.");
+                    : "Terreno no válido\n"+(MineName(project)!=null?"El yacimiento no admite esta obra.":project switch {
+                        "house" => "La vivienda necesita llanura o colina.",
+                        "lumber" => "La leñera necesita bosque.",
+                        "simple_quarry" => campaign.IsProjectUnlocked(project)?"La cantera sencilla necesita colina.":"La cantera sencilla requiere Herramientas de hierro.",
+                        _ => "Esta construcción necesita llanura."
+                    });
             }
             else
             {
                 description.color=affordable?new Color(.76f,.93f,.67f):new Color(1f,.70f,.56f);
                 description.text=affordable?"Terreno válido · obra de 2 turnos\nClic izquierdo para construir.":"Faltan recursos\nConsulta el coste inicial.";
+                if(project=="knowledge_house")
+                    description.text+="\n+1 sabiduría por turno. Máximo una bonificación por ciudad.";
+                if(project=="militia_camp")description.text+="\nLanceros: −4 de mano de obra por leva.";
                 if(affordable && project=="house")description.text+="  +10 plazas";
                 if(MineName(project)!=null)description.text=(affordable?"Yacimiento · obra de 2 turnos\nClic izquierdo para construir ":"Faltan recursos para ")+MineName(project).ToLowerInvariant()+".";
             }
@@ -386,7 +407,7 @@ namespace Fulgor.Presentation.Map
                 bool occupied=campaign.IsCityTileOccupied(tile.Cell.Coordinates);
                 if(ring&&GetComponent<CampaignTileBuildings>()?.Occupies(tile.Cell.Coordinates)==true)finished++;
                 if(!occupied&&mine!=null){if(CityTileConstruction.CanPlace(city.Position,tile.Cell,mine,false,deposit))available++;}
-                else if(!occupied)foreach(var project in Projects)if(CityTileConstruction.CanPlace(city.Position,tile.Cell,project,false)){available++;break;}
+                else if(!occupied)foreach(var project in Projects)if(campaign.IsProjectUnlocked(project)&&CityTileConstruction.CanPlace(city.Position,tile.Cell,project,false)){available++;break;}
             }
             var town = state ?? new CityTileDevelopment();
             cityValues[0].text = town.Population + " / " + town.HousingCapacity(campaign.CityState(city.Id).Houses);
@@ -396,7 +417,7 @@ namespace Fulgor.Presentation.Map
             cityValues[6].text = town.Population >= town.HousingCapacity(campaign.CityState(city.Id).Houses)
                 ? "Falta vivienda" : campaign.LocalFood(city.Id) <= consumption ? "Falta excedente" : "+1 hab./turno";
             cityValues[1].text=territory+" casillas";cityValues[2].text=available+" casillas";cityValues[3].text=finished.ToString();
-            var income=state?.ActiveIncome??default;
+            var income=(state?.Income(campaign.ResearchEnabled ? campaign.Research : null)??default).Add(campaign.ResearchEnabled?campaign.Research.IncomePerCity:default);
             var amounts=new[]{income.Grain,income.Wood,income.Stone,income.Gold,income.Labor};
             for(int i=0;i<amounts.Length;i++)cityProduction[i].text="+"+amounts[i];
             EnsureRingSprite();
@@ -469,7 +490,7 @@ namespace Fulgor.Presentation.Map
             GetComponent<CampaignArmyMarker>()?.SetCityVisible(true);GetComponent<CampaignArmyMarkerLayer>()?.SetCityVisible(true);
             GetComponent<CampaignSelectionPanel>()?.SetCityMapMode(false);GetComponent<CampaignSettlementController>()?.SetCityMapMode(false);
             Destroy(root);root=null;canvas=null;backArea=null;BackButton=null;markers.Clear();markerObjects.Clear();
-            foreach(var sprite in ownedSprites)if(sprite!=null)Destroy(sprite);ownedSprites.Clear();selectionBorders.Clear();city=null;
+            foreach(var sprite in ownedSprites)if(sprite!=null)Destroy(sprite);ownedSprites.Clear();System.Array.Clear(selectionBorders,0,selectionBorders.Length);city=null;
             if(turnBadgeSprite!=null)Destroy(turnBadgeSprite);if(turnBadgeTexture!=null)Destroy(turnBadgeTexture);
             if(ringSprite!=null)Destroy(ringSprite);if(ringTexture!=null)Destroy(ringTexture);ringSprite=null;ringTexture=null;rings.Clear();
         }

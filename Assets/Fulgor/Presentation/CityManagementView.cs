@@ -131,7 +131,13 @@ namespace Fulgor.Presentation.Map
 
         public void SelectPanel(CityPanelKind panel)
         {
-            if(!IsOpen)return;Panel=panel;
+            if(!IsOpen)return;
+            if(panel==CityPanelKind.Armies && canManage && campaign.ResearchEnabled)
+            {
+                owner.OpenRecruitmentAt(settlement.Position);
+                return;
+            }
+            Panel=panel;
             for(int i=0;i<tabs.Count;i++)LegacyUI.SetSelected(tabs[i],i==(int)panel);
             Refresh();
             if(scroll!=null)scroll.verticalNormalizedPosition=1;

@@ -36,11 +36,13 @@ namespace Fulgor.Presentation.Map
             return null;
         }
 
+        public bool IsProjectUnlocked(string project) => project != "simple_quarry" || Research.Has("tools");
+
         public bool TryPlaceCityTile(string settlementId, MapCell tile, string project)
         {
             var settlements = GetComponent<CampaignSettlementController>();
             if (State == null || IsCampaignFinished || HasPendingBattle || IsRivalPhaseActive || settlements == null ||
-                !settlements.CanManage(settlementId) || !SettlementState.TryGet(settlementId, out var city) ||
+                !IsProjectUnlocked(project) || !settlements.CanManage(settlementId) || !SettlementState.TryGet(settlementId, out var city) ||
                 VisibilityAt(tile.Coordinates)==CampaignVisibility.Unknown || IsCityTileOccupied(tile.Coordinates) || !IsTileAssignedToCity(settlementId,tile.Coordinates,CityTileConstruction.ReachOf(project)) || incomeMap == null) return false;
             bool actual = false;
             foreach (var cell in incomeMap.Cells) if (cell.Equals(tile)) { actual = true; break; }
@@ -76,12 +78,12 @@ namespace Fulgor.Presentation.Map
 
         public int LocalFood(string id)
         {
-            int food = CityState(id).IncomePerTurn.Grain + (TileCity(id)?.ActiveIncome.Grain ?? 0) - CityState(id).UpkeepPerTurn.Grain;
+            int food = CityState(id).IncomePerTurn.Grain + (TileCity(id)?.Income(ResearchEnabled ? Research : null).Grain ?? 0) - CityState(id).UpkeepPerTurn.Grain;
             if (incomeMap != null && SettlementState.TryGet(id, out var city))
                 foreach (var cell in incomeMap.Cells)
                     if (VisibilityAt(cell.Coordinates)!=CampaignVisibility.Unknown && (city.Position.Equals(cell.Coordinates) || IsTileAssignedToCity(id, cell.Coordinates)))
                         food += CityTileConstruction.Passive(cell, DepositAt(cell.Coordinates)).Grain;
-            return food;
+            return food+(ResearchEnabled?Research.IncomePerCity.Grain:0);
         }
 
         private CampaignResources CivilUpkeep(CampaignSettlementRegistry owners, Dictionary<string, CityTileDevelopment> states)
@@ -109,12 +111,12 @@ namespace Fulgor.Presentation.Map
                 if (SettlementState.TryGet(entry.Key, out var owner) && owner.OwnerFactionId == incomeFaction) entry.Value.Advance();
             TileCityRevision++;
         }
-        private CampaignResources TileCityIncome(CampaignSettlementRegistry owners, Dictionary<string, CityTileDevelopment> states)
+        private CampaignResources TileCityIncome(CampaignSettlementRegistry owners, Dictionary<string, CityTileDevelopment> states, CampaignResearch research)
         {
             var result = default(CampaignResources);
             if (owners == null || states == null) return result;
             foreach (var entry in states)
-                if (owners.TryGet(entry.Key, out var city) && city.OwnerFactionId == incomeFaction) result = result.Add(entry.Value.ActiveIncome);
+                if (owners.TryGet(entry.Key, out var city) && city.OwnerFactionId == incomeFaction) result = result.Add(entry.Value.Income(ResearchEnabled ? research : null));
             return result;
         }
     }

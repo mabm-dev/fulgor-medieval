@@ -9,7 +9,7 @@ using UnityEngine.UI;
 namespace Fulgor.Presentation.Map
 {
     [RequireComponent(typeof(CampaignBoardPreview))]
-    public sealed class CampaignSettlementController : MonoBehaviour
+    public sealed partial class CampaignSettlementController : MonoBehaviour
     {
         [SerializeField] private CampaignSettlementDefinition[] settlements=Array.Empty<CampaignSettlementDefinition>();
         [SerializeField] private string playerFactionId="castilla";
@@ -137,6 +137,14 @@ namespace Fulgor.Presentation.Map
         public bool OpenCityAt(HexCoordinates position)
         {
             if(!Ready||campaign?.CanObserve(position)==false||GetComponent<BattleLabController>()?.IsOpen==true||!Registry.TryGet(position,out var settlement))return false;
+            if(campaign.ResearchEnabled)
+            {
+                if(campaign.HasPendingBattle || campaign.IsRivalPhaseActive)return false;
+                if(settlement.OwnerFactionId==EffectivePlayerFaction)return OpenCityMapAt(position);
+                selection.Select(views[position].Tile);
+                campaignPanel.ShowSettlementInspection(settlement);
+                return true;
+            }
             CampaignSettlementDefinition definition=null;
             foreach(var item in settlements)if(item.Create().Id==settlement.Id){definition=item;break;}
             if(definition==null||definition.CityPrefab==null)return false;
@@ -145,9 +153,17 @@ namespace Fulgor.Presentation.Map
             return city.Open(this,settlement,definition,settlement.OwnerFactionId==EffectivePlayerFaction);
         }
 
+        public bool OpenRecruitmentAt(HexCoordinates position)
+        {
+            if(!Ready || !Registry.TryGet(position,out var city) || !CanManage(city.Id))return false;
+            var recruitment=GetComponent<CampaignRecruitmentView>();
+            if(recruitment==null)recruitment=gameObject.AddComponent<CampaignRecruitmentView>();
+            return recruitment.Open(city.Id);
+        }
+
         public bool OpenCityMapAt(HexCoordinates position)
         {
-            if(!Ready||EffectivePlayerFaction!="castilla"||campaign?.CanObserve(position)==false||GetComponent<BattleLabController>()?.IsOpen==true||
+            if(!Ready||campaign?.CanObserve(position)==false||campaign?.HasPendingBattle==true||campaign?.IsRivalPhaseActive==true||GetComponent<BattleLabController>()?.IsOpen==true||
                 !Registry.TryGet(position,out var settlement)||settlement.OwnerFactionId!=EffectivePlayerFaction)return false;
             selection.Select(views[position].Tile);
             var mapCity=GetComponent<CampaignCityMapView>();if(mapCity==null)mapCity=gameObject.AddComponent<CampaignCityMapView>();
@@ -185,6 +201,7 @@ namespace Fulgor.Presentation.Map
             if(selection.SelectedCell.HasValue)Registry.TryGet(selection.SelectedCell.Value.Coordinates,out selected);
             if(campaignPanel?.HasCampaignHud==true&&panel!=null)
                 panel.gameObject.SetActive(selected!=null&&GetComponent<CampaignCityMapView>()?.IsOpen!=true&&!campaignPanel.HasCampaignDrawer);
+            RefreshPresenceRows(selected);
             foreach(var pair in views)pair.Value.SetSelected(selected!=null&&pair.Key==selected.Position);
             if(details==null)return;
             if(selection.SelectedCell.HasValue&&!campaign.CanObserve(selection.SelectedCell.Value.Coordinates))
@@ -213,6 +230,7 @@ namespace Fulgor.Presentation.Map
                 MarchButton.interactable=campaignPanel.MoveArmyButton.interactable&&(!hostile||campaign.ArmyRegistry!=null);
             }
             VisitButton.interactable=selected!=null;
+            VisitButton.GetComponentInChildren<Text>().text=selected!=null&&selected.OwnerFactionId!=EffectivePlayerFaction?"INSPECCIONAR CIUDAD":"GESTIONAR CIUDAD";
             observedArmy=campaign.Army;observedRegistry=campaign.ArmyRegistry;observedTurn=campaign.State;observedCanMove=campaignPanel.MoveArmyButton.interactable;
         }
 
@@ -235,6 +253,7 @@ namespace Fulgor.Presentation.Map
             LegacyUI.Skin(panel);
             if(campaignPanel?.HasCampaignHud==true)
             {
+                BuildPresenceRows();
                 scaler.matchWidthOrHeight=0;
                 panel.anchoredPosition=new Vector2(20,-200);
                 background.enabled=false;

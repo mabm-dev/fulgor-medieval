@@ -12,6 +12,8 @@ namespace Fulgor.Core.Campaign
         public int Quantity {get;}
         public int Turns {get;}
         public CampaignResources Cost {get;}
+        public CampaignResources CostInCity(bool militiaCamp) => militiaCamp && Profile==TroopProfile.Spearmen
+            ? new CampaignResources(Cost.Grain,Cost.Wood,Cost.Stone,Cost.Gold,Cost.Labor-4) : Cost;
         public string Name=>TroopCatalog.Get(Profile).Name;
         public CampaignFormationState Create(string id)
         {
@@ -57,6 +59,7 @@ namespace Fulgor.Core.Campaign
         public RecruitmentRecord[] recruits;
         public MusterRecord[] musters;
         public GarrisonData[] garrisons;
+        public CampaignHeroPosition[] heroes;
     }
     public sealed class FormationOrigin
     {

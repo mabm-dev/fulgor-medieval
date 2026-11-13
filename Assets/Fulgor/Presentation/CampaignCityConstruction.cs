@@ -11,7 +11,7 @@ namespace Fulgor.Presentation.Map
         private static readonly CityDevelopment InitialCity=new();
         private readonly Dictionary<string,string> cityCompletions=new(StringComparer.Ordinal);
         public CampaignResources TerritoryIncome { get; private set; }
-        public CampaignResources CityIncomePerTurn=>SumCityEffects(cities,false).Add(TileCityIncome(SettlementState,tileCities));
+        public CampaignResources CityIncomePerTurn=>SumCityEffects(cities,false).Add(TileCityIncome(SettlementState,tileCities,Research)).Add(ResearchIncome(SettlementState,Research));
         public CampaignResources CityUpkeepPerTurn=>SumCityEffects(cities,true).Add(CivilUpkeep(SettlementState,tileCities));
         public int CityRevision { get; private set; }
         public string LastCompletedProject(string id)=>id!=null&&cityCompletions.TryGetValue(id,out var project)?project:null;
@@ -25,10 +25,12 @@ namespace Fulgor.Presentation.Map
             cities[settlementId]=next;State=new CampaignTurnState(State.Turn,resources,State.IncomePerTurn,State.ExpensesPerTurn);CityRevision++;
             panel?.SetTurnState(State);return true;
         }
-        private void ResetCities(){cities.Clear();cityCompletions.Clear();ResetTileCities();CityRevision++;}
+        private void ResetCities(){cities.Clear();cityCompletions.Clear();ResetTileCities();Research=new CampaignResearch();CityRevision++;}
         private void AdvanceCities()
         {
+            int wisdom = WisdomPerTurn;
             AdvanceTileCities();
+            AdvanceResearch(wisdom);
             cityCompletions.Clear();
             foreach(var id in cities.Keys.ToArray()) {
                 var next=cities[id].Advance(State.Turn);
@@ -49,12 +51,12 @@ namespace Fulgor.Presentation.Map
                     total=total.Add(upkeep?item.Value.UpkeepPerTurn:item.Value.IncomePerTurn);
             return total;
         }
-        private CampaignTurnState WithCityEconomy(CampaignTurnState state,Dictionary<string,CityDevelopment> developments,CampaignSettlementRegistry owners=null,CampaignArmyRegistry armies=null,CampaignMilitaryState military=null,Dictionary<string,CityTileDevelopment> tileDevelopments=null)
+        private CampaignTurnState WithCityEconomy(CampaignTurnState state,Dictionary<string,CityDevelopment> developments,CampaignSettlementRegistry owners=null,CampaignArmyRegistry armies=null,CampaignMilitaryState military=null,Dictionary<string,CityTileDevelopment> tileDevelopments=null,CampaignResearch research=null)
         {
             owners??=SettlementState;
             var armyUpkeep=LogisticsEnabled?CampaignArmyLogistics.UpkeepForFaction(armies??registry,military??Military,owners,incomeFaction):default;
             return new CampaignTurnState(state.Turn,state.Resources,
-                IncomeFrom(owners).Add(SumCityEffects(developments,false,owners)).Add(TileCityIncome(owners,tileDevelopments??tileCities)),SumCityEffects(developments,true,owners).Add(CivilUpkeep(owners,tileDevelopments??tileCities)).Add(armyUpkeep));
+                IncomeFrom(owners).Add(SumCityEffects(developments,false,owners)).Add(TileCityIncome(owners,tileDevelopments??tileCities,research??Research)).Add(ResearchIncome(owners,research??Research)),SumCityEffects(developments,true,owners).Add(CivilUpkeep(owners,tileDevelopments??tileCities)).Add(armyUpkeep));
         }
         private CityDevelopmentData[] CaptureCities()=>cities.OrderBy(p=>p.Key,StringComparer.Ordinal).Select(p=>p.Value.Capture(p.Key)).ToArray();
         private Dictionary<string,CityDevelopment> RestoreCities(CampaignSaveData save)

@@ -27,6 +27,21 @@ namespace Fulgor.Core.Tests.Campaign
             Assert.That(Empty().TryRecruit(city,faction,TroopProfile.Spearmen,1,Rich,initial,out var pending,out _),Is.True);
             return pending.Advance(3,initial);
         }
+        [Test]
+        public void OnlyCompletedMilitiaCampReducesLocalSpearmenLevyCost()
+        {
+            var city = new CityTileDevelopment();
+            var plain = new MapCell(At(2), TerrainType.Plain, false);
+            var budget = new CampaignResources(15,10,0,12,8);
+            Assert.IsTrue(city.TryAdd(At(1),plain,"militia_camp"));
+            city.Advance();
+            Assert.IsFalse(Empty().TryRecruit("home","castilla",TroopProfile.Spearmen,1,budget,initial,out _,out _,city.HasMilitiaCamp));
+            city.Advance();
+            Assert.IsTrue(Empty().TryRecruit("home","castilla",TroopProfile.Spearmen,1,budget,initial,out _,out var remaining,city.HasMilitiaCamp));
+            Assert.AreEqual(default(CampaignResources),remaining);
+            var cavalry = RecruitmentCatalog.Get(TroopProfile.LightCavalry);
+            Assert.AreEqual(cavalry.Cost,cavalry.CostInCity(true));
+        }
         [TestCase(TroopProfile.Spearmen,20,2)]
         [TestCase(TroopProfile.MenAtArms,15,3)]
         [TestCase(TroopProfile.Crossbowmen,15,2)]

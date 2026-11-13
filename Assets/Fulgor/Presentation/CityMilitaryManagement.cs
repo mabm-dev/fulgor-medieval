@@ -66,12 +66,16 @@ namespace Fulgor.Presentation.Map
             if(campaign.ArmyRegistry==null)text.AppendLine("\nEste escenario usa una hueste simple. La gestión militar requiere un escenario de varias huestes.");
             if(MilitaryMode==CityMilitaryMode.Recruit)
             {
-                int index=Choice(RecruitmentCatalog.All.Count);var spec=RecruitmentCatalog.All[index];var cost=spec.Cost;
+                int index=Choice(RecruitmentCatalog.All.Count);var spec=RecruitmentCatalog.All[index];bool camp=campaign.TileCity(settlement.Id)?.HasMilitiaCamp==true;var cost=spec.CostInCity(camp);
                 militarySelection.text=$"PERFIL {index+1} / {RecruitmentCatalog.All.Count}";
-                text.Append("\nRECLUTAR\n").Append(spec.Name).Append("\n").Append(spec.Quantity).Append(" soldados · ").Append(spec.Turns).AppendLine(" turnos")
+                text.Append("\nRECLUTAR\n").Append(campaign.PlayerFactionId=="castilla" && spec.Profile==TroopProfile.LightCavalry?"Jinetes de leva · caballería ligera":campaign.PlayerFactionId=="castilla" && spec.Profile==TroopProfile.Crossbowmen?"Ballesteros de leva":spec.Name).Append("\n").Append(spec.Quantity).Append(" soldados · ").Append(spec.Turns).AppendLine(" turnos")
                     .AppendLine(ResourceLines(cost)).AppendLine("\nAl terminar se incorporan a la guarnición. Una leva por ciudad; puede coexistir con una obra civil.");
-                bool ready=allowed&&campaign.Military.TryRecruit(settlement.Id,campaign.PlayerFactionId,spec.Profile,campaign.State.Turn,campaign.State.Resources,campaign.ArmyRegistry,out _,out _);
-                if(!campaign.State.Resources.TrySpend(cost,out _))text.Append("\nFALTAN RECURSOS\n").AppendLine(ResourceLines(campaign.State.Resources.MissingFor(cost)));
+                if(camp && spec.Profile==TroopProfile.Spearmen)text.AppendLine("Campo de milicias: ahorro de 4 de mano de obra por leva.");
+                bool unlocked=campaign.CanRecruitProfile(spec.Profile);
+                bool ready=allowed&&unlocked&&campaign.Military.TryRecruit(settlement.Id,campaign.PlayerFactionId,spec.Profile,campaign.State.Turn,campaign.State.Resources,campaign.ArmyRegistry,out _,out _,camp);
+                if(!unlocked && spec.Profile==TroopProfile.Crossbowmen)text.AppendLine("\nRequiere investigar Oficio de ballestería en la Plena Edad Media.");
+                else if(!unlocked)text.AppendLine("\nRequiere completar Organización de la frontera y entrar en la Edad de la Expansión.");
+                else if(!campaign.State.Resources.TrySpend(cost,out _))text.Append("\nFALTAN RECURSOS\n").AppendLine(ResourceLines(campaign.State.Resources.MissingFor(cost)));
                 else if(allowed&&job==null&&!ready)text.AppendLine("\nNo hay plaza de defensa libre o la casilla está ocupada por un rival.");
                 Action(primary,"RECLUTAR · "+spec.Quantity+" SOLDADOS",()=>{campaign.TryRecruit(settlement.Id,spec.Profile);Refresh();});primary.interactable=ready;
                 Action(secondary,"FIN DE TURNO",CompleteTurn);secondary.interactable=canManage&&campaignPanel.EndTurnButton.interactable;

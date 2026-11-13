@@ -15,7 +15,7 @@ namespace Fulgor.Presentation.Map
         public MapRouteGraph Routes { get; private set; }
         public MapPath PreviewedPath { get; private set; }
 
-        public bool IsInteractionSuspended => GetComponent<CampaignDiplomacyView>()?.IsOpen == true || GetComponent<BattleLabController>()?.IsOpen == true || GetComponent<CityManagementView>()?.IsOpen == true || GetComponent<CampaignPlaySession>()?.IsOpen == true;
+        public bool IsInteractionSuspended => GetComponent<CampaignRecruitmentView>()?.IsOpen == true || GetComponent<CampaignResearchView>()?.IsOpen == true || GetComponent<CampaignDiplomacyView>()?.IsOpen == true || GetComponent<BattleLabController>()?.IsOpen == true || GetComponent<CityManagementView>()?.IsOpen == true || GetComponent<CampaignPlaySession>()?.IsOpen == true;
 
         public MapCell? SelectedCell => selection.SelectedCell;
         public event System.Action SelectionChanged;
@@ -45,6 +45,7 @@ namespace Fulgor.Presentation.Map
 
         public void ResetBoard()
         {
+            GetComponent<CampaignRecruitmentView>()?.Close();
             GetComponent<CampaignCityMapView>()?.Close();
             SetHover(null);
             ClearSelection();
@@ -130,7 +131,7 @@ namespace Fulgor.Presentation.Map
         public HexTileView ResolveHit(Collider collider)
         {
             if (collider == null) return null;
-            var candidate = collider.GetComponentInParent<HexTileView>() ??
+            var candidate = collider.GetComponent<CampaignArmyClickTarget>()?.Tile ?? collider.GetComponentInParent<HexTileView>() ??
                 collider.GetComponentInParent<CampaignSettlementView>()?.Tile;
             return candidate != null && candidate.Owner == this ? candidate : null;
         }
@@ -139,14 +140,36 @@ namespace Fulgor.Presentation.Map
         {
             if(IsInteractionSuspended||tile==null||tile.Owner!=this||!tile.gameObject.activeInHierarchy)return false;
             var cityMap=GetComponent<CampaignCityMapView>();if(cityMap!=null&&cityMap.IsOpen)return cityMap.Place(tile);
-            Select(tile);var settlements=GetComponent<CampaignSettlementController>();
-            if(settlements!=null&&(gameObject.scene.name!="FulgorConquest"||!settlements.OpenCityMapAt(tile.Cell.Coordinates)))settlements.OpenCityAt(tile.Cell.Coordinates);
+            Select(tile);
+            var settlements=GetComponent<CampaignSettlementController>();
+            settlements?.OpenCityAt(tile.Cell.Coordinates);
             return true;
         }
 
+        public bool ActivateArmyTile(HexTileView tile)
+        {
+            var campaign=GetComponent<CampaignTurnController>();
+            if(IsInteractionSuspended || tile==null || tile.Owner!=this || campaign?.ArmyRegistry==null ||
+                !campaign.ArmyRegistry.TryGetOccupant(tile.Cell.Coordinates,out _) || !campaign.CanObserve(tile.Cell.Coordinates))return false;
+            Select(tile);return true;
+        }
+        public bool ActivateRightClick(HexTileView tile)
+        {
+            if(IsInteractionSuspended || tile==null || tile.Owner!=this || !tile.gameObject.activeInHierarchy)return false;
+            var cityMap=GetComponent<CampaignCityMapView>();
+            if(cityMap!=null && cityMap.IsOpen){cityMap.Cancel(tile);return true;}
+            var campaign=GetComponent<CampaignTurnController>();
+            if(campaign?.ArmyRegistry!=null && campaign.ArmyRegistry.TryGetOccupant(tile.Cell.Coordinates,out var friendly) &&
+                friendly.Army.FactionId==campaign.PlayerFactionId && friendly.Army.Id!=campaign.SelectedArmyId)
+                return campaign.TryJoinSelectedArmyAt(tile.Cell.Coordinates);
+            Select(tile);
+            if(panel?.MoveArmyButton.interactable!=true)return false;
+            campaign?.MoveToSelectedCell();
+            return true;
+        }
         private void Update()
         {
-            if(GetComponent<BattleLabController>()?.ClosedThisFrame==true||GetComponent<CityManagementView>()?.ClosedThisFrame==true||GetComponent<CampaignCityMapView>()?.ClosedThisFrame==true||GetComponent<CampaignPlaySession>()?.ClosedThisFrame==true){SetHover(null);return;}
+            if(GetComponent<CampaignRecruitmentView>()?.ClosedThisFrame==true||GetComponent<BattleLabController>()?.ClosedThisFrame==true||GetComponent<CityManagementView>()?.ClosedThisFrame==true||GetComponent<CampaignCityMapView>()?.ClosedThisFrame==true||GetComponent<CampaignPlaySession>()?.ClosedThisFrame==true){SetHover(null);return;}
             if (!Application.isFocused || IsInteractionSuspended) { pointerDown=false;SetHover(null); return; }
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             {var cityMap=GetComponent<CampaignCityMapView>();if(cityMap!=null&&cityMap.IsOpen)return;ClearSelection();}
@@ -162,25 +185,21 @@ namespace Fulgor.Presentation.Map
                 SetHover(null);
                 return;
             }
-            HexTileView tile = null;
+            HexTileView tile = null;bool hitArmy=false;
             if (Physics.Raycast(camera.ScreenPointToRay(pointer), out var hit,
                 camera.farClipPlane, camera.cullingMask, QueryTriggerInteraction.Ignore))
             {
-                tile = ResolveHit(hit.collider);
+                tile = ResolveHit(hit.collider);hitArmy=hit.collider.GetComponent<CampaignArmyClickTarget>()!=null;
             }
             SetHover(tile);
             if(mouse.leftButton.wasPressedThisFrame){pointerDown=true;pointerDragged=false;pointerStart=pointer;}
-            if(mouse.rightButton.wasPressedThisFrame&&tile!=null)
-            {
-                var cityMap=GetComponent<CampaignCityMapView>();if(cityMap!=null&&cityMap.IsOpen){cityMap.Cancel(tile);return;}
-                Select(tile);
-                if(panel?.MoveArmyButton.interactable==true)GetComponent<CampaignTurnController>()?.MoveToSelectedCell();
-            }
+            if(mouse.rightButton.wasPressedThisFrame&&tile!=null)ActivateRightClick(tile);
             if (click)
             {
                 if (tile != null && Keyboard.current != null &&
                     (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed))
                     PreviewPath(tile);
+                else if (tile != null && hitArmy) ActivateArmyTile(tile);
                 else if (tile != null) ActivateTile(tile);
                 else ClearSelection();
             }

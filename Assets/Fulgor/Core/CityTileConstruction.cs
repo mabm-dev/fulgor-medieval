@@ -40,7 +40,8 @@ namespace Fulgor.Core.Campaign
                 "quarry" => deposit == ResourceDepositKind.Stone && ResourceDepositLayout.IsEligible(cell.Terrain),
                 _ when deposit != ResourceDepositKind.None => false,
                 "house" => cell.Terrain == TerrainType.Plain || cell.Terrain == TerrainType.Hill,
-                "farm" => cell.Terrain == TerrainType.Plain,
+                "farm" or "market_stall" or "militia_camp" or "knowledge_house" => cell.Terrain == TerrainType.Plain,
+                "simple_quarry" => cell.Terrain == TerrainType.Hill,
                 "lumber" => cell.Terrain == TerrainType.Forest,
                 _ => false
             };
@@ -61,8 +62,10 @@ namespace Fulgor.Core.Campaign
             return terrain.Add(new CampaignResources(0, 0, 0, 0, cell.Terrain == TerrainType.Water ? 0 : 1)).Add(ResourceDepositLayout.Yield(deposit));
         }
 
-        public static CampaignResources Active(string project) => project switch {
-            "farm" => new CampaignResources(3, 0, 0, 0, 0),
+        public static CampaignResources Active(string project, CampaignResearch research = null) => project switch {
+            "market_stall" => new CampaignResources(0, 0, 0, research?.Has("routes") == true ? 3 : 2, 0),
+            "farm" => new CampaignResources(research?.Has("seed_selection") == true ? 4 : 3, 0, 0, 0, 0),
+            "simple_quarry" => new CampaignResources(0, 0, 3, 0, 0),
             "lumber" => new CampaignResources(0, 3, 0, 0, 0),
             // sobre el +1 del yacimiento: con la mina, +3 de oro o de piedra por turno
             "goldmine" => new CampaignResources(0, 0, 0, 2, 0),
@@ -72,8 +75,10 @@ namespace Fulgor.Core.Campaign
         };
 
         public static CampaignResources Cost(string project) => project switch {
+            "militia_camp" or "knowledge_house" => new CampaignResources(0, 20, 0, 0, 10),
             "house" => new CampaignResources(0, 10, 0, 0, 5),
             "farm" => new CampaignResources(0, 15, 0, 0, 10),
+            "market_stall" or "simple_quarry" => new CampaignResources(0, 15, 0, 0, 8),
             "lumber" => new CampaignResources(0, 5, 0, 0, 6),
             "goldmine" => new CampaignResources(0, 20, 10, 0, 10),
             "quarry" => new CampaignResources(0, 15, 0, 0, 8),
@@ -183,6 +188,8 @@ namespace Fulgor.Core.Campaign
         private readonly Dictionary<HexCoordinates, string> completed = new();
         public CityTileOrderData[] Pending => queue.Capture();
         public bool IsOccupied(HexCoordinates position) => completed.ContainsKey(position) || queue.Contains(position);
+        public bool HasKnowledgeHouse => completed.ContainsValue("knowledge_house");
+        public bool HasMilitiaCamp => completed.ContainsValue("militia_camp");
         public string BuildingAt(HexCoordinates position) => completed.TryGetValue(position, out var project) ? project : null;
 
         public bool TryAdd(HexCoordinates city, MapCell tile, string project, ResourceDepositKind deposit = ResourceDepositKind.None) =>
@@ -196,14 +203,14 @@ namespace Fulgor.Core.Campaign
             if (finished != null) completed.Add(new HexCoordinates(finished.q, finished.r), finished.project);
         }
 
-        public CampaignResources ActiveIncome
+        public CampaignResources ActiveIncome => Income(null);
+
+        public CampaignResources Income(CampaignResearch research)
         {
-            get
-            {
-                var result = default(CampaignResources);
-                foreach (var item in completed) result = result.Add(CityTileConstruction.Active(item.Value));
-                return result;
-            }
+            var result = default(CampaignResources);
+            foreach (var project in completed.Values)
+                result = result.Add(CityTileConstruction.Active(project, research));
+            return result;
         }
 
         public CityTileDevelopmentData Capture(string settlementId)

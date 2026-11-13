@@ -130,6 +130,9 @@ namespace Fulgor.Core.Campaign
                 var record=new MusterRecord{serial=checked(musters.Count+1),settlementId=cityId,factionId=guard.FactionId};next.musters.Add(record);armyId=record.ArmyId;
                 moved=armies.AddMuster(CampaignArmyState.RestoreSurvivors(armyId,guard.FactionId,forms,history),destination.Value);
             }
+            var hero=HeroPosition(guard.FactionId,armies);
+            if(destination.HasValue && armyId!=null && (hero.settlementId==cityId || field!=null&&hero.armyId==field.Army.Id))
+                next.SetHero(new CampaignHeroPosition{factionId=guard.FactionId,armyId=armyId});
             return next;
         }
     }

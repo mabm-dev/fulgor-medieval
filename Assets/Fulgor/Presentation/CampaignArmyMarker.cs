@@ -13,6 +13,8 @@ namespace Fulgor.Presentation.Map
         private readonly Dictionary<(Mesh,Quaternion,Vector3),Vector3> anchors = new();
         private readonly List<HexCoordinates> waypoints = new();
         private GameObject marker;
+        private CampaignArmyClickTarget clickTarget;
+        private BoxCollider clickCollider;
         private Transform markerBase, group, pip;
         private CampaignSoldierWalk walker;
         private float facing;
@@ -36,7 +38,7 @@ namespace Fulgor.Presentation.Map
         private bool cityVisible=true;
         public void SetFogVisible(bool value){fogVisible=value;ApplyVisibility();}
         public void SetCityVisible(bool value){cityVisible=value;ApplyVisibility();}
-        private void ApplyVisibility(){bool visible=fogVisible&&cityVisible;if(marker!=null)foreach(var renderer in marker.GetComponentsInChildren<Renderer>(true)){renderer.forceRenderingOff=!visible;renderer.shadowCastingMode=visible?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;}}
+        private void ApplyVisibility(){bool visible=fogVisible&&cityVisible;if(clickCollider!=null)clickCollider.enabled=visible;if(marker!=null)foreach(var renderer in marker.GetComponentsInChildren<Renderer>(true)){renderer.forceRenderingOff=!visible;renderer.shadowCastingMode=visible?UnityEngine.Rendering.ShadowCastingMode.On:UnityEngine.Rendering.ShadowCastingMode.Off;}}
         public bool IsVisible => marker != null && marker.activeSelf&&fogVisible&&cityVisible;
         public Vector3 VisualPosition => marker != null ? marker.transform.position : transform.position;
 
@@ -56,6 +58,14 @@ namespace Fulgor.Presentation.Map
             if (army == null || !tiles.TryGetValue(army.Position,out var tile) || tile == null || !tile.gameObject.activeInHierarchy)
             { marker.SetActive(false); destination=null; waypoints.Clear(); waypoint=0; lastGroundMesh=null; return; }
             if (destination.HasValue && destination.Value == army.Position && marker.activeSelf) return;
+            if (clickTarget == null)
+            {
+                var hit = new GameObject("Selección de hueste"); hit.transform.SetParent(marker.transform, false);
+                clickTarget = hit.AddComponent<CampaignArmyClickTarget>();
+                clickCollider = hit.AddComponent<BoxCollider>(); clickCollider.size = new Vector3(.72f,.55f,.72f);
+                clickCollider.center = new Vector3(0,.25f,0);
+            }
+            clickTarget.Tile = tile; clickCollider.enabled = fogVisible && cityVisible;
             bool animate=destination.HasValue && marker.activeSelf && route != null && route.Count > 1 && route[0] == destination.Value;
             int end=-1;
             if (animate) {
@@ -191,6 +201,8 @@ namespace Fulgor.Presentation.Map
         /// <summary>Dónde se planta la hueste en una casilla. Si la casilla tiene un edificio, delante de él (hacia la cámara): dentro quedaría oculta tras sus paredes.</summary>
         private Vector3 Anchor(HexTileView tile)
         {
+            var towns = owner != null ? owner.GetComponentInParent<CampaignSettlementController>() : null;
+            if (towns != null && towns.Views.TryGetValue(tile.Cell.Coordinates, out var fortress) && fortress != null && fortress.Tile != null) return fortress.VisitorAnchor; // tras regenerar el tablero la vista antigua ya no tiene casilla
             var anchor=GroundAnchor(tile);
             if(buildings==null&&owner!=null)buildings=owner.GetComponentInParent<CampaignTileBuildings>();
             if(buildings==null||!buildings.HasBuildingAt(tile.Cell.Coordinates))return anchor;
@@ -276,3 +288,4 @@ namespace Fulgor.Presentation.Map
         private void OnDestroy() { Release(material);Release(marker); }
     }
 }
+

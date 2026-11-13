@@ -36,6 +36,7 @@ namespace Fulgor.Presentation.Map
             foreach(var rim in troopSelection)if(rim!=null)rim.SetActive(false);
             RefreshAlertsVisibility();
             foreach(var banner in cityBanners.Values)banner.gameObject.SetActive(false);
+            foreach(var badge in presenceBadges.Values)if(badge!=null)badge.gameObject.SetActive(false);
             if(panel!=null)panel.gameObject.SetActive(!enabled);
             if(turnPanel!=null)turnPanel.gameObject.SetActive(!enabled);
             if(resourceBar!=null)resourceBar.gameObject.SetActive(!enabled);

@@ -11,6 +11,48 @@ namespace Fulgor.Tests.EditMode
         private static readonly HexCoordinates City = new(4, 4);
 
         [Test]
+        public void CompletedTradePostEarnsGoldAndBenefitsFromRoutes()
+        {
+            var research = CampaignResearch.Restore(new CampaignResearchData {
+                age = (int)CampaignAge.Expansion,
+                completed = new[] { "cultivation", "tools", "settlement", "rotation", "records", "frontier", "routes" }
+            });
+            var development = new CityTileDevelopment();
+            var tile = new MapCell(new HexCoordinates(5,4), TerrainType.Plain, false);
+            Assert.IsTrue(development.TryAdd(City, tile, "market_stall"));
+            development.Advance();
+            Assert.AreEqual(0, development.Income(research).Gold);
+            development.Advance();
+            Assert.AreEqual(2, development.ActiveIncome.Gold);
+            Assert.AreEqual(3, development.Income(research).Gold);
+        }
+
+        [Test]
+        public void SeedSelectionImprovesExistingAndNewFarmsOnlyOnceTheyFinish()
+        {
+            var development = new CityTileDevelopment();
+            var first = new MapCell(new HexCoordinates(5, 4), TerrainType.Plain, false);
+            var second = new MapCell(new HexCoordinates(4, 5), TerrainType.Plain, false);
+            Assert.IsTrue(development.TryAdd(City, first, "farm"));
+            development.Advance();
+            development.Advance();
+            Assert.IsTrue(development.TryAdd(City, second, "farm"));
+
+            var research = new CampaignResearch();
+            Assert.IsTrue(research.TryStart("seed_selection", 10, 1));
+            Assert.IsFalse(research.Advance(3));
+            Assert.AreEqual(3, development.Income(research).Grain);
+            Assert.IsTrue(research.Advance(1));
+            Assert.AreEqual(4, development.Income(research).Grain);
+            Assert.AreEqual(0, research.IncomePerCity.Grain);
+
+            development.Advance();
+            Assert.AreEqual(4, development.Income(research).Grain);
+            development.Advance();
+            Assert.AreEqual(8, development.Income(research).Grain);
+        }
+
+        [Test]
         public void PlacementRequiresAnUnoccupiedFirstRingAndMatchingTerrain()
         {
             var plain = new MapCell(new HexCoordinates(5, 4), TerrainType.Plain, false);
