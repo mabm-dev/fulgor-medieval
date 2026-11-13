@@ -10,7 +10,18 @@ namespace Fulgor.Presentation.Map
         private Material material;
         private BoxCollider pickCollider;
         public HexTileView Tile { get; private set; }
-        public bool Selected=>outline!=null&&outline.enabled;
+        public Vector3 PresenceAnchor=>pickCollider!=null?new Vector3(pickCollider.bounds.center.x,pickCollider.bounds.max.y+.15f,pickCollider.bounds.center.z):transform.position;
+        /// <summary>The entrance faces local south in the fortress assets, independent of the camera.</summary>
+        public Vector3 VisitorAnchor
+        {
+            get
+            {
+                var outward = Vector3.ProjectOnPlane(transform.TransformDirection(Vector3.back), Vector3.up).normalized;
+                var bounds = pickCollider != null ? pickCollider.bounds : new Bounds(transform.position, Vector3.one);
+                float extent = Mathf.Abs(outward.x) * bounds.extents.x + Mathf.Abs(outward.z) * bounds.extents.z;
+                return new Vector3(bounds.center.x, Tile.transform.position.y, bounds.center.z) + outward * (extent + .28f);
+            }
+        }        public bool Selected=>outline!=null&&outline.enabled;
         public void Initialize(HexTileView tile)
         {
             Tile=tile;Tile.UseSelectionOutline(true);
@@ -155,3 +166,4 @@ namespace Fulgor.Presentation.Map
         private void OnDestroy(){if(Tile!=null)Tile.UseSelectionOutline(false);Release(material);Release(territoryMaterial);Release(shadeMaterial);foreach(var overlay in shades)if(overlay!=null)Release(overlay);foreach(var line in territory)if(line!=null)Release(line.gameObject);if(outline!=null)Release(outline.gameObject);Release(pickCollider);}
     }
 }
+

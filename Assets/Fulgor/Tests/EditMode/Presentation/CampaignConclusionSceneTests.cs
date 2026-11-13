@@ -82,6 +82,7 @@ namespace Fulgor.Presentation.Tests.Map
             var retreat=campaign.LastRetreats.Single();Assert.That(retreat.Surrendered,Is.False);Assert.That(retreat.From,Is.EqualTo(home));
             campaign.ArmyRegistry.TryGetArmy("own",out var escaped);Assert.That(escaped.Movement.Position,Is.EqualTo(retreat.Destination));Assert.That(escaped.Movement.Position,Is.Not.EqualTo(home));
             Assert.That(escaped.Army.Formations.Single().Health,Is.EqualTo(100));Assert.That(escaped.Movement.RemainingMovement,Is.Zero);
+            Assert.AreEqual("own",campaign.Military.HeroPosition("castilla",campaign.ArmyRegistry).armyId);
             campaign.SettlementState.TryGet("home-fort",out var city);Assert.That(city.OwnerFactionId,Is.EqualTo("rival"));Assert.That(campaign.Conclusion,Is.EqualTo(CampaignConclusion.InProgress));
             Assert.That(campaign.State.Resources,Is.EqualTo(stock));Assert.That(campaign.IsRivalPhaseActive,Is.False);
             campaign.SaveCampaign();campaign.LoadCampaign();Assert.That(campaign.Conclusion,Is.EqualTo(CampaignConclusion.InProgress));Assert.That(campaign.Army.Position,Is.EqualTo(escaped.Movement.Position));

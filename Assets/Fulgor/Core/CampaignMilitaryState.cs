@@ -33,6 +33,7 @@ namespace Fulgor.Core.Campaign
         {
             initialArmies=previous.initialArmies;owners=newOwners??previous.owners;
             guards=new(previous.guards,StringComparer.Ordinal);
+            heroPositions=previous.heroPositions.Select(h=>h.Copy()).ToList();
             recruits=previous.recruits.Select(r=>r.Copy()).ToList();musters=previous.musters.Select(r=>r.Copy()).ToList();
         }
         public CampaignArmyState Garrison(string cityId)=>cityId!=null&&guards.TryGetValue(cityId,out var guard)?guard:null;
@@ -41,14 +42,14 @@ namespace Fulgor.Core.Campaign
         private int StationedCount(CampaignArmyRegistry armies,CampaignSettlement city)=>armies!=null&&armies.TryGetOccupant(city.Position,out var army)?army.Army.Formations.Count:0;
 
         public bool TryRecruit(string cityId,string faction,TroopProfile profile,int turn,CampaignResources resources,
-            CampaignArmyRegistry armies,out CampaignMilitaryState next,out CampaignResources remaining)
+            CampaignArmyRegistry armies,out CampaignMilitaryState next,out CampaignResources remaining,bool militiaCamp=false)
         {
             next=this;remaining=resources;
             if(armies==null||armies.HasActiveEncounters||turn<1||cityId==null||!owners.TryGet(cityId,out var city)||city.OwnerFactionId!=faction||
                 Pending(cityId)!=null||Garrison(cityId).Formations.Count+StationedCount(armies,city)>=6)return false;
             if(armies.TryGetOccupant(city.Position,out var stationed)&&stationed.Army.FactionId!=faction)return false;
             var spec=RecruitmentCatalog.Get(profile);
-            if(!resources.TrySpend(spec.Cost,out var paid))return false;
+            if(!resources.TrySpend(spec.CostInCity(militiaCamp),out var paid))return false;
             var record=new RecruitmentRecord {serial=checked(recruits.Count+1),settlementId=cityId,factionId=faction,profile=profile,
                 startTurn=turn,completionTurn=checked(turn+spec.Turns),status=RecruitmentStatus.Pending};
             if(FormationOrigins().ContainsKey(record.FormationId))return false;
@@ -81,6 +82,7 @@ namespace Fulgor.Core.Campaign
                 var guard=guards[city.Id];
                 if(guard.FactionId==city.OwnerFactionId)continue;
                 if(!guard.IsDissolved)throw new InvalidOperationException("A surviving garrison blocks conquest.");
+                next.heroPositions.RemoveAll(h=>h.settlementId==city.Id);
                 next.guards[city.Id]=new CampaignArmyState(guard.Id,city.OwnerFactionId,Array.Empty<CampaignFormationState>());changed=true;
                 foreach(var record in next.recruits.Where(r=>r.settlementId==city.Id&&r.status==RecruitmentStatus.Pending))record.status=RecruitmentStatus.Cancelled;
             }

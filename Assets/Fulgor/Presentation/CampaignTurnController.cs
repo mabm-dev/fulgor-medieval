@@ -167,6 +167,7 @@ namespace Fulgor.Presentation.Map
             var payload=registry!=null?CampaignSaveData.CaptureMultiple(saveContext,State,registry,selectedArmyId,playerFaction,CaptureCities(),Mission?.IsWon==true):
                 CampaignSaveData.Capture(saveContext,State,Army,MarchDestination,CaptureCities());
             IncludeOwnership(payload);Military.ValidateDeployment(registry);payload.IncludeMilitary(Military);payload.IncludeMarches(marchOrders);payload.IncludeRivals(Rivals);payload.IncludeCampaignRules(ObjectiveKind);IncludeHeroes(payload);payload.IncludeLogistics(LogisticsEnabled);RefreshFog();payload.IncludeFog(Fog);payload.IncludeDiplomacy(Diplomacy);payload.IncludeTileCities(tileCities);
+            payload.IncludeResearch(Research);
             return payload;
         }
 
@@ -212,12 +213,13 @@ namespace Fulgor.Presentation.Map
                 if (restoredMission?.IsWon == true && restoredOrder.HasValue)
                     throw new System.ArgumentException("Completed mission cannot have a march order.");
                 var restoredCities = RestoreCities(payload);
+                var restoredResearch=payload.RestoreResearch();
                 var restoredOwners=RestoreOwners(payload);
                 var restoredRivals=payload.RestoreRivals(rivalsConfigured,RivalFactions());
                 var restoredDiplomacy=payload.RestoreDiplomacy(incomeFaction,KnownFactions());
                 var restoredMilitary=RestoreMilitary(payload,restoredOwners);restoredMilitary.ValidateDeployment(null);
-                restoredState = WithCityEconomy(restoredState,restoredCities,restoredOwners,tileDevelopments:restoredTiles);
-                cities = restoredCities; CityRevision++;
+                restoredState = WithCityEconomy(restoredState,restoredCities,restoredOwners,tileDevelopments:restoredTiles,research:restoredResearch);
+                Research=restoredResearch;cities = restoredCities; CityRevision++;
                 tileCities = restoredTiles; TileCityRevision++;
                 cityCompletions.Clear();
                 State = restoredState;Military=restoredMilitary;Rivals=restoredRivals;Diplomacy=restoredDiplomacy;

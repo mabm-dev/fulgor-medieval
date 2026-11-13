@@ -15,7 +15,10 @@ namespace Fulgor.Presentation.Map
         private readonly Text[] troopNames=new Text[6],troopCounts=new Text[6];
         private readonly RawImage[] troopPortraits=new RawImage[6];
         private readonly GameObject[] troopSelection=new GameObject[6];
+        private KingdomPortraitGraphic armyHeroPortrait;
+        private Text battalionLabel;
         private CampaignArmyState displayedArmy;
+        private CampaignTroopStack[] displayedStacks = System.Array.Empty<CampaignTroopStack>();
         private int selectedFormation=-1;
         private bool cityMode;
         private float nextHudRefresh;
@@ -24,6 +27,7 @@ namespace Fulgor.Presentation.Map
         private RectTransform campaignAlerts;
         private readonly Button[] alertButtons=new Button[3];
         private readonly System.Collections.Generic.Dictionary<string,Button> cityBanners=new();
+        private readonly System.Collections.Generic.Dictionary<string,CampaignCityPresenceBadge> presenceBadges=new();
         public bool HasCampaignHud=>kingdomHeader!=null;
         public bool HasCampaignDrawer=>campaignDrawer!=null&&campaignDrawer.gameObject.activeInHierarchy;
         public Button CitiesButton{get;private set;}
@@ -54,19 +58,25 @@ namespace Fulgor.Presentation.Map
             }
             panel=CreateRect("Map Information",canvas,new Vector2(340,370),new Vector2(-20,-155));
             panel.anchorMin=panel.anchorMax=panel.pivot=Vector2.one;
-            CampaignHudArt.Surface(panel,true);
-            HudText("Title",panel,new Vector2(38,-35),new Vector2(264,44),"ITINERARIO",22,true,LegacyUI.InkText);
-            details=HudText("Selection",panel,new Vector2(38,-95),new Vector2(264,58),"Selecciona un destino",18,false,LegacyUI.InkText);
-            pathPreview=HudText("Route Preview",panel,new Vector2(38,-165),new Vector2(264,58),"Clic derecho para ordenar la marcha.",17,false,LegacyUI.InkText);
-            armySummary=HudText("Army Summary",panel,new Vector2(38,-237),new Vector2(264,105),"",16,false,LegacyUI.InkText);
+            CampaignHudArt.Surface(panel);
+            HudText("Title",panel,new Vector2(24,-20),new Vector2(292,38),"ITINERARIO",23,true,CampaignMenuUI.Gold);
+            details=HudText("Selection",panel,new Vector2(24,-80),new Vector2(292,54),"Selecciona un destino",19,false,CampaignMenuUI.Paper);
+            pathPreview=HudText("Route Preview",panel,new Vector2(24,-151),new Vector2(292,56),"Clic derecho para ordenar la marcha.",17,false,new Color(.82f,.78f,.68f));
+            armySummary=HudText("Army Summary",panel,new Vector2(24,-228),new Vector2(292,122),"",17,false,CampaignMenuUI.Paper);
+            foreach(float y in new[]{68f,142f,216f})
+            {
+                var divider=CreateRect("Separador de itinerario",panel,new Vector2(292,1),new Vector2(24,-y));
+                var line=divider.gameObject.AddComponent<Image>();line.color=new Color(.67f,.51f,.23f,.55f);line.raycastTarget=false;
+            }
             diagnostics=HudText("Diagnostics",panel,Vector2.zero,Vector2.one,"",1);diagnostics.gameObject.SetActive(false);
 
             turnPanel=CreateRect("Turn Panel",canvas,new Vector2(1548,218),new Vector2(16,16));
             turnPanel.anchorMin=turnPanel.anchorMax=turnPanel.pivot=Vector2.zero;
             CampaignHudArt.Surface(turnPanel);
             var portraitRect=CreateRect("Retrato de hueste",turnPanel,new Vector2(145,182),new Vector2(20,-18));
-            var portrait=portraitRect.gameObject.AddComponent<KingdomPortraitGraphic>();portrait.raycastTarget=false;
-            portrait.texture=Resources.Load<Texture2D>("KingdomSelection/hero-castilla");portrait.uvRect=new Rect(.33f,.12f,.32f,.84f);
+            armyHeroPortrait=portraitRect.gameObject.AddComponent<KingdomPortraitGraphic>();armyHeroPortrait.raycastTarget=false;
+            armyHeroPortrait.texture=Resources.Load<Texture2D>("KingdomSelection/hero-castilla");armyHeroPortrait.uvRect=new Rect(.33f,.12f,.32f,.84f);
+            battalionLabel=HudText("Batallón sin héroe",turnPanel,new Vector2(20,-65),new Vector2(145,70),"BATALLÓN\nSIN HÉROE",19,true);
             huesteTitle=HudText("Hueste Title",turnPanel,new Vector2(180,-24),new Vector2(247,35),"Hueste de Castilla",21,true);
             huesteTotals=HudText("Efectivos",turnPanel,new Vector2(180,-70),new Vector2(247,35),"",17);
             huesteMovement=HudText("Movimiento",turnPanel,new Vector2(180,-113),new Vector2(247,27),"",17);
@@ -118,6 +128,9 @@ namespace Fulgor.Presentation.Map
             CitiesButton=CampaignHudArt.Button("Ciudades",campaignNavigation,Vector2.zero,new Vector2(186,48),"CIUDADES",ToggleCities);
             CouncilButton=CampaignHudArt.Button("Diplomacia",campaignNavigation,new Vector2(200,0),new Vector2(186,48),"DIPLOMACIA",()=>GetComponent<CampaignDiplomacyView>()?.Open());
             CampaignHudArt.Button("Objetivos",campaignNavigation,new Vector2(400,0),new Vector2(186,48),"OBJETIVOS",ToggleObjective);
+            CampaignHudArt.Button("Investigación",campaignNavigation,new Vector2(600,0),new Vector2(186,48),"CIENCIA",()=>{
+                var view=GetComponent<CampaignResearchView>()??gameObject.AddComponent<CampaignResearchView>();view.Open();
+            });
             campaignAlerts=CreateRect("Avisos de campaña",canvas,new Vector2(78,258),new Vector2(20,-195));
             var actions=new UnityEngine.Events.UnityAction[]{ToggleCities,FocusUnorderedArmy,()=>GetComponent<CampaignDiplomacyView>()?.Open()};
             var symbols=new[]{FulgorIcon.Labor,FulgorIcon.Population,FulgorIcon.Gold};
@@ -180,6 +193,7 @@ namespace Fulgor.Presentation.Map
         {
             var towns=GetComponent<CampaignSettlementController>();var camera=Camera.main;
             foreach(var existing in cityBanners.Values)if(existing!=null)existing.gameObject.SetActive(false);
+            foreach(var existing in presenceBadges.Values)if(existing!=null)existing.gameObject.SetActive(false);
             if(towns?.Ready!=true||camera==null)return;
             foreach(var city in towns.Registry.Settlements)
             {
@@ -199,18 +213,41 @@ namespace Fulgor.Presentation.Map
                     var screen=camera.WorldToScreenPoint(view.Tile.transform.position);
                     show=screen.z>0&&camera.pixelRect.Contains(screen);
                     if(show&&RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)hudCanvas.transform,screen,null,out var local))
-                        ((RectTransform)banner.transform).anchoredPosition=local+new Vector2(0,-45);
+                        ((RectTransform)banner.transform).anchoredPosition=local+new Vector2(0,campaign.CityPresence(city.Id).HasVisitor ? -105 : -45);
                 }
                 banner.gameObject.SetActive(show);
                 banner.transform.Find("Fondo").GetComponent<Image>().color=city.OwnerFactionId==campaign.PlayerFactionId?Color.white:new Color(.8f,.68f,.55f);
+                UpdatePresenceBadge(campaign,towns,city,view,camera);
             }
         }
-        private bool CampaignExtrasContain(Vector2 point)=>Contains(campaignAlerts,point)||cityBanners.Values.Any(b=>Contains((RectTransform)b.transform,point));
+        private void UpdatePresenceBadge(CampaignTurnController campaign,CampaignSettlementController towns,CampaignSettlement city,CampaignSettlementView view,Camera camera)
+        {
+            if(cityMode || !campaign.CanObserve(city.Position) || view==null || !view.gameObject.activeInHierarchy)return;
+            var state=campaign.CityPresence(city.Id);
+            if(!state.HasGarrison && !state.HasVisitor)return;
+            if(!presenceBadges.TryGetValue(city.Id,out var badge) || badge==null)
+            {
+                var rect=CampaignMenuUI.Rect("Fuerzas sobre ciudad · "+city.Id,hudCanvas.transform,new Vector2(.5f,.5f),Vector2.zero,new Vector2(262,60));
+                badge=rect.gameObject.AddComponent<CampaignCityPresenceBadge>();badge.Build(towns,city.Position);
+                rect.SetAsFirstSibling();presenceBadges[city.Id]=badge;
+            }
+            bool present=badge.SetPresence(state,city.OwnerFactionId,city.OwnerFactionId==campaign.PlayerFactionId);
+            var screen=camera.WorldToScreenPoint(view.PresenceAnchor);
+            bool show=present&&screen.z>0&&camera.pixelRect.Contains(screen);
+            if(show&&RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)hudCanvas.transform,screen,null,out var local))
+                badge.Rect.anchoredPosition=local+new Vector2(0,35);
+            badge.gameObject.SetActive(show);
+        }
+        private bool CampaignExtrasContain(Vector2 point)=>Contains(campaignAlerts,point)||cityBanners.Values.Any(b=>Contains((RectTransform)b.transform,point))||presenceBadges.Values.Any(b=>b!=null&&Contains(b.Rect,point));
 
         private void RefreshCampaignArmy(ArmyMovementState movement)
         {
             var campaign=GetComponent<CampaignTurnController>();CampaignArmyOnMap active=null;
             campaign?.ArmyRegistry?.TryGetArmy(campaign.SelectedArmyId,out active);
+            var commander=campaign?.Military?.HeroPosition(campaign.PlayerFactionId,campaign.ArmyRegistry);
+            bool hasHero=active!=null && commander?.armyId==active.Army.Id;
+            armyHeroPortrait.enabled=hasHero;battalionLabel.gameObject.SetActive(active!=null&&!hasHero);
+            if(hasHero)armyHeroPortrait.texture=Resources.Load<Texture2D>("KingdomSelection/hero-"+campaign.PlayerFactionId);
             huesteTitle.text=active?.Army.Id??(movement==null?"Sin hueste":"Hueste de Castilla");
             huesteMovement.text=movement==null?"Sin movimiento":$"Movimiento  {movement.RemainingMovement} / {movement.MovementPerTurn}";
             long quantity=0,weightedMorale=0;
@@ -218,14 +255,14 @@ namespace Fulgor.Presentation.Map
             huesteTotals.text=quantity>0?$"{quantity} efectivos · moral {weightedMorale/quantity}":"Sin tropas disponibles";
             movementFill.sizeDelta=new Vector2(247*(movement==null||movement.MovementPerTurn<=0?0:Mathf.Clamp01((float)movement.RemainingMovement/movement.MovementPerTurn)),4);
             if(ReferenceEquals(displayedArmy,active?.Army))return;
-            string previousId=displayedArmy?.Id;displayedArmy=active?.Army;
+            string previousId=displayedArmy?.Id;displayedArmy=active?.Army;displayedStacks=CampaignTroopStack.Group(displayedArmy?.Formations).ToArray();
             if(previousId!=displayedArmy?.Id)selectedFormation=-1;
             for(int i=0;i<6;i++)
             {
-                var formation=displayedArmy!=null&&i<displayedArmy.Formations.Count?displayedArmy.Formations[i]:null;
+                var stack=i<displayedStacks.Length?displayedStacks[i]:null;var formation=stack?.Representative;
                 troopCards[i].interactable=formation!=null;
                 troopNames[i].text=formation==null?"Sin formación":TroopName(formation);
-                troopCounts[i].text=formation==null?"—":formation.Quantity.ToString();
+                troopCounts[i].text=stack==null?"—":stack.Quantity.ToString();
                 troopPortraits[i].enabled=formation!=null;
                 if(formation!=null)
                 {
@@ -237,7 +274,7 @@ namespace Fulgor.Presentation.Map
             }
             if(selectedFormation>=0)
             {
-                if(displayedArmy!=null&&selectedFormation<displayedArmy.Formations.Count)SelectFormation(selectedFormation);
+                if(displayedArmy!=null&&selectedFormation<displayedStacks.Length)SelectFormation(selectedFormation);
                 else CloseDrawer();
             }
             else if(formationDetails!=null)CloseDrawer();
@@ -245,15 +282,15 @@ namespace Fulgor.Presentation.Map
         private static string TroopName(CampaignFormationState f)=>f.Kind==FormationKind.Cavalry?"Jinetes ligeros":f.Kind==FormationKind.Ranged?"Ballesteros":f.Attributes.Defense>=7?"Hombres de armas":"Lanceros";
         public void SelectFormation(int index)
         {
-            if(displayedArmy==null||index<0||index>=displayedArmy.Formations.Count)return;
-            var f=displayedArmy.Formations[index];selectedFormation=index;
+            if(displayedArmy==null||index<0||index>=displayedStacks.Length)return;
+            var stack=displayedStacks[index];var f=stack.Representative;selectedFormation=index;
             for(int i=0;i<6;i++)troopSelection[i].SetActive(i==index);
             OpenDrawer(TroopName(f));
             var a=f.Attributes;
-            formationDetails=HudText("Atributos",campaignDrawer,new Vector2(28,-65),new Vector2(300,215),$"Efectivos      {f.Quantity}\nMoral           {f.Morale} / 100\nAtaque          {a.Attack}\nDefensa        {a.Defense}\nDaño             {a.MinimumDamage}–{a.MaximumDamage}\nAlcance        {a.Range}",19,false,LegacyUI.InkText);
+            formationDetails=HudText("Atributos",campaignDrawer,new Vector2(28,-65),new Vector2(300,215),$"Efectivos      {stack.Quantity}\nMoral           {stack.Morale} / 100\nAtaque          {a.Attack}\nDefensa        {a.Defense}\nDaño             {a.MinimumDamage}–{a.MaximumDamage}\nAlcance        {a.Range}",19,false,LegacyUI.InkText);
             formationDetails.gameObject.SetActive(false);
             string[] labels={"Efectivos","Moral","Ataque","Defensa","Daño","Alcance"};
-            string[] values={f.Quantity.ToString(),f.Morale+" / 100",a.Attack.ToString(),a.Defense.ToString(),a.MinimumDamage+"–"+a.MaximumDamage,a.Range.ToString()};
+            string[] values={stack.Quantity.ToString(),stack.Morale+" / 100",a.Attack.ToString(),a.Defense.ToString(),a.MinimumDamage+"–"+a.MaximumDamage,a.Range.ToString()};
             for(int i=0;i<labels.Length;i++)
             {
                 float y=-90-i*31;
@@ -261,7 +298,26 @@ namespace Fulgor.Presentation.Map
                 var value=HudText("Valor "+i,campaignDrawer,new Vector2(210,y),new Vector2(105,28),values[i],20,false,LegacyUI.InkText);value.alignment=TextAnchor.UpperRight;
                 var rule=CreateRect("Separador",campaignDrawer,new Vector2(275,1),new Vector2(40,y-29));var line=rule.gameObject.AddComponent<Image>();line.color=new Color(.24f,.13f,.05f,.25f);line.raycastTarget=false;
             }
+            var joinTargets=GetComponent<CampaignTurnController>().ArmyJoinTargets();
+            if(joinTargets.Length>0)
+                CampaignHudArt.Button("Unir huestes",campaignDrawer,new Vector2(28,-300),new Vector2(150,40),"UNIR HUESTES",OpenArmyJoining);
         }
+        private void OpenArmyJoining()
+        {
+            var campaign=GetComponent<CampaignTurnController>();
+            var targets=campaign.ArmyJoinTargets();
+            OpenDrawer("UNIR HUESTES");
+            for(int i=0;i<targets.Length;i++)
+            {
+                if(!campaign.ArmyRegistry.TryGetArmy(targets[i],out var target))continue;
+                var position=target.Movement.Position;
+                CampaignHudArt.Button("Unir "+target.Army.Id,campaignDrawer,new Vector2(28,-70-i*36),new Vector2(304,32),
+                    target.Army.Id+" · "+target.Army.Formations.Sum(f=>(long)f.Quantity)+" tropas",()=>{
+                        if(campaign.TryJoinSelectedArmyAt(position))CloseDrawer();
+                    });
+            }
+        }
+
         private void OpenDrawer(string title)
         {
             CloseDrawer();
@@ -300,3 +356,4 @@ namespace Fulgor.Presentation.Map
         }
     }
 }
+

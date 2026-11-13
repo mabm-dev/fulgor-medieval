@@ -81,6 +81,21 @@ namespace Fulgor.Core.Tests.Campaign
             Assert.That(escaped.Army.Formations.Select(f=>f.Id).Distinct().Count(),Is.EqualTo(2));Assert.That(result.Military.Garrison("fort").IsDissolved,Is.True);Assert.That(result.Military.Capture().musters.Length,Is.Zero);
             Assert.That(escaped.Movement.Position,Is.EqualTo(result.Retreats.Single().Destination));result.Military.ValidateDeployment(result.Armies);
         }
+        [Test]public void GarrisonHeroRetreatsWithTheDefendersInsteadOfChangingToAnotherArmy()
+        {
+            var armies=new CampaignArmyRegistry(routes,new[]{
+                Place("attacker","castilla",At(1)),Place("defender","rival",At(2)),Place("backup","rival",At(3))});
+            var m=Train(armies);
+            Assert.AreEqual("backup",m.HeroPosition("rival",armies).armyId);
+            Assert.IsTrue(m.TryTransferHero("fort","backup",armies,true,out var stationed,out var positioned));
+            Assert.AreEqual("fort",stationed.HeroPosition("rival",positioned).settlementId);
+            var result=CampaignStrategicResolution.Resolve("siege",GuardBattle(positioned,stationed),stationed,owners);
+            Assert.IsFalse(result.Retreats.Single().Surrendered);
+            Assert.AreEqual("defender",result.Military.HeroPosition("rival",result.Armies).armyId);
+            var restoredMilitary=CampaignMilitaryState.Restore(result.Military.Capture(),armies,result.Owners,new[]{"castilla","rival"},3);
+            var restored=CampaignArmyRegistry.RestoreRecruited(result.Armies.Capture(),armies,restoredMilitary);
+            Assert.AreEqual("defender",restoredMilitary.HeroPosition("rival",restored).armyId);
+        }
         [Test]public void EscapeRejectsEnemyCityAndFullFriendlyGarrison()
         {
             var enemyCity=new CampaignSettlementRegistry(routes,new[]{new CampaignSettlement("enemy","Ajena","castilla",At(3))});var m=new CampaignMilitaryState(initial,enemyCity);

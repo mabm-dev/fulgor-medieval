@@ -38,6 +38,7 @@ namespace Fulgor.Core.Campaign
             return result;
         }
         public MilitarySaveData Capture()=>new MilitarySaveData {
+            heroes=heroPositions.OrderBy(h=>h.factionId,StringComparer.Ordinal).Select(h=>h.Copy()).ToArray(),
             recruits=recruits.Select(r=>r.Copy()).ToArray(),musters=musters.Select(m=>m.Copy()).ToArray(),
             garrisons=guards.OrderBy(p=>p.Key,StringComparer.Ordinal).Select(p=>new GarrisonData {
                 settlementId=p.Key,appliedEncounters=p.Value.CaptureEncounterHistory(),
@@ -83,6 +84,7 @@ namespace Fulgor.Core.Campaign
                 }
                 next.guards[city.Id]=CampaignArmyState.RestoreSurvivors("guard/"+city.Id,city.OwnerFactionId,survivors,History(saved.appliedEncounters));
             }
+            next.RestoreHeroes(data.heroes,factions);
             if(ids.Count!=settlements.Settlements.Count)throw new ArgumentException("Missing settlement garrison.");
             return next;
         }

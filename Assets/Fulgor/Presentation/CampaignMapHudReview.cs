@@ -65,7 +65,8 @@ namespace Fulgor.Presentation.Map
             var initialArmy = campaign.SelectedArmyId;
             hud.NextArmyButton.onClick.Invoke();
             Require(campaign.SelectedArmyId != initialArmy, "Next army is not connected.");
-            hud.NextArmyButton.onClick.Invoke();
+            // con héroes la lista tiene más de dos huestes: se recorre entera hasta volver a la primera
+            for (int n = 0; n < 16 && campaign.SelectedArmyId != initialArmy; n++) hud.NextArmyButton.onClick.Invoke();
             Require(campaign.SelectedArmyId == initialArmy, "Army selection did not cycle.");
             hud.LocateArmyButton.onClick.Invoke();
             Require(selection.SelectedCell?.Coordinates == campaign.Army.Position, "Locate army failed.");

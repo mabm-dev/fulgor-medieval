@@ -46,8 +46,16 @@ namespace Fulgor.Presentation.Map
         private void Update()
         {
             if(MenuButton==null)return;
-            bool modal=GetComponent<CityManagementView>()?.IsOpen==true||GetComponent<BattleLabController>()?.IsOpen==true;
+            bool modal=GetComponent<CampaignRecruitmentView>()?.IsOpen==true||GetComponent<CityManagementView>()?.IsOpen==true||GetComponent<BattleLabController>()?.IsOpen==true;
             MenuButton.gameObject.SetActive(!modal);MenuButton.interactable=CanLeave();
+            var recruitment=GetComponent<CampaignRecruitmentView>();
+            if(recruitment?.IsOpen==true)
+            {
+                if(Keyboard.current?.escapeKey.wasPressedThisFrame==true)recruitment.Close();
+                return;
+            }
+            if(recruitment?.ClosedThisFrame==true)return;
+            if(GetComponent<CampaignResearchView>()?.IsOpen==true){if(Keyboard.current?.escapeKey.wasPressedThisFrame==true)GetComponent<CampaignResearchView>().Close();return;}
             if(GetComponent<CampaignDiplomacyView>()?.IsOpen==true){if(Keyboard.current?.escapeKey.wasPressedThisFrame==true)GetComponent<CampaignDiplomacyView>().Close();return;}
             if(modal||GetComponent<CityManagementView>()?.ClosedThisFrame==true||Keyboard.current?.escapeKey.wasPressedThisFrame!=true)return;
             TogglePause();

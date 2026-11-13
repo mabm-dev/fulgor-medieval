@@ -202,7 +202,7 @@ namespace Fulgor.Presentation.Map
             }
             foreach (var entry in wanted)
             {
-                string asset = entry.Value switch { "house" => "ViviendaSencilla", "farm" => "HuertoCampo", "lumber" => "Lenera", "goldmine" => "MinaOro", "quarry" => "CanteraPiedra", _ => null };
+                string asset = entry.Value switch { "house" => "ViviendaSencilla", "farm" => "HuertoCampo", "lumber" => "Lenera", "goldmine" => "MinaOro", "quarry" => "CanteraPiedra", "knowledge_house" => "CasaConocimiento", "militia_camp" => "CampoMilicias", "market_stall" => "PuestoIntercambio", "simple_quarry" => "CanteraSencilla", _ => null };
                 if (asset == null || !tiles.TryGetValue(entry.Key, out var tile)) continue;
                 var prefab = Resources.Load<GameObject>("Edificios/PF_" + asset);
                 if (prefab == null) continue;
