@@ -255,7 +255,7 @@ namespace Fulgor.Presentation.Map
             {
                 BuildPresenceRows();
                 scaler.matchWidthOrHeight=0;
-                panel.anchoredPosition=new Vector2(20,-200);
+                panel.anchoredPosition=new Vector2(10,-92); // bajo la barra superior, a la izquierda del mapa
                 background.enabled=false;
                 var oldOutline=panel.GetComponent<Outline>();if(oldOutline!=null)oldOutline.enabled=false;
                 var ink=panel.GetComponent<ParchmentInk>();if(ink!=null)ink.enabled=false;

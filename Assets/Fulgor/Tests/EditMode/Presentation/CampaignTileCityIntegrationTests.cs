@@ -33,6 +33,68 @@ namespace Fulgor.Presentation.Tests.Map
             if(EditorApplication.isPlaying)yield return new ExitPlayMode();
             if(!string.IsNullOrEmpty(previousScene))EditorSceneManager.OpenScene(previousScene);
         }
+        [UnityTest] public IEnumerator OwnCaptiveIsRansomedFromTheHeroPanel()
+        {
+            yield return null;yield return null;
+            var campaign=Object.FindAnyObjectByType<CampaignTurnController>();
+            var snapshot=campaign.CaptureCampaignSnapshot();
+            var captive=snapshot.heroes.heroes.First(h=>h.heroId.StartsWith(campaign.PlayerFactionId+"/"));
+            string captor=snapshot.rivals.factions[0].factionId;int rivalGold=snapshot.rivals.factions[0].gold;
+            // el héroe cae preso de un reino que no tiene héroes propios: su hueste pierde el mando y él sale del mapa
+            captive.status=Fulgor.Core.Campaign.HeroStatus.Captive;captive.captorFactionId=captor;
+            foreach(var army in snapshot.armyRegistry.armies)if(army.heroId==captive.heroId&&army.formations.Length>0)army.heroId="";
+            snapshot.armyRegistry.armies=snapshot.armyRegistry.armies.Where(a=>a.heroId!=captive.heroId).ToArray();
+            snapshot.gold=0;
+            Assert.IsTrue(campaign.TryLoadCampaignSnapshot(JsonUtility.ToJson(snapshot)),"La partida con un héroe preso de un reino sin héroes debe cargar.");
+            yield return null;yield return null;
+            Assert.AreEqual(1,campaign.OwnCaptives.Count);
+            Assert.IsFalse(campaign.ArmyRegistry.Armies.Any(a=>a.Army.HeroId==captive.heroId));
+            var panel=campaign.GetComponent<CampaignHeroPanel>();panel.RefreshCaptives();
+            Assert.AreEqual(captive.heroId,panel.CaptiveHeroId(0));
+            int price=Fulgor.Core.Campaign.CampaignHeroRoster.RansomGold(campaign.OwnCaptives[0]);
+            Assert.That(panel.CaptiveAction(0).GetComponentInChildren<Text>().text,Does.Contain("RESCATAR").And.Contain(price.ToString()));
+            panel.CaptiveAction(0).onClick.Invoke();
+            Assert.AreEqual(1,campaign.OwnCaptives.Count,"Sin oro no hay rescate.");
+            Assert.That(panel.StatusText,Does.Contain("Faltan recursos"));
+            snapshot.gold=price+7;
+            Assert.IsTrue(campaign.TryLoadCampaignSnapshot(JsonUtility.ToJson(snapshot)));
+            yield return null;yield return null;
+            panel.RefreshCaptives();
+            panel.CaptiveAction(0).onClick.Invoke();
+            Assert.AreEqual(0,campaign.OwnCaptives.Count,panel.StatusText);
+            Assert.AreEqual(7,campaign.State.Resources.Gold,"El rescate sale del tesoro.");
+            Assert.AreEqual(rivalGold+price,campaign.Rivals.Resources(captor).Gold,"El captor cobra el rescate.");
+            Assert.IsTrue(campaign.ArmyRegistry.Armies.Any(a=>a.Army.HeroId==captive.heroId&&a.Army.FactionId==campaign.PlayerFactionId),"El héroe liberado vuelve al mapa.");
+            Assert.IsNull(panel.CaptiveAction(0),"La fila del cautivo desaparece.");
+        }
+        [UnityTest] public IEnumerator ColumnListsOwnArmiesSelectsThemAndMinimapShowsKnownLand()
+        {
+            yield return null;yield return null;
+            var campaign=Object.FindAnyObjectByType<CampaignTurnController>();
+            var hud=campaign.GetComponent<CampaignSelectionPanel>();
+            for(int i=0;i<120&&hud.ColumnArmyIds[0]==null;i++)yield return null;
+            var own=campaign.ArmyRegistry.Armies.Where(a=>a.Army.FactionId==campaign.PlayerFactionId&&!a.Army.IsDissolved).Select(a=>a.Army.Id).ToArray();
+            Assert.GreaterOrEqual(own.Length,2,"La conquista empieza con más de una hueste propia.");
+            CollectionAssert.AreEqual(own.Take(5).ToArray(),hud.ColumnArmyIds.Where(id=>id!=null).ToArray());
+            int other=System.Array.FindIndex(hud.ColumnArmyIds.ToArray(),id=>id!=null&&id!=campaign.SelectedArmyId);
+            Assert.GreaterOrEqual(other,0);
+            string wanted=hud.ColumnArmyIds[other];
+            hud.ColumnArmyButton(other).onClick.Invoke();
+            Assert.AreEqual(wanted,campaign.SelectedArmyId,"El retrato de la columna elige su hueste.");
+            var minimap=Object.FindAnyObjectByType<CampaignMinimap>();
+            Assert.IsNotNull(minimap);
+            minimap.Redraw();
+            Assert.Greater(minimap.KnownCells,0,"El minimapa pinta el terreno conocido.");
+            Assert.IsTrue(minimap.Texture.GetPixels32().Any(p=>p.g>60),"El minimapa no queda en negro.");
+            var hudCanvas=minimap.GetComponentInParent<Canvas>().transform as RectTransform;
+            foreach(var name in new[]{"Minimapa","Huestes del reino","Campaign navigation","Avisos de campaña","Map Information","Turn closing"})
+            {
+                var rect=hudCanvas.Find(name) as RectTransform;
+                Assert.IsNotNull(rect,name);
+                var corners=new Vector3[4];rect.GetWorldCorners(corners);
+                Assert.GreaterOrEqual(corners[0].x,Screen.width*.75f,name+" pertenece a la columna derecha.");
+            }
+        }
         [UnityTest] public IEnumerator CampaignHudUsesLiveRosterAndCityNavigation()
         {
             yield return null;yield return null;
@@ -237,14 +299,14 @@ namespace Fulgor.Presentation.Tests.Map
             Assert.IsTrue(queue.Find("Fondo").GetComponent<Image>().sprite.texture.name=="panel_3","Las obras deben usar el arte de referencia, sin la madera antigua.");
             var legend=GameObject.Find("Beneficios").transform;
             Assert.IsNotNull(queue.GetComponent<Mask>());Assert.IsNotNull(legend.GetComponent<Mask>());
-            var treasury=GameObject.Find("Reservas del reino").transform;
-            var left=treasury.Find("Remate izquierdo").GetComponent<RawImage>().rectTransform;
-            var center=treasury.Find("Madera y ribetes").GetComponent<RawImage>().rectTransform;
-            var right=treasury.Find("Remate derecho").GetComponent<RawImage>().rectTransform;
-            Assert.AreEqual(left.rect.width,center.anchoredPosition.x);
-            Assert.AreEqual(center.anchoredPosition.x+center.rect.width,right.anchoredPosition.x);
-            Assert.AreEqual(((RectTransform)treasury).rect.width,right.anchoredPosition.x+right.rect.width);
-            Assert.Greater(((RectTransform)treasury.Find("Grano")).anchoredPosition.x,center.anchoredPosition.x);
+            // La ciudad comparte la barra de recursos del reino: sus reservas propias no se dibujan y la columna derecha lleva ficha y obras.
+            Assert.IsNull(GameObject.Find("Reservas del reino"),"La ciudad no duplica las reservas del reino.");
+            var kingdomBar=GameObject.Find("Campaign resource bar");
+            Assert.IsNotNull(kingdomBar,"La barra de recursos del reino sigue a la vista en la ciudad.");
+            var corners=new Vector3[4];((RectTransform)cityData).GetWorldCorners(corners);
+            Assert.GreaterOrEqual(corners[0].x,Screen.width*.75f,"La ficha de ciudad va en la columna derecha.");
+            ((RectTransform)legend).GetWorldCorners(corners);
+            Assert.LessOrEqual(corners[2].x,Screen.width*.5f,"La casilla señalada se describe a la izquierda.");
             Assert.GreaterOrEqual(((RectTransform)legend.Find("Rendimiento")).anchoredPosition.x,30,"Los textos deben dejar margen para el marco.");
             Assert.IsFalse(Overlaps((RectTransform)legend.Find("Detalle título"),(RectTransform)legend.Find("Rendimiento")),"La leyenda no debe solapar su título.");
             Assert.IsTrue(selection.ActivateTile(tile));

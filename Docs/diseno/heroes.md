@@ -101,3 +101,16 @@ Los héroes se activan por escenario (`enableHeroes`); de momento solo en la con
 - Contratación de héroes por la IA rival.
 - La previsión de recursos al cierre aún no descuenta el mantenimiento de los héroes.
 - Modelo 3D del héroe en el mapa (sesión de gráficos) y nombres de los héroes secundarios (sesión de diseño).
+
+## Rescate e intercambio de cautivos (noviembre de 2026)
+
+Cifras provisionales, concentradas en `CampaignHeroRoster`.
+
+- **Precio:** 60 de oro más 20 por punto de mando del héroe.
+- **Rescatar a un héroe propio:** se paga el precio al reino que lo retiene. El héroe vuelve activo y aparece junto a la primera ciudad de su reino.
+- **Pedir rescate por un héroe ajeno:** su reino paga el precio si su tesoro alcanza; si no, la petición se rechaza.
+- **Canjear:** dos cautivos cruzados (cada reino retiene al héroe del otro) se intercambian sin oro.
+- Sin ciudad a la que volver o sin casilla libre junto a ella, el acuerdo no se cierra y nadie paga.
+- Un reino sin héroes propios también puede retener a un héroe; la partida guardada lo admite.
+
+El panel de héroes del mapa lista los cautivos, con una fila y una acción por héroe: `RESCATAR`, `CANJEAR` o `PEDIR`.
