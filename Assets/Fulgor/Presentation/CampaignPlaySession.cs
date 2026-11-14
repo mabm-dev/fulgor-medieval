@@ -77,39 +77,58 @@ namespace Fulgor.Presentation.Map
         {
             if(!CanLeave()||catalog==null||catalog.Find(entryId)==null)return false;
             if(pauseRoot!=null)return true;
-            pauseRoot=CampaignMenuUI.Canvas("Campaign pause UI",transform,200);var background=CampaignMenuUI.Full("Modal",pauseRoot.transform,new Color(.025f,.04f,.045f,.97f));var center=new Vector2(.5f,.5f);
-            CampaignMenuUI.Text("Title",background,center,new Vector2(0,220),new Vector2(1000,65),catalog.Find(entryId).Title,38,CampaignMenuUI.Gold);
-            status=CampaignMenuUI.Text("Notice",background,center,new Vector2(0,140),new Vector2(1100,65),"Guarda en una ranura o elige una partida para cargar.",21,CampaignMenuUI.Paper);
-            ResumeButton=CampaignMenuUI.Button("Resume",background,center,new Vector2(0,65),new Vector2(700,58),"SEGUIR JUGANDO",Resume);
-            SaveButton=CampaignMenuUI.Button("Save",background,center,new Vector2(-180,-15),new Vector2(340,58),"GUARDAR PARTIDA",()=>ShowSlots(true));
-            LoadButton=CampaignMenuUI.Button("Load",background,center,new Vector2(180,-15),new Vector2(340,58),"CARGAR PARTIDA",()=>ShowSlots(false));
-            SaveAndReturnButton=CampaignMenuUI.Button("Save and return",background,center,new Vector2(0,-105),new Vector2(700,58),"GUARDAR Y VOLVER AL INICIO",()=>SaveAndReturn());
-            DiscardAndReturnButton=CampaignMenuUI.Button("Discard and return",background,center,new Vector2(0,-190),new Vector2(700,58),"VOLVER SIN GUARDAR",()=>DiscardAndReturn());
+            // ventana de madera centrada sobre el mapa atenuado, como el consejo diplomático
+            pauseRoot=CampaignMenuUI.Canvas("Campaign pause UI",transform,200);
+            var background=CampaignMenuUI.Full("Modal",pauseRoot.transform,new Color(.03f,.025f,.02f,.78f));
+            var window=Window("Pausa",background,new Vector2(760,560));
+            Heading(window,catalog.Find(entryId).Title,-28);
+            status=CampaignMenuUI.Text("Notice",window,new Vector2(.5f,1),new Vector2(0,-112),new Vector2(680,52),"Guarda en una ranura o elige una partida para cargar.",18,CampaignMenuUI.Paper);
+            ResumeButton=CampaignHudArt.Button("Resume",window,new Vector2(40,-180),new Vector2(680,62),"SEGUIR JUGANDO",Resume);
+            ResumeButton.GetComponentInChildren<Text>().fontSize=21;
+            SaveButton=CampaignHudArt.Button("Save",window,new Vector2(40,-256),new Vector2(334,58),"GUARDAR PARTIDA",()=>ShowSlots(true));
+            LoadButton=CampaignHudArt.Button("Load",window,new Vector2(386,-256),new Vector2(334,58),"CARGAR PARTIDA",()=>ShowSlots(false));
+            SaveAndReturnButton=CampaignHudArt.Button("Save and return",window,new Vector2(40,-358),new Vector2(680,58),"GUARDAR Y VOLVER AL INICIO",()=>SaveAndReturn());
+            DiscardAndReturnButton=CampaignHudArt.Button("Discard and return",window,new Vector2(40,-428),new Vector2(680,58),"VOLVER SIN GUARDAR",()=>DiscardAndReturn());
             return true;
         }
         public void ShowSlots(bool saving)
         {
             if(pauseRoot==null||!CanLeave())return;
             CloseSlots();
-            var body=CampaignMenuUI.Full("Partidas guardadas",pauseRoot.transform,new Color(.025f,.04f,.045f,.99f));slotChooser=body.gameObject;
-            var center=new Vector2(.5f,.5f);
-            CampaignMenuUI.Text("Title",body,center,new Vector2(0,335),new Vector2(1050,60),saving?"GUARDAR PARTIDA · ELIGE UNA RANURA":"CARGAR PARTIDA · ELIGE UN GUARDADO",30,CampaignMenuUI.Gold);
+            var body=CampaignMenuUI.Full("Partidas guardadas",pauseRoot.transform,new Color(.03f,.025f,.02f,.6f));slotChooser=body.gameObject;
+            int rows=CampaignSaveSlots.Count+(saving?0:1);
+            var window=Window("Ranuras",body,new Vector2(1120,250+rows*80));
+            Heading(window,saving?"GUARDAR PARTIDA · ELIGE UNA RANURA":"CARGAR PARTIDA · ELIGE UN GUARDADO",-28);
             for(int i=0;i<CampaignSaveSlots.Count;i++)
             {
                 int slot=i;var record=CampaignSaveSlots.Read(i);
                 var label=SlotLabel(record?.snapshot);
-                var button=CampaignMenuUI.Button("Ranura "+(i+1),body,center,new Vector2(0,235-i*85),new Vector2(1050,68),$"{i+1}. {label}"+(record!=null?" · "+record.savedAt:""),()=>{if(saving)SaveSlot(slot);else LoadSlot(slot);});
-                button.GetComponentInChildren<Text>().fontSize=19;
+                var button=CampaignHudArt.Button("Ranura "+(i+1),window,new Vector2(40,-104-i*80),new Vector2(1040,68),$"{i+1}. {label}"+(record!=null?" · "+record.savedAt:""),()=>{if(saving)SaveSlot(slot);else LoadSlot(slot);});
+                button.GetComponentInChildren<Text>().fontSize=18;
                 button.interactable=saving||IsValidSave(record?.snapshot);
             }
             if(!saving)
             {
                 var latest=PlayerPrefs.GetString(CampaignTurnController.LocalSaveKey,"");
-                var button=CampaignMenuUI.Button("Último guardado",body,center,new Vector2(0,-190),new Vector2(1050,68),"ÚLTIMO GUARDADO · "+SlotLabel(latest),()=>LoadSnapshot(latest));
-                button.GetComponentInChildren<Text>().fontSize=19;button.interactable=IsValidSave(latest);
+                var button=CampaignHudArt.Button("Último guardado",window,new Vector2(40,-104-CampaignSaveSlots.Count*80),new Vector2(1040,68),"ÚLTIMO GUARDADO · "+SlotLabel(latest),()=>LoadSnapshot(latest));
+                button.GetComponentInChildren<Text>().fontSize=18;button.interactable=IsValidSave(latest);
             }
-            CampaignMenuUI.Text("Notice",body,center,new Vector2(0,-270),new Vector2(1100,50),saving?"Elegir una ranura ocupada sustituye solo esa partida.":"Cargar sustituye los avances que no hayas guardado.",19,CampaignMenuUI.Paper);
-            CampaignMenuUI.Button("Volver a pausa",body,center,new Vector2(0,-345),new Vector2(350,58),"VOLVER",CloseSlots);
+            float bottom=-104-rows*80;
+            CampaignMenuUI.Text("Notice",window,new Vector2(.5f,1),new Vector2(0,bottom-6),new Vector2(1000,36),saving?"Elegir una ranura ocupada sustituye solo esa partida.":"Cargar sustituye los avances que no hayas guardado.",17,CampaignMenuUI.Paper);
+            CampaignHudArt.Button("Volver a pausa",window,new Vector2(385,bottom-52),new Vector2(350,56),"VOLVER",CloseSlots);
+        }
+        private static RectTransform Window(string name,Transform parent,Vector2 size)
+        {
+            var window=CampaignMenuUI.Rect(name,parent,new Vector2(.5f,.5f),Vector2.zero,size);
+            CampaignHudArt.Surface(window);
+            return window;
+        }
+        private static void Heading(RectTransform window,string value,float y)
+        {
+            var title=CampaignMenuUI.Text("Title",window,new Vector2(.5f,1),new Vector2(0,y),new Vector2(window.sizeDelta.x-80,50),value,30,CampaignMenuUI.Gold);
+            title.font=LegacyUI.Heading??title.font;
+            var line=CampaignMenuUI.Rect("Separador",window,new Vector2(.5f,1),new Vector2(0,y-58),new Vector2(window.sizeDelta.x-80,1));
+            var image=line.gameObject.AddComponent<Image>();image.color=new Color(.67f,.51f,.23f,.55f);image.raycastTarget=false;
         }
         private bool IsValidSave(string json)=>!string.IsNullOrEmpty(json)&&catalog.TryFindSnapshot(json,out _,out _);
         private string SlotLabel(string json)
