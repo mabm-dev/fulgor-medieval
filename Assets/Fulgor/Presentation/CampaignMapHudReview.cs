@@ -105,6 +105,8 @@ namespace Fulgor.Presentation.Map
             var session = campaign.GetComponent<CampaignPlaySession>();
             session.MenuButton.onClick.Invoke(); yield return null;
             Require(session.IsOpen && selection.IsInteractionSuspended, "Pause did not suspend map input.");
+            yield return new WaitForSecondsRealtime(.3f);
+            Capture(Path.Combine(output, "pausa.png"), new Vector2Int(1920, 1080), campaign);
             session.ResumeButton.onClick.Invoke(); yield return null;
             Require(!selection.IsInteractionSuspended, "Map did not resume.");
             Require(hadSave == PlayerPrefs.HasKey(CampaignTurnController.LocalSaveKey) && save == PlayerPrefs.GetString(CampaignTurnController.LocalSaveKey, ""), "Review changed save slot.");

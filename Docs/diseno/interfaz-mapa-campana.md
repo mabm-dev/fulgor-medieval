@@ -34,4 +34,9 @@ La disposición combina la barra superior de un 4X con la columna de mando de un
 - **Izquierda:** el asentamiento elegido bajo la barra superior y, sobre la barra de la hueste, el panel de héroes.
 - **Ciudad:** al entrar, el estandarte recupera su tamaño de cabecera, el menú vuelve a su tamaño corto y la columna se oculta.
 
-`ColumnListsOwnArmiesSelectsThemAndMinimapShowsKnownLand` comprueba la lista de huestes, la selección desde la columna, el minimapa y la pertenencia de los paneles a la columna. `-fulgorMapHudReview` guarda además `ciudad.png`.
+`ColumnListsOwnArmiesSelectsThemAndMinimapShowsKnownLand` comprueba la lista de huestes, la selección desde la columna, el minimapa y la pertenencia de los paneles a la columna. `-fulgorMapHudReview` guarda además `ciudad.png` y `pausa.png`.
+
+## Consejo diplomático y pausa
+
+- **Consejo diplomático:** ventana de madera sobre el mapa atenuado. A la izquierda, los reinos con su relación y los turnos que le quedan; a la derecha, el reino elegido con relación, intención, propuestas que se pueden enviar y propuestas en curso. La relación y la intención vigentes llevan el ribete de selección. Las cantidades de una propuesta solo nombran los recursos que no son cero.
+- **Pausa:** ventana del mismo marco con seguir jugando, guardar, cargar, guardar y volver al inicio, y volver sin guardar. La elección de ranura usa el mismo marco.
