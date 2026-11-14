@@ -29,6 +29,37 @@ namespace Fulgor.Core.Map
             return cache.GetValue(map, Build);
         }
 
+        /// <summary>
+        /// Fija yacimientos en casillas concretas de un mapa, encima de los de la semilla: lo usan los escenarios de prueba para tener un yacimiento
+        /// de cada tipo en el territorio de una ciudad. Los de la semilla que caen en esas casillas o a su lado se quitan. Solo vale en llanura o
+        /// colina. Se aplica a esa instancia del mapa y debe llamarse antes de que nadie lea sus yacimientos.
+        /// </summary>
+        public static void Pin(GeneratedMap map, IEnumerable<KeyValuePair<HexCoordinates, ResourceDepositKind>> pinned)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            if (pinned == null) return;
+            var terrain = new Dictionary<HexCoordinates, TerrainType>();
+            foreach (var cell in map.Cells) terrain[cell.Coordinates] = cell.Terrain;
+            var fixedCells = new Dictionary<HexCoordinates, ResourceDepositKind>();
+            foreach (var pin in pinned)
+            {
+                if (pin.Value == ResourceDepositKind.None) continue;
+                if (!terrain.TryGetValue(pin.Key, out var ground) || !IsEligible(ground))
+                    throw new ArgumentException($"El yacimiento fijado en {pin.Key.Key} no cae en llanura ni colina.", nameof(pinned));
+                fixedCells[pin.Key] = pin.Value;
+            }
+            if (fixedCells.Count == 0) return;
+            var result = new Dictionary<HexCoordinates, ResourceDepositKind>();
+            foreach (var deposit in Build(map))
+            {
+                bool clash = fixedCells.ContainsKey(deposit.Key);
+                foreach (var neighbour in deposit.Key.Neighbors()) clash |= fixedCells.ContainsKey(neighbour);
+                if (!clash) result.Add(deposit.Key, deposit.Value);
+            }
+            foreach (var pin in fixedCells) result[pin.Key] = pin.Value;
+            cache.Remove(map); cache.Add(map, result);
+        }
+
         public static ResourceDepositKind At(GeneratedMap map, HexCoordinates cell) =>
             For(map).TryGetValue(cell, out var kind) ? kind : ResourceDepositKind.None;
 

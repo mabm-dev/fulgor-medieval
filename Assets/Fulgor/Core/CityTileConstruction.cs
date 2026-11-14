@@ -7,8 +7,8 @@ namespace Fulgor.Core.Campaign
     /// <summary>Reglas provisionales de colocación; no modifica la economía ni el guardado existente.</summary>
     public static class CityTileConstruction
     {
-        /// <summary>La mina y la cantera llegan a los yacimientos de su ciudad hasta esta distancia; el resto de obras, solo al primer anillo.</summary>
-        public const int MineReach = 3;
+        /// <summary>Hasta dónde llega la mina o la cantera de una ciudad: solo a los yacimientos de su territorio, el primer anillo, como el resto de obras.</summary>
+        public const int MineReach = 1;
         public static int ReachOf(string project) => project == "goldmine" || project == "quarry" ? MineReach : 1;
 
         public static bool IsAssigned(CampaignSettlementRegistry settlements, string id, HexCoordinates tile, int reach = 1)

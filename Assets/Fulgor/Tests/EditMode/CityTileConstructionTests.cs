@@ -85,15 +85,15 @@ namespace Fulgor.Tests.EditMode
         }
 
         [Test]
-        public void AMineNeedsItsDepositAndReachesThreeTiles()
+        public void AMineNeedsItsDepositInsideTheCityTerritory()
         {
             var near = new MapCell(new HexCoordinates(5, 4), TerrainType.Hill, false);
-            var far = new MapCell(new HexCoordinates(7, 4), TerrainType.Plain, false);
-            var tooFar = new MapCell(new HexCoordinates(8, 4), TerrainType.Plain, false);
-            Assert.AreEqual(3, City.DistanceTo(far.Coordinates));
+            var outside = new MapCell(new HexCoordinates(6, 4), TerrainType.Plain, false);
+            Assert.AreEqual(2, City.DistanceTo(outside.Coordinates));
             Assert.IsTrue(CityTileConstruction.CanPlace(City, near, "goldmine", false, ResourceDepositKind.Gold));
-            Assert.IsTrue(CityTileConstruction.CanPlace(City, far, "quarry", false, ResourceDepositKind.Stone));
-            Assert.IsFalse(CityTileConstruction.CanPlace(City, tooFar, "goldmine", false, ResourceDepositKind.Gold));
+            Assert.IsTrue(CityTileConstruction.CanPlace(City, near, "quarry", false, ResourceDepositKind.Stone));
+            Assert.IsFalse(CityTileConstruction.CanPlace(City, outside, "goldmine", false, ResourceDepositKind.Gold), "Fuera del territorio no hay mina.");
+            Assert.IsFalse(CityTileConstruction.CanPlace(City, outside, "quarry", false, ResourceDepositKind.Stone));
             Assert.IsFalse(CityTileConstruction.CanPlace(City, near, "goldmine", false, ResourceDepositKind.Stone));
             Assert.IsFalse(CityTileConstruction.CanPlace(City, near, "goldmine", false));
             Assert.IsFalse(CityTileConstruction.CanPlace(City, near, "quarry", true, ResourceDepositKind.Stone));
@@ -122,7 +122,7 @@ namespace Fulgor.Tests.EditMode
         }
 
         [Test]
-        public void AssignedTilesReachAsFarAsTheProjectAndStayWithTheNearestCity()
+        public void AssignedTilesAreTheFirstRingOfTheNearestCity()
         {
             var cells = new[] { new MapCell(new HexCoordinates(0, 0), TerrainType.Plain, false), new MapCell(new HexCoordinates(1, 0), TerrainType.Plain, false),
                 new MapCell(new HexCoordinates(2, 0), TerrainType.Plain, false), new MapCell(new HexCoordinates(3, 0), TerrainType.Plain, false),
@@ -131,18 +131,18 @@ namespace Fulgor.Tests.EditMode
             var cities = new CampaignSettlementRegistry(new MapRouteGraph(map), new[] {
                 new CampaignSettlement("a", "A", "castilla", cells[0].Coordinates), new CampaignSettlement("b", "B", "rival", cells[5].Coordinates) });
             int mine = CityTileConstruction.ReachOf("goldmine");
+            Assert.AreEqual(1, mine, "La mina solo llega al territorio de la ciudad.");
             Assert.AreEqual(1, CityTileConstruction.ReachOf("farm"));
-            Assert.IsFalse(CityTileConstruction.IsAssigned(cities, "a", cells[2].Coordinates), "Un huerto no llega a la segunda casilla.");
-            Assert.IsTrue(CityTileConstruction.IsAssigned(cities, "a", cells[2].Coordinates, mine));
-            Assert.IsFalse(CityTileConstruction.IsAssigned(cities, "a", cells[3].Coordinates, mine), "Esa casilla está más cerca de la otra ciudad.");
-            Assert.IsTrue(CityTileConstruction.IsAssigned(cities, "b", cells[3].Coordinates, mine));
+            Assert.IsTrue(CityTileConstruction.IsAssigned(cities, "a", cells[1].Coordinates, mine));
+            Assert.IsFalse(CityTileConstruction.IsAssigned(cities, "a", cells[2].Coordinates, mine), "Ni un huerto ni una mina llegan a la segunda casilla.");
+            Assert.IsTrue(CityTileConstruction.IsAssigned(cities, "b", cells[4].Coordinates, mine));
             Assert.IsFalse(CityTileConstruction.IsAssigned(cities, "a", cells[0].Coordinates, mine), "La ciudad no es casilla de obra.");
         }
 
         [Test]
         public void RestoreChecksMinesAgainstTheDeposits()
         {
-            var cell = new MapCell(new HexCoordinates(6, 4), TerrainType.Hill, false);
+            var cell = new MapCell(new HexCoordinates(5, 4), TerrainType.Hill, false);
             var map = new Dictionary<HexCoordinates, MapCell> { [cell.Coordinates] = cell };
             var deposits = new Dictionary<HexCoordinates, ResourceDepositKind> { [cell.Coordinates] = ResourceDepositKind.Gold };
             var city = new CityTileDevelopment();

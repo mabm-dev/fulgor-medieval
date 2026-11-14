@@ -51,12 +51,12 @@ namespace Fulgor.Editor
             new("CampoMilicias", "Campo de milicias", new Vector2Int(13, 6), -1f),
             new("CanteraSencilla", "Cantera sencilla", new Vector2Int(15, 6), -1f),
             new("AldeaConcejil", "Aldea concejil", new Vector2Int(12, 11), -1f),
-            new("PatioMesnadas", "Patio de mesnadas", new Vector2Int(12, 8), -1f, 1.18f), // colina junto a la fortaleza: en llanura no queda casilla visible
+            new("PatioMesnadas", "Patio de mesnadas", new Vector2Int(12, 7), -1f, 1.18f), // colina a dos casillas: (12,8) queda para el oro de prueba del territorio
             new("Empalizada", "Empalizada", new Vector2Int(11, 10), -1f),
             new("HuertoCampo", "Huerto o campo", new Vector2Int(14, 10), -1f),
             // edad 02; Tripo la entregó ya con textura y UV (modo directo del script de Blender), sin pasar por TRELLIS
             new("CercaReforzada", "Cerca reforzada", new Vector2Int(15, 9), -1f), // colina: las llanuras visibles ya están ocupadas
-            new("CasaAldea", "Casa de aldea", new Vector2Int(14, 8), -1f), // colina con oro junto a la fortaleza: lo único visible que queda libre
+            new("CasaAldea", "Casa de aldea", new Vector2Int(11, 8), -1f), // bosque a dos casillas: (14,8) queda para la piedra de prueba del territorio
         };
 
         // Yacimientos y sus obras, sin casilla de prueba: CampaignTileBuildings pone el yacimiento donde diga el mapa y lo cambia por la mina o la

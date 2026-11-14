@@ -15,7 +15,7 @@ namespace Fulgor.Presentation.Map
         private CampaignTurnController campaign;
         private CampaignSettlement city;
         private GameObject root;
-        private RectTransform canvas, toolbar, legend, queue, heading, backArea, recruitArea, leftColumn, cityDetails, treasury;
+        private RectTransform canvas, toolbar, legend, queue, heading, backArea, recruitArea, leftColumn, cityDetails, treasury, markerLayer;
         private readonly Text[] treasuryValues=new Text[5], treasuryIncome=new Text[5];
         private readonly Text[] workNames=new Text[6], workTurns=new Text[6], cityValues=new Text[7], cityProduction=new Text[5];
         private readonly Image[] workClocks=new Image[6];
@@ -71,6 +71,8 @@ namespace Fulgor.Presentation.Map
         private void Build()
         {
             root=CampaignMenuUI.Canvas("Construcción en el mapa",transform,50);canvas=(RectTransform)root.transform;
+            // los círculos de casilla libre y los marcadores de obra van en la primera capa: los paneles se dibujan siempre encima
+            markerLayer=CampaignHudArt.Stretch("Marcadores sobre el mapa",canvas);markerLayer.SetAsFirstSibling();
             heading=GetComponent<CampaignSelectionPanel>()?.KingdomHeader;
             if(heading==null)heading=CampaignHudArt.KingdomBanner(canvas);
             treasury=CampaignMenuUI.Rect("Reservas del reino",canvas,new Vector2(.5f,1),new Vector2(90,-12),new Vector2(960,80));
@@ -131,7 +133,7 @@ namespace Fulgor.Presentation.Map
                     image.sprite=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f));ownedSprites.Add(image.sprite);
                     buildingIcons[i] = image.sprite;
                 }
-                if(Projects[i]=="simple_quarry")
+                if(texture==null&&Projects[i]=="simple_quarry") // sin ilustración, el icono de piedra
                 {
                     var stone=CampaignMenuUI.Rect("Piedra",button.transform,new Vector2(.5f,.5f),new Vector2(0,14),new Vector2(85,70)).gameObject.AddComponent<Image>();
                     stone.sprite=CampaignHudArt.Slice("stone-project","CityMap/resources_reference",new Rect(1178f/2172,322f/724,129f/2172,109f/724));
@@ -280,7 +282,7 @@ namespace Fulgor.Presentation.Map
             legendTitle.text=Names[selected];
             legendIcon.sprite=buildingIcons[selected];
             bool unknown=tile!=null && campaign.VisibilityAt(tile.Cell.Coordinates)==CampaignVisibility.Unknown;
-            if(tile==null||unknown){legendTerrain.text="";description.color=CampaignMenuUI.Paper;description.text=unknown?"Territorio sin explorar.":"Señala una casilla del primer anillo o un yacimiento cercano.";for(int i=0;i<4;i++)SetRow(i,default);return;}
+            if(tile==null||unknown){legendTerrain.text="";description.color=CampaignMenuUI.Paper;description.text=unknown?"Territorio sin explorar.":"Señala una casilla del territorio de la ciudad.";for(int i=0;i<4;i++)SetRow(i,default);return;}
             bool occupied=campaign.IsCityTileOccupied(tile.Cell.Coordinates);
             var deposit=campaign.DepositAt(tile.Cell.Coordinates);var project=ProjectFor(tile);
             if(MineName(project)!=null){legendTitle.text=MineName(project);legendIcon.sprite=IconFor(project);}
@@ -405,7 +407,7 @@ namespace Fulgor.Presentation.Map
             {
                 if(campaign.VisibilityAt(tile.Cell.Coordinates)==CampaignVisibility.Unknown)continue;
                 var deposit=campaign.DepositAt(tile.Cell.Coordinates);var mine=CityTileConstruction.MineFor(deposit);
-                // el territorio es el primer anillo; a un yacimiento cercano solo llega su mina
+                // el territorio es el primer anillo; en un yacimiento del territorio solo cabe su mina
                 bool ring=campaign.IsTileAssignedToCity(city.Id,tile.Cell.Coordinates);
                 if(!ring&&(mine==null||!InReach(tile,mine)))continue;
                 if(ring)territory++;
@@ -468,7 +470,7 @@ namespace Fulgor.Presentation.Map
         private void AddRing(HexTileView tile)
         {
             EnsureRingSprite();
-            var rect=CampaignMenuUI.Rect("Casilla disponible",canvas,new Vector2(.5f,.5f),Vector2.zero,new Vector2(48,48));
+            var rect=CampaignMenuUI.Rect("Casilla disponible",markerLayer,new Vector2(.5f,.5f),Vector2.zero,new Vector2(48,48));
             var image=rect.gameObject.AddComponent<Image>();image.sprite=ringSprite;image.raycastTarget=false;
             markerObjects.Add(rect.gameObject);markers.Add((rect,tile));rings.Add(rect);
         }
@@ -476,7 +478,7 @@ namespace Fulgor.Presentation.Map
         {
             HexTileView tile=null;foreach(var candidate in GetComponentsInChildren<HexTileView>())if(candidate.Cell.Coordinates==new HexCoordinates(data.q,data.r)){tile=candidate;break;}
             if(tile==null)return;
-            var rect=CampaignMenuUI.Rect("Obra "+data.q+","+data.r,canvas,new Vector2(.5f,.5f),Vector2.zero,new Vector2(64,64));
+            var rect=CampaignMenuUI.Rect("Obra "+data.q+","+data.r,markerLayer,new Vector2(.5f,.5f),Vector2.zero,new Vector2(64,64));
             var icon = rect.gameObject.AddComponent<Image>();
             icon.sprite = IconFor(data.project);
             icon.preserveAspect = true;
