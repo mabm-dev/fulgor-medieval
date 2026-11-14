@@ -63,3 +63,8 @@ MonoBehaviour:
     - id: Rival-Z-tropas
       profile: 0
       quantity: 5
+  fixedDeposits:
+  - position: {x: 12, y: 8}
+    kind: 1
+  - position: {x: 14, y: 8}
+    kind: 2

@@ -57,6 +57,7 @@ namespace Fulgor.Presentation.Map
             var scenarioSeed = scenario != null ? scenario.Seed : seed;
             // Generate first: invalid input must not erase the existing board.
             var map = ProceduralMapGenerator.Generate(width, height, scenarioSeed);
+            if (scenario != null) scenario.PinDeposits(map);
             // Validate routes before retiring the current board as well.
             var routes = scenario != null ? scenario.CreateRouteGraph(map) : new MapRouteGraph(map);
             if (scenario != null)

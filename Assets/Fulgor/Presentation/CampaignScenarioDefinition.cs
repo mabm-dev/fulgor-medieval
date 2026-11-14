@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Fulgor.Core.Map;
 using Fulgor.Core.Campaign;
 using Fulgor.Core.Combat;
@@ -54,6 +55,24 @@ namespace Fulgor.Presentation.Map
         public CampaignResources StartingResources => new(0,Math.Max(0,startingWood),0,0,Math.Max(0,startingLabor));
         public CampaignObjectiveKind ObjectiveKind=>objectiveKind;
         [SerializeField] private ScenarioArmy[] armies = Array.Empty<ScenarioArmy>();
+        [Tooltip("Yacimientos fijos para pruebas, encima de los de la semilla (posición axial: X = Q, Y = R).")]
+        [SerializeField] private ScenarioDeposit[] fixedDeposits = Array.Empty<ScenarioDeposit>();
+        /// <summary>Fija en el mapa los yacimientos de prueba del escenario, si los tiene.</summary>
+        public void PinDeposits(GeneratedMap map)
+        {
+            if (fixedDeposits == null || fixedDeposits.Length == 0) return;
+            ResourceDepositLayout.Pin(map, fixedDeposits.Where(d => d != null)
+                .Select(d => new KeyValuePair<HexCoordinates, ResourceDepositKind>(new HexCoordinates(d.Position.x, d.Position.y), d.Kind)));
+        }
+
+        [Serializable]
+        private sealed class ScenarioDeposit
+        {
+            [SerializeField] private Vector2Int position;
+            [SerializeField] private ResourceDepositKind kind = ResourceDepositKind.Gold;
+            public Vector2Int Position => position;
+            public ResourceDepositKind Kind => kind;
+        }
 
         public CampaignArmyRegistry CreateArmyRegistry(MapRouteGraph graph)
         {
@@ -88,7 +107,7 @@ namespace Fulgor.Presentation.Map
         {
             try
             {
-                var map = ProceduralMapGenerator.Generate(Width, Height, Seed);
+                var map = ProceduralMapGenerator.Generate(Width, Height, Seed); PinDeposits(map);
                 var graph = CreateRouteGraph(map);
                 var registry = CreateArmyRegistry(graph);
                 CreateMission(map, graph, registry);
